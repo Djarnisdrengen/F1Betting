@@ -296,6 +296,9 @@ async def calculate_race_points(race_id: str, p1: str, p2: str, p3: str):
     results = [p1, p2, p3]
     
     for bet in bets:
+        old_points = bet.get("points", 0)
+        old_is_perfect = bet.get("is_perfect", False)
+        
         points = 0
         predictions = [bet["p1"], bet["p2"], bet["p3"]]
         
@@ -319,14 +322,19 @@ async def calculate_race_points(race_id: str, p1: str, p2: str, p3: str):
             {"$set": {"points": points, "is_perfect": is_perfect}}
         )
         
-        # Update user points and stars
+        # Update user points and stars (subtract old, add new to avoid duplicates)
         user = await db.users.find_one({"id": bet["user_id"]})
         if user:
-            new_points = user.get("points", 0) + points
-            new_stars = user.get("stars", 0) + (1 if is_perfect else 0)
+            current_points = user.get("points", 0)
+            current_stars = user.get("stars", 0)
+            
+            # Remove old points/stars, add new ones
+            new_points = current_points - old_points + points
+            new_stars = current_stars - (1 if old_is_perfect else 0) + (1 if is_perfect else 0)
+            
             await db.users.update_one(
                 {"id": bet["user_id"]},
-                {"$set": {"points": new_points, "stars": new_stars}}
+                {"$set": {"points": max(0, new_points), "stars": max(0, new_stars)}}
             )
 
 # ==================== BET ROUTES ====================
