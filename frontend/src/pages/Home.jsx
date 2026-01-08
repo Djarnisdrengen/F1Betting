@@ -6,7 +6,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Flag, Clock, MapPin, ChevronDown, ChevronUp, Trophy, Star, Users } from "lucide-react";
-import { format, parseISO, differenceInHours, isBefore, isAfter } from "date-fns";
+import { format, parseISO, isBefore, isAfter, isValid } from "date-fns";
 import { da, enUS } from "date-fns/locale";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
