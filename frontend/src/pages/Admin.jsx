@@ -451,10 +451,20 @@ export default function Admin() {
                   <div className="flex gap-2">
                     {u.id !== user?.id && (
                       <>
-                        <Button variant="outline" size="sm" onClick={() => toggleUserRole(u.id, u.role)}>
+                        <Button variant="outline" size="sm" type="button" onClick={() => toggleUserRole(u.id, u.role)}>
                           {u.role === "admin" ? t("makeUser") : t("makeAdmin")}
                         </Button>
-                        <Button variant="destructive" size="sm" onClick={() => deleteUser(u.id)} data-testid={`delete-user-${u.id}`}>
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            deleteUser(u.id);
+                          }} 
+                          data-testid={`delete-user-${u.id}`}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </>
