@@ -130,10 +130,10 @@ export default function Admin() {
   };
 
   const deleteRace = async (id) => {
-    if (!window.confirm(language === "da" ? "Slet dette løb?" : "Delete this race?")) return;
     try {
       await axios.delete(`${API}/races/${id}`, authHeaders);
       toast.success(language === "da" ? "Løb slettet!" : "Race deleted!");
+      setDeleteRaceConfirm(null);
       loadAllData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Error");
