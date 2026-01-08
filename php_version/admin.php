@@ -56,10 +56,20 @@ if (isset($_POST['add_race'])) {
     $quali_p3 = $_POST['quali_p3'] ?: null;
     
     if ($name && $location && $date && $time) {
-        $id = generateUUID();
-        $stmt = $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, quali_p1, quali_p2, quali_p3) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$id, $name, $location, $date, $time, $quali_p1, $quali_p2, $quali_p3]);
-        $message = $lang === 'da' ? 'Løb tilføjet!' : 'Race added!';
+        // Validate date format
+        $dateObj = DateTime::createFromFormat('Y-m-d', $date);
+        $timeObj = DateTime::createFromFormat('H:i', $time);
+        
+        if ($dateObj && $timeObj) {
+            $id = generateUUID();
+            $stmt = $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, quali_p1, quali_p2, quali_p3) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$id, $name, $location, $date, $time, $quali_p1, $quali_p2, $quali_p3]);
+            $message = $lang === 'da' ? 'Løb tilføjet!' : 'Race added!';
+        } else {
+            $error = $lang === 'da' ? 'Ugyldig dato eller tid' : 'Invalid date or time';
+        }
+    } else {
+        $error = $lang === 'da' ? 'Udfyld alle felter' : 'Fill in all fields';
     }
 }
 
