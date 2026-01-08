@@ -150,13 +150,19 @@ export default function Admin() {
   };
 
   const deleteUser = async (userId) => {
-    if (!window.confirm(language === "da" ? "Slet denne bruger?" : "Delete this user?")) return;
+    const confirmMsg = language === "da" ? "Slet denne bruger?" : "Delete this user?";
+    if (!window.confirm(confirmMsg)) {
+      return;
+    }
     try {
-      await axios.delete(`${API}/admin/users/${userId}`, authHeaders);
+      console.log("Deleting user:", userId);
+      const response = await axios.delete(`${API}/admin/users/${userId}`, authHeaders);
+      console.log("Delete response:", response);
       toast.success(language === "da" ? "Bruger slettet!" : "User deleted!");
       loadAllData();
     } catch (err) {
-      toast.error(err.response?.data?.detail || "Error");
+      console.error("Delete error:", err);
+      toast.error(err.response?.data?.detail || "Error deleting user");
     }
   };
 
