@@ -81,7 +81,7 @@ export default function Home() {
   };
 
   const upcomingRaces = races
-    .filter(r => !r.result_p1)
+    .filter(r => !r.result_p1 && r.race_date && r.race_time)
     .sort((a, b) => new Date(a.race_date) - new Date(b.race_date));
 
   const heroTitle = language === "da" ? settings?.hero_title_da : settings?.hero_title_en;
