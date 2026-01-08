@@ -272,7 +272,7 @@ include 'includes/header.php';
                     </div>
                     <div class="flex gap-1">
                         <a href="?tab=drivers&edit=<?= $driver['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
-                        <a href="?tab=drivers&delete_driver=<?= $driver['id'] ?>" class="btn btn-danger btn-sm btn-delete"><i class="fas fa-trash"></i></a>
+                        <a href="?tab=drivers&delete_driver=<?= $driver['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($driver['name']) ?>"><i class="fas fa-trash"></i></a>
                     </div>
                 </div>
                 <?php if (isset($_GET['edit']) && $_GET['edit'] === $driver['id']): ?>
