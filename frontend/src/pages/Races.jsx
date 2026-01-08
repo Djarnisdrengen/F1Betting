@@ -242,7 +242,7 @@ export default function Races() {
                                 {bet.is_perfect && <Star className="w-4 h-4 text-yellow-500 star-icon" />}
                               </p>
                               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                {format(parseISO(bet.placed_at), "d MMM HH:mm", { locale })}
+                                {bet.placed_at ? formatDate(bet.placed_at, "d MMM HH:mm") : "N/A"}
                               </p>
                             </div>
                           </div>
