@@ -432,9 +432,27 @@ export default function Admin() {
                           )}
                         </DialogContent>
                       </Dialog>
-                      <Button variant="destructive" size="sm" onClick={() => deleteRace(race.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <Dialog open={deleteRaceConfirm === race.id} onOpenChange={(open) => setDeleteRaceConfirm(open ? race.id : null)}>
+                        <DialogTrigger asChild>
+                          <Button variant="destructive" size="sm">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>{language === "da" ? "Slet løb" : "Delete race"}</DialogTitle>
+                            <DialogDescription>
+                              {language === "da" 
+                                ? `Er du sikker på at du vil slette ${race.name}?` 
+                                : `Are you sure you want to delete ${race.name}?`}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <Button variant="outline" onClick={() => setDeleteRaceConfirm(null)}>{t("cancel")}</Button>
+                            <Button variant="destructive" onClick={() => deleteRace(race.id)}>{t("delete")}</Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 </CardContent>
