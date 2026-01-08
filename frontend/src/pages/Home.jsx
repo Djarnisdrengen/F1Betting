@@ -41,15 +41,36 @@ export default function Home() {
   const getDriver = (id) => drivers.find(d => d.id === id);
   const locale = language === "da" ? da : enUS;
 
-  const getBettingStatus = (race) => {
-    const raceDateTime = new Date(`${race.race_date}T${race.race_time}:00Z`);
-    const now = new Date();
-    const bettingOpens = new Date(raceDateTime.getTime() - 48 * 60 * 60 * 1000);
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "N/A";
+    try {
+      const date = parseISO(dateStr);
+      if (!isValid(date)) return "N/A";
+      return format(date, "d MMM yyyy", { locale });
+    } catch {
+      return "N/A";
+    }
+  };
 
-    if (race.result_p1) return { status: "completed", label: t("raceCompleted"), color: "bg-gray-500" };
-    if (isBefore(now, bettingOpens)) return { status: "pending", label: t("bettingNotOpen"), color: "status-pending" };
-    if (isAfter(now, raceDateTime)) return { status: "closed", label: t("bettingClosed"), color: "status-closed" };
-    return { status: "open", label: t("bettingOpen"), color: "status-open" };
+  const getBettingStatus = (race) => {
+    if (!race.race_date || !race.race_time) {
+      return { status: "pending", label: t("bettingNotOpen"), color: "status-pending" };
+    }
+    try {
+      const raceDateTime = new Date(`${race.race_date}T${race.race_time}:00Z`);
+      if (!isValid(raceDateTime)) {
+        return { status: "pending", label: t("bettingNotOpen"), color: "status-pending" };
+      }
+      const now = new Date();
+      const bettingOpens = new Date(raceDateTime.getTime() - 48 * 60 * 60 * 1000);
+
+      if (race.result_p1) return { status: "completed", label: t("raceCompleted"), color: "bg-gray-500" };
+      if (isBefore(now, bettingOpens)) return { status: "pending", label: t("bettingNotOpen"), color: "status-pending" };
+      if (isAfter(now, raceDateTime)) return { status: "closed", label: t("bettingClosed"), color: "status-closed" };
+      return { status: "open", label: t("bettingOpen"), color: "status-open" };
+    } catch {
+      return { status: "pending", label: t("bettingNotOpen"), color: "status-pending" };
+    }
   };
 
   const getRaceBets = (raceId) => bets.filter(b => b.race_id === raceId);
