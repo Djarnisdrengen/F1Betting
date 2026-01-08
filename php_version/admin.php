@@ -434,7 +434,7 @@ include 'includes/header.php';
                             <a href="?tab=users&toggle_role=<?= $user['id'] ?>" class="btn btn-secondary btn-sm">
                                 <?= $user['role'] === 'admin' ? ($lang === 'da' ? 'Gør Bruger' : 'Make User') : ($lang === 'da' ? 'Gør Admin' : 'Make Admin') ?>
                             </a>
-                            <a href="?tab=users&delete_user=<?= $user['id'] ?>" class="btn btn-danger btn-sm btn-delete"><i class="fas fa-trash"></i></a>
+                            <a href="?tab=users&delete_user=<?= $user['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>"><i class="fas fa-trash"></i></a>
                         </div>
                     <?php endif; ?>
                 </div>
