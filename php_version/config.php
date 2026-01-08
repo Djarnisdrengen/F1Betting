@@ -14,7 +14,10 @@ define('JWT_SECRET', 'skift-denne-til-en-lang-tilfaeldig-streng-1234567890');
 define('PASSWORD_PEPPER', 'skift-ogsaa-denne-streng');
 
 // Site URL (uden trailing slash)
-define('SITE_URL', 'https://dit-domæne.dk');
+// Eksempler:
+//   Rodmappe: 'https://dit-domæne.dk'
+//   Undermappe: 'https://dit-domæne.dk/f1'
+define('SITE_URL', 'https://dit-domæne.dk/f1');
 
 // Session indstillinger
 session_start();

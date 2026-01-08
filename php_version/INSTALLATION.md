@@ -4,28 +4,39 @@
 Denne guide viser hvordan du installerer F1 Betting applikationen på Simply.com webhotel.
 
 ## Filer der skal uploades
-Upload hele indholdet af `php_version` mappen til din webserver (typisk `/www/` eller `/public_html/`).
+Upload hele indholdet af `php_version` mappen til din webserver.
 
+**Eksempel på mappestruktur (i undermappe `/f1/`):**
 ```
-├── index.php          # Forside
-├── login.php          # Login side
-├── register.php       # Registrering
-├── logout.php         # Log ud
-├── profile.php        # Profil side
-├── races.php          # Alle løb
-├── leaderboard.php    # Rangliste
-├── bet.php            # Placer bet
-├── admin.php          # Admin panel
-├── config.php         # KONFIGURATION (REDIGER DENNE!)
-├── database.sql       # Database schema
-├── assets/
-│   ├── css/
-│   │   └── style.css
-│   └── js/
-│       └── app.js
-└── includes/
-    ├── header.php
-    └── footer.php
+public_html/
+└── f1/
+    ├── index.php          # Forside
+    ├── login.php          # Login side
+    ├── register.php       # Registrering
+    ├── logout.php         # Log ud
+    ├── profile.php        # Profil side
+    ├── races.php          # Alle løb
+    ├── leaderboard.php    # Rangliste
+    ├── bet.php            # Placer bet
+    ├── admin.php          # Admin panel
+    ├── config.php         # KONFIGURATION (REDIGER DENNE!)
+    ├── database.sql       # Database schema
+    ├── assets/
+    │   ├── css/
+    │   │   └── style.css
+    │   └── js/
+    │       └── app.js
+    └── includes/
+        ├── header.php
+        └── footer.php
+```
+
+**Eller i rodmappen:**
+```
+public_html/
+├── index.php
+├── login.php
+├── ... (alle filer direkte i public_html)
 ```
 
 ---
@@ -73,7 +84,10 @@ define('JWT_SECRET', 'skift-denne-til-en-lang-tilfaeldig-streng-1234567890');
 define('PASSWORD_PEPPER', 'skift-ogsaa-denne-streng');
 
 // Site URL (uden trailing slash)
-define('SITE_URL', 'https://dit-domæne.dk');
+// Eksempler:
+//   Rodmappe: 'https://dit-domæne.dk'
+//   Undermappe: 'https://dit-domæne.dk/f1'
+define('SITE_URL', 'https://dit-domæne.dk/f1');
 ```
 
 ### Generér sikre nøgler
@@ -83,15 +97,20 @@ Brug denne side til at generere tilfældige strenge: https://randomkeygen.com/
 
 ## Trin 4: Upload Filer
 
-1. Brug FTP eller Simply.com's filhåndtering
-2. Upload alle filer til din webserver rod (typisk `/www/`)
-3. Sørg for at `config.php` har de korrekte database oplysninger
+### Upload til undermappe (anbefalet)
+1. Opret mappen `f1` i `public_html` via FTP eller filhåndtering
+2. Upload alle filer til `public_html/f1/`
+3. Din side vil være på: `https://dit-domæne.dk/f1/`
+
+### Upload til rodmappe
+1. Upload alle filer direkte til `public_html/`
+2. Din side vil være på: `https://dit-domæne.dk/`
 
 ---
 
 ## Trin 5: Test Installation
 
-1. Besøg dit domæne i browseren
+1. Besøg dit domæne i browseren (f.eks. `https://dit-domæne.dk/f1/`)
 2. Klik **Registrer** og opret din første bruger
 3. **Første bruger bliver automatisk administrator!**
 4. Log ind og gå til **Admin** for at:
@@ -144,10 +163,15 @@ Brug denne side til at generere tilfældige strenge: https://randomkeygen.com/
 ### Siden vises ikke korrekt
 - Tjek at alle filer er uploadet
 - Tjek at PHP version er 7.4 eller nyere
+- Tjek at SITE_URL matcher din faktiske URL (inkl. undermappe)
 
 ### Kan ikke logge ind
 - Tjek at `database.sql` er importeret korrekt
 - Prøv at registrere en ny bruger
+
+### Sletning virker ikke
+- Tjek at JavaScript er aktiveret i browseren
+- Der kommer en bekræftelsesdialog - klik "Slet" for at bekræfte
 
 ---
 
@@ -157,6 +181,7 @@ Har du problemer? Tjek:
 1. PHP error logs i Simply.com kontrolpanel
 2. At alle filer er uploadet korrekt
 3. At database oplysninger er korrekte
+4. At SITE_URL er sat korrekt i config.php
 
 ---
 
