@@ -287,9 +287,27 @@ export default function Admin() {
                         )}
                       </DialogContent>
                     </Dialog>
-                    <Button variant="destructive" size="sm" onClick={() => deleteDriver(driver.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <Dialog open={deleteDriverConfirm === driver.id} onOpenChange={(open) => setDeleteDriverConfirm(open ? driver.id : null)}>
+                      <DialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>{language === "da" ? "Slet kører" : "Delete driver"}</DialogTitle>
+                          <DialogDescription>
+                            {language === "da" 
+                              ? `Er du sikker på at du vil slette ${driver.name}?` 
+                              : `Are you sure you want to delete ${driver.name}?`}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setDeleteDriverConfirm(null)}>{t("cancel")}</Button>
+                          <Button variant="destructive" onClick={() => deleteDriver(driver.id)}>{t("delete")}</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </CardContent>
               </Card>
