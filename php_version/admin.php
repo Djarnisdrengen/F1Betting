@@ -348,7 +348,7 @@ include 'includes/header.php';
                         </div>
                         <div class="flex gap-1">
                             <a href="?tab=races&edit=<?= $race['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
-                            <a href="?tab=races&delete_race=<?= $race['id'] ?>" class="btn btn-danger btn-sm btn-delete"><i class="fas fa-trash"></i></a>
+                            <a href="?tab=races&delete_race=<?= $race['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($race['name']) ?>"><i class="fas fa-trash"></i></a>
                         </div>
                     </div>
                     <?php if ($race['quali_p1']): ?>
