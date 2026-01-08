@@ -128,7 +128,7 @@ export default function Races() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        {format(parseISO(race.race_date), "d MMMM yyyy", { locale })} - {race.race_time}
+                        {formatDate(race.race_date)} - {race.race_time || "N/A"}
                       </span>
                     </div>
 
