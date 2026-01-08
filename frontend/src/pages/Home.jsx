@@ -150,7 +150,7 @@ export default function Home() {
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="w-4 h-4" />
-                            {format(parseISO(race.race_date), "d MMM yyyy", { locale })} - {race.race_time}
+                            {formatDate(race.race_date)} - {race.race_time || "N/A"}
                           </span>
                         </div>
                       </div>
