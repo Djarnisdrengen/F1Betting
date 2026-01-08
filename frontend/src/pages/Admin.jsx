@@ -450,19 +450,36 @@ export default function Admin() {
                         <Button variant="outline" size="sm" type="button" onClick={() => toggleUserRole(u.id, u.role)}>
                           {u.role === "admin" ? t("makeUser") : t("makeAdmin")}
                         </Button>
-                        <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            deleteUser(u.id);
-                          }} 
-                          data-testid={`delete-user-${u.id}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <Dialog open={deleteConfirm === u.id} onOpenChange={(open) => setDeleteConfirm(open ? u.id : null)}>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              type="button"
+                              data-testid={`delete-user-${u.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>{language === "da" ? "Slet bruger" : "Delete user"}</DialogTitle>
+                              <DialogDescription>
+                                {language === "da" 
+                                  ? `Er du sikker på at du vil slette ${u.display_name || u.email}?` 
+                                  : `Are you sure you want to delete ${u.display_name || u.email}?`}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                              <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
+                                {t("cancel")}
+                              </Button>
+                              <Button variant="destructive" onClick={() => deleteUser(u.id)}>
+                                {t("delete")}
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </>
                     )}
                   </div>
