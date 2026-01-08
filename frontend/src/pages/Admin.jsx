@@ -86,11 +86,14 @@ export default function Admin() {
     }
   };
 
+  const [deleteDriverConfirm, setDeleteDriverConfirm] = useState(null);
+  const [deleteRaceConfirm, setDeleteRaceConfirm] = useState(null);
+
   const deleteDriver = async (id) => {
-    if (!window.confirm(language === "da" ? "Slet denne kører?" : "Delete this driver?")) return;
     try {
       await axios.delete(`${API}/drivers/${id}`, authHeaders);
       toast.success(language === "da" ? "Kører slettet!" : "Driver deleted!");
+      setDeleteDriverConfirm(null);
       loadAllData();
     } catch (err) {
       toast.error(err.response?.data?.detail || "Error");
