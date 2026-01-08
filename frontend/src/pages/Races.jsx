@@ -5,7 +5,7 @@ import { useAuth, useLanguage } from "../App";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-import { Flag, Clock, MapPin, CheckCircle } from "lucide-react";
+import { Flag, Clock, MapPin, CheckCircle, ChevronDown, ChevronUp, Star, Users } from "lucide-react";
 import { format, parseISO, isBefore, isAfter } from "date-fns";
 import { da, enUS } from "date-fns/locale";
 
@@ -17,6 +17,8 @@ export default function Races() {
   const [races, setRaces] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [myBets, setMyBets] = useState([]);
+  const [allBets, setAllBets] = useState([]);
+  const [expandedRaces, setExpandedRaces] = useState({});
   const [loading, setLoading] = useState(true);
 
   const locale = language === "da" ? da : enUS;
@@ -25,18 +27,26 @@ export default function Races() {
     const token = localStorage.getItem("token");
     const requests = [
       axios.get(`${API}/races`),
-      axios.get(`${API}/drivers`)
+      axios.get(`${API}/drivers`),
+      axios.get(`${API}/bets`)
     ];
     if (token) {
       requests.push(axios.get(`${API}/bets/my`, { headers: { Authorization: `Bearer ${token}` }}));
     }
 
-    Promise.all(requests).then(([racesRes, driversRes, betsRes]) => {
+    Promise.all(requests).then(([racesRes, driversRes, allBetsRes, myBetsRes]) => {
       setRaces(racesRes.data.sort((a, b) => new Date(a.race_date) - new Date(b.race_date)));
       setDrivers(driversRes.data);
-      if (betsRes) setMyBets(betsRes.data);
+      setAllBets(allBetsRes.data);
+      if (myBetsRes) setMyBets(myBetsRes.data);
     }).catch(console.error).finally(() => setLoading(false));
   }, []);
+
+  const toggleRaceExpansion = (raceId) => {
+    setExpandedRaces(prev => ({ ...prev, [raceId]: !prev[raceId] }));
+  };
+
+  const getRaceBets = (raceId) => allBets.filter(b => b.race_id === raceId);
 
   const getDriver = (id) => drivers.find(d => d.id === id);
 
@@ -52,6 +62,7 @@ export default function Races() {
   };
 
   const hasBetForRace = (raceId) => myBets.some(b => b.race_id === raceId);
+  const userBetForRace = (raceId) => myBets.find(b => b.race_id === raceId);
 
   if (loading) {
     return (
@@ -72,6 +83,9 @@ export default function Races() {
         {races.map(race => {
           const status = getBettingStatus(race);
           const hasBet = hasBetForRace(race.id);
+          const userBet = userBetForRace(race.id);
+          const raceBets = getRaceBets(race.id);
+          const isExpanded = expandedRaces[race.id];
 
           return (
             <Card key={race.id} className="race-card" data-testid={`race-${race.id}`}>
@@ -130,12 +144,105 @@ export default function Races() {
                         </div>
                       )}
                     </div>
+
+                    {/* User's own bet */}
+                    {userBet && (
+                      <div className={`mt-3 p-3 rounded-lg border ${userBet.is_perfect ? 'perfect-bet' : ''}`}
+                           style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}>
+                        <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                          {t("yourBets")}
+                          {userBet.is_perfect && <Star className="w-4 h-4 text-yellow-500 star-icon" />}
+                        </p>
+                        <div className="flex gap-3 flex-wrap">
+                          {[userBet.p1, userBet.p2, userBet.p3].map((driverId, idx) => {
+                            const driver = getDriver(driverId);
+                            return driver ? (
+                              <div key={idx} className="flex items-center gap-2">
+                                <span className={`position-badge position-${idx + 1}`}>P{idx + 1}</span>
+                                <span>{driver.name}</span>
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
+                        {userBet.points > 0 && (
+                          <p className="mt-2 font-bold" style={{ color: 'var(--accent)' }}>
+                            {userBet.points} {t("points")}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {status.status === "open" && user && !hasBet && (
-                    <Link to={`/bet/${race.id}`}>
-                      <Button className="btn-f1" data-testid={`bet-btn-${race.id}`}>{t("placeBet")}</Button>
-                    </Link>
+                  <div className="flex flex-col gap-2">
+                    {status.status === "open" && user && !hasBet && (
+                      <Link to={`/bet/${race.id}`}>
+                        <Button className="btn-f1" data-testid={`bet-btn-${race.id}`}>{t("placeBet")}</Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bets toggle and list */}
+                <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                      <Users className="w-4 h-4" />
+                      <span>{raceBets.length} bets</span>
+                    </div>
+                    {raceBets.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleRaceExpansion(race.id)}
+                        data-testid={`toggle-bets-${race.id}`}
+                      >
+                        {t("allBets")}
+                        {isExpanded ? <ChevronUp className="ml-2 w-4 h-4" /> : <ChevronDown className="ml-2 w-4 h-4" />}
+                      </Button>
+                    )}
+                  </div>
+
+                  {isExpanded && raceBets.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      {raceBets.map(bet => (
+                        <div 
+                          key={bet.id} 
+                          className={`p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${bet.is_perfect ? 'perfect-bet' : ''}`}
+                          style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+                          data-testid={`bet-${bet.id}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ background: 'var(--accent)' }}>
+                              {(bet.user_display_name || bet.user_email)?.[0]?.toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-medium flex items-center gap-2">
+                                {bet.user_display_name || bet.user_email}
+                                {bet.is_perfect && <Star className="w-4 h-4 text-yellow-500 star-icon" />}
+                              </p>
+                              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                {format(parseISO(bet.placed_at), "d MMM HH:mm", { locale })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex gap-2">
+                              {[bet.p1, bet.p2, bet.p3].map((driverId, idx) => {
+                                const driver = getDriver(driverId);
+                                return (
+                                  <span key={idx} className="text-sm px-2 py-1 rounded" style={{ background: 'var(--bg-card)' }}>
+                                    <span className="font-bold">P{idx + 1}:</span> {driver?.name?.split(' ').pop()}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                            {bet.points > 0 && (
+                              <Badge style={{ background: 'var(--accent)' }}>{bet.points} pts</Badge>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </CardContent>
