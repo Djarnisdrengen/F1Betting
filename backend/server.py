@@ -25,7 +25,7 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 
-JWT_SECRET = os.environ.get('JWT_SECRET', 'f1-betting-secret-key-2025')
+JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALGORITHM = "HS256"
 
 # ==================== MODELS ====================
@@ -342,9 +342,12 @@ async def calculate_race_points(race_id: str, p1: str, p2: str, p3: str):
 @api_router.get("/bets", response_model=List[BetResponse])
 async def get_all_bets():
     bets = await db.bets.find({}, {"_id": 0}).to_list(1000)
-    # Add user info
+    # Batch fetch all users to avoid N+1 queries
+    user_ids = list(set(bet["user_id"] for bet in bets))
+    users_list = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "password": 0}).to_list(len(user_ids))
+    users_map = {u["id"]: u for u in users_list}
     for bet in bets:
-        user = await db.users.find_one({"id": bet["user_id"]}, {"_id": 0, "password": 0})
+        user = users_map.get(bet["user_id"])
         if user:
             bet["user_display_name"] = user.get("display_name")
             bet["user_email"] = user.get("email", "")
@@ -353,11 +356,16 @@ async def get_all_bets():
 @api_router.get("/bets/race/{race_id}", response_model=List[BetResponse])
 async def get_bets_by_race(race_id: str):
     bets = await db.bets.find({"race_id": race_id}, {"_id": 0}).to_list(1000)
-    for bet in bets:
-        user = await db.users.find_one({"id": bet["user_id"]}, {"_id": 0, "password": 0})
-        if user:
-            bet["user_display_name"] = user.get("display_name")
-            bet["user_email"] = user.get("email", "")
+    # Batch fetch users to avoid N+1 queries
+    user_ids = list(set(bet["user_id"] for bet in bets))
+    if user_ids:
+        users_list = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "password": 0}).to_list(len(user_ids))
+        users_map = {u["id"]: u for u in users_list}
+        for bet in bets:
+            user = users_map.get(bet["user_id"])
+            if user:
+                bet["user_display_name"] = user.get("display_name")
+                bet["user_email"] = user.get("email", "")
     return bets
 
 @api_router.get("/bets/my", response_model=List[BetResponse])
@@ -442,17 +450,21 @@ async def delete_bet(bet_id: str, current_user: dict = Depends(get_current_user)
 @api_router.get("/leaderboard", response_model=List[LeaderboardEntry])
 async def get_leaderboard():
     users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(1000)
-    leaderboard = []
     
+    # Use aggregation to count bets per user in a single query
+    pipeline = [{"$group": {"_id": "$user_id", "count": {"$sum": 1}}}]
+    bet_counts_list = await db.bets.aggregate(pipeline).to_list(None)
+    bet_counts = {item["_id"]: item["count"] for item in bet_counts_list}
+    
+    leaderboard = []
     for user in users:
-        bets_count = await db.bets.count_documents({"user_id": user["id"]})
         leaderboard.append({
             "user_id": user["id"],
             "display_name": user.get("display_name"),
             "email": user.get("email", ""),
             "points": user.get("points", 0),
             "stars": user.get("stars", 0),
-            "bets_count": bets_count
+            "bets_count": bet_counts.get(user["id"], 0)
         })
     
     leaderboard.sort(key=lambda x: (-x["points"], -x["stars"]))
