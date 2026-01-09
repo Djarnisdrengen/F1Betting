@@ -11,6 +11,8 @@ import Races from "./pages/Races";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import "./App.css";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -226,6 +228,8 @@ function App() {
                   <Route path="/" element={<Home />} />
                   <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
                   <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+                  <Route path="/forgot-password" element={!user ? <ForgotPassword /> : <Navigate to="/" />} />
+                  <Route path="/reset-password" element={!user ? <ResetPassword /> : <Navigate to="/" />} />
                   <Route path="/races" element={<Races />} />
                   <Route path="/bet/:raceId" element={user ? <PlaceBet /> : <Navigate to="/login" />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />

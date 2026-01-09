@@ -75,6 +75,16 @@ export default function Login() {
                   data-testid="login-password"
                 />
               </div>
+              <div className="text-right">
+                <Link 
+                  to="/forgot-password" 
+                  className="text-sm hover:underline" 
+                  style={{ color: 'var(--accent)' }}
+                  data-testid="forgot-password-link"
+                >
+                  {t("forgotPassword")}
+                </Link>
+              </div>
             </div>
             <Button 
               type="submit" 
