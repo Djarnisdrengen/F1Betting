@@ -64,12 +64,12 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                 
                 <div class="controls">
                     <!-- Theme Toggle -->
-                    <a href="?toggle_theme=1" class="btn btn-ghost btn-icon" title="Skift tema">
+                    <a href="?toggle_theme=1" class="btn btn-ghost btn-icon" title="<?= $lang === 'da' ? 'Skift tema' : 'Toggle theme' ?>">
                         <i class="fas fa-<?= $theme === 'dark' ? 'sun' : 'moon' ?>"></i>
                     </a>
                     
                     <!-- Language Toggle -->
-                    <a href="?toggle_lang=1" class="btn btn-ghost btn-icon" title="Skift sprog">
+                    <a href="?toggle_lang=1" class="btn btn-ghost btn-icon" title="<?= $lang === 'da' ? 'Skift sprog' : 'Change language' ?>">
                         <i class="fas fa-globe"></i>
                     </a>
                     
