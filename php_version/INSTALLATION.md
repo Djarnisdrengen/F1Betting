@@ -18,9 +18,13 @@ public_html/
     ├── races.php          # Alle løb
     ├── leaderboard.php    # Rangliste
     ├── bet.php            # Placer bet
+    ├── edit_bet.php       # Rediger bet (NY!)
     ├── admin.php          # Admin panel
+    ├── forgot_password.php # Glemt adgangskode
+    ├── reset_password.php  # Nulstil adgangskode
     ├── config.php         # KONFIGURATION (REDIGER DENNE!)
     ├── database.sql       # Database schema
+    ├── data_2026.sql      # 2026 kørere og løb (NY!)
     ├── assets/
     │   ├── css/
     │   │   └── style.css
@@ -28,15 +32,8 @@ public_html/
     │       └── app.js
     └── includes/
         ├── header.php
-        └── footer.php
-```
-
-**Eller i rodmappen:**
-```
-public_html/
-├── index.php
-├── login.php
-├── ... (alle filer direkte i public_html)
+        ├── footer.php
+        └── sendgrid.php   # SendGrid email integration (NY!)
 ```
 
 ---
@@ -62,9 +59,15 @@ public_html/
 4. Upload filen `database.sql`
 5. Klik **Udfør**
 
-Dette opretter alle tabeller og indsætter:
-- 10 F1 kørere (2025 sæson)
-- Standard indstillinger
+### Import 2026 Data (valgfrit)
+For at tilføje alle 22 kørere og 24 løb fra 2026 sæsonen:
+1. Efter import af `database.sql`, klik **Import** igen
+2. Upload filen `data_2026.sql`
+3. Klik **Udfør**
+
+Dette indsætter:
+- 22 F1 kørere (2026 sæson med alle 11 teams inkl. Cadillac)
+- 24 løb med datoer og starttider
 
 ---
 
@@ -84,9 +87,6 @@ define('JWT_SECRET', 'skift-denne-til-en-lang-tilfaeldig-streng-1234567890');
 define('PASSWORD_PEPPER', 'skift-ogsaa-denne-streng');
 
 // Site URL (uden trailing slash)
-// Eksempler:
-//   Rodmappe: 'https://dit-domæne.dk'
-//   Undermappe: 'https://dit-domæne.dk/f1'
 define('SITE_URL', 'https://dit-domæne.dk/f1');
 ```
 
@@ -95,7 +95,44 @@ Brug denne side til at generere tilfældige strenge: https://randomkeygen.com/
 
 ---
 
-## Trin 4: Upload Filer
+## Trin 4: Konfigurer SendGrid Email (VALGFRIT men ANBEFALET)
+
+SendGrid bruges til at sende password reset emails. Uden SendGrid falder systemet tilbage til PHP mail() som ofte ikke virker på webhostels.
+
+### 4.1 Opret SendGrid konto
+1. Gå til https://sendgrid.com/ og klik **Start for Free**
+2. Opret en konto (100 gratis emails/dag)
+3. Verificer din email
+
+### 4.2 Opret API nøgle
+1. Log ind på SendGrid
+2. Gå til **Settings** → **API Keys**
+3. Klik **Create API Key**
+4. Vælg et navn (f.eks. "F1 Betting")
+5. Vælg **Full Access** eller **Restricted Access** med "Mail Send" aktiveret
+6. Klik **Create & View**
+7. **KOPIER API NØGLEN NU** - den vises kun én gang!
+
+### 4.3 Verificer afsender email
+1. Gå til **Settings** → **Sender Authentication**
+2. Vælg **Single Sender Verification** (nemmest for start)
+3. Indtast din email (f.eks. `noreply@dit-domæne.dk`)
+4. Bekræft emailen du modtager
+
+### 4.4 Tilføj til config.php
+```php
+// SendGrid Email Konfiguration
+define('SENDGRID_API_KEY', 'SG.din_api_nøgle_her');
+define('SENDGRID_FROM_EMAIL', 'noreply@dit-domæne.dk');
+define('SENDGRID_FROM_NAME', 'F1 Betting');
+```
+
+### Test email
+Efter installation, gå til login siden og klik "Glemt adgangskode?" for at teste.
+
+---
+
+## Trin 5: Upload Filer
 
 ### Upload til undermappe (anbefalet)
 1. Opret mappen `f1` i `public_html` via FTP eller filhåndtering
@@ -108,15 +145,36 @@ Brug denne side til at generere tilfældige strenge: https://randomkeygen.com/
 
 ---
 
-## Trin 5: Test Installation
+## Trin 6: Test Installation
 
 1. Besøg dit domæne i browseren (f.eks. `https://dit-domæne.dk/f1/`)
 2. Klik **Registrer** og opret din første bruger
 3. **Første bruger bliver automatisk administrator!**
 4. Log ind og gå til **Admin** for at:
-   - Tilføje flere kørere
-   - Oprette løb med datoer og kvalifikationsresultater
+   - Se kørere (22 stk hvis du importerede data_2026.sql)
+   - Se løb (24 stk hvis du importerede data_2026.sql)
+   - Tilføje kvalifikationsresultater
    - Administrere indstillinger
+
+---
+
+## Nye funktioner (Januar 2026)
+
+### 📧 SendGrid Email Integration
+- Professionelle HTML emails til password reset
+- Fallback til PHP mail() hvis SendGrid ikke er konfigureret
+- Flot F1-temaet email design
+
+### ✏️ Rediger Bets
+- Brugere kan nu redigere deres bets
+- Kun muligt når betting-vinduet stadig er åbent
+- Timestamp opdateres ved redigering
+- Alle valideringsregler gælder stadig
+
+### 🏎️ 2026 Sæson Data
+- 22 kørere fra alle 11 teams (inkl. nye Cadillac team)
+- 24 løb med officielle datoer og tider
+- Klar til brug - bare importér `data_2026.sql`
 
 ---
 
@@ -124,7 +182,9 @@ Brug denne side til at generere tilfældige strenge: https://randomkeygen.com/
 
 ### Bruger funktioner
 - ✅ Registrering og login
+- ✅ Glemt/nulstil adgangskode (med SendGrid email)
 - ✅ Placer bets på kommende løb (P1, P2, P3)
+- ✅ **Rediger bets** før løbsstart (NY!)
 - ✅ Se alle bets pr. løb
 - ✅ Rangliste med point og stjerner
 - ✅ Profil med visningsnavn
@@ -141,6 +201,7 @@ Brug denne side til at generere tilfældige strenge: https://randomkeygen.com/
 ### Betting regler
 - Betting åbner 48 timer før løbsstart
 - Betting lukker når løbet starter
+- Kan redigere bet indtil betting lukker
 - Kan ikke vælge samme kører flere gange
 - Kan ikke matche kvalifikationsresultatet præcist
 - Samme kombination kan kun bruges én gang
@@ -159,6 +220,12 @@ Brug denne side til at generere tilfældige strenge: https://randomkeygen.com/
 ### "Database forbindelse fejlede"
 - Tjek at DB_HOST, DB_NAME, DB_USER og DB_PASS er korrekte
 - Tjek at databasen er oprettet i Simply.com
+
+### Password reset email kommer ikke
+- Tjek at SENDGRID_API_KEY er korrekt
+- Tjek at SENDGRID_FROM_EMAIL er verificeret i SendGrid
+- Tjek SendGrid dashboard for fejl under Activity
+- Uden SendGrid: emails sendes via PHP mail() som ofte blokeres
 
 ### Siden vises ikke korrekt
 - Tjek at alle filer er uploadet
@@ -182,6 +249,7 @@ Har du problemer? Tjek:
 2. At alle filer er uploadet korrekt
 3. At database oplysninger er korrekte
 4. At SITE_URL er sat korrekt i config.php
+5. SendGrid Activity dashboard for email problemer
 
 ---
 
