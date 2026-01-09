@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/sendgrid.php';
 
 if (getCurrentUser()) {
     header("Location: index.php");
@@ -37,16 +38,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Create reset link
             $resetLink = SITE_URL . "/reset_password.php?token=" . $token;
             
-            // Try to send email
-            $subject = $lang === 'da' ? 'Nulstil din adgangskode' : 'Reset your password';
-            $message = $lang === 'da' 
-                ? "Hej " . ($user['display_name'] ?: $user['email']) . ",\n\nKlik på linket herunder for at nulstille din adgangskode:\n\n$resetLink\n\nLinket udløber om 1 time.\n\nHvis du ikke har anmodet om dette, kan du ignorere denne email."
-                : "Hi " . ($user['display_name'] ?: $user['email']) . ",\n\nClick the link below to reset your password:\n\n$resetLink\n\nThis link expires in 1 hour.\n\nIf you didn't request this, you can ignore this email.";
+            // Try SendGrid first, then fall back to PHP mail()
+            $mailSent = false;
             
-            $headers = "From: noreply@" . parse_url(SITE_URL, PHP_URL_HOST) . "\r\n";
-            $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+            // Check if SendGrid is configured
+            if (defined('SENDGRID_API_KEY') && !empty(SENDGRID_API_KEY) && SENDGRID_API_KEY !== 'SG.din_api_nøgle_her') {
+                $result = sendPasswordResetEmail($user['email'], $user['display_name'], $resetLink, $lang);
+                $mailSent = $result['success'];
+            }
             
-            $mailSent = @mail($user['email'], $subject, $message, $headers);
+            // Fallback to PHP mail() if SendGrid not configured or failed
+            if (!$mailSent) {
+                $subject = $lang === 'da' ? 'Nulstil din adgangskode' : 'Reset your password';
+                $message = $lang === 'da' 
+                    ? "Hej " . ($user['display_name'] ?: $user['email']) . ",\n\nKlik på linket herunder for at nulstille din adgangskode:\n\n$resetLink\n\nLinket udløber om 1 time.\n\nHvis du ikke har anmodet om dette, kan du ignorere denne email."
+                    : "Hi " . ($user['display_name'] ?: $user['email']) . ",\n\nClick the link below to reset your password:\n\n$resetLink\n\nThis link expires in 1 hour.\n\nIf you didn't request this, you can ignore this email.";
+                
+                $headers = "From: noreply@" . parse_url(SITE_URL, PHP_URL_HOST) . "\r\n";
+                $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+                
+                $mailSent = @mail($user['email'], $subject, $message, $headers);
+            }
             
             if ($mailSent) {
                 $success = $lang === 'da' 
