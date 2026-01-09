@@ -315,6 +315,7 @@ $drivers = $db->query("SELECT * FROM drivers ORDER BY number")->fetchAll();
 $races = $db->query("SELECT * FROM races ORDER BY race_date DESC")->fetchAll();
 $users = $db->query("SELECT * FROM users ORDER BY points DESC")->fetchAll();
 $bets = $db->query("SELECT b.*, u.display_name, u.email, r.name as race_name FROM bets b JOIN users u ON b.user_id = u.id JOIN races r ON b.race_id = r.id ORDER BY b.placed_at DESC")->fetchAll();
+$invites = $db->query("SELECT i.*, u.display_name as created_by_name, u.email as created_by_email FROM invites i JOIN users u ON i.created_by = u.id ORDER BY i.created_at DESC")->fetchAll();
 $settings = getSettings();
 
 $driversById = [];
