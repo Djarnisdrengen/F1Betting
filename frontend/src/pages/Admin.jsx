@@ -11,7 +11,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "../components/ui/dialog";
 import { Badge } from "../components/ui/badge";
 import { toast } from "sonner";
-import { Settings, Users, Flag, Car, Trophy, Plus, Trash2, Edit, Star, Save } from "lucide-react";
+import { Settings, Users, Flag, Car, Trophy, Plus, Trash2, Edit, Star, Save, Mail, Copy, RefreshCw } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { da, enUS } from "date-fns/locale";
 
