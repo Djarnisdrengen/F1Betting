@@ -26,9 +26,12 @@ Create a web application with authentication where users can bet on top 3 driver
 
 ## What's Been Implemented (January 2026)
 
-### React/FastAPI Version
+### React/FastAPI Version (Preview)
 - ✅ Full authentication system with JWT
-- ✅ Forgot/Reset Password flow (tokens expire after 1 hour)
+- ✅ **Invite-only registration** - Public signup removed (Jan 9, 2026)
+- ✅ Admin invite management (create, resend, delete, copy link)
+- ✅ Forgot/Reset Password flow
+- ✅ **Edit bets** before race start (Jan 9, 2026)
 - ✅ User profile with display name
 - ✅ Complete CRUD for drivers, races, users
 - ✅ Betting system with all validations
@@ -37,8 +40,9 @@ Create a web application with authentication where users can bet on top 3 driver
 - ✅ Theme toggle (dark/light) - WCAG 2.2 AA compliant
 - ✅ Language switcher (DA/EN)
 - ✅ Admin settings panel
+- ✅ 2026 F1 season data ready in seed (22 drivers, 24 races)
 
-### PHP/MySQL Version (Jan 9, 2026)
+### PHP/MySQL Version (for Simply.com)
 - ✅ **Invite-only registration** - Public signup removed
 - ✅ Admin invite management (create, resend, delete invites)
 - ✅ Invite emails via SendGrid
