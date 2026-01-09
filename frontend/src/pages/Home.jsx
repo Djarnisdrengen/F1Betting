@@ -107,11 +107,8 @@ export default function Home() {
         </p>
         {!user && (
           <div className="flex justify-center gap-4">
-            <Link to="/register">
-              <Button className="btn-f1" data-testid="hero-register-btn">{t("register")}</Button>
-            </Link>
             <Link to="/login">
-              <Button variant="outline" data-testid="hero-login-btn">{t("login")}</Button>
+              <Button className="btn-f1" data-testid="hero-login-btn">{t("login")}</Button>
             </Link>
           </div>
         )}
