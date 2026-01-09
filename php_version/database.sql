@@ -92,6 +92,18 @@ CREATE TABLE password_resets (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Invitations (kun admin kan invitere nye brugere)
+CREATE TABLE invites (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    token VARCHAR(64) NOT NULL UNIQUE,
+    created_by VARCHAR(36) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Indsæt F1 kørere 2025
 INSERT INTO drivers (id, name, team, number) VALUES
 (UUID(), 'Max Verstappen', 'Red Bull Racing', 1),
