@@ -148,13 +148,31 @@ Efter installation, gå til login siden og klik "Glemt adgangskode?" for at test
 ## Trin 6: Test Installation
 
 1. Besøg dit domæne i browseren (f.eks. `https://dit-domæne.dk/f1/`)
-2. Klik **Registrer** og opret din første bruger
-3. **Første bruger bliver automatisk administrator!**
-4. Log ind og gå til **Admin** for at:
-   - Se kørere (22 stk hvis du importerede data_2026.sql)
-   - Se løb (24 stk hvis du importerede data_2026.sql)
-   - Tilføje kvalifikationsresultater
-   - Administrere indstillinger
+2. **VIGTIG:** Første bruger skal oprettes via databasen (se nedenfor)
+3. Log ind som admin
+4. Gå til **Admin** → **Invitationer** for at invitere nye brugere
+
+### Opret første admin bruger
+Da offentlig registrering er deaktiveret, skal du oprette første admin bruger manuelt:
+
+**Option 1: Via phpMyAdmin**
+```sql
+INSERT INTO users (id, email, password, display_name, role) VALUES (
+    UUID(),
+    'din@email.dk',
+    '$2y$10$YourHashedPasswordHere',
+    'Admin',
+    'admin'
+);
+```
+
+**Option 2: Midlertidig aktivering**
+1. Åbn `register.php` og ændr linje 23 til: `if (true || ($token && $inviteValid)) {`
+2. Registrér din bruger
+3. Fjern ændringen igen
+
+**Option 3: Brug setup script**
+Kør `php setup_admin.php` i terminalen (se script længere nede)
 
 ---
 
