@@ -123,6 +123,11 @@ class BetCreate(BaseModel):
     p2: str
     p3: str
 
+class BetUpdate(BaseModel):
+    p1: str
+    p2: str
+    p3: str
+
 class BetResponse(BaseModel):
     id: str
     user_id: str
