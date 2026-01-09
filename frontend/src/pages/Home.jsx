@@ -5,7 +5,7 @@ import { useAuth, useLanguage } from "../App";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-import { Flag, Clock, MapPin, ChevronDown, ChevronUp, Trophy, Star, Users } from "lucide-react";
+import { Flag, Clock, MapPin, ChevronDown, ChevronUp, Trophy, Star, Users, Edit } from "lucide-react";
 import { format, parseISO, isBefore, isAfter, isValid } from "date-fns";
 import { da, enUS } from "date-fns/locale";
 
