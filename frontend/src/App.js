@@ -191,11 +191,12 @@ function App() {
     return res.data;
   };
 
-  const register = async (email, password, displayName) => {
+  const register = async (email, password, displayName, inviteToken) => {
     const res = await axios.post(`${API}/auth/register`, { 
       email, 
       password, 
-      display_name: displayName 
+      display_name: displayName,
+      invite_token: inviteToken
     });
     localStorage.setItem("token", res.data.token);
     setUser(res.data.user);
