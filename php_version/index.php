@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 $db = getDB();
 $currentUser = getCurrentUser();
@@ -42,7 +42,7 @@ $leaderboard = $db->query("
 $heroTitle = $lang === 'da' ? $settings['hero_title_da'] : $settings['hero_title_en'];
 $heroText = $lang === 'da' ? $settings['hero_text_da'] : $settings['hero_text_en'];
 
-include 'includes/header.php';
+include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Hero Section -->
@@ -225,4 +225,4 @@ include 'includes/header.php';
     </div>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>
