@@ -68,8 +68,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         </a>
                         <a href="logout.php" class="btn btn-secondary btn-sm"><?= t('logout') ?></a>
                     <?php else: ?>
-                        <a href="login.php" class="btn btn-ghost"><?= t('login') ?></a>
-                        <a href="register.php" class="btn btn-primary"><?= t('register') ?></a>
+                        <a href="login.php" class="btn btn-primary"><?= t('login') ?></a>
                     <?php endif; ?>
                 </div>
             </div>
