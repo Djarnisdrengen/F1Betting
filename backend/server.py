@@ -777,58 +777,75 @@ async def seed_data():
     if drivers_count > 0:
         return {"message": "Data already seeded"}
     
-    # Seed drivers
+    # Seed 2026 drivers (22 drivers, 11 teams)
     drivers = [
+        # Red Bull Racing
         {"id": str(uuid.uuid4()), "name": "Max Verstappen", "team": "Red Bull Racing", "number": 1},
-        {"id": str(uuid.uuid4()), "name": "Sergio Perez", "team": "Red Bull Racing", "number": 11},
-        {"id": str(uuid.uuid4()), "name": "Lewis Hamilton", "team": "Ferrari", "number": 44},
+        {"id": str(uuid.uuid4()), "name": "Isack Hadjar", "team": "Red Bull Racing", "number": 20},
+        # Ferrari
         {"id": str(uuid.uuid4()), "name": "Charles Leclerc", "team": "Ferrari", "number": 16},
+        {"id": str(uuid.uuid4()), "name": "Lewis Hamilton", "team": "Ferrari", "number": 44},
+        # Mercedes
+        {"id": str(uuid.uuid4()), "name": "George Russell", "team": "Mercedes", "number": 63},
+        {"id": str(uuid.uuid4()), "name": "Kimi Antonelli", "team": "Mercedes", "number": 12},
+        # McLaren
         {"id": str(uuid.uuid4()), "name": "Lando Norris", "team": "McLaren", "number": 4},
         {"id": str(uuid.uuid4()), "name": "Oscar Piastri", "team": "McLaren", "number": 81},
-        {"id": str(uuid.uuid4()), "name": "George Russell", "team": "Mercedes", "number": 63},
-        {"id": str(uuid.uuid4()), "name": "Andrea Kimi Antonelli", "team": "Mercedes", "number": 12},
+        # Aston Martin
         {"id": str(uuid.uuid4()), "name": "Fernando Alonso", "team": "Aston Martin", "number": 14},
         {"id": str(uuid.uuid4()), "name": "Lance Stroll", "team": "Aston Martin", "number": 18},
+        # Alpine
+        {"id": str(uuid.uuid4()), "name": "Pierre Gasly", "team": "Alpine", "number": 10},
+        {"id": str(uuid.uuid4()), "name": "Franco Colapinto", "team": "Alpine", "number": 43},
+        # Williams
+        {"id": str(uuid.uuid4()), "name": "Alex Albon", "team": "Williams", "number": 23},
+        {"id": str(uuid.uuid4()), "name": "Carlos Sainz", "team": "Williams", "number": 55},
+        # Visa Cash App RB
+        {"id": str(uuid.uuid4()), "name": "Liam Lawson", "team": "Visa Cash App RB", "number": 30},
+        {"id": str(uuid.uuid4()), "name": "Arvid Lindblad", "team": "Visa Cash App RB", "number": 17},
+        # Haas
+        {"id": str(uuid.uuid4()), "name": "Esteban Ocon", "team": "Haas", "number": 31},
+        {"id": str(uuid.uuid4()), "name": "Oliver Bearman", "team": "Haas", "number": 87},
+        # Audi
+        {"id": str(uuid.uuid4()), "name": "Nico Hülkenberg", "team": "Audi", "number": 27},
+        {"id": str(uuid.uuid4()), "name": "Gabriel Bortoleto", "team": "Audi", "number": 5},
+        # Cadillac
+        {"id": str(uuid.uuid4()), "name": "Sergio Pérez", "team": "Cadillac", "number": 11},
+        {"id": str(uuid.uuid4()), "name": "Valtteri Bottas", "team": "Cadillac", "number": 77},
     ]
     await db.drivers.insert_many(drivers)
     
-    # Seed races
+    # Seed 2026 races (24 races)
     races = [
-        {
-            "id": str(uuid.uuid4()),
-            "name": "Australian Grand Prix",
-            "location": "Melbourne",
-            "race_date": "2025-03-16",
-            "race_time": "05:00",
-            "quali_p1": drivers[0]["id"],
-            "quali_p2": drivers[4]["id"],
-            "quali_p3": drivers[2]["id"],
-            "result_p1": None, "result_p2": None, "result_p3": None
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "name": "Monaco Grand Prix",
-            "location": "Monte Carlo",
-            "race_date": "2025-05-25",
-            "race_time": "14:00",
-            "quali_p1": drivers[3]["id"],
-            "quali_p2": drivers[0]["id"],
-            "quali_p3": drivers[4]["id"],
-            "result_p1": None, "result_p2": None, "result_p3": None
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "name": "British Grand Prix",
-            "location": "Silverstone",
-            "race_date": "2025-07-06",
-            "race_time": "15:00",
-            "quali_p1": None,
-            "quali_p2": None,
-            "quali_p3": None,
-            "result_p1": None, "result_p2": None, "result_p3": None
-        }
+        {"id": str(uuid.uuid4()), "name": "Australian Grand Prix", "location": "Melbourne", "race_date": "2026-03-08", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Chinese Grand Prix", "location": "Shanghai", "race_date": "2026-03-15", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Japanese Grand Prix", "location": "Suzuka", "race_date": "2026-03-29", "race_time": "14:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Bahrain Grand Prix", "location": "Sakhir", "race_date": "2026-04-12", "race_time": "18:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Saudi Arabian Grand Prix", "location": "Jeddah", "race_date": "2026-04-19", "race_time": "20:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Miami Grand Prix", "location": "Miami", "race_date": "2026-05-03", "race_time": "16:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Canadian Grand Prix", "location": "Montreal", "race_date": "2026-05-24", "race_time": "14:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Monaco Grand Prix", "location": "Monaco", "race_date": "2026-06-07", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Barcelona-Catalunya Grand Prix", "location": "Barcelona", "race_date": "2026-06-14", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Austrian Grand Prix", "location": "Spielberg", "race_date": "2026-06-28", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "British Grand Prix", "location": "Silverstone", "race_date": "2026-07-05", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Belgian Grand Prix", "location": "Spa-Francorchamps", "race_date": "2026-07-19", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Hungarian Grand Prix", "location": "Budapest", "race_date": "2026-07-26", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Dutch Grand Prix", "location": "Zandvoort", "race_date": "2026-08-23", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Italian Grand Prix", "location": "Monza", "race_date": "2026-09-06", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Spanish Grand Prix", "location": "Madrid", "race_date": "2026-09-13", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Azerbaijan Grand Prix", "location": "Baku", "race_date": "2026-09-26", "race_time": "15:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Singapore Grand Prix", "location": "Marina Bay", "race_date": "2026-10-11", "race_time": "20:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "United States Grand Prix", "location": "Austin", "race_date": "2026-10-25", "race_time": "14:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Mexico City Grand Prix", "location": "Mexico City", "race_date": "2026-11-01", "race_time": "14:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Brazilian Grand Prix", "location": "São Paulo", "race_date": "2026-11-08", "race_time": "14:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Las Vegas Grand Prix", "location": "Las Vegas", "race_date": "2026-11-21", "race_time": "22:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Qatar Grand Prix", "location": "Lusail", "race_date": "2026-11-29", "race_time": "19:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
+        {"id": str(uuid.uuid4()), "name": "Abu Dhabi Grand Prix", "location": "Abu Dhabi", "race_date": "2026-12-06", "race_time": "17:00", "quali_p1": None, "quali_p2": None, "quali_p3": None, "result_p1": None, "result_p2": None, "result_p3": None},
     ]
     await db.races.insert_many(races)
+    
+    # Update settings to 2026
+    await db.settings.update_one({}, {"$set": {"app_year": "2026"}}, upsert=True)
     
     return {"message": "Data seeded successfully", "drivers": len(drivers), "races": len(races)}
 
