@@ -251,10 +251,11 @@ export default function Admin() {
       </h1>
 
       <Tabs defaultValue="drivers" className="space-y-4">
-        <TabsList className="grid grid-cols-5 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-6 w-full max-w-3xl">
           <TabsTrigger value="drivers" data-testid="tab-drivers"><Car className="w-4 h-4 mr-2" />{t("drivers")}</TabsTrigger>
           <TabsTrigger value="races" data-testid="tab-races"><Flag className="w-4 h-4 mr-2" />{t("races")}</TabsTrigger>
           <TabsTrigger value="users" data-testid="tab-users"><Users className="w-4 h-4 mr-2" />{t("users")}</TabsTrigger>
+          <TabsTrigger value="invites" data-testid="tab-invites"><Mail className="w-4 h-4 mr-2" />{t("invites")}</TabsTrigger>
           <TabsTrigger value="bets" data-testid="tab-bets"><Trophy className="w-4 h-4 mr-2" />{t("bets")}</TabsTrigger>
           <TabsTrigger value="settings" data-testid="tab-settings"><Settings className="w-4 h-4 mr-2" />{t("settings")}</TabsTrigger>
         </TabsList>
