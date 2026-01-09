@@ -1,10 +1,27 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
-$currentUser = getCurrentUser();
-$settings = getSettings();
+// Handle toggle requests BEFORE any output
 $theme = getTheme();
 $lang = getLang();
+
+if (isset($_GET['toggle_theme'])) {
+    setTheme($theme === 'dark' ? 'light' : 'dark');
+    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
+    exit;
+}
+if (isset($_GET['toggle_lang'])) {
+    setLang($lang === 'da' ? 'en' : 'da');
+    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
+    exit;
+}
+
+// Refresh theme/lang after potential toggle
+$theme = getTheme();
+$lang = getLang();
+
+$currentUser = getCurrentUser();
+$settings = getSettings();
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 ?>
 <!DOCTYPE html>
@@ -76,16 +93,3 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     </header>
     
     <main class="container" style="padding: 2rem 1rem; min-height: calc(100vh - 200px);">
-<?php
-// Handle toggle requests
-if (isset($_GET['toggle_theme'])) {
-    setTheme($theme === 'dark' ? 'light' : 'dark');
-    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
-    exit;
-}
-if (isset($_GET['toggle_lang'])) {
-    setLang($lang === 'da' ? 'en' : 'da');
-    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
-    exit;
-}
-?>
