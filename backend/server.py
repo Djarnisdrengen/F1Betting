@@ -224,6 +224,64 @@ async def update_profile(update: UserUpdate, current_user: dict = Depends(get_cu
     updated = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "password": 0})
     return updated
 
+@api_router.post("/auth/forgot-password")
+async def forgot_password(request: PasswordResetRequest):
+    user = await db.users.find_one({"email": request.email}, {"_id": 0})
+    if user:
+        # Generate token
+        import secrets
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        
+        # Delete old tokens for this user
+        await db.password_resets.delete_many({"user_id": user["id"]})
+        
+        # Store new token
+        await db.password_resets.insert_one({
+            "user_id": user["id"],
+            "token": token,
+            "expires_at": expires_at.isoformat(),
+            "used": False
+        })
+        
+        # In production, send email here
+        # For now, return token (in production, always return success message)
+        return {"message": "If email exists, reset link sent", "token": token}
+    
+    # Don't reveal if email exists
+    return {"message": "If email exists, reset link sent"}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(request: PasswordReset):
+    # Find valid token
+    reset_doc = await db.password_resets.find_one({
+        "token": request.token,
+        "used": False
+    })
+    
+    if not reset_doc:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    
+    # Check expiry
+    expires_at = datetime.fromisoformat(reset_doc["expires_at"].replace("Z", "+00:00"))
+    if datetime.now(timezone.utc) > expires_at:
+        raise HTTPException(status_code=400, detail="Token expired")
+    
+    # Update password
+    hashed = hash_password(request.password)
+    await db.users.update_one(
+        {"id": reset_doc["user_id"]},
+        {"$set": {"password": hashed}}
+    )
+    
+    # Mark token as used
+    await db.password_resets.update_one(
+        {"token": request.token},
+        {"$set": {"used": True}}
+    )
+    
+    return {"message": "Password reset successful"}
+
 # ==================== DRIVER ROUTES ====================
 
 @api_router.get("/drivers", response_model=List[DriverResponse])
