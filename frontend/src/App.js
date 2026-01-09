@@ -85,6 +85,7 @@ const translations = {
     role: "Role",
     makeAdmin: "Make Admin",
     makeUser: "Make User",
+    forgotPassword: "Forgot password?",
   },
   da: {
     home: "Hjem",
@@ -144,6 +145,7 @@ const translations = {
     role: "Rolle",
     makeAdmin: "Gør Admin",
     makeUser: "Gør Bruger",
+    forgotPassword: "Glemt adgangskode?",
   }
 };
 
