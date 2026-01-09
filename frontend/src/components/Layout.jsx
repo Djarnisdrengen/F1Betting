@@ -131,10 +131,7 @@ export default function Layout({ children }) {
               ) : (
                 <div className="flex items-center gap-2">
                   <Link to="/login">
-                    <Button variant="ghost" data-testid="login-link">{t("login")}</Button>
-                  </Link>
-                  <Link to="/register">
-                    <Button className="btn-f1" data-testid="register-link">{t("register")}</Button>
+                    <Button className="btn-f1" data-testid="login-link">{t("login")}</Button>
                   </Link>
                 </div>
               )}
