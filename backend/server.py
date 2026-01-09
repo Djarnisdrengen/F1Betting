@@ -630,6 +630,144 @@ async def delete_user(user_id: str, admin: dict = Depends(get_admin_user)):
     await db.bets.delete_many({"user_id": user_id})
     return {"message": "User deleted"}
 
+# ==================== INVITES ====================
+
+@api_router.get("/admin/invites", response_model=List[InviteResponse])
+async def get_invites(admin: dict = Depends(get_admin_user)):
+    invites = await db.invites.find({}, {"_id": 0}).to_list(100)
+    # Get creator names
+    creator_ids = list(set(inv["created_by"] for inv in invites))
+    if creator_ids:
+        creators = await db.users.find({"id": {"$in": creator_ids}}, {"_id": 0}).to_list(len(creator_ids))
+        creators_map = {u["id"]: u.get("display_name") or u.get("email") for u in creators}
+        for inv in invites:
+            inv["created_by_name"] = creators_map.get(inv["created_by"])
+    return invites
+
+@api_router.post("/admin/invites", response_model=InviteResponse)
+async def create_invite(invite: InviteCreate, admin: dict = Depends(get_admin_user)):
+    # Check if email already registered
+    existing_user = await db.users.find_one({"email": invite.email.lower()})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email is already registered as user")
+    
+    # Check if active invite exists
+    existing_invite = await db.invites.find_one({
+        "email": invite.email.lower(),
+        "used": False,
+        "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
+    })
+    if existing_invite:
+        raise HTTPException(status_code=400, detail="Active invite already exists for this email")
+    
+    import secrets
+    invite_doc = {
+        "id": str(uuid.uuid4()),
+        "email": invite.email.lower(),
+        "token": secrets.token_urlsafe(32),
+        "created_by": admin["id"],
+        "created_by_name": admin.get("display_name") or admin.get("email"),
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+        "used": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.invites.insert_one(invite_doc)
+    return {k: v for k, v in invite_doc.items() if k != "_id"}
+
+@api_router.delete("/admin/invites/{invite_id}")
+async def delete_invite(invite_id: str, admin: dict = Depends(get_admin_user)):
+    result = await db.invites.delete_one({"id": invite_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    return {"message": "Invite deleted"}
+
+@api_router.post("/admin/invites/{invite_id}/resend")
+async def resend_invite(invite_id: str, admin: dict = Depends(get_admin_user)):
+    invite = await db.invites.find_one({"id": invite_id, "used": False}, {"_id": 0})
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found or already used")
+    
+    # Extend expiry
+    new_expiry = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+    await db.invites.update_one({"id": invite_id}, {"$set": {"expires_at": new_expiry}})
+    
+    invite["expires_at"] = new_expiry
+    return invite
+
+@api_router.get("/invites/validate/{token}")
+async def validate_invite(token: str):
+    invite = await db.invites.find_one({"token": token, "used": False}, {"_id": 0})
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invalid or expired invitation")
+    
+    expires_at = datetime.fromisoformat(invite["expires_at"].replace("Z", "+00:00"))
+    if datetime.now(timezone.utc) > expires_at:
+        raise HTTPException(status_code=400, detail="Invitation has expired")
+    
+    return {"valid": True, "email": invite["email"]}
+
+# ==================== EDIT BET ====================
+
+@api_router.put("/bets/{bet_id}", response_model=BetResponse)
+async def update_bet(bet_id: str, bet_update: BetUpdate, current_user: dict = Depends(get_current_user)):
+    bet = await db.bets.find_one({"id": bet_id}, {"_id": 0})
+    if not bet:
+        raise HTTPException(status_code=404, detail="Bet not found")
+    
+    if bet["user_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this bet")
+    
+    race = await db.races.find_one({"id": bet["race_id"]}, {"_id": 0})
+    if not race:
+        raise HTTPException(status_code=404, detail="Race not found")
+    
+    # Check betting window
+    race_datetime = datetime.fromisoformat(f"{race['race_date']}T{race['race_time']}:00")
+    race_datetime = race_datetime.replace(tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    
+    if now >= race_datetime:
+        raise HTTPException(status_code=400, detail="Cannot edit bet - race has started")
+    
+    if race.get("result_p1"):
+        raise HTTPException(status_code=400, detail="Cannot edit bet - race is completed")
+    
+    # Check for duplicate selections
+    if len(set([bet_update.p1, bet_update.p2, bet_update.p3])) != 3:
+        raise HTTPException(status_code=400, detail="Cannot select same driver multiple times")
+    
+    # Check if bet matches qualification results
+    if race.get("quali_p1") and race.get("quali_p2") and race.get("quali_p3"):
+        if bet_update.p1 == race["quali_p1"] and bet_update.p2 == race["quali_p2"] and bet_update.p3 == race["quali_p3"]:
+            raise HTTPException(status_code=400, detail="Prediction cannot match qualifying results exactly")
+    
+    # Check if exact prediction is already taken (by other users)
+    existing_combo = await db.bets.find_one({
+        "race_id": bet["race_id"],
+        "p1": bet_update.p1,
+        "p2": bet_update.p2,
+        "p3": bet_update.p3,
+        "id": {"$ne": bet_id}
+    })
+    if existing_combo:
+        raise HTTPException(status_code=400, detail="This exact prediction is already taken by another user")
+    
+    # Update bet
+    await db.bets.update_one(
+        {"id": bet_id},
+        {"$set": {
+            "p1": bet_update.p1,
+            "p2": bet_update.p2,
+            "p3": bet_update.p3,
+            "placed_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    updated = await db.bets.find_one({"id": bet_id}, {"_id": 0})
+    updated["user_display_name"] = current_user.get("display_name")
+    updated["user_email"] = current_user.get("email", "")
+    return updated
+
 # ==================== SEED DATA ====================
 
 @api_router.post("/seed")
