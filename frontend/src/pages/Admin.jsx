@@ -580,6 +580,130 @@ export default function Admin() {
           </div>
         </TabsContent>
 
+        {/* INVITES TAB */}
+        <TabsContent value="invites">
+          <Card className="race-card mb-4">
+            <CardHeader>
+              <CardTitle>{t("inviteUser")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4">
+                <Input 
+                  type="email"
+                  placeholder={t("email")}
+                  value={newInviteEmail}
+                  onChange={e => setNewInviteEmail(e.target.value)}
+                  className="flex-1"
+                  data-testid="invite-email-input"
+                />
+                <Button onClick={createInvite} className="btn-f1" data-testid="send-invite-btn">
+                  <Mail className="w-4 h-4 mr-2" />{t("sendInvite")}
+                </Button>
+              </div>
+              <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
+                {t("inviteExpires")}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Pending Invites */}
+          {invites.filter(i => getInviteStatus(i) === "pending").length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                <span style={{ color: 'var(--accent)' }}>●</span> {t("pending")}
+              </h3>
+              <div className="space-y-2">
+                {invites.filter(i => getInviteStatus(i) === "pending").map(invite => (
+                  <Card key={invite.id} className="race-card">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{invite.email}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                          {language === "da" ? "Udløber" : "Expires"}: {format(parseISO(invite.expires_at), "d MMM yyyy HH:mm", { locale })}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => copyInviteLink(invite.token)}>
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => resendInvite(invite.id)}>
+                          <RefreshCw className="w-4 h-4" />
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={() => deleteInvite(invite.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Used Invites */}
+          {invites.filter(i => getInviteStatus(i) === "used").length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                <span style={{ color: '#10b981' }}>●</span> {t("used")}
+              </h3>
+              <div className="space-y-2 opacity-70">
+                {invites.filter(i => getInviteStatus(i) === "used").map(invite => (
+                  <Card key={invite.id} className="race-card">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{invite.email}</p>
+                        <Badge style={{ background: '#10b981' }}>
+                          {language === "da" ? "Registreret" : "Registered"}
+                        </Badge>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => deleteInvite(invite.id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Expired Invites */}
+          {invites.filter(i => getInviteStatus(i) === "expired").length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                <span style={{ color: '#ef4444' }}>●</span> {t("expired")}
+              </h3>
+              <div className="space-y-2 opacity-50">
+                {invites.filter(i => getInviteStatus(i) === "expired").map(invite => (
+                  <Card key={invite.id} className="race-card">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{invite.email}</p>
+                        <Badge variant="destructive">{t("expired")}</Badge>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => resendInvite(invite.id)}>
+                          <RefreshCw className="w-4 h-4 mr-2" />{t("resend")}
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteInvite(invite.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {invites.length === 0 && (
+            <Card className="race-card">
+              <CardContent className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>
+                {language === "da" ? "Ingen invitationer endnu" : "No invites yet"}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
         {/* BETS TAB */}
         <TabsContent value="bets">
           {races.map(race => {
