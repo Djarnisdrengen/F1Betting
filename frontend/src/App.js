@@ -156,6 +156,16 @@ const translations = {
     makeAdmin: "Gør Admin",
     makeUser: "Gør Bruger",
     forgotPassword: "Glemt adgangskode?",
+    invites: "Invitationer",
+    inviteUser: "Inviter Bruger",
+    sendInvite: "Send Invitation",
+    pending: "Afventer",
+    used: "Brugt",
+    expired: "Udløbet",
+    resend: "Gensend",
+    copyLink: "Kopiér Link",
+    inviteExpires: "Invitation udløber om 7 dage",
+    editBet: "Rediger Bet",
   }
 };
 
