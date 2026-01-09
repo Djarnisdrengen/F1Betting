@@ -153,6 +153,101 @@ if (isset($_POST['reset_user_password'])) {
     }
 }
 
+// ============ INVITES ============
+if (isset($_POST['create_invite'])) {
+    $inviteEmail = trim($_POST['invite_email'] ?? '');
+    
+    if ($inviteEmail && filter_var($inviteEmail, FILTER_VALIDATE_EMAIL)) {
+        // Tjek om email allerede findes som bruger
+        $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$inviteEmail]);
+        if ($stmt->fetch()) {
+            $error = $lang === 'da' ? 'Email er allerede registreret som bruger' : 'Email is already registered as user';
+        } else {
+            // Tjek om der allerede er en aktiv invite
+            $stmt = $db->prepare("SELECT id FROM invites WHERE email = ? AND used = 0 AND expires_at > NOW()");
+            $stmt->execute([$inviteEmail]);
+            if ($stmt->fetch()) {
+                $error = $lang === 'da' ? 'Der er allerede en aktiv invitation til denne email' : 'There is already an active invite for this email';
+            } else {
+                // Opret invite
+                $token = bin2hex(random_bytes(32));
+                $expiresAt = date('Y-m-d H:i:s', strtotime('+7 days'));
+                
+                $stmt = $db->prepare("INSERT INTO invites (email, token, created_by, expires_at) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$inviteEmail, $token, $currentUser['id'], $expiresAt]);
+                
+                // Generer invite link
+                $inviteLink = SITE_URL . "/register.php?token=" . $token;
+                
+                // Prøv at sende email
+                $emailSent = false;
+                if (file_exists(__DIR__ . '/includes/sendgrid.php')) {
+                    require_once __DIR__ . '/includes/sendgrid.php';
+                    if (defined('SENDGRID_API_KEY') && !empty(SENDGRID_API_KEY) && SENDGRID_API_KEY !== 'SG.din_api_nøgle_her') {
+                        $result = sendInviteEmail($inviteEmail, $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
+                        $emailSent = $result['success'];
+                    }
+                }
+                
+                if ($emailSent) {
+                    $message = $lang === 'da' ? 'Invitation sendt til ' . $inviteEmail : 'Invitation sent to ' . $inviteEmail;
+                } else {
+                    $message = $lang === 'da' 
+                        ? 'Invitation oprettet! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
+                        : 'Invitation created! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>';
+                }
+            }
+        }
+    } else {
+        $error = $lang === 'da' ? 'Ugyldig email' : 'Invalid email';
+    }
+}
+
+if (isset($_GET['delete_invite'])) {
+    $inviteId = intval($_GET['delete_invite']);
+    $stmt = $db->prepare("DELETE FROM invites WHERE id = ?");
+    $stmt->execute([$inviteId]);
+    header("Location: admin.php?tab=invites&msg=deleted");
+    exit;
+}
+
+if (isset($_GET['resend_invite'])) {
+    $inviteId = intval($_GET['resend_invite']);
+    $stmt = $db->prepare("SELECT * FROM invites WHERE id = ? AND used = 0");
+    $stmt->execute([$inviteId]);
+    $invite = $stmt->fetch();
+    
+    if ($invite) {
+        // Forlæng udløbstid
+        $newExpiry = date('Y-m-d H:i:s', strtotime('+7 days'));
+        $stmt = $db->prepare("UPDATE invites SET expires_at = ? WHERE id = ?");
+        $stmt->execute([$newExpiry, $inviteId]);
+        
+        $inviteLink = SITE_URL . "/register.php?token=" . $invite['token'];
+        
+        // Prøv at sende email
+        $emailSent = false;
+        if (file_exists(__DIR__ . '/includes/sendgrid.php')) {
+            require_once __DIR__ . '/includes/sendgrid.php';
+            if (defined('SENDGRID_API_KEY') && !empty(SENDGRID_API_KEY) && SENDGRID_API_KEY !== 'SG.din_api_nøgle_her') {
+                $result = sendInviteEmail($invite['email'], $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
+                $emailSent = $result['success'];
+            }
+        }
+        
+        if ($emailSent) {
+            $message = $lang === 'da' ? 'Invitation gensendt!' : 'Invitation resent!';
+        } else {
+            $message = $lang === 'da' 
+                ? 'Invitation forlænget! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
+                : 'Invitation extended! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>';
+        }
+    }
+    header("Location: admin.php?tab=invites&msg=" . urlencode($message));
+    exit;
+}
+
 // ============ SETTINGS ============
 if (isset($_POST['update_settings'])) {
     $appTitle = trim($_POST['app_title'] ?? '');
