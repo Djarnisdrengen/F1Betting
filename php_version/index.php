@@ -51,8 +51,7 @@ include __DIR__ . '/includes/header.php';
     <p><?= escape($heroText) ?></p>
     <?php if (!$currentUser): ?>
         <div class="flex items-center justify-center gap-2">
-            <a href="register.php" class="btn btn-primary"><?= t('register') ?></a>
-            <a href="login.php" class="btn btn-secondary"><?= t('login') ?></a>
+            <a href="login.php" class="btn btn-primary"><?= t('login') ?></a>
         </div>
     <?php endif; ?>
 </section>
