@@ -203,6 +203,27 @@ async def get_admin_user(current_user: dict = Depends(get_current_user)):
 
 @api_router.post("/auth/register")
 async def register(user: UserCreate):
+    # Check invite token (required for registration)
+    if not user.invite_token:
+        raise HTTPException(status_code=400, detail="Invitation token required")
+    
+    invite = await db.invites.find_one({
+        "token": user.invite_token,
+        "used": False
+    })
+    
+    if not invite:
+        raise HTTPException(status_code=400, detail="Invalid or expired invitation")
+    
+    # Check invite expiry
+    expires_at = datetime.fromisoformat(invite["expires_at"].replace("Z", "+00:00"))
+    if datetime.now(timezone.utc) > expires_at:
+        raise HTTPException(status_code=400, detail="Invitation has expired")
+    
+    # Email must match invite
+    if user.email.lower() != invite["email"].lower():
+        raise HTTPException(status_code=400, detail=f"Email must match invitation email: {invite['email']}")
+    
     existing = await db.users.find_one({"email": user.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -219,6 +240,10 @@ async def register(user: UserCreate):
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
+    
+    # Mark invite as used
+    await db.invites.update_one({"token": user.invite_token}, {"$set": {"used": True}})
+    
     token = create_token(user_doc["id"], user_doc["role"])
     return {"token": token, "user": {k: v for k, v in user_doc.items() if k not in ["password", "_id"]}}
 
