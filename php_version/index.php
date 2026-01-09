@@ -119,12 +119,19 @@ include __DIR__ . '/includes/header.php';
                         <!-- User's Bet -->
                         <?php if ($userBet): ?>
                             <div class="<?= $userBet['is_perfect'] ? 'perfect-bet' : '' ?>" style="background: var(--bg-hover); padding: 0.75rem; border-radius: 8px; margin-top: 1rem; border: 1px solid var(--border-color);">
-                                <small class="text-muted flex items-center gap-1">
-                                    <?= t('your_bets') ?>
-                                    <?php if ($userBet['is_perfect']): ?>
-                                        <span class="star">★</span>
+                                <div class="flex items-center justify-between">
+                                    <small class="text-muted flex items-center gap-1">
+                                        <?= t('your_bets') ?>
+                                        <?php if ($userBet['is_perfect']): ?>
+                                            <span class="star">★</span>
+                                        <?php endif; ?>
+                                    </small>
+                                    <?php if ($status['status'] === 'open'): ?>
+                                        <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="btn btn-ghost btn-sm" title="<?= t('edit') ?>">
+                                            <i class="fas fa-edit"></i> <?= t('edit') ?>
+                                        </a>
                                     <?php endif; ?>
-                                </small>
+                                </div>
                                 <div class="quali-row">
                                     <?php foreach (['p1', 'p2', 'p3'] as $i => $key): 
                                         $driver = $driversById[$userBet[$key]] ?? null;
