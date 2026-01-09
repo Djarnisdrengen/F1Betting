@@ -178,6 +178,13 @@ Kør `php setup_admin.php` i terminalen (se script længere nede)
 
 ## Nye funktioner (Januar 2026)
 
+### 🔒 Invite-Only Registrering
+- Offentlig registrering er deaktiveret
+- Kun admins kan invitere nye brugere via Admin → Invitationer
+- Invitationer udløber efter 7 dage
+- Email sendes automatisk med registreringslink (hvis SendGrid er konfigureret)
+- Mulighed for at gensende/forny invitationer
+
 ### 📧 SendGrid Email Integration
 - Professionelle HTML emails til password reset
 - Fallback til PHP mail() hvis SendGrid ikke er konfigureret
