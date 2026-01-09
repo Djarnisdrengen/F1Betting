@@ -461,10 +461,27 @@ include __DIR__ . '/includes/header.php';
                             <a href="?tab=users&toggle_role=<?= $user['id'] ?>" class="btn btn-secondary btn-sm">
                                 <?= $user['role'] === 'admin' ? ($lang === 'da' ? 'Gør Bruger' : 'Make User') : ($lang === 'da' ? 'Gør Admin' : 'Make Admin') ?>
                             </a>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('reset-pw-<?= $user['id'] ?>').classList.toggle('hidden')">
+                                <i class="fas fa-key"></i>
+                            </button>
                             <a href="?tab=users&delete_user=<?= $user['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>"><i class="fas fa-trash"></i></a>
                         </div>
                     <?php endif; ?>
                 </div>
+                <?php if ($user['id'] !== $currentUser['id']): ?>
+                    <div id="reset-pw-<?= $user['id'] ?>" class="hidden" style="padding: 1rem; border-top: 1px solid var(--border-color);">
+                        <form method="POST" class="flex gap-1 items-end">
+                            <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                            <div class="form-group" style="margin:0; flex:1;">
+                                <label class="form-label"><?= $lang === 'da' ? 'Ny adgangskode' : 'New password' ?></label>
+                                <input type="password" name="new_password" class="form-input" required minlength="6" placeholder="••••••••">
+                            </div>
+                            <button type="submit" name="reset_user_password" class="btn btn-primary btn-sm">
+                                <?= $lang === 'da' ? 'Nulstil' : 'Reset' ?>
+                            </button>
+                        </form>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
