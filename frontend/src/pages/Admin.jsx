@@ -26,6 +26,7 @@ export default function Admin() {
   const [races, setRaces] = useState([]);
   const [users, setUsers] = useState([]);
   const [bets, setBets] = useState([]);
+  const [invites, setInvites] = useState([]);
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
 
