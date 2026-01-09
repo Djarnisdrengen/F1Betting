@@ -30,6 +30,13 @@ JWT_ALGORITHM = "HS256"
 
 # ==================== MODELS ====================
 
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordReset(BaseModel):
+    token: str
+    password: str
+
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
