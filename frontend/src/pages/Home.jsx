@@ -181,10 +181,19 @@ export default function Home() {
                     {userBet && (
                       <div className={`p-4 rounded-lg border ${userBet.is_perfect ? 'perfect-bet' : ''}`} 
                            style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}>
-                        <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                          {t("yourBets")}
-                          {userBet.is_perfect && <Star className="w-4 h-4 text-yellow-500 star-icon" />}
-                        </p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-medium flex items-center gap-2">
+                            {t("yourBets")}
+                            {userBet.is_perfect && <Star className="w-4 h-4 text-yellow-500 star-icon" />}
+                          </p>
+                          {status.status === "open" && (
+                            <Link to={`/bet/${race.id}?edit=${userBet.id}`}>
+                              <Button variant="ghost" size="sm" data-testid={`edit-bet-${userBet.id}`}>
+                                <Edit className="w-4 h-4 mr-1" /> {t("edit")}
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
                         <div className="flex gap-4 flex-wrap">
                           {[userBet.p1, userBet.p2, userBet.p3].map((driverId, idx) => {
                             const driver = getDriver(driverId);
