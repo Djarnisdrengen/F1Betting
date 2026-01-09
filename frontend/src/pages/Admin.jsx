@@ -39,17 +39,19 @@ export default function Admin() {
 
   const loadAllData = async () => {
     try {
-      const [driversRes, racesRes, usersRes, betsRes, settingsRes] = await Promise.all([
+      const [driversRes, racesRes, usersRes, betsRes, invitesRes, settingsRes] = await Promise.all([
         axios.get(`${API}/drivers`),
         axios.get(`${API}/races`),
         axios.get(`${API}/admin/users`, authHeaders),
         axios.get(`${API}/bets`),
+        axios.get(`${API}/admin/invites`, authHeaders),
         axios.get(`${API}/settings`)
       ]);
       setDrivers(driversRes.data);
       setRaces(racesRes.data);
       setUsers(usersRes.data);
       setBets(betsRes.data);
+      setInvites(invitesRes.data);
       setSettings(settingsRes.data);
     } catch (err) {
       console.error(err);
