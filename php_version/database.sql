@@ -81,6 +81,17 @@ INSERT INTO settings (id, app_title, app_year, hero_title_en, hero_title_da, her
 'Compete with friends by predicting top 3 for each Grand Prix. Earn points for correct predictions.',
 'Konkurrér med venner ved at forudsige top 3 for hvert Grand Prix. Optjen point for korrekte forudsigelser.');
 
+-- Password reset tokens
+CREATE TABLE password_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    token VARCHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    used TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Indsæt F1 kørere 2025
 INSERT INTO drivers (id, name, team, number) VALUES
 (UUID(), 'Max Verstappen', 'Red Bull Racing', 1),
