@@ -165,6 +165,7 @@ function t($key) {
             'email_exists' => 'Email er allerede registreret',
             'registration_success' => 'Registrering gennemført!',
             'profile_updated' => 'Profil opdateret!',
+            'bet_updated' => 'Bet opdateret!',
         ],
         'en' => [
             'home' => 'Home',
@@ -221,6 +222,7 @@ function t($key) {
             'email_exists' => 'Email already registered',
             'registration_success' => 'Registration successful!',
             'profile_updated' => 'Profile updated!',
+            'bet_updated' => 'Bet updated!',
         ]
     ];
     $lang = getLang();
