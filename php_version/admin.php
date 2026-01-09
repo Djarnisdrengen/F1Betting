@@ -129,11 +129,28 @@ if (isset($_GET['delete_user'])) {
     if ($userId !== $currentUser['id']) {
         $stmt = $db->prepare("DELETE FROM bets WHERE user_id = ?");
         $stmt->execute([$userId]);
+        $stmt = $db->prepare("DELETE FROM password_resets WHERE user_id = ?");
+        $stmt->execute([$userId]);
         $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
         $stmt->execute([$userId]);
     }
     header("Location: admin.php?tab=users&msg=deleted");
     exit;
+}
+
+// Admin reset user password
+if (isset($_POST['reset_user_password'])) {
+    $userId = $_POST['user_id'] ?? '';
+    $newPassword = $_POST['new_password'] ?? '';
+    
+    if ($userId && strlen($newPassword) >= 6) {
+        $hashedPassword = hashPassword($newPassword);
+        $stmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
+        $stmt->execute([$hashedPassword, $userId]);
+        $message = $lang === 'da' ? 'Adgangskode nulstillet!' : 'Password reset!';
+    } else {
+        $error = $lang === 'da' ? 'Adgangskoden skal være mindst 6 tegn' : 'Password must be at least 6 characters';
+    }
 }
 
 // ============ SETTINGS ============
