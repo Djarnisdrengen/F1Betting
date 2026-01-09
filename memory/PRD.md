@@ -25,7 +25,7 @@ Create a web application with authentication where users can bet on top 3 driver
 - Danish/English language switcher
 - App settings (title, year, hero text)
 
-## What's Been Implemented (December 2025)
+## What's Been Implemented (January 2026)
 - ✅ Full authentication system with JWT
 - ✅ User profile with display name (saves correctly)
 - ✅ Complete CRUD for drivers, races, users
@@ -37,6 +37,11 @@ Create a web application with authentication where users can bet on top 3 driver
 - ✅ Admin settings panel
 - ✅ Sample data seeded (10 drivers, 3 races)
 - ✅ All bets visible per race on home page
+- ✅ **Forgot/Reset Password** - Full flow implemented (Jan 9, 2026)
+  - `/forgot-password` page with email input
+  - `/reset-password` page with token validation
+  - Backend endpoints for token generation and password reset
+  - Reset tokens expire after 1 hour and are single-use
 
 ## Prioritized Backlog
 ### P0 (Critical) - Done
@@ -54,5 +59,11 @@ Create a web application with authentication where users can bet on top 3 driver
 
 ## Next Tasks
 1. Add more drivers to roster
-2. Set up upcoming 2025 race calendar
+2. Set up upcoming 2026 race calendar
 3. Configure production hero text and app title
+
+## PHP Version
+A complete PHP/MySQL version is available at `/app/php_version/` for deployment on standard web hosts (e.g., simply.com).
+- Includes: `database.sql`, `INSTALLATION.md`
+- Zip archive: `/app/f1betting_php.zip`
+- Note: The forgot password feature is also implemented in the PHP version
