@@ -350,6 +350,9 @@ include __DIR__ . '/includes/header.php';
         <a href="?tab=users" class="tab <?= $currentTab === 'users' ? 'active' : '' ?>">
             <i class="fas fa-users"></i> <?= t('users') ?>
         </a>
+        <a href="?tab=invites" class="tab <?= $currentTab === 'invites' ? 'active' : '' ?>">
+            <i class="fas fa-envelope"></i> <?= $lang === 'da' ? 'Invitationer' : 'Invites' ?>
+        </a>
         <a href="?tab=bets" class="tab <?= $currentTab === 'bets' ? 'active' : '' ?>">
             <i class="fas fa-trophy"></i> <?= t('bets') ?>
         </a>
