@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 $db = getDB();
 
@@ -32,7 +32,7 @@ if ($currentUser) {
     $myBets = array_column($stmt->fetchAll(), 'race_id');
 }
 
-include 'includes/header.php';
+include __DIR__ . '/includes/header.php';
 ?>
 
 <h1 class="mb-3"><i class="fas fa-flag text-accent"></i> <?= t('races') ?></h1>
@@ -184,4 +184,4 @@ include 'includes/header.php';
     </div>
 <?php endforeach; ?>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

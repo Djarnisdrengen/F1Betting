@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
 requireAdmin();
 
 $db = getDB();
@@ -212,7 +212,7 @@ foreach ($drivers as $d) {
 
 $currentTab = $_GET['tab'] ?? 'drivers';
 
-include 'includes/header.php';
+include __DIR__ . '/includes/header.php';
 ?>
 
 <h1 class="mb-3"><i class="fas fa-cog text-accent"></i> <?= t('admin') ?></h1>
@@ -548,4 +548,4 @@ include 'includes/header.php';
     <?php endif; ?>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>
