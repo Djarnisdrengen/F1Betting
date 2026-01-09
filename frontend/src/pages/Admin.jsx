@@ -185,6 +185,54 @@ export default function Admin() {
     }
   };
 
+  // ============ INVITES ============
+  const [newInviteEmail, setNewInviteEmail] = useState("");
+
+  const createInvite = async () => {
+    if (!newInviteEmail) return;
+    try {
+      await axios.post(`${API}/admin/invites`, { email: newInviteEmail }, authHeaders);
+      toast.success(language === "da" ? "Invitation sendt!" : "Invite sent!");
+      setNewInviteEmail("");
+      loadAllData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Error");
+    }
+  };
+
+  const deleteInvite = async (id) => {
+    try {
+      await axios.delete(`${API}/admin/invites/${id}`, authHeaders);
+      toast.success(language === "da" ? "Invitation slettet!" : "Invite deleted!");
+      loadAllData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Error");
+    }
+  };
+
+  const resendInvite = async (id) => {
+    try {
+      await axios.post(`${API}/admin/invites/${id}/resend`, {}, authHeaders);
+      toast.success(language === "da" ? "Invitation fornyet!" : "Invite renewed!");
+      loadAllData();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Error");
+    }
+  };
+
+  const copyInviteLink = (token) => {
+    const link = `${window.location.origin}/register?token=${token}`;
+    navigator.clipboard.writeText(link);
+    toast.success(language === "da" ? "Link kopieret!" : "Link copied!");
+  };
+
+  const getInviteStatus = (invite) => {
+    if (invite.used) return "used";
+    const expires = new Date(invite.expires_at);
+    if (expires < new Date()) return "expired";
+    return "pending";
+  };
+
   const getDriver = (id) => drivers.find(d => d.id === id);
 
   if (loading) {
