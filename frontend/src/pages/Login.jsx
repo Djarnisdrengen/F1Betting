@@ -95,12 +95,6 @@ export default function Login() {
               {loading ? "..." : t("login")}
             </Button>
           </form>
-          <p className="text-center mt-6" style={{ color: 'var(--text-muted)' }}>
-            {t("register")}?{" "}
-            <Link to="/register" className="font-medium" style={{ color: 'var(--accent)' }} data-testid="register-link">
-              {t("register")}
-            </Link>
-          </p>
         </CardContent>
       </Card>
     </div>
