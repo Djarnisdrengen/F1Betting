@@ -41,10 +41,24 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     display_name: Optional[str] = None
+    invite_token: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class InviteCreate(BaseModel):
+    email: EmailStr
+
+class InviteResponse(BaseModel):
+    id: str
+    email: str
+    token: str
+    created_by: str
+    created_by_name: Optional[str] = None
+    expires_at: str
+    used: bool
+    created_at: str
 
 class UserUpdate(BaseModel):
     display_name: Optional[str] = None
