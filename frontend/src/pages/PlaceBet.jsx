@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth, useLanguage } from "../App";
 import { Button } from "../components/ui/button";
@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Label } from "../components/ui/label";
 import { toast } from "sonner";
-import { Flag, MapPin, Clock, AlertTriangle } from "lucide-react";
+import { Flag, MapPin, Clock, AlertTriangle, Edit } from "lucide-react";
 import { format, parseISO, differenceInHours, isBefore, isAfter } from "date-fns";
 import { da, enUS } from "date-fns/locale";
 
@@ -15,6 +15,8 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function PlaceBet() {
   const { raceId } = useParams();
+  const [searchParams] = useSearchParams();
+  const editBetId = searchParams.get("edit");
   const { user } = useAuth();
   const { language, t } = useLanguage();
   const navigate = useNavigate();
@@ -28,6 +30,7 @@ export default function PlaceBet() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const locale = language === "da" ? da : enUS;
 
@@ -42,8 +45,19 @@ export default function PlaceBet() {
       setRace(foundRace);
       setDrivers(driversRes.data);
       setExistingBets(betsRes.data);
+      
+      // If editing, find the bet and set values
+      if (editBetId) {
+        const betToEdit = betsRes.data.find(b => b.id === editBetId && b.user_id === user?.id);
+        if (betToEdit) {
+          setP1(betToEdit.p1);
+          setP2(betToEdit.p2);
+          setP3(betToEdit.p3);
+          setIsEditMode(true);
+        }
+      }
     }).catch(console.error).finally(() => setLoading(false));
-  }, [raceId]);
+  }, [raceId, editBetId, user?.id]);
 
   const validateBet = () => {
     if (!p1 || !p2 || !p3) {
@@ -64,8 +78,10 @@ export default function PlaceBet() {
       }
     }
 
-    // Check if combination is taken
-    const isTaken = existingBets.some(b => b.p1 === p1 && b.p2 === p2 && b.p3 === p3);
+    // Check if combination is taken (exclude own bet when editing)
+    const isTaken = existingBets.some(b => 
+      b.p1 === p1 && b.p2 === p2 && b.p3 === p3 && b.id !== editBetId
+    );
     if (isTaken) {
       setError(language === "da" ? "Denne kombination er allerede taget" : "This combination is already taken");
       return false;
@@ -86,14 +102,20 @@ export default function PlaceBet() {
     setSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API}/bets`, 
-        { race_id: raceId, p1, p2, p3 },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
-      toast.success(language === "da" ? "Bet placeret!" : "Bet placed!");
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      if (isEditMode && editBetId) {
+        // Update existing bet
+        await axios.put(`${API}/bets/${editBetId}`, { p1, p2, p3 }, { headers });
+        toast.success(language === "da" ? "Bet opdateret!" : "Bet updated!");
+      } else {
+        // Create new bet
+        await axios.post(`${API}/bets`, { race_id: raceId, p1, p2, p3 }, { headers });
+        toast.success(language === "da" ? "Bet placeret!" : "Bet placed!");
+      }
       navigate("/");
     } catch (err) {
-      toast.error(err.response?.data?.detail || "Failed to place bet");
+      toast.error(err.response?.data?.detail || "Failed to save bet");
     } finally {
       setSubmitting(false);
     }
@@ -129,12 +151,15 @@ export default function PlaceBet() {
       <Card className="race-card" style={{ background: 'var(--bg-card)' }}>
         <CardHeader>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent)' }}>
-              <Flag className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: isEditMode ? '#3b82f6' : 'var(--accent)' }}>
+              {isEditMode ? <Edit className="w-6 h-6 text-white" /> : <Flag className="w-6 h-6 text-white" />}
             </div>
             <div>
-              <CardTitle className="text-2xl" style={{ fontFamily: 'Chivo, sans-serif' }}>{race.name}</CardTitle>
+              <CardTitle className="text-2xl" style={{ fontFamily: 'Chivo, sans-serif' }}>
+                {isEditMode ? (language === "da" ? "Rediger Bet" : "Edit Bet") : race.name}
+              </CardTitle>
               <CardDescription className="flex items-center gap-4" style={{ color: 'var(--text-muted)' }}>
+                {isEditMode && <span>{race.name} •</span>}
                 <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {race.location}</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
@@ -143,6 +168,16 @@ export default function PlaceBet() {
               </CardDescription>
             </div>
           </div>
+
+          {isEditMode && (
+            <div className="p-3 rounded-lg mb-4" style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+              <p className="text-sm" style={{ color: '#60a5fa' }}>
+                {language === "da" 
+                  ? "Timestamp vil blive opdateret når du gemmer ændringer."
+                  : "Timestamp will be updated when you save changes."}
+              </p>
+            </div>
+          )}
 
           {/* Qualifying results */}
           {(race.quali_p1 || race.quali_p2 || race.quali_p3) && (
@@ -215,14 +250,24 @@ export default function PlaceBet() {
                 </div>
               ))}
 
-              <Button 
-                type="submit" 
-                className="w-full btn-f1" 
-                disabled={submitting || !!error || !p1 || !p2 || !p3}
-                data-testid="submit-bet"
-              >
-                {submitting ? "..." : t("placeBet")}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => navigate("/")}
+                >
+                  {t("cancel")}
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-1 btn-f1" 
+                  disabled={submitting || !!error || !p1 || !p2 || !p3}
+                  data-testid="submit-bet"
+                >
+                  {submitting ? "..." : (isEditMode ? t("save") : t("placeBet"))}
+                </Button>
+              </div>
             </form>
           )}
         </CardContent>
