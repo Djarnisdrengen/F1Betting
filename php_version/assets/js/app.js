@@ -38,6 +38,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Collapsible forms toggle
+    window.toggleForm = function(formId) {
+        const form = document.getElementById(formId);
+        const header = form.previousElementSibling;
+        
+        if (form.classList.contains('expanded')) {
+            form.classList.remove('expanded');
+            header.classList.remove('expanded');
+        } else {
+            form.classList.add('expanded');
+            header.classList.add('expanded');
+        }
+    };
+    
+    // Scroll to edit form if present (from URL hash)
+    if (window.location.hash) {
+        const target = document.querySelector(window.location.hash);
+        if (target) {
+            setTimeout(() => {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }
+    
+    // Auto-scroll to edit form when URL has edit parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('edit')) {
+        const editId = urlParams.get('edit');
+        const editForm = document.querySelector('.edit-form-active');
+        if (editForm) {
+            setTimeout(() => {
+                editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }
+    
     // Delete confirmation modal
     let deleteModal = null;
     let deleteUrl = null;
@@ -110,3 +146,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     });
 });
+
