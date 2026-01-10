@@ -263,9 +263,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 <?php 
                 $positions = [
-                    ['key' => 'p1', 'label' => 'P1 (25 pts)', 'position' => 1],
-                    ['key' => 'p2', 'label' => 'P2 (18 pts)', 'position' => 2],
-                    ['key' => 'p3', 'label' => 'P3 (15 pts)', 'position' => 3],
+                    ['key' => 'p1', 'label' => 'P1 (' . ($settings['points_p1'] ?? 25) . ' pts)', 'position' => 1],
+                    ['key' => 'p2', 'label' => 'P2 (' . ($settings['points_p2'] ?? 18) . ' pts)', 'position' => 2],
+                    ['key' => 'p3', 'label' => 'P3 (' . ($settings['points_p3'] ?? 15) . ' pts)', 'position' => 3],
                 ];
                 foreach ($positions as $pos): 
                 ?>
