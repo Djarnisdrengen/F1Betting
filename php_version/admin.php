@@ -385,7 +385,7 @@ foreach ($drivers as $d) {
     $driversById[$d['id']] = $d;
 }
 
-$currentTab = $_GET['tab'] ?? 'drivers';
+$currentTab = $_GET['tab'] ?? 'races';
 
 include __DIR__ . '/includes/header.php';
 ?>
