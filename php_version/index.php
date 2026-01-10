@@ -42,6 +42,10 @@ $leaderboard = $db->query("
 $heroTitle = $lang === 'da' ? $settings['hero_title_da'] : $settings['hero_title_en'];
 $heroText = $lang === 'da' ? $settings['hero_text_da'] : $settings['hero_text_en'];
 
+// Find first upcoming race for scroll
+$upcomingRaces = array_filter($races, fn($r) => !$r['result_p1']);
+$firstUpcomingRaceId = !empty($upcomingRaces) ? array_values($upcomingRaces)[0]['id'] : null;
+
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -61,10 +65,7 @@ include __DIR__ . '/includes/header.php';
     <div>
         <h2 class="mb-2"><i class="fas fa-flag text-accent"></i> <?= t('upcoming_races') ?></h2>
         
-        <?php 
-        $upcomingRaces = array_filter($races, fn($r) => !$r['result_p1']);
-        if (empty($upcomingRaces)): 
-        ?>
+        <?php if (empty($upcomingRaces)): ?>
             <div class="card">
                 <div class="card-body text-center text-muted">
                     <?= $lang === 'da' ? 'Ingen kommende løb' : 'No upcoming races' ?>
@@ -84,7 +85,7 @@ include __DIR__ . '/includes/header.php';
                     }
                 }
             ?>
-                <div class="card mb-2">
+                <div class="card mb-2" id="race-<?= $race['id'] ?>">
                     <div class="race-card">
                         <div class="race-header">
                             <div>
@@ -115,45 +116,14 @@ include __DIR__ . '/includes/header.php';
                             </div>
                         <?php endif; ?>
                         
-                        <!-- User's Bet -->
-                        <?php if ($userBet): ?>
-                            <div class="<?= $userBet['is_perfect'] ? 'perfect-bet' : '' ?>" style="background: var(--bg-hover); padding: 0.75rem; border-radius: 8px; margin-top: 1rem; border: 1px solid var(--border-color);">
-                                <div class="flex items-center justify-between">
-                                    <small class="text-muted flex items-center gap-1">
-                                        <?= t('your_bets') ?>
-                                        <?php if ($userBet['is_perfect']): ?>
-                                            <span class="star">★</span>
-                                        <?php endif; ?>
-                                    </small>
-                                    <?php if ($status['status'] === 'open'): ?>
-                                        <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="btn btn-ghost btn-sm" title="<?= t('edit') ?>">
-                                            <i class="fas fa-edit"></i> <?= t('edit') ?>
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="quali-row">
-                                    <?php foreach (['p1', 'p2', 'p3'] as $i => $key): 
-                                        $driver = $driversById[$userBet[$key]] ?? null;
-                                        if ($driver):
-                                    ?>
-                                        <div class="quali-item">
-                                            <span class="position-badge position-<?= $i + 1 ?>">P<?= $i + 1 ?></span>
-                                            <?= escape($driver['name']) ?>
-                                        </div>
-                                    <?php endif; endforeach; ?>
-                                </div>
-                                <?php if ($userBet['points'] > 0): ?>
-                                    <p class="text-accent mt-1" style="font-weight: bold;"><?= $userBet['points'] ?> <?= t('points') ?></p>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-                        
                         <!-- Actions -->
                         <div class="flex items-center justify-between mt-2">
                             <span class="text-muted"><i class="fas fa-users"></i> <?= count($raceBets) ?> bets</span>
                             <div class="flex gap-1">
                                 <?php if ($status['status'] === 'open' && $currentUser && !$userBet): ?>
                                     <a href="bet.php?race=<?= $race['id'] ?>" class="btn btn-primary btn-sm"><?= t('place_bet') ?></a>
+                                <?php elseif ($status['status'] === 'open' && $currentUser && $userBet): ?>
+                                    <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> <?= t('edit') ?></a>
                                 <?php endif; ?>
                                 <?php if (count($raceBets) > 0): ?>
                                     <button class="btn btn-ghost btn-sm toggle-bets" data-target="bets-<?= $race['id'] ?>">
@@ -167,13 +137,16 @@ include __DIR__ . '/includes/header.php';
                         <?php if (count($raceBets) > 0): ?>
                             <div id="bets-<?= $race['id'] ?>" class="bets-section hidden">
                                 <h4 class="mb-1"><?= t('all_bets') ?> (<?= count($raceBets) ?>)</h4>
-                                <?php foreach ($raceBets as $bet): ?>
-                                    <div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?>">
+                                <?php foreach ($raceBets as $bet): 
+                                    $isMyBet = $currentUser && $bet['user_id'] === $currentUser['id'];
+                                ?>
+                                    <div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?> <?= $isMyBet ? 'my-bet' : '' ?>">
                                         <div class="bet-user">
                                             <div class="bet-avatar"><?= strtoupper(substr($bet['display_name'] ?: $bet['email'], 0, 1)) ?></div>
                                             <div>
                                                 <strong class="flex items-center gap-1">
                                                     <?= escape($bet['display_name'] ?: $bet['email']) ?>
+                                                    <?php if ($isMyBet): ?><span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= $lang === 'da' ? 'DIG' : 'YOU' ?></span><?php endif; ?>
                                                     <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
                                                 </strong>
                                                 <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>
@@ -230,5 +203,19 @@ include __DIR__ . '/includes/header.php';
         <a href="leaderboard.php" class="btn btn-secondary mt-2" style="width: 100%;"><?= t('leaderboard') ?></a>
     </div>
 </div>
+
+<?php if ($firstUpcomingRaceId): ?>
+<script>
+// Scroll to first upcoming race on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const raceEl = document.getElementById('race-<?= $firstUpcomingRaceId ?>');
+    if (raceEl) {
+        setTimeout(() => {
+            raceEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+    }
+});
+</script>
+<?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
