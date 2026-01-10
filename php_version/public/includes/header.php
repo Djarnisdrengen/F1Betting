@@ -64,11 +64,11 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     <a href="index.php" class="nav-link <?= $currentPage === 'index' ? 'active' : '' ?>">
                         <i class="fas fa-home"></i> <span><?= t('home') ?></span>
                     </a>
-                    <a href="races.php" class="nav-link <?= $currentPage === 'races' ? 'active' : '' ?>">
-                        <i class="fas fa-flag"></i> <span><?= t('races') ?></span>
-                    </a>
                     <a href="leaderboard.php" class="nav-link <?= $currentPage === 'leaderboard' ? 'active' : '' ?>">
                         <i class="fas fa-trophy"></i> <span><?= t('leaderboard') ?></span>
+                    </a>
+                    <a href="races.php" class="nav-link <?= $currentPage === 'races' ? 'active' : '' ?>">
+                        <i class="fas fa-flag"></i> <span><?= t('races') ?></span>
                     </a>
                     <?php if ($currentUser): ?>
                     <a href="rules.php" class="nav-link <?= $currentPage === 'rules' ? 'active' : '' ?>">
