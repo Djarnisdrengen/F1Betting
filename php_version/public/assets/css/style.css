@@ -402,9 +402,49 @@ body.light {
     grid-template-columns: repeat(4, 1fr);
 }
 
+/* Homepage grid layout */
+.homepage-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.homepage-grid .races-section {
+    order: 1;
+}
+
+.homepage-grid .leaderboard-section {
+    order: 2;
+}
+
+.leaderboard-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 @media (max-width: 768px) {
     .grid-2, .grid-3, .grid-4 {
         grid-template-columns: 1fr;
+    }
+    
+    .homepage-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    /* Leaderboard first on mobile */
+    .homepage-grid .leaderboard-section {
+        order: 1;
+    }
+    
+    .homepage-grid .races-section {
+        order: 2;
+    }
+    
+    /* Hide rows after top 3 on mobile */
+    .homepage-grid .desktop-only-row {
+        display: none;
     }
 }
 
