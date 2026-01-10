@@ -93,7 +93,7 @@ Located at `/app/php_version/`:
 - `assets/favicon.*` - Multi-format favicons
 
 **Zip archive**: `/app/f1betting_php.zip`
-**Download URL**: `https://formulabets.preview.emergentagent.com/f1betting_php.zip`
+**Download URL**: `https://f1punters.preview.emergentagent.com/f1betting_php.zip`
 
 ## 2026 F1 Season Data
 
