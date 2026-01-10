@@ -295,7 +295,7 @@ function getEmailTemplate($greeting, $intro, $buttonText, $buttonLink, $expiry, 
             <td style="padding: 40px 20px;">
                 <table role="presentation" style="max-width: 500px; margin: 0 auto; background: #242424; border-radius: 16px; overflow: hidden;">
                     <tr>
-                        <td style="padding: 30px 40px; text-align: center; background: linear-gradient(135deg, #e10600 0%, #b30500 100%);">
+                        <td style="padding: 30px 40px; text-align: center; background: #1a1a1a; border-bottom: 3px solid #e10600;">
                             <img src="{$logoUrl}" alt="{$appName}" style="height: 40px; width: auto; margin-bottom: 10px;">
                             <h1 style="margin: 0; color: white; font-size: 24px; font-weight: 700;">{$appName}</h1>
                         </td>
