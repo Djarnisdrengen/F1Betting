@@ -284,7 +284,11 @@ function getSettings() {
         'hero_title_da' => 'Forudsig Podiet',
         'hero_title_en' => 'Predict the Podium',
         'hero_text_da' => '',
-        'hero_text_en' => ''
+        'hero_text_en' => '',
+        'points_p1' => 25,
+        'points_p2' => 18,
+        'points_p3' => 15,
+        'points_wrong_pos' => 5
     ];
 }
 
