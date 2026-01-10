@@ -788,6 +788,12 @@ include __DIR__ . '/includes/header.php';
     <!-- BETS TAB -->
     <?php if ($currentTab === 'bets'): ?>
         <?php 
+        // Hent race info for alle bets
+        $racesById = [];
+        foreach ($races as $r) {
+            $racesById[$r['id']] = $r;
+        }
+        
         $betsByRace = [];
         foreach ($bets as $bet) {
             $betsByRace[$bet['race_id']][] = $bet;
@@ -795,11 +801,27 @@ include __DIR__ . '/includes/header.php';
         ?>
         <?php foreach ($betsByRace as $raceId => $raceBets): 
             $raceName = $raceBets[0]['race_name'];
+            $raceData = $racesById[$raceId] ?? null;
+            
+            // Tjek betting status for dette løb
+            $canDeleteBets = false;
+            if ($raceData) {
+                $raceDateTime = new DateTime($raceData['race_date'] . ' ' . $raceData['race_time']);
+                $now = new DateTime();
+                $bettingOpens = clone $raceDateTime;
+                $bettingOpens->modify('-48 hours');
+                $canDeleteBets = !$raceData['result_p1'] && $now >= $bettingOpens && $now < $raceDateTime;
+            }
         ?>
             <div class="card mb-2">
                 <div class="card-header flex items-center justify-between">
                     <h3><?= escape($raceName) ?></h3>
-                    <span class="badge" style="background: var(--bg-secondary);"><?= count($raceBets) ?> bets</span>
+                    <div class="flex items-center gap-2">
+                        <?php if ($canDeleteBets): ?>
+                            <span class="badge status-open"><?= $lang === 'da' ? 'Betting åben' : 'Betting open' ?></span>
+                        <?php endif; ?>
+                        <span class="badge" style="background: var(--bg-secondary);"><?= count($raceBets) ?> bets</span>
+                    </div>
                 </div>
                 <div class="card-body">
                     <?php foreach ($raceBets as $bet): ?>
@@ -825,9 +847,11 @@ include __DIR__ . '/includes/header.php';
                                 <?php if ($bet['points'] > 0): ?>
                                     <span class="badge" style="background: var(--f1-red); color: white;"><?= $bet['points'] ?> pts</span>
                                 <?php endif; ?>
-                                <a href="?tab=bets&delete_bet=<?= $bet['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($bet['display_name'] ?: $bet['email']) ?>" title="<?= $lang === 'da' ? 'Slet og notificer bruger' : 'Delete and notify user' ?>">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                                <?php if ($canDeleteBets): ?>
+                                    <a href="?tab=bets&delete_bet=<?= $bet['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($bet['display_name'] ?: $bet['email']) ?>" title="<?= $lang === 'da' ? 'Slet og notificer bruger' : 'Delete and notify user' ?>">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
