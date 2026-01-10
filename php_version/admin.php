@@ -403,11 +403,11 @@ include __DIR__ . '/includes/header.php';
 <!-- Tabs -->
 <div class="tabs-container">
     <div class="tabs">
-        <a href="?tab=drivers" class="tab <?= $currentTab === 'drivers' ? 'active' : '' ?>">
-            <i class="fas fa-car"></i> <?= t('drivers') ?> <span class="tab-count">(<?= count($drivers) ?>)</span>
-        </a>
         <a href="?tab=races" class="tab <?= $currentTab === 'races' ? 'active' : '' ?>">
             <i class="fas fa-flag"></i> <?= t('races') ?> <span class="tab-count">(<?= count($races) ?>)</span>
+        </a>
+        <a href="?tab=drivers" class="tab <?= $currentTab === 'drivers' ? 'active' : '' ?>">
+            <i class="fas fa-car"></i> <?= t('drivers') ?> <span class="tab-count">(<?= count($drivers) ?>)</span>
         </a>
         <a href="?tab=users" class="tab <?= $currentTab === 'users' ? 'active' : '' ?>">
             <i class="fas fa-users"></i> <?= t('users') ?> <span class="tab-count">(<?= count($users) ?>)</span>
@@ -422,6 +422,128 @@ include __DIR__ . '/includes/header.php';
             <i class="fas fa-cog"></i> <?= t('settings') ?>
         </a>
     </div>
+    
+    <!-- RACES TAB -->
+    <?php if ($currentTab === 'races'): ?>
+        <div class="card mb-2" id="add-race-form">
+            <div class="card-header collapsible-header" onclick="toggleForm('race-form-body')" id="race-form-header">
+                <h3><i class="fas fa-plus-circle text-accent"></i> <?= $lang === 'da' ? 'Tilføj Løb' : 'Add Race' ?></h3>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div id="race-form-body" class="collapsible-form">
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="grid grid-2 mb-2">
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label"><?= t('name') ?></label>
+                                <input type="text" name="race_name" class="form-input" required placeholder="Monaco Grand Prix">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label"><?= t('location') ?></label>
+                                <input type="text" name="race_location" class="form-input" required placeholder="Monte Carlo">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label"><?= t('race_date') ?></label>
+                                <input type="date" name="race_date" class="form-input" required>
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label"><?= t('race_time') ?> (CET)</label>
+                                <input type="time" name="race_time" class="form-input" required>
+                            </div>
+                        </div>
+                        <div class="grid grid-3 mb-2">
+                            <?php foreach (['quali_p1', 'quali_p2', 'quali_p3'] as $i => $key): ?>
+                                <div class="form-group" style="margin:0;">
+                                    <label class="form-label">Quali P<?= $i + 1 ?></label>
+                                    <select name="<?= $key ?>" class="form-select">
+                                        <option value=""><?= t('select_driver') ?></option>
+                                        <?php foreach ($drivers as $d): ?>
+                                            <option value="<?= $d['id'] ?>"><?= escape($d['name']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="submit" name="add_race" class="btn btn-primary"><i class="fas fa-plus"></i> <?= t('add') ?></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <?php foreach ($races as $race): ?>
+            <div class="card mb-1 <?= isset($_GET['edit']) && $_GET['edit'] === $race['id'] ? 'edit-form-active' : '' ?>" id="race-<?= $race['id'] ?>">
+                <div class="card-body">
+                    <div class="flex items-center justify-between mb-1">
+                        <div>
+                            <strong><?= escape($race['name']) ?></strong>
+                            <br><small class="text-muted"><?= escape($race['location']) ?> - <?= $race['race_date'] ?> <?= substr($race['race_time'], 0, 5) ?> CET</small>
+                        </div>
+                        <div class="flex gap-1">
+                            <a href="?tab=races&edit=<?= $race['id'] ?>#race-<?= $race['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+                            <a href="?tab=races&delete_race=<?= $race['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($race['name']) ?>"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </div>
+                    <?php if ($race['quali_p1']): ?>
+                        <small class="text-muted"><?= t('qualifying') ?>: <?= $driversById[$race['quali_p1']]['name'] ?? '?' ?>, <?= $driversById[$race['quali_p2']]['name'] ?? '?' ?>, <?= $driversById[$race['quali_p3']]['name'] ?? '?' ?></small>
+                    <?php endif; ?>
+                    <?php if ($race['result_p1']): ?>
+                        <br><small class="text-accent"><?= t('results') ?>: <?= $driversById[$race['result_p1']]['name'] ?? '?' ?>, <?= $driversById[$race['result_p2']]['name'] ?? '?' ?>, <?= $driversById[$race['result_p3']]['name'] ?? '?' ?></small>
+                    <?php endif; ?>
+                </div>
+                <?php if (isset($_GET['edit']) && $_GET['edit'] === $race['id']): ?>
+                    <div class="card-body" style="border-top: 1px solid var(--border-color); background: var(--bg-hover);">
+                        <form method="POST">
+                            <input type="hidden" name="race_id" value="<?= $race['id'] ?>">
+                            <div class="grid grid-2 mb-2">
+                                <div class="form-group" style="margin:0;">
+                                    <label class="form-label"><?= t('name') ?></label>
+                                    <input type="text" name="race_name" class="form-input" value="<?= escape($race['name']) ?>" required>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label class="form-label"><?= t('location') ?></label>
+                                    <input type="text" name="race_location" class="form-input" value="<?= escape($race['location']) ?>" required>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label class="form-label"><?= t('race_date') ?></label>
+                                    <input type="date" name="race_date" class="form-input" value="<?= $race['race_date'] ?>" required>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label class="form-label"><?= t('race_time') ?> (CET)</label>
+                                    <input type="time" name="race_time" class="form-input" value="<?= $race['race_time'] ?>" required>
+                                </div>
+                            </div>
+                            <label class="form-label"><?= t('qualifying') ?></label>
+                            <div class="grid grid-3 mb-2">
+                                <?php foreach (['quali_p1', 'quali_p2', 'quali_p3'] as $i => $key): ?>
+                                    <select name="<?= $key ?>" class="form-select">
+                                        <option value="">P<?= $i + 1 ?></option>
+                                        <?php foreach ($drivers as $d): ?>
+                                            <option value="<?= $d['id'] ?>" <?= $race[$key] === $d['id'] ? 'selected' : '' ?>><?= escape($d['name']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php endforeach; ?>
+                            </div>
+                            <label class="form-label"><?= t('results') ?></label>
+                            <div class="grid grid-3 mb-2">
+                                <?php foreach (['result_p1', 'result_p2', 'result_p3'] as $i => $key): ?>
+                                    <select name="<?= $key ?>" class="form-select">
+                                        <option value="">P<?= $i + 1 ?></option>
+                                        <?php foreach ($drivers as $d): ?>
+                                            <option value="<?= $d['id'] ?>" <?= $race[$key] === $d['id'] ? 'selected' : '' ?>><?= escape($d['name']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php endforeach; ?>
+                            </div>
+                            <div class="flex gap-1">
+                                <button type="submit" name="update_race" class="btn btn-primary"><?= t('save') ?></button>
+                                <a href="?tab=races" class="btn btn-secondary"><?= t('cancel') ?></a>
+                            </div>
+                        </form>
+                    </div>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
     
     <!-- DRIVERS TAB -->
     <?php if ($currentTab === 'drivers'): ?>
