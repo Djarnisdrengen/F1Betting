@@ -40,7 +40,13 @@ define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
 // Session indstillinger
 session_start();
 
-// Timezone
+// ============================================
+// TIMEZONE INDSTILLING
+// ============================================
+// VIGTIGT: Alle løbstider i databasen er i CET (Central European Time)
+// Sørg for at denne timezone passer til din server og brugere.
+// For Danmark/Europa bruges 'Europe/Copenhagen' som automatisk 
+// håndterer skift mellem CET (vinter) og CEST (sommer).
 date_default_timezone_set('Europe/Copenhagen');
 
 // Database forbindelse
