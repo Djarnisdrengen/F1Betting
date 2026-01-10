@@ -799,10 +799,14 @@ body.light input[type="time"]::-webkit-calendar-picker-indicator {
     object-fit: contain;
 }
 
-/* Theme-specific logo visibility */
+/* Theme-specific logo visibility - hide by default */
+.logo-dark,
+.logo-light {
+    display: none;
+}
+
+/* Show correct logo for each theme */
 body.dark .logo-dark { display: block; }
-body.dark .logo-light { display: none; }
-body.light .logo-dark { display: none; }
 body.light .logo-light { display: block; }
 
 /* Betting Modal */
