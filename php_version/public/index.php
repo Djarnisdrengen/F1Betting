@@ -362,21 +362,30 @@ function closeBetModal() {
 // Handle form submission via AJAX
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('bet-modal-form');
-    if (!form) return;
+    if (!form) {
+        console.error('Bet form not found');
+        return;
+    }
     
     form.addEventListener('submit', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         
         const formData = new FormData(this);
         const errorEl = document.getElementById('bet-modal-error');
         const submitBtn = document.getElementById('bet-submit-btn');
         
-        if (!errorEl || !submitBtn) return;
+        if (!errorEl || !submitBtn) {
+            console.error('Form elements not found');
+            return;
+        }
         
         // Validate
         const p1 = formData.get('p1');
         const p2 = formData.get('p2');
         const p3 = formData.get('p3');
+        
+        console.log('Submitting bet:', { p1, p2, p3, action: formData.get('action'), race_id: formData.get('race_id'), bet_id: formData.get('bet_id') });
         
         if (!p1 || !p2 || !p3) {
             errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Vælg alle 3 positioner' : 'Select all 3 positions' ?>';
@@ -393,28 +402,36 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
         const originalBtnText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        errorEl.style.display = 'none';
         
         fetch('api/bet.php', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             if (data.success) {
                 window.location.reload();
             } else {
-                errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + data.error;
+                errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + (data.error || 'Unknown error');
                 errorEl.style.display = 'block';
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = formData.get('action') === 'update' ? '<i class="fas fa-save"></i> <?= t('save') ?>' : '<?= t('place_bet') ?>';
+                submitBtn.innerHTML = originalBtnText;
             }
         })
         .catch(error => {
+            console.error('Fetch error:', error);
             errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Der opstod en fejl' : 'An error occurred' ?>';
             errorEl.style.display = 'block';
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalBtnText;
         });
+        
+        return false;
     });
 });
 
