@@ -393,31 +393,36 @@ include __DIR__ . '/includes/header.php';
     
     <!-- DRIVERS TAB -->
     <?php if ($currentTab === 'drivers'): ?>
-        <div class="card mb-2">
-            <div class="card-header"><h3><?= $lang === 'da' ? 'Tilføj Kører' : 'Add Driver' ?></h3></div>
-            <div class="card-body">
-                <form method="POST" class="grid grid-3" style="align-items: end;">
-                    <div class="form-group" style="margin:0;">
-                        <label class="form-label"><?= t('name') ?></label>
-                        <input type="text" name="driver_name" class="form-input" required>
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                        <label class="form-label"><?= t('team') ?></label>
-                        <input type="text" name="driver_team" class="form-input" required>
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                        <label class="form-label"><?= t('number') ?></label>
-                        <input type="number" name="driver_number" class="form-input" required>
-                    </div>
-                    <button type="submit" name="add_driver" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> <?= t('add') ?>
-                    </button>
-                </form>
+        <div class="card mb-2" id="add-driver-form">
+            <div class="card-header collapsible-header" onclick="toggleForm('driver-form-body')">
+                <h3><i class="fas fa-plus-circle text-accent"></i> <?= $lang === 'da' ? 'Tilføj Kører' : 'Add Driver' ?></h3>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div id="driver-form-body" class="collapsible-form">
+                <div class="card-body">
+                    <form method="POST" class="grid grid-3" style="align-items: end;">
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label"><?= t('name') ?></label>
+                            <input type="text" name="driver_name" class="form-input" required>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label"><?= t('team') ?></label>
+                            <input type="text" name="driver_team" class="form-input" required>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label"><?= t('number') ?></label>
+                            <input type="number" name="driver_number" class="form-input" required>
+                        </div>
+                        <button type="submit" name="add_driver" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> <?= t('add') ?>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
         
         <?php foreach ($drivers as $driver): ?>
-            <div class="card mb-1">
+            <div class="card mb-1 <?= isset($_GET['edit']) && $_GET['edit'] === $driver['id'] ? 'edit-form-active' : '' ?>" id="driver-<?= $driver['id'] ?>">
                 <div class="card-body flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="text-accent" style="font-weight: bold; font-size: 1.25rem;">#<?= $driver['number'] ?></span>
@@ -427,12 +432,12 @@ include __DIR__ . '/includes/header.php';
                         </div>
                     </div>
                     <div class="flex gap-1">
-                        <a href="?tab=drivers&edit=<?= $driver['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+                        <a href="?tab=drivers&edit=<?= $driver['id'] ?>#driver-<?= $driver['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
                         <a href="?tab=drivers&delete_driver=<?= $driver['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($driver['name']) ?>"><i class="fas fa-trash"></i></a>
                     </div>
                 </div>
                 <?php if (isset($_GET['edit']) && $_GET['edit'] === $driver['id']): ?>
-                    <div class="card-body" style="border-top: 1px solid var(--border-color);">
+                    <div class="card-body" style="border-top: 1px solid var(--border-color); background: var(--bg-hover);">
                         <form method="POST" class="grid grid-3" style="align-items: end;">
                             <input type="hidden" name="driver_id" value="<?= $driver['id'] ?>">
                             <div class="form-group" style="margin:0;">
@@ -444,7 +449,10 @@ include __DIR__ . '/includes/header.php';
                             <div class="form-group" style="margin:0;">
                                 <input type="number" name="driver_number" class="form-input" value="<?= $driver['number'] ?>" required>
                             </div>
-                            <button type="submit" name="update_driver" class="btn btn-primary btn-sm"><?= t('save') ?></button>
+                            <div class="flex gap-1">
+                                <button type="submit" name="update_driver" class="btn btn-primary btn-sm"><?= t('save') ?></button>
+                                <a href="?tab=drivers" class="btn btn-secondary btn-sm"><?= t('cancel') ?></a>
+                            </div>
                         </form>
                     </div>
                 <?php endif; ?>
