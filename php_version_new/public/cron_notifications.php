@@ -10,7 +10,7 @@
  * - Betting window closes soon (2 hours before race)
  */
 
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/smtp.php';
 
 $db = getDB();

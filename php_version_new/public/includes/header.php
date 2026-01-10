@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../../config.php';
 
 // Handle toggle requests BEFORE any output
 $theme = getTheme();
