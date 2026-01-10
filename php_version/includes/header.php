@@ -50,7 +50,8 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
         <div class="container">
             <div class="header-content">
                 <a href="index.php" class="logo">
-                    <img src="assets/logo.svg" alt="Logo" class="logo-img" style="width: 40px; height: 40px;">
+                    <img src="assets/logo.svg" alt="<?= escape($settings['app_title']) ?>" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="logo-icon" style="display: none;"><i class="fas fa-flag-checkered"></i></div>
                     <span class="logo-text"><?= escape($settings['app_title']) ?></span>
                     <span class="logo-year"><?= escape($settings['app_year']) ?></span>
                 </a>
