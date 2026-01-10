@@ -29,6 +29,17 @@
         }
     }
     
+    // Toggle leaderboard on mobile
+    function toggleLeaderboard() {
+        const header = document.querySelector('.leaderboard-collapse-header');
+        const content = document.getElementById('leaderboard-content');
+        
+        if (header && content) {
+            header.classList.toggle('expanded');
+            content.classList.toggle('expanded');
+        }
+    }
+    
     // Close mobile menu on resize
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768) {
