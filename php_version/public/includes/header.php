@@ -55,29 +55,60 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     <span class="logo-year"><?= escape($settings['app_year']) ?></span>
                 </a>
                 
-                <nav class="nav">
+                <!-- Mobile menu button -->
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <nav class="nav" id="main-nav">
                     <a href="index.php" class="nav-link <?= $currentPage === 'index' ? 'active' : '' ?>">
-                        <i class="fas fa-home"></i> <?= t('home') ?>
+                        <i class="fas fa-home"></i> <span><?= t('home') ?></span>
                     </a>
                     <a href="races.php" class="nav-link <?= $currentPage === 'races' ? 'active' : '' ?>">
-                        <i class="fas fa-flag"></i> <?= t('races') ?>
+                        <i class="fas fa-flag"></i> <span><?= t('races') ?></span>
                     </a>
                     <a href="leaderboard.php" class="nav-link <?= $currentPage === 'leaderboard' ? 'active' : '' ?>">
-                        <i class="fas fa-trophy"></i> <?= t('leaderboard') ?>
+                        <i class="fas fa-trophy"></i> <span><?= t('leaderboard') ?></span>
                     </a>
                     <?php if ($currentUser): ?>
                     <a href="rules.php" class="nav-link <?= $currentPage === 'rules' ? 'active' : '' ?>">
-                        <i class="fas fa-book"></i> <?= $lang === 'da' ? 'Regler' : 'Rules' ?>
+                        <i class="fas fa-book"></i> <span><?= $lang === 'da' ? 'Regler' : 'Rules' ?></span>
                     </a>
                     <?php endif; ?>
                     <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
                     <a href="admin.php" class="nav-link <?= $currentPage === 'admin' ? 'active' : '' ?>">
-                        <i class="fas fa-cog"></i> <?= t('admin') ?>
+                        <i class="fas fa-cog"></i> <span><?= t('admin') ?></span>
                     </a>
                     <?php endif; ?>
+                    
+                    <!-- Mobile-only items -->
+                    <div class="mobile-nav-extras">
+                        <?php if ($currentUser): ?>
+                            <a href="profile.php" class="nav-link <?= $currentPage === 'profile' ? 'active' : '' ?>">
+                                <i class="fas fa-user"></i> <span><?= t('profile') ?></span>
+                            </a>
+                            <a href="logout.php" class="nav-link">
+                                <i class="fas fa-sign-out-alt"></i> <span><?= t('logout') ?></span>
+                            </a>
+                        <?php else: ?>
+                            <a href="login.php" class="nav-link">
+                                <i class="fas fa-sign-in-alt"></i> <span><?= t('login') ?></span>
+                            </a>
+                        <?php endif; ?>
+                        <div class="mobile-controls">
+                            <a href="?toggle_theme=1" class="btn btn-ghost btn-icon">
+                                <i class="fas fa-<?= $theme === 'dark' ? 'sun' : 'moon' ?>"></i>
+                                <span><?= $lang === 'da' ? 'Skift tema' : 'Toggle theme' ?></span>
+                            </a>
+                            <a href="?toggle_lang=1" class="btn btn-ghost btn-icon">
+                                <i class="fas fa-globe"></i>
+                                <span><?= $lang === 'da' ? 'English' : 'Dansk' ?></span>
+                            </a>
+                        </div>
+                    </div>
                 </nav>
                 
-                <div class="controls">
+                <div class="controls desktop-only">
                     <!-- Theme Toggle -->
                     <a href="?toggle_theme=1" class="btn btn-ghost btn-icon" title="<?= $lang === 'da' ? 'Skift tema' : 'Toggle theme' ?>">
                         <i class="fas fa-<?= $theme === 'dark' ? 'sun' : 'moon' ?>"></i>
@@ -93,7 +124,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                             <div class="user-avatar" style="width:32px;height:32px;font-size:0.875rem;">
                                 <?= strtoupper(substr($currentUser['display_name'] ?: $currentUser['email'], 0, 1)) ?>
                             </div>
-                            <span><?= escape($currentUser['display_name'] ?: $currentUser['email']) ?></span>
+                            <span class="user-name"><?= escape($currentUser['display_name'] ?: $currentUser['email']) ?></span>
                             <?php if ($currentUser['stars'] > 0): ?>
                                 <span class="star">★<?= $currentUser['stars'] ?></span>
                             <?php endif; ?>
