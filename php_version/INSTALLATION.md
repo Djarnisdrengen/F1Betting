@@ -187,7 +187,7 @@ For at sende automatiske email-påmindelser når betting-vinduer åbner/lukker:
 1. Log ind på Simply.com kontrolpanel
 2. Gå til **Cron Jobs** / **Planlagte opgaver**
 3. Tilføj nyt cron job:
-   - **Kommando**: `php /var/www/dit-domæne.dk/public_html/f1/cron_notifications.php`
+   - **Kommando**: `php cron_notifications.php`/var/www/dit-domæne.dk/public_html/f1/
    - **Timing**: Hver time (0 * * * *)
 4. Gem
 
