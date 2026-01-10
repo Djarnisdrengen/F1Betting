@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <button type="button" class="bet-modal-close" onclick="closeBetModal()">&times;</button>
         </div>
-        <form id="bet-modal-form" method="POST" action="api/bet.php">
+        <form id="bet-modal-form" method="POST">
             <input type="hidden" name="race_id" id="bet-race-id">
             <input type="hidden" name="bet_id" id="bet-bet-id">
             <input type="hidden" name="action" id="bet-action" value="create">
