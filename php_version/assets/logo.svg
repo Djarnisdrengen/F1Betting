@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="58" fill="#e10600"/>
+  
+  <!-- Stylized F1 racing stripes -->
+  <path d="M20 85 L50 25 L58 25 L35 75 L75 75 L75 85 Z" fill="white"/>
+  <path d="M65 25 L65 85 L75 85 L75 35 L95 35 L95 25 Z" fill="white"/>
+  
+  <!-- Speed lines accent -->
+  <line x1="15" y1="60" x2="30" y2="60" stroke="white" stroke-width="2" opacity="0.6"/>
+  <line x1="15" y1="55" x2="25" y2="55" stroke="white" stroke-width="1.5" opacity="0.4"/>
+  <line x1="15" y1="65" x2="25" y2="65" stroke="white" stroke-width="1.5" opacity="0.4"/>
+</svg>
