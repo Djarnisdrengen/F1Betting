@@ -101,7 +101,7 @@ include __DIR__ . '/includes/header.php';
                     <h2 style="margin: 0;"><?= escape($race['name']) ?></h2>
                     <p class="text-muted" style="margin: 0;">
                         <i class="fas fa-map-marker-alt"></i> <?= escape($race['location']) ?> · 
-                        <i class="fas fa-clock"></i> <?= date('d M Y', strtotime($race['race_date'])) ?> - <?= substr($race['race_time'], 0, 5) ?>
+                        <i class="fas fa-clock"></i> <?= date('d M Y', strtotime($race['race_date'])) ?> - <?= substr($race['race_time'], 0, 5) ?> CET
                     </p>
                 </div>
             </div>
