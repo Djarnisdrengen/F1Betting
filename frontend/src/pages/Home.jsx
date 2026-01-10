@@ -302,15 +302,14 @@ export default function Home() {
                 <p className="p-6 text-center" style={{ color: 'var(--text-muted)' }}>{t("noBets")}</p>
               ) : (
                 <div className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
-                  {leaderboard.slice(0, 10).map((entry, index) => (
+                  {leaderboard.slice(0, 3).map((entry, index) => (
                     <div 
                       key={entry.user_id} 
-                      className={`leaderboard-row p-4 flex items-center justify-between ${index < 3 ? 'top-3' : ''}`}
+                      className="leaderboard-row p-4 flex items-center justify-between top-3"
                       data-testid={`leaderboard-entry-${index}`}
                     >
                       <div className="flex items-center gap-3">
-                        <span className={`position-badge ${index < 3 ? `position-${index + 1}` : ''}`} 
-                              style={index >= 3 ? { background: 'var(--bg-secondary)' } : {}}>
+                        <span className={`position-badge position-${index + 1}`}>
                           {index + 1}
                         </span>
                         <div>
