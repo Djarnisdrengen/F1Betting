@@ -463,7 +463,7 @@ include __DIR__ . '/includes/header.php';
     <!-- RACES TAB -->
     <?php if ($currentTab === 'races'): ?>
         <div class="card mb-2" id="add-race-form">
-            <div class="card-header collapsible-header" onclick="toggleForm('race-form-body')">
+            <div class="card-header collapsible-header" onclick="toggleForm('race-form-body')" id="race-form-header">
                 <h3><i class="fas fa-plus-circle text-accent"></i> <?= $lang === 'da' ? 'Tilføj Løb' : 'Add Race' ?></h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
@@ -484,7 +484,7 @@ include __DIR__ . '/includes/header.php';
                                 <input type="date" name="race_date" class="form-input" required>
                             </div>
                             <div class="form-group" style="margin:0;">
-                                <label class="form-label"><?= t('race_time') ?></label>
+                                <label class="form-label"><?= t('race_time') ?> (CET)</label>
                                 <input type="time" name="race_time" class="form-input" required>
                             </div>
                         </div>
