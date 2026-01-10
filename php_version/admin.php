@@ -910,6 +910,42 @@ include __DIR__ . '/includes/header.php';
                             <textarea name="hero_text_da" class="form-input" rows="3"><?= escape($settings['hero_text_da']) ?></textarea>
                         </div>
                     </div>
+                    
+                    <h4 class="mb-1 mt-2"><i class="fas fa-star text-accent"></i> <?= $lang === 'da' ? 'Point System' : 'Points System' ?></h4>
+                    <p class="text-muted mb-2" style="font-size: 0.875rem;">
+                        <?= $lang === 'da' ? 'Konfigurer hvor mange point der gives for korrekte forudsigelser.' : 'Configure how many points are awarded for correct predictions.' ?>
+                    </p>
+                    <div class="grid grid-4 mb-2">
+                        <div class="form-group">
+                            <label class="form-label flex items-center gap-1">
+                                <span class="position-badge position-1">P1</span> <?= $lang === 'da' ? 'Point' : 'Points' ?>
+                            </label>
+                            <input type="number" name="points_p1" class="form-input" value="<?= intval($settings['points_p1'] ?? 25) ?>" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label flex items-center gap-1">
+                                <span class="position-badge position-2">P2</span> <?= $lang === 'da' ? 'Point' : 'Points' ?>
+                            </label>
+                            <input type="number" name="points_p2" class="form-input" value="<?= intval($settings['points_p2'] ?? 18) ?>" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label flex items-center gap-1">
+                                <span class="position-badge position-3">P3</span> <?= $lang === 'da' ? 'Point' : 'Points' ?>
+                            </label>
+                            <input type="number" name="points_p3" class="form-input" value="<?= intval($settings['points_p3'] ?? 15) ?>" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><?= $lang === 'da' ? 'Forkert position' : 'Wrong position' ?></label>
+                            <input type="number" name="points_wrong_pos" class="form-input" value="<?= intval($settings['points_wrong_pos'] ?? 5) ?>" min="0" max="100">
+                        </div>
+                    </div>
+                    <p class="text-muted mb-2" style="font-size: 0.75rem;">
+                        <i class="fas fa-info-circle"></i> 
+                        <?= $lang === 'da' 
+                            ? '"Forkert position" point gives når en kører er i top 3, men på forkert position.'
+                            : '"Wrong position" points are awarded when a driver is in top 3 but in wrong position.' ?>
+                    </p>
+                    
                     <button type="submit" name="update_settings" class="btn btn-primary">
                         <i class="fas fa-save"></i> <?= t('save') ?>
                     </button>
