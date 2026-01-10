@@ -52,12 +52,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
+    // Ensure collapsible forms start collapsed (not expanded)
+    document.querySelectorAll('.collapsible-form').forEach(form => {
+        form.classList.remove('expanded');
+        const header = form.previousElementSibling;
+        if (header) header.classList.remove('expanded');
+    });
+    
     // Scroll to edit form if present (from URL hash)
     if (window.location.hash) {
         const target = document.querySelector(window.location.hash);
         if (target) {
             setTimeout(() => {
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         }
     }
@@ -69,7 +76,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const editForm = document.querySelector('.edit-form-active');
         if (editForm) {
             setTimeout(() => {
-                editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Scroll to show the item name at top of viewport
+                const rect = editForm.getBoundingClientRect();
+                const scrollTop = window.pageYOffset + rect.top - 120;
+                window.scrollTo({ top: scrollTop, behavior: 'smooth' });
             }, 100);
         }
     }
