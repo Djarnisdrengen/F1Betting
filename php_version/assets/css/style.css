@@ -745,9 +745,9 @@ body.light input[type="time"]::-webkit-calendar-picker-indicator {
     50% { box-shadow: 0 0 0 8px rgba(225, 6, 0, 0); }
 }
 
-/* Scroll margin for anchors */
+/* Scroll margin for anchors - increased for sticky header */
 [id^="race-"], [id^="driver-"], [id^="edit-"] {
-    scroll-margin-top: 150px;
+    scroll-margin-top: 180px;
 }
 
 /* Tab count badge */
@@ -762,5 +762,31 @@ body.light input[type="time"]::-webkit-calendar-picker-indicator {
     font-size: 0.7rem;
     color: var(--text-muted);
     margin-left: 4px;
+}
+
+/* Countdown timer */
+.countdown-timer {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.countdown-timer .countdown-value {
+    font-weight: 600;
+    color: var(--f1-red);
+}
+
+.countdown-timer.betting-open .countdown-value {
+    color: #10b981;
+}
+
+/* Logo image fix */
+.logo-img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
 }
 
