@@ -52,11 +52,18 @@ Create a web application with authentication where users can bet on top 3 driver
 - ✅ Complete installation guide for Simply.com
 - ✅ **Custom logo & favicon** - Based on user-provided image (Jan 2026)
 - ✅ **Cron notifications** - Email when betting window opens
-- ✅ **Admin bet deletion** - With email notification to user
+- ✅ **Admin bet deletion** - With email notification to user (only when betting open)
 - ✅ **Auto-scroll to upcoming race** on homepage
 - ✅ **Collapsible admin forms** - Cleaner admin UX
 - ✅ **Tab counts** in admin panel
 - ✅ **Timezone configured** - CET/Copenhagen with documentation
+- ✅ **Countdown timer** - Live countdown til betting åbner/lukker (Jan 10, 2026)
+- ✅ **CET på alle løbstider** - Synlig på race cards, bet forms, admin
+- ✅ **Admin tab persistence** - Bevarer tab ved tema/sprog skift
+- ✅ **Races som default tab** - Admin panel åbner på Races
+- ✅ **Annuller knap på bet form** - Bedre UX
+- ✅ **Point genberegning** - Ved bet sletning trækkes point fra bruger
+- ✅ **Bet sletning restriktion** - Kun muligt når betting vindue er åbent
 
 ## Prioritized Backlog
 
