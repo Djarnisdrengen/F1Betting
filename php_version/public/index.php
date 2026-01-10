@@ -222,46 +222,19 @@ include __DIR__ . '/includes/header.php';
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
-    
-    <!-- Leaderboard Sidebar -->
-    <div>
-        <h2 class="mb-2"><i class="fas fa-trophy text-accent"></i> <?= t('leaderboard') ?></h2>
-        <div class="card">
-            <?php if (empty($leaderboard)): ?>
-                <div class="card-body text-center text-muted"><?= t('no_bets') ?></div>
-            <?php else: ?>
-                <?php foreach ($leaderboard as $i => $entry): ?>
-                    <div class="flex items-center justify-between" style="padding: 1rem; border-bottom: 1px solid var(--border-color); <?= $i < 3 ? 'background: linear-gradient(90deg, rgba(225, 6, 0, 0.1), transparent);' : '' ?>">
-                        <div class="flex items-center gap-2">
-                            <span class="position-badge <?= $i < 3 ? 'position-' . ($i + 1) : '' ?>" <?= $i >= 3 ? 'style="background: var(--bg-secondary);"' : '' ?>><?= $i + 1 ?></span>
-                            <div>
-                                <strong><?= escape($entry['display_name'] ?: $entry['email']) ?></strong>
-                                <br><small class="text-muted"><?= $entry['bets_count'] ?> bets</small>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-accent" style="font-weight: bold;"><?= $entry['points'] ?> pts</span>
-                            <?php if ($entry['stars'] > 0): ?>
-                                <br><span class="star">★<?= $entry['stars'] ?></span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-        <a href="leaderboard.php" class="btn btn-secondary mt-2" style="width: 100%;"><?= t('leaderboard') ?></a>
-    </div>
 </div>
 
 <?php if ($firstUpcomingRaceId): ?>
 <script>
-// Scroll to first upcoming race on page load
+// Scroll to first upcoming race on page load (only on desktop)
 document.addEventListener('DOMContentLoaded', function() {
-    const raceEl = document.getElementById('race-<?= $firstUpcomingRaceId ?>');
-    if (raceEl) {
-        setTimeout(() => {
-            raceEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
+    if (window.innerWidth > 768) {
+        const raceEl = document.getElementById('race-<?= $firstUpcomingRaceId ?>');
+        if (raceEl) {
+            setTimeout(() => {
+                raceEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
     }
 });
 </script>
