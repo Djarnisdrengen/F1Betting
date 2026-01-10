@@ -318,9 +318,13 @@ if (isset($_POST['update_settings'])) {
     $heroTitleDa = trim($_POST['hero_title_da'] ?? '');
     $heroTextEn = trim($_POST['hero_text_en'] ?? '');
     $heroTextDa = trim($_POST['hero_text_da'] ?? '');
+    $pointsP1 = intval($_POST['points_p1'] ?? 25);
+    $pointsP2 = intval($_POST['points_p2'] ?? 18);
+    $pointsP3 = intval($_POST['points_p3'] ?? 15);
+    $pointsWrongPos = intval($_POST['points_wrong_pos'] ?? 5);
     
-    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ? WHERE id = 1");
-    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa]);
+    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ? WHERE id = 1");
+    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos]);
     $message = $lang === 'da' ? 'Indstillinger gemt!' : 'Settings saved!';
 }
 
@@ -328,6 +332,13 @@ if (isset($_POST['update_settings'])) {
 function calculateRacePoints($raceId, $p1, $p2, $p3) {
     global $db;
     $results = [$p1, $p2, $p3];
+    
+    // Hent point indstillinger
+    $settings = getSettings();
+    $pointsP1 = $settings['points_p1'] ?? 25;
+    $pointsP2 = $settings['points_p2'] ?? 18;
+    $pointsP3 = $settings['points_p3'] ?? 15;
+    $pointsWrongPos = $settings['points_wrong_pos'] ?? 5;
     
     $stmt = $db->prepare("SELECT * FROM bets WHERE race_id = ?");
     $stmt->execute([$raceId]);
@@ -341,15 +352,15 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
         $predictions = [$bet['p1'], $bet['p2'], $bet['p3']];
         
         // Exact position points
-        if ($bet['p1'] === $p1) $points += 25;
-        if ($bet['p2'] === $p2) $points += 18;
-        if ($bet['p3'] === $p3) $points += 15;
+        if ($bet['p1'] === $p1) $points += $pointsP1;
+        if ($bet['p2'] === $p2) $points += $pointsP2;
+        if ($bet['p3'] === $p3) $points += $pointsP3;
         
         // Bonus for drivers in top 3 but wrong position
         foreach ($predictions as $i => $pred) {
             $resultIndex = array_search($pred, $results);
             if ($resultIndex !== false && $resultIndex !== $i) {
-                $points += 5;
+                $points += $pointsWrongPos;
             }
         }
         
