@@ -160,6 +160,9 @@ include __DIR__ . '/includes/header.php';
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     <?= t('place_bet') ?>
                 </button>
+                <a href="races.php" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;">
+                    <?= t('cancel') ?>
+                </a>
             </form>
         </div>
     </div>
