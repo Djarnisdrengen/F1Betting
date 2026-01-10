@@ -307,30 +307,44 @@ function openBetModal(raceId, raceName, location, date, time, isEdit, betId, p1,
     const raceInfo = document.getElementById('bet-modal-race-info');
     const submitBtn = document.getElementById('bet-submit-btn');
     const actionInput = document.getElementById('bet-action');
+    const errorEl = document.getElementById('bet-modal-error');
     
-    document.getElementById('bet-race-id').value = raceId;
-    document.getElementById('bet-bet-id').value = betId || '';
-    document.getElementById('bet-modal-error').style.display = 'none';
+    // Check if all elements exist
+    if (!modal || !title || !raceInfo || !submitBtn || !actionInput) {
+        console.error('Modal elements not found');
+        return;
+    }
+    
+    const raceIdInput = document.getElementById('bet-race-id');
+    const betIdInput = document.getElementById('bet-bet-id');
+    
+    if (raceIdInput) raceIdInput.value = raceId;
+    if (betIdInput) betIdInput.value = betId || '';
+    if (errorEl) errorEl.style.display = 'none';
     
     const dateObj = new Date(date + 'T' + time);
     const formattedDate = dateObj.toLocaleDateString('<?= $lang ?>', { day: 'numeric', month: 'short', year: 'numeric' });
     
     raceInfo.innerHTML = '<i class="fas fa-flag-checkered"></i> ' + raceName + ' · ' + location + '<br><i class="fas fa-clock"></i> ' + formattedDate + ' - ' + time.substring(0,5) + ' CET';
     
+    const p1Select = document.getElementById('bet-p1');
+    const p2Select = document.getElementById('bet-p2');
+    const p3Select = document.getElementById('bet-p3');
+    
     if (isEdit) {
         title.textContent = '<?= $lang === 'da' ? 'Rediger Bet' : 'Edit Bet' ?>';
         submitBtn.innerHTML = '<i class="fas fa-save"></i> <?= t('save') ?>';
         actionInput.value = 'update';
-        document.getElementById('bet-p1').value = p1 || '';
-        document.getElementById('bet-p2').value = p2 || '';
-        document.getElementById('bet-p3').value = p3 || '';
+        if (p1Select) p1Select.value = p1 || '';
+        if (p2Select) p2Select.value = p2 || '';
+        if (p3Select) p3Select.value = p3 || '';
     } else {
         title.textContent = '<?= t('place_bet') ?>';
         submitBtn.innerHTML = '<?= t('place_bet') ?>';
         actionInput.value = 'create';
-        document.getElementById('bet-p1').value = '';
-        document.getElementById('bet-p2').value = '';
-        document.getElementById('bet-p3').value = '';
+        if (p1Select) p1Select.value = '';
+        if (p2Select) p2Select.value = '';
+        if (p3Select) p3Select.value = '';
     }
     
     modal.classList.add('active');
@@ -339,57 +353,68 @@ function openBetModal(raceId, raceName, location, date, time, isEdit, betId, p1,
 
 function closeBetModal() {
     const modal = document.getElementById('bet-modal-overlay');
-    modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+    }
     document.body.style.overflow = '';
 }
 
 // Handle form submission via AJAX
-document.getElementById('bet-modal-form').addEventListener('submit', function(e) {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bet-modal-form');
+    if (!form) return;
     
-    const formData = new FormData(this);
-    const errorEl = document.getElementById('bet-modal-error');
-    const submitBtn = document.getElementById('bet-submit-btn');
-    
-    // Validate
-    const p1 = formData.get('p1');
-    const p2 = formData.get('p2');
-    const p3 = formData.get('p3');
-    
-    if (!p1 || !p2 || !p3) {
-        errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Vælg alle 3 positioner' : 'Select all 3 positions' ?>';
-        errorEl.style.display = 'block';
-        return;
-    }
-    
-    if (p1 === p2 || p1 === p3 || p2 === p3) {
-        errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Kan ikke vælge samme kører flere gange' : 'Cannot select same driver multiple times' ?>';
-        errorEl.style.display = 'block';
-        return;
-    }
-    
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    
-    fetch('api/bet.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            window.location.reload();
-        } else {
-            errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + data.error;
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const errorEl = document.getElementById('bet-modal-error');
+        const submitBtn = document.getElementById('bet-submit-btn');
+        
+        if (!errorEl || !submitBtn) return;
+        
+        // Validate
+        const p1 = formData.get('p1');
+        const p2 = formData.get('p2');
+        const p3 = formData.get('p3');
+        
+        if (!p1 || !p2 || !p3) {
+            errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Vælg alle 3 positioner' : 'Select all 3 positions' ?>';
+            errorEl.style.display = 'block';
+            return;
+        }
+        
+        if (p1 === p2 || p1 === p3 || p2 === p3) {
+            errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Kan ikke vælge samme kører flere gange' : 'Cannot select same driver multiple times' ?>';
+            errorEl.style.display = 'block';
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        fetch('api/bet.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + data.error;
+                errorEl.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = formData.get('action') === 'update' ? '<i class="fas fa-save"></i> <?= t('save') ?>' : '<?= t('place_bet') ?>';
+            }
+        })
+        .catch(error => {
+            errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Der opstod en fejl' : 'An error occurred' ?>';
             errorEl.style.display = 'block';
             submitBtn.disabled = false;
-            submitBtn.innerHTML = formData.get('action') === 'update' ? '<i class="fas fa-save"></i> <?= t('save') ?>' : '<?= t('place_bet') ?>';
-        }
-    })
-    .catch(error => {
-        errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Der opstod en fejl' : 'An error occurred' ?>';
-        errorEl.style.display = 'block';
-        submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        });
     });
 });
 
