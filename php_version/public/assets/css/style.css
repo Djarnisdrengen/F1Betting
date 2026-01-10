@@ -423,6 +423,11 @@ body.light {
     justify-content: space-between;
 }
 
+/* Collapsible leaderboard header for mobile */
+.leaderboard-collapse-header {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .grid-2, .grid-3, .grid-4 {
         grid-template-columns: 1fr;
@@ -445,6 +450,52 @@ body.light {
     /* Hide rows after top 3 on mobile */
     .homepage-grid .desktop-only-row {
         display: none;
+    }
+    
+    /* Collapsible leaderboard on mobile */
+    .leaderboard-collapse-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        padding: 1rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 0;
+    }
+    
+    .leaderboard-collapse-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+    
+    .leaderboard-collapse-header .toggle-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .leaderboard-collapse-header.expanded .toggle-icon {
+        transform: rotate(180deg);
+    }
+    
+    .leaderboard-section .desktop-header {
+        display: none;
+    }
+    
+    .leaderboard-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .leaderboard-content.expanded {
+        max-height: 500px;
+    }
+    
+    .leaderboard-content .card {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        margin-top: -1px;
     }
 }
 
