@@ -372,19 +372,19 @@ include __DIR__ . '/includes/header.php';
 <div class="tabs-container">
     <div class="tabs">
         <a href="?tab=drivers" class="tab <?= $currentTab === 'drivers' ? 'active' : '' ?>">
-            <i class="fas fa-car"></i> <?= t('drivers') ?>
+            <i class="fas fa-car"></i> <?= t('drivers') ?> <span class="tab-count">(<?= count($drivers) ?>)</span>
         </a>
         <a href="?tab=races" class="tab <?= $currentTab === 'races' ? 'active' : '' ?>">
-            <i class="fas fa-flag"></i> <?= t('races') ?>
+            <i class="fas fa-flag"></i> <?= t('races') ?> <span class="tab-count">(<?= count($races) ?>)</span>
         </a>
         <a href="?tab=users" class="tab <?= $currentTab === 'users' ? 'active' : '' ?>">
-            <i class="fas fa-users"></i> <?= t('users') ?>
+            <i class="fas fa-users"></i> <?= t('users') ?> <span class="tab-count">(<?= count($users) ?>)</span>
         </a>
         <a href="?tab=invites" class="tab <?= $currentTab === 'invites' ? 'active' : '' ?>">
-            <i class="fas fa-envelope"></i> <?= $lang === 'da' ? 'Invitationer' : 'Invites' ?>
+            <i class="fas fa-envelope"></i> <?= $lang === 'da' ? 'Invitationer' : 'Invites' ?> <span class="tab-count">(<?= count($invites) ?>)</span>
         </a>
         <a href="?tab=bets" class="tab <?= $currentTab === 'bets' ? 'active' : '' ?>">
-            <i class="fas fa-trophy"></i> <?= t('bets') ?>
+            <i class="fas fa-trophy"></i> <?= t('bets') ?> <span class="tab-count">(<?= count($bets) ?>)</span>
         </a>
         <a href="?tab=settings" class="tab <?= $currentTab === 'settings' ? 'active' : '' ?>">
             <i class="fas fa-cog"></i> <?= t('settings') ?>
@@ -394,7 +394,7 @@ include __DIR__ . '/includes/header.php';
     <!-- DRIVERS TAB -->
     <?php if ($currentTab === 'drivers'): ?>
         <div class="card mb-2" id="add-driver-form">
-            <div class="card-header collapsible-header" onclick="toggleForm('driver-form-body')">
+            <div class="card-header collapsible-header" onclick="toggleForm('driver-form-body')" id="driver-form-header">
                 <h3><i class="fas fa-plus-circle text-accent"></i> <?= $lang === 'da' ? 'Tilføj Kører' : 'Add Driver' ?></h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
