@@ -30,6 +30,9 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= escape($settings['app_title']) ?> <?= escape($settings['app_year']) ?></title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="apple-touch-icon" href="assets/favicon.png">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -38,9 +41,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
         <div class="container">
             <div class="header-content">
                 <a href="index.php" class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-flag-checkered"></i>
-                    </div>
+                    <img src="assets/logo.svg" alt="Logo" class="logo-img" style="width: 40px; height: 40px;">
                     <span class="logo-text"><?= escape($settings['app_title']) ?></span>
                     <span class="logo-year"><?= escape($settings['app_year']) ?></span>
                 </a>
