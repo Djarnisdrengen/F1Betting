@@ -1,5 +1,8 @@
     </main>
     
+    <!-- Mobile nav overlay -->
+    <div class="nav-overlay" id="nav-overlay" onclick="toggleMobileMenu()"></div>
+    
     <footer class="footer">
         <div class="container">
             <p><?= escape($settings['app_title']) ?> <?= escape($settings['app_year']) ?> - <?= t('points_system') ?></p>
@@ -8,6 +11,37 @@
     
     <script src="assets/js/app.js"></script>
     <script>
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+        const nav = document.getElementById('main-nav');
+        const overlay = document.getElementById('nav-overlay');
+        const btn = document.querySelector('.mobile-menu-btn i');
+        
+        nav.classList.toggle('active');
+        overlay.classList.toggle('active');
+        
+        if (nav.classList.contains('active')) {
+            btn.className = 'fas fa-times';
+            document.body.style.overflow = 'hidden';
+        } else {
+            btn.className = 'fas fa-bars';
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Close mobile menu on resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            const nav = document.getElementById('main-nav');
+            const overlay = document.getElementById('nav-overlay');
+            if (nav && nav.classList.contains('active')) {
+                nav.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+    });
+    
     // Countdown timer functionality
     function updateCountdowns() {
         document.querySelectorAll('.countdown-timer').forEach(timer => {
