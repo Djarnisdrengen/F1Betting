@@ -279,6 +279,9 @@ function sendInviteEmail($email, $inviteLink, $inviterName, $lang = 'da') {
  * Get HTML email template
  */
 function getEmailTemplate($greeting, $intro, $buttonText, $buttonLink, $expiry, $ignore, $footer, $appName) {
+    $siteUrl = defined('SITE_URL') ? SITE_URL : '';
+    $logoUrl = $siteUrl . '/assets/logo_header_dark.png';
+    
     return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -293,7 +296,8 @@ function getEmailTemplate($greeting, $intro, $buttonText, $buttonLink, $expiry, 
                 <table role="presentation" style="max-width: 500px; margin: 0 auto; background: #242424; border-radius: 16px; overflow: hidden;">
                     <tr>
                         <td style="padding: 30px 40px; text-align: center; background: linear-gradient(135deg, #e10600 0%, #b30500 100%);">
-                            <h1 style="margin: 0; color: white; font-size: 24px; font-weight: 700;">🏎️ {$appName}</h1>
+                            <img src="{$logoUrl}" alt="{$appName}" style="height: 40px; width: auto; margin-bottom: 10px;">
+                            <h1 style="margin: 0; color: white; font-size: 24px; font-weight: 700;">{$appName}</h1>
                         </td>
                     </tr>
                     <tr>
