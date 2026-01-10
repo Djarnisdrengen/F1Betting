@@ -799,6 +799,12 @@ body.light input[type="time"]::-webkit-calendar-picker-indicator {
     object-fit: contain;
 }
 
+/* Theme-specific logo visibility */
+body.dark .logo-dark { display: block; }
+body.dark .logo-light { display: none; }
+body.light .logo-dark { display: none; }
+body.light .logo-light { display: block; }
+
 /* Betting Modal */
 .bet-modal-overlay {
     position: fixed;
