@@ -332,57 +332,6 @@ export default function Home() {
             })
           )}
         </div>
-
-        {/* Leaderboard Sidebar */}
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2 mb-4" style={{ fontFamily: 'Chivo, sans-serif' }}>
-            <Trophy className="w-6 h-6" style={{ color: 'var(--accent)' }} />
-            {t("leaderboard")}
-          </h2>
-
-          <Card className="race-card">
-            <CardContent className="p-0">
-              {leaderboard.length === 0 ? (
-                <p className="p-6 text-center" style={{ color: 'var(--text-muted)' }}>{t("noBets")}</p>
-              ) : (
-                <div className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
-                  {leaderboard.slice(0, 3).map((entry, index) => (
-                    <div 
-                      key={entry.user_id} 
-                      className="leaderboard-row p-4 flex items-center justify-between top-3"
-                      data-testid={`leaderboard-entry-${index}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`position-badge position-${index + 1}`}>
-                          {index + 1}
-                        </span>
-                        <div>
-                          <p className="font-medium">{entry.display_name || entry.email}</p>
-                          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                            {entry.bets_count} bets
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold" style={{ color: 'var(--accent)' }}>{entry.points} pts</p>
-                        {entry.stars > 0 && (
-                          <p className="text-yellow-500 flex items-center gap-1 justify-end">
-                            <Star className="w-3 h-3 star-icon" />
-                            <span className="text-sm">{entry.stars}</span>
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Link to="/leaderboard" className="block mt-4">
-            <Button variant="outline" className="w-full">{t("leaderboard")}</Button>
-          </Link>
-        </div>
       </div>
     </div>
   );
