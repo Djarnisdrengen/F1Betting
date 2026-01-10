@@ -18,7 +18,7 @@ include __DIR__ . '/includes/header.php';
 
 <div class="container">
     <div class="page-header">
-        <h1><i class="fas fa-book"></i> <?= $lang === 'da' ? 'Spilleregler' : 'Betting Rules' ?></h1>
+        <h1><i class="fas fa-book text-accent"></i> <?= $lang === 'da' ? 'Spilleregler' : 'Betting Rules' ?></h1>
     </div>
     
     <div class="rules-container">
