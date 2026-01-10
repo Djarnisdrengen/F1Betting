@@ -71,44 +71,44 @@ INSERT INTO drivers (id, name, team, number) VALUES
 
 -- =====================================================
 -- 2026 F1 LØB KALENDER (24 løb)
--- Tider er lokale race start tider (typisk 14:00-15:00)
+-- Tider er i CET (Central European Time)
 -- =====================================================
 
 -- Slet eksisterende løb
 DELETE FROM races;
 
 INSERT INTO races (id, name, location, race_date, race_time) VALUES
--- Runde 1-6
-(UUID(), 'Australian Grand Prix', 'Melbourne', '2026-03-08', '15:00:00'),
-(UUID(), 'Chinese Grand Prix', 'Shanghai', '2026-03-15', '15:00:00'),
-(UUID(), 'Japanese Grand Prix', 'Suzuka', '2026-03-29', '14:00:00'),
-(UUID(), 'Bahrain Grand Prix', 'Sakhir', '2026-04-12', '18:00:00'),
-(UUID(), 'Saudi Arabian Grand Prix', 'Jeddah', '2026-04-19', '20:00:00'),
-(UUID(), 'Miami Grand Prix', 'Miami', '2026-05-03', '16:00:00'),
+-- Runde 1-6 (CET tider)
+(UUID(), 'Australian Grand Prix', 'Melbourne', '2026-03-08', '06:00'),
+(UUID(), 'Chinese Grand Prix', 'Shanghai', '2026-03-15', '08:00'),
+(UUID(), 'Japanese Grand Prix', 'Suzuka', '2026-03-29', '07:00'),
+(UUID(), 'Bahrain Grand Prix', 'Sakhir', '2026-04-12', '17:00'),
+(UUID(), 'Saudi Arabian Grand Prix', 'Jeddah', '2026-04-19', '19:00'),
+(UUID(), 'Miami Grand Prix', 'Miami', '2026-05-03', '22:00'),
 
--- Runde 7-12
-(UUID(), 'Canadian Grand Prix', 'Montreal', '2026-05-24', '14:00:00'),
-(UUID(), 'Monaco Grand Prix', 'Monaco', '2026-06-07', '15:00:00'),
-(UUID(), 'Barcelona-Catalunya Grand Prix', 'Barcelona', '2026-06-14', '15:00:00'),
-(UUID(), 'Austrian Grand Prix', 'Spielberg', '2026-06-28', '15:00:00'),
-(UUID(), 'British Grand Prix', 'Silverstone', '2026-07-05', '15:00:00'),
-(UUID(), 'Belgian Grand Prix', 'Spa-Francorchamps', '2026-07-19', '15:00:00'),
+-- Runde 7-12 (CET tider)
+(UUID(), 'Canadian Grand Prix', 'Montreal', '2026-05-24', '20:00'),
+(UUID(), 'Monaco Grand Prix', 'Monaco', '2026-06-07', '15:00'),
+(UUID(), 'Barcelona-Catalunya Grand Prix', 'Barcelona', '2026-06-14', '15:00'),
+(UUID(), 'Austrian Grand Prix', 'Spielberg', '2026-06-28', '15:00'),
+(UUID(), 'British Grand Prix', 'Silverstone', '2026-07-05', '16:00'),
+(UUID(), 'Belgian Grand Prix', 'Spa-Francorchamps', '2026-07-19', '15:00'),
 
--- Runde 13-18
-(UUID(), 'Hungarian Grand Prix', 'Budapest', '2026-07-26', '15:00:00'),
-(UUID(), 'Dutch Grand Prix', 'Zandvoort', '2026-08-23', '15:00:00'),
-(UUID(), 'Italian Grand Prix', 'Monza', '2026-09-06', '15:00:00'),
-(UUID(), 'Spanish Grand Prix', 'Madrid', '2026-09-13', '15:00:00'),
-(UUID(), 'Azerbaijan Grand Prix', 'Baku', '2026-09-26', '15:00:00'),
-(UUID(), 'Singapore Grand Prix', 'Marina Bay', '2026-10-11', '20:00:00'),
+-- Runde 13-18 (CET tider)
+(UUID(), 'Hungarian Grand Prix', 'Budapest', '2026-07-26', '15:00'),
+(UUID(), 'Dutch Grand Prix', 'Zandvoort', '2026-08-23', '15:00'),
+(UUID(), 'Italian Grand Prix', 'Monza', '2026-09-06', '15:00'),
+(UUID(), 'Spanish Grand Prix', 'Madrid', '2026-09-13', '15:00'),
+(UUID(), 'Azerbaijan Grand Prix', 'Baku', '2026-09-26', '14:00'),
+(UUID(), 'Singapore Grand Prix', 'Marina Bay', '2026-10-11', '14:00'),
 
--- Runde 19-24
-(UUID(), 'United States Grand Prix', 'Austin', '2026-10-25', '14:00:00'),
-(UUID(), 'Mexico City Grand Prix', 'Mexico City', '2026-11-01', '14:00:00'),
-(UUID(), 'Brazilian Grand Prix', 'São Paulo', '2026-11-08', '14:00:00'),
-(UUID(), 'Las Vegas Grand Prix', 'Las Vegas', '2026-11-21', '22:00:00'),
-(UUID(), 'Qatar Grand Prix', 'Lusail', '2026-11-29', '19:00:00'),
-(UUID(), 'Abu Dhabi Grand Prix', 'Abu Dhabi', '2026-12-06', '17:00:00');
+-- Runde 19-24 (CET tider)
+(UUID(), 'United States Grand Prix', 'Austin', '2026-10-25', '21:00'),
+(UUID(), 'Mexico City Grand Prix', 'Mexico City', '2026-11-01', '21:00'),
+(UUID(), 'Brazilian Grand Prix', 'São Paulo', '2026-11-08', '19:00'),
+(UUID(), 'Las Vegas Grand Prix', 'Las Vegas', '2026-11-21', '07:00'),
+(UUID(), 'Qatar Grand Prix', 'Lusail', '2026-11-29', '17:00'),
+(UUID(), 'Abu Dhabi Grand Prix', 'Abu Dhabi', '2026-12-06', '14:00');
 
 -- =====================================================
 -- VERIFICER DATA
