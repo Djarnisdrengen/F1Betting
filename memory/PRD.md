@@ -64,6 +64,12 @@ Create a web application with authentication where users can bet on top 3 driver
 - ✅ **Annuller knap på bet form** - Bedre UX
 - ✅ **Point genberegning** - Ved bet sletning trækkes point fra bruger
 - ✅ **Bet sletning restriktion** - Kun muligt når betting vindue er åbent
+- ✅ **Unified email templates** - Alle emails bruger samme professionelle HTML template (Jan 10, 2026)
+- ✅ **Mobile-responsive design** - Hamburger menu og media queries
+- ✅ **Rules page** - Betting regler forklaring
+- ✅ **Configurable points** - Admin kan justere P1/P2/P3 point i settings
+- ✅ **Theme-specific logos** - Separate logos til light/dark mode
+- ✅ **Security refactor** - config.php flyttet udenfor public webroot
 
 ## Prioritized Backlog
 
