@@ -60,9 +60,38 @@ include __DIR__ . '/includes/header.php';
     <p><?= escape($heroText) ?></p>
 </section>
 
-<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
+<div class="homepage-grid">
+    <!-- Leaderboard Sidebar (shows first on mobile) -->
+    <div class="leaderboard-section">
+        <h2 class="mb-2"><i class="fas fa-trophy text-accent"></i> <?= t('leaderboard') ?></h2>
+        <div class="card">
+            <?php if (empty($leaderboard)): ?>
+                <div class="card-body text-center text-muted"><?= t('no_bets') ?></div>
+            <?php else: ?>
+                <?php foreach ($leaderboard as $i => $entry): ?>
+                    <div class="leaderboard-entry <?= $i >= 3 ? 'desktop-only-row' : '' ?>" style="padding: 1rem; border-bottom: 1px solid var(--border-color); <?= $i < 3 ? 'background: linear-gradient(90deg, rgba(225, 6, 0, 0.1), transparent);' : '' ?>">
+                        <div class="flex items-center gap-2">
+                            <span class="position-badge <?= $i < 3 ? 'position-' . ($i + 1) : '' ?>" <?= $i >= 3 ? 'style="background: var(--bg-secondary);"' : '' ?>><?= $i + 1 ?></span>
+                            <div>
+                                <strong><?= escape($entry['display_name'] ?: $entry['email']) ?></strong>
+                                <br><small class="text-muted"><?= $entry['bets_count'] ?> bets</small>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-accent" style="font-weight: bold;"><?= $entry['points'] ?> pts</span>
+                            <?php if ($entry['stars'] > 0): ?>
+                                <br><span class="star">★<?= $entry['stars'] ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+        <a href="leaderboard.php" class="btn btn-secondary mt-2" style="width: 100%;"><?= t('leaderboard') ?></a>
+    </div>
+
     <!-- Upcoming Races -->
-    <div>
+    <div class="races-section">
         <h2 class="mb-2"><i class="fas fa-flag text-accent"></i> <?= t('upcoming_races') ?></h2>
         
         <?php if (empty($upcomingRaces)): ?>
