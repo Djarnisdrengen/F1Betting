@@ -58,11 +58,6 @@ include __DIR__ . '/includes/header.php';
 <section class="hero">
     <h1><?= escape($heroTitle) ?></h1>
     <p><?= escape($heroText) ?></p>
-    <?php if (!$currentUser): ?>
-        <div class="flex items-center justify-center gap-2">
-            <a href="login.php" class="btn btn-primary"><?= t('login') ?></a>
-        </div>
-    <?php endif; ?>
 </section>
 
 <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
