@@ -766,7 +766,7 @@ include __DIR__ . '/includes/header.php';
                                     <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-1">
+                            <div class="flex items-center gap-2">
                                 <div class="bet-predictions">
                                     <?php foreach (['p1', 'p2', 'p3'] as $i => $key): 
                                         $driver = $driversById[$bet[$key]] ?? null;
@@ -777,6 +777,9 @@ include __DIR__ . '/includes/header.php';
                                 <?php if ($bet['points'] > 0): ?>
                                     <span class="badge" style="background: var(--f1-red); color: white;"><?= $bet['points'] ?> pts</span>
                                 <?php endif; ?>
+                                <a href="?tab=bets&delete_bet=<?= $bet['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($bet['display_name'] ?: $bet['email']) ?>" title="<?= $lang === 'da' ? 'Slet og notificer bruger' : 'Delete and notify user' ?>">
+                                    <i class="fas fa-trash"></i>
+                                </a>
                             </div>
                         </div>
                     <?php endforeach; ?>
