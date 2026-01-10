@@ -243,4 +243,154 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <?php endif; ?>
 
+<?php if ($currentUser): ?>
+<!-- Betting Modal -->
+<div id="bet-modal-overlay" class="bet-modal-overlay" onclick="if(event.target === this) closeBetModal()">
+    <div class="bet-modal">
+        <div class="bet-modal-header">
+            <div>
+                <h3 id="bet-modal-title"><?= t('place_bet') ?></h3>
+                <p class="text-muted" style="margin: 0.25rem 0 0 0;" id="bet-modal-race-info"></p>
+            </div>
+            <button type="button" class="bet-modal-close" onclick="closeBetModal()">&times;</button>
+        </div>
+        <form id="bet-modal-form" method="POST" action="api/bet.php">
+            <input type="hidden" name="race_id" id="bet-race-id">
+            <input type="hidden" name="bet_id" id="bet-bet-id">
+            <input type="hidden" name="action" id="bet-action" value="create">
+            <div class="bet-modal-body">
+                <div id="bet-modal-error" class="alert alert-error" style="display: none;"></div>
+                
+                <?php 
+                $positions = [
+                    ['key' => 'p1', 'label' => 'P1 (25 pts)', 'position' => 1],
+                    ['key' => 'p2', 'label' => 'P2 (18 pts)', 'position' => 2],
+                    ['key' => 'p3', 'label' => 'P3 (15 pts)', 'position' => 3],
+                ];
+                foreach ($positions as $pos): 
+                ?>
+                    <div class="form-group">
+                        <label class="form-label flex items-center gap-1">
+                            <span class="position-badge position-<?= $pos['position'] ?>">P<?= $pos['position'] ?></span>
+                            <?= $pos['label'] ?>
+                        </label>
+                        <select name="<?= $pos['key'] ?>" id="bet-<?= $pos['key'] ?>" class="form-select" required>
+                            <option value=""><?= t('select_driver') ?></option>
+                            <?php foreach ($drivers as $driver): ?>
+                                <option value="<?= $driver['id'] ?>">
+                                    #<?= $driver['number'] ?> <?= escape($driver['name']) ?> - <?= escape($driver['team']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="bet-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeBetModal()"><?= t('cancel') ?></button>
+                <button type="submit" class="btn btn-primary" id="bet-submit-btn"><?= t('place_bet') ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openBetModal(raceId, raceName, location, date, time, isEdit, betId, p1, p2, p3) {
+    const modal = document.getElementById('bet-modal-overlay');
+    const title = document.getElementById('bet-modal-title');
+    const raceInfo = document.getElementById('bet-modal-race-info');
+    const submitBtn = document.getElementById('bet-submit-btn');
+    const actionInput = document.getElementById('bet-action');
+    
+    document.getElementById('bet-race-id').value = raceId;
+    document.getElementById('bet-bet-id').value = betId || '';
+    document.getElementById('bet-modal-error').style.display = 'none';
+    
+    const dateObj = new Date(date + 'T' + time);
+    const formattedDate = dateObj.toLocaleDateString('<?= $lang ?>', { day: 'numeric', month: 'short', year: 'numeric' });
+    
+    raceInfo.innerHTML = '<i class="fas fa-flag-checkered"></i> ' + raceName + ' · ' + location + '<br><i class="fas fa-clock"></i> ' + formattedDate + ' - ' + time.substring(0,5) + ' CET';
+    
+    if (isEdit) {
+        title.textContent = '<?= $lang === 'da' ? 'Rediger Bet' : 'Edit Bet' ?>';
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> <?= t('save') ?>';
+        actionInput.value = 'update';
+        document.getElementById('bet-p1').value = p1 || '';
+        document.getElementById('bet-p2').value = p2 || '';
+        document.getElementById('bet-p3').value = p3 || '';
+    } else {
+        title.textContent = '<?= t('place_bet') ?>';
+        submitBtn.innerHTML = '<?= t('place_bet') ?>';
+        actionInput.value = 'create';
+        document.getElementById('bet-p1').value = '';
+        document.getElementById('bet-p2').value = '';
+        document.getElementById('bet-p3').value = '';
+    }
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBetModal() {
+    const modal = document.getElementById('bet-modal-overlay');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Handle form submission via AJAX
+document.getElementById('bet-modal-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const errorEl = document.getElementById('bet-modal-error');
+    const submitBtn = document.getElementById('bet-submit-btn');
+    
+    // Validate
+    const p1 = formData.get('p1');
+    const p2 = formData.get('p2');
+    const p3 = formData.get('p3');
+    
+    if (!p1 || !p2 || !p3) {
+        errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Vælg alle 3 positioner' : 'Select all 3 positions' ?>';
+        errorEl.style.display = 'block';
+        return;
+    }
+    
+    if (p1 === p2 || p1 === p3 || p2 === p3) {
+        errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Kan ikke vælge samme kører flere gange' : 'Cannot select same driver multiple times' ?>';
+        errorEl.style.display = 'block';
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    fetch('api/bet.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + data.error;
+            errorEl.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = formData.get('action') === 'update' ? '<i class="fas fa-save"></i> <?= t('save') ?>' : '<?= t('place_bet') ?>';
+        }
+    })
+    .catch(error => {
+        errorEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <?= $lang === 'da' ? 'Der opstod en fejl' : 'An error occurred' ?>';
+        errorEl.style.display = 'block';
+        submitBtn.disabled = false;
+    });
+});
+
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBetModal();
+});
+</script>
+<?php endif; ?>
+
 <?php include __DIR__ . '/includes/footer.php'; ?>
