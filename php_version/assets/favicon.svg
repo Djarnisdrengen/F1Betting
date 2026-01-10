@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Background -->
+  <rect width="32" height="32" rx="6" fill="#e10600"/>
+  
+  <!-- Stylized F1 mark -->
+  <path d="M6 24 L14 6 L17 6 L11 21 L22 21 L22 24 Z" fill="white"/>
+  <path d="M19 6 L19 24 L22 24 L22 10 L26 10 L26 6 Z" fill="white"/>
+</svg>
