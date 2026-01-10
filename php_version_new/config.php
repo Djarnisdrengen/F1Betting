@@ -1,0 +1,297 @@
+<?php
+// ============================================
+// KONFIGURATION - REDIGER DISSE VÆRDIER
+// ============================================
+
+// Database indstillinger (fra Simply.com kontrolpanel)
+define('DB_HOST', 'mysql.simply.com');  // Eller din specifikke MySQL host
+define('DB_NAME', 'dit_database_navn');  // Dit database navn
+define('DB_USER', 'dit_brugernavn');     // Dit MySQL brugernavn
+define('DB_PASS', 'dit_password');       // Dit MySQL password
+
+// Sikkerhed
+define('JWT_SECRET', 'skift-denne-til-en-lang-tilfaeldig-streng-1234567890');
+define('PASSWORD_PEPPER', 'skift-ogsaa-denne-streng');
+
+// Site URL (uden trailing slash)
+// Eksempler:
+//   Rodmappe: 'https://dit-domæne.dk'
+//   Undermappe: 'https://dit-domæne.dk/f1'
+define('SITE_URL', 'https://dit-domæne.dk/f1');
+
+// ============================================
+// SMTP EMAIL KONFIGURATION (Simply.com)
+// ============================================
+// Find indstillinger i Simply.com kontrolpanel under "E-mail"
+// 
+// Typiske Simply.com SMTP indstillinger:
+//   Host: asmtp.unoeuro.com eller mail.dit-domæne.dk
+//   Port: 587 (TLS) eller 465 (SSL)
+//   Brugernavn: din fulde email adresse
+//   Password: din email adgangskode
+
+define('SMTP_HOST', 'asmtp.unoeuro.com');        // Simply.com SMTP server
+define('SMTP_PORT', 587);                         // 587 for TLS, 465 for SSL
+define('SMTP_USER', 'noreply@dit-domæne.dk');    // Din email adresse
+define('SMTP_PASS', 'din_email_adgangskode');    // Din email adgangskode
+define('SMTP_FROM_EMAIL', 'noreply@dit-domæne.dk'); // Afsender email
+define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
+
+// Session indstillinger
+session_start();
+
+// ============================================
+// TIMEZONE INDSTILLING
+// ============================================
+// VIGTIGT: Alle løbstider i databasen er i CET (Central European Time)
+// Sørg for at denne timezone passer til din server og brugere.
+// For Danmark/Europa bruges 'Europe/Copenhagen' som automatisk 
+// håndterer skift mellem CET (vinter) og CEST (sommer).
+date_default_timezone_set('Europe/Copenhagen');
+
+// Database forbindelse
+function getDB() {
+    static $pdo = null;
+    if ($pdo === null) {
+        try {
+            $pdo = new PDO(
+                "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+                DB_USER,
+                DB_PASS,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false
+                ]
+            );
+        } catch (PDOException $e) {
+            die("Database forbindelse fejlede: " . $e->getMessage());
+        }
+    }
+    return $pdo;
+}
+
+// Generer UUID
+function generateUUID() {
+    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
+}
+
+// Password funktioner
+function hashPassword($password) {
+    return password_hash($password . PASSWORD_PEPPER, PASSWORD_BCRYPT);
+}
+
+function verifyPassword($password, $hash) {
+    return password_verify($password . PASSWORD_PEPPER, $hash);
+}
+
+// Bruger funktioner
+function getCurrentUser() {
+    if (!isset($_SESSION['user_id'])) {
+        return null;
+    }
+    $db = getDB();
+    $stmt = $db->prepare("SELECT id, email, display_name, role, points, stars, created_at FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    return $stmt->fetch();
+}
+
+function requireLogin() {
+    if (!getCurrentUser()) {
+        header("Location: login.php");
+        exit;
+    }
+}
+
+function requireAdmin() {
+    $user = getCurrentUser();
+    if (!$user || $user['role'] !== 'admin') {
+        header("Location: index.php");
+        exit;
+    }
+}
+
+// Sprog funktioner
+function getLang() {
+    return $_SESSION['lang'] ?? 'da';
+}
+
+function setLang($lang) {
+    $_SESSION['lang'] = in_array($lang, ['da', 'en']) ? $lang : 'da';
+}
+
+function t($key) {
+    $translations = [
+        'da' => [
+            'home' => 'Hjem',
+            'races' => 'Løb',
+            'leaderboard' => 'Rangliste',
+            'admin' => 'Admin',
+            'profile' => 'Profil',
+            'login' => 'Log ind',
+            'register' => 'Registrer',
+            'logout' => 'Log ud',
+            'place_bet' => 'Placer Bet',
+            'upcoming_races' => 'Kommende Løb',
+            'your_bets' => 'Dine Bets',
+            'all_bets' => 'Alle Bets',
+            'points' => 'Point',
+            'stars' => 'Stjerner',
+            'rank' => 'Rang',
+            'user' => 'Bruger',
+            'placed_at' => 'Placeret',
+            'betting_open' => 'Betting Åben',
+            'betting_closed' => 'Betting Lukket',
+            'betting_not_open' => 'Betting Ikke Åben',
+            'race_completed' => 'Løb Afsluttet',
+            'submit' => 'Indsend',
+            'save' => 'Gem',
+            'delete' => 'Slet',
+            'edit' => 'Rediger',
+            'add' => 'Tilføj',
+            'cancel' => 'Annuller',
+            'drivers' => 'Kørere',
+            'users' => 'Brugere',
+            'bets' => 'Bets',
+            'settings' => 'Indstillinger',
+            'display_name' => 'Visningsnavn',
+            'email' => 'E-mail',
+            'password' => 'Adgangskode',
+            'team' => 'Hold',
+            'number' => 'Nummer',
+            'name' => 'Navn',
+            'location' => 'Sted',
+            'race_date' => 'Løbsdato',
+            'race_time' => 'Starttid',
+            'qualifying' => 'Kvalifikation',
+            'results' => 'Resultater',
+            'select_driver' => 'Vælg kører',
+            'betting_window' => 'Betting åbner 48t før løb',
+            'points_system' => 'Point: P1=25, P2=18, P3=15, +5 for top 3 forkert position',
+            'no_bets' => 'Ingen bets endnu',
+            'perfect_bet' => 'Perfekt!',
+            'already_bet' => 'Du har allerede et bet på dette løb',
+            'bet_placed' => 'Bet placeret!',
+            'error' => 'Der opstod en fejl',
+            'invalid_credentials' => 'Forkert email eller adgangskode',
+            'email_exists' => 'Email er allerede registreret',
+            'registration_success' => 'Registrering gennemført!',
+            'profile_updated' => 'Profil opdateret!',
+            'bet_updated' => 'Bet opdateret!',
+        ],
+        'en' => [
+            'home' => 'Home',
+            'races' => 'Races',
+            'leaderboard' => 'Leaderboard',
+            'admin' => 'Admin',
+            'profile' => 'Profile',
+            'login' => 'Login',
+            'register' => 'Register',
+            'logout' => 'Logout',
+            'place_bet' => 'Place Bet',
+            'upcoming_races' => 'Upcoming Races',
+            'your_bets' => 'Your Bets',
+            'all_bets' => 'All Bets',
+            'points' => 'Points',
+            'stars' => 'Stars',
+            'rank' => 'Rank',
+            'user' => 'User',
+            'placed_at' => 'Placed At',
+            'betting_open' => 'Betting Open',
+            'betting_closed' => 'Betting Closed',
+            'betting_not_open' => 'Betting Not Open',
+            'race_completed' => 'Race Completed',
+            'submit' => 'Submit',
+            'save' => 'Save',
+            'delete' => 'Delete',
+            'edit' => 'Edit',
+            'add' => 'Add',
+            'cancel' => 'Cancel',
+            'drivers' => 'Drivers',
+            'users' => 'Users',
+            'bets' => 'Bets',
+            'settings' => 'Settings',
+            'display_name' => 'Display Name',
+            'email' => 'Email',
+            'password' => 'Password',
+            'team' => 'Team',
+            'number' => 'Number',
+            'name' => 'Name',
+            'location' => 'Location',
+            'race_date' => 'Race Date',
+            'race_time' => 'Race Time',
+            'qualifying' => 'Qualifying',
+            'results' => 'Results',
+            'select_driver' => 'Select driver',
+            'betting_window' => 'Betting opens 48h before race',
+            'points_system' => 'Points: P1=25, P2=18, P3=15, +5 for top 3 wrong position',
+            'no_bets' => 'No bets yet',
+            'perfect_bet' => 'Perfect!',
+            'already_bet' => 'You already have a bet for this race',
+            'bet_placed' => 'Bet placed!',
+            'error' => 'An error occurred',
+            'invalid_credentials' => 'Invalid email or password',
+            'email_exists' => 'Email already registered',
+            'registration_success' => 'Registration successful!',
+            'profile_updated' => 'Profile updated!',
+            'bet_updated' => 'Bet updated!',
+        ]
+    ];
+    $lang = getLang();
+    return $translations[$lang][$key] ?? $key;
+}
+
+// Tema funktioner
+function getTheme() {
+    return $_SESSION['theme'] ?? 'dark';
+}
+
+function setTheme($theme) {
+    $_SESSION['theme'] = in_array($theme, ['dark', 'light']) ? $theme : 'dark';
+}
+
+// Hjælpefunktioner
+function getBettingStatus($race) {
+    $raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
+    $now = new DateTime();
+    $bettingOpens = clone $raceDateTime;
+    $bettingOpens->modify('-48 hours');
+    
+    if ($race['result_p1']) {
+        return ['status' => 'completed', 'label' => t('race_completed'), 'class' => 'status-completed'];
+    }
+    if ($now < $bettingOpens) {
+        return ['status' => 'pending', 'label' => t('betting_not_open'), 'class' => 'status-pending'];
+    }
+    if ($now >= $raceDateTime) {
+        return ['status' => 'closed', 'label' => t('betting_closed'), 'class' => 'status-closed'];
+    }
+    return ['status' => 'open', 'label' => t('betting_open'), 'class' => 'status-open'];
+}
+
+function getSettings() {
+    $db = getDB();
+    $stmt = $db->query("SELECT * FROM settings WHERE id = 1");
+    return $stmt->fetch() ?: [
+        'app_title' => 'F1 Betting',
+        'app_year' => '2025',
+        'hero_title_da' => 'Forudsig Podiet',
+        'hero_title_en' => 'Predict the Podium',
+        'hero_text_da' => '',
+        'hero_text_en' => '',
+        'points_p1' => 25,
+        'points_p2' => 18,
+        'points_p3' => 15,
+        'points_wrong_pos' => 5
+    ];
+}
+
+function escape($str) {
+    return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
+}
