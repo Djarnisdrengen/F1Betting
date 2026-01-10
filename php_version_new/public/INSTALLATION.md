@@ -3,44 +3,68 @@
 ## Oversigt
 Denne guide viser hvordan du installerer F1 Betting applikationen på Simply.com webhotel.
 
-## Filer der skal uploades
-Upload hele indholdet af `php_version` mappen til din webserver.
+## Ny Mappestruktur (Sikkerhed)
+Config-filen er nu placeret UDENFOR web-roden for bedre sikkerhed.
 
-**Eksempel på mappestruktur (i undermappe `/f1/`):**
+**Anbefalet mappestruktur:**
 ```
-public_html/
-└── f1/
-    ├── index.php          # Forside
-    ├── login.php          # Login side
-    ├── register.php       # Registrering (kun via invitation)
-    ├── logout.php         # Log ud
-    ├── profile.php        # Profil side
-    ├── races.php          # Alle løb
-    ├── leaderboard.php    # Rangliste
-    ├── bet.php            # Placer bet
-    ├── edit_bet.php       # Rediger bet
-    ├── admin.php          # Admin panel
-    ├── forgot_password.php # Glemt adgangskode
-    ├── reset_password.php  # Nulstil adgangskode
-    ├── config.php         # KONFIGURATION (REDIGER DENNE!)
-    ├── database.sql       # Database schema
-    ├── data_2026.sql      # 2026 kørere og løb
-    ├── setup_admin.php    # CLI script til første admin
-    ├── assets/
-    │   ├── css/style.css
-    │   ├── js/app.js
-    │   ├── logo.svg       # App logo
-    │   ├── favicon.ico    # Browser favicon
-    │   └── favicon.png
-    └── includes/
-        ├── header.php
-        ├── footer.php
-        └── smtp.php       # SMTP email funktioner
+/home/dit-brugernavn/
+├── config.php              # ← KONFIGURATION (udenfor web-rod!)
+└── public_html/
+    └── f1/                 # ← Web-rod (eller direkte i public_html)
+        ├── index.php
+        ├── login.php
+        ├── register.php
+        ├── logout.php
+        ├── profile.php
+        ├── races.php
+        ├── leaderboard.php
+        ├── bet.php
+        ├── edit_bet.php
+        ├── admin.php
+        ├── forgot_password.php
+        ├── reset_password.php
+        ├── cron_notifications.php
+        ├── database.sql
+        ├── data_2026.sql
+        ├── migration_points.sql
+        ├── setup_admin.php
+        ├── assets/
+        │   ├── css/style.css
+        │   ├── js/app.js
+        │   ├── logo_header_dark.png
+        │   ├── logo_header_light.png
+        │   ├── favicon.ico
+        │   └── favicon.png
+        ├── includes/
+        │   ├── header.php
+        │   ├── footer.php
+        │   └── smtp.php
+        └── api/
+            └── bet.php
 ```
+
+**Fordele ved denne struktur:**
+- `config.php` med database-adgangskoder er IKKE tilgængelig via web
+- Bedre sikkerhed mod hacking og credential-lækage
 
 ---
 
-## Trin 1: Opret MySQL Database
+## Trin 1: Upload Filer
+
+### Via FTP/SFTP:
+1. Upload `config.php` til `/home/dit-brugernavn/` (OVER public_html)
+2. Upload indholdet af `public/` mappen til `/home/dit-brugernavn/public_html/f1/`
+
+### Via Simply.com File Manager:
+1. Naviger til rodmappen (over public_html)
+2. Upload `config.php` her
+3. Gå ind i `public_html/f1/`
+4. Upload alle filer fra `public/` mappen
+
+---
+
+## Trin 2: Opret MySQL Database
 
 1. Log ind på Simply.com kontrolpanel
 2. Gå til **Databaser** → **MySQL**
@@ -53,225 +77,112 @@ public_html/
 
 ---
 
-## Trin 2: Importér Database Schema
+## Trin 3: Importér Database Schema
 
 1. Gå til **phpMyAdmin** i Simply.com kontrolpanel
 2. Vælg din nye database
 3. Klik på **Import** fanen
-4. Upload filen `database.sql`
-5. Klik **Udfør**
-
-### Import 2026 Data (valgfrit)
-For at tilføje alle 22 kørere og 24 løb fra 2026 sæsonen:
-1. Efter import af `database.sql`, klik **Import** igen
-2. Upload filen `data_2026.sql`
-3. Klik **Udfør**
+4. Vælg `database.sql` og klik **Udfør**
+5. Importér derefter `data_2026.sql` for 2026 sæsondata
 
 ---
 
-## Trin 3: Konfigurer config.php
+## Trin 4: Konfigurér config.php
 
-Åbn `config.php` og rediger disse værdier:
+Rediger `config.php` (som ligger OVER public_html) med dine oplysninger:
 
 ```php
-// Database indstillinger (fra Simply.com kontrolpanel)
-define('DB_HOST', 'mysql.simply.com');     // Din MySQL host
-define('DB_NAME', 'dit_database_navn');    // Dit database navn
-define('DB_USER', 'dit_brugernavn');       // Dit MySQL brugernavn
-define('DB_PASS', 'dit_password');         // Dit MySQL password
+// Database forbindelse
+define('DB_HOST', 'mysql.simply.com');  // Din MySQL host
+define('DB_NAME', 'din_database');       // Database navn
+define('DB_USER', 'dit_brugernavn');     // Database bruger
+define('DB_PASS', 'dit_password');       // Database password
 
-// Sikkerhed - SKIFT DISSE TIL TILFÆLDIGE STRENGE!
-define('JWT_SECRET', 'skift-denne-til-en-lang-tilfaeldig-streng-1234567890');
-define('PASSWORD_PEPPER', 'skift-ogsaa-denne-streng');
+// Site URL (VIGTIGT: Uden trailing slash)
+define('SITE_URL', 'https://dinside.dk/f1');
 
-// Site URL (uden trailing slash)
-define('SITE_URL', 'https://dit-domæne.dk/f1');
+// SMTP Email konfiguration
+define('SMTP_HOST', 'asmtp.simply.com');
+define('SMTP_PORT', 587);
+define('SMTP_USER', 'din@email.dk');
+define('SMTP_PASS', 'dit_email_password');
+define('SMTP_FROM_EMAIL', 'din@email.dk');
+define('SMTP_FROM_NAME', 'F1 Betting');
 ```
 
-### Generér sikre nøgler
-Brug denne side til at generere tilfældige strenge: https://randomkeygen.com/
-
 ---
 
-## Trin 4: Konfigurer SMTP Email (Simply.com)
+## Trin 5: Opret Admin Bruger
 
-SMTP bruges til at sende password reset og invitation emails.
-
-### 4.1 Find dine SMTP indstillinger
-
-1. Log ind på Simply.com kontrolpanel
-2. Gå til **E-mail** → **E-mail konti**
-3. Opret en email konto (f.eks. `noreply@dit-domæne.dk`) eller brug en eksisterende
-4. Noter indstillingerne:
-   - **SMTP Server**: `asmtp.unoeuro.com` (eller `mail.dit-domæne.dk`)
-   - **Port**: `587` (TLS) eller `465` (SSL)
-   - **Brugernavn**: Din fulde email adresse
-   - **Password**: Din email adgangskode
-
-### 4.2 Tilføj SMTP til config.php
-
-```php
-// SMTP Email Konfiguration (Simply.com)
-define('SMTP_HOST', 'asmtp.unoeuro.com');        // Simply.com SMTP server
-define('SMTP_PORT', 587);                         // 587 for TLS, 465 for SSL
-define('SMTP_USER', 'noreply@dit-domæne.dk');    // Din email adresse
-define('SMTP_PASS', 'din_email_adgangskode');    // Din email adgangskode
-define('SMTP_FROM_EMAIL', 'noreply@dit-domæne.dk'); // Afsender email
-define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
-```
-
-### 4.3 Test email
-Efter installation, gå til login siden og klik "Glemt adgangskode?" for at teste.
-
----
-
-## Trin 5: Upload Filer
-
-### Upload til undermappe (anbefalet)
-1. Opret mappen `f1` i `public_html` via FTP eller filhåndtering
-2. Upload alle filer til `public_html/f1/`
-3. Din side vil være på: `https://dit-domæne.dk/f1/`
-
-### Upload til rodmappe
-1. Upload alle filer direkte til `public_html/`
-2. Din side vil være på: `https://dit-domæne.dk/`
-
----
-
-## Trin 6: Opret Første Admin Bruger
-
-Da offentlig registrering er deaktiveret, skal du oprette første admin bruger manuelt.
-
-### Option 1: Via phpMyAdmin (nemmest)
-
-Kør denne SQL i phpMyAdmin (husk at ændre email og password):
-
+### Mulighed A: Via phpMyAdmin
+Kør denne SQL i phpMyAdmin (erstat værdier):
 ```sql
-INSERT INTO users (id, email, password, display_name, role, points, stars) VALUES (
-    UUID(),
-    'din@email.dk',
-    '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',  -- password: "password"
-    'Admin',
-    'admin',
-    0,
-    0
-);
+INSERT INTO users (id, name, display_name, email, password, role) VALUES 
+(UUID(), 'Admin', 'Admin', 'din@email.dk', 
+ '$2y$10$YourHashedPasswordHere', 'admin');
 ```
 
-**VIGTIGT:** Gå derefter til Profil og skift din adgangskode!
-
-### Option 2: Via setup script
-
-1. Upload `setup_admin.php` til serveren
-2. Kør via SSH/terminal: `php setup_admin.php`
-3. Følg instruktionerne
-4. **SLET `setup_admin.php` bagefter!**
+### Mulighed B: Via SSH/CLI
+Hvis du har SSH-adgang:
+```bash
+cd /home/dit-brugernavn/public_html/f1
+php setup_admin.php admin@example.com password123
+```
 
 ---
 
-## Trin 7: Test Installation
+## Trin 6: Test Installation
 
-1. Besøg dit domæne (f.eks. `https://dit-domæne.dk/f1/`)
-2. Log ind som admin
-3. Gå til **Admin** → **Invitationer** for at invitere nye brugere
-4. Test email ved at sende en invitation
-
----
-
-## Trin 8: Opsæt Email Notifikationer (Valgfrit)
-
-For at sende automatiske email-påmindelser når betting-vinduer åbner/lukker:
-
-### Opsæt Cron Job
-
-1. Log ind på Simply.com kontrolpanel
-2. Gå til **Cron Jobs** / **Planlagte opgaver**
-3. Tilføj nyt cron job:
-   - **Kommando**: `php cron_notifications.php`/var/www/dit-domæne.dk/public_html/f1/
-   - **Timing**: Hver time (0 * * * *)
-4. Gem
-
-### Hvad gør cron jobbet?
-- Tjekker for løb hvor betting lige er åbnet (sender "Betting åbent!" email)
-- Tjekker for løb hvor betting lukker om 2 timer (sender "Sidste chance!" email)
-- Springer brugere over der allerede har placeret bet
+1. Besøg `https://dinside.dk/f1/`
+2. Log ind med admin-kontoen
+3. Gå til Admin panel og verificer at alt virker
+4. Test "Glemt adgangskode" for at verificere email-afsendelse
 
 ---
 
-## Funktioner
+## Trin 7: Opsæt Cron Job (Valgfrit)
 
-### Bruger funktioner
-- ✅ Login (kun via invitation)
-- ✅ Glemt/nulstil adgangskode
-- ✅ Placer bets på kommende løb (P1, P2, P3)
-- ✅ Rediger bets før løbsstart
-- ✅ Se alle bets pr. løb
-- ✅ Rangliste med point og stjerner
-- ✅ Profil med visningsnavn
-- ✅ Lys/mørk tema
-- ✅ Dansk/engelsk sprog
+For automatiske email-notifikationer når betting åbner:
 
-### Admin funktioner
-- ✅ Inviter nye brugere via email
-- ✅ Administrer kørere (tilføj, rediger, slet)
-- ✅ Administrer løb (dato, tid, kvalifikation, resultater)
-- ✅ Administrer brugere (roller, slet)
-- ✅ Se alle bets
-- ✅ Indstillinger (app titel, år, velkomsttekst)
-
-### Betting regler
-- Betting åbner 48 timer før løbsstart
-- Betting lukker når løbet starter
-- Kan redigere bet indtil betting lukker
-- Kan ikke vælge samme kører flere gange
-- Kan ikke matche kvalifikationsresultatet præcist
-- Samme kombination kan kun bruges én gang
-
-### Point system
-- P1 korrekt: 25 point
-- P2 korrekt: 18 point
-- P3 korrekt: 15 point
-- Kører i top 3 men forkert position: +5 point
-- Perfekt bet (alle 3 korrekte): ⭐ stjerne
+1. Gå til Simply.com kontrolpanel → **Cron Jobs**
+2. Tilføj nyt cron job:
+   - **Kommando:** `php /home/dit-brugernavn/public_html/f1/cron_notifications.php`
+   - **Interval:** Hver time (`0 * * * *`)
 
 ---
 
 ## Fejlfinding
 
-### "Database forbindelse fejlede"
-- Tjek at DB_HOST, DB_NAME, DB_USER og DB_PASS er korrekte
-- Tjek at databasen er oprettet i Simply.com
+### "Headers already sent" fejl
+Sørg for at der ikke er mellemrum eller blanke linjer FØR `<?php` i config.php
 
 ### Email sendes ikke
-- Tjek at SMTP indstillingerne er korrekte
-- Tjek at email kontoen findes i Simply.com
-- Prøv port 465 i stedet for 587
-- Tjek at SMTP_USER er den fulde email adresse
-- Tjek spam/junk mappen
+1. Verificer SMTP-indstillinger i config.php
+2. Tjek at Simply.com tillader SMTP på port 587
+3. Kontakt Simply.com support for SMTP-serveradresse
 
-### Siden vises ikke korrekt
-- Tjek at alle filer er uploadet
-- Tjek at PHP version er 7.4 eller nyere
-- Tjek at SITE_URL matcher din faktiske URL
+### Database fejl
+1. Verificer database-oplysninger i config.php
+2. Sørg for at begge SQL-filer er importeret
 
-### Kan ikke logge ind
-- Tjek at `database.sql` er importeret korrekt
-- Opret admin bruger via phpMyAdmin
+### 500 Server Error
+1. Tjek PHP error logs i Simply.com kontrolpanel
+2. Verificer at alle filer er uploadet korrekt
+3. Kontroller fil-rettigheder (644 for filer, 755 for mapper)
 
-### Tema/sprog skifter ikke
-- Tjek at cookies er aktiveret i browseren
-- Tjek at der ikke er PHP fejl i loggen
+---
+
+## Opdatering af Eksisterende Installation
+
+Hvis du opdaterer fra en tidligere version:
+
+1. **Backup database** via phpMyAdmin
+2. Upload nye filer (overskriv eksisterende)
+3. Kør `migration_points.sql` i phpMyAdmin for point-konfiguration
+4. Ryd browser-cache
 
 ---
 
 ## Support
 
-Har du problemer? Tjek:
-1. PHP error logs i Simply.com kontrolpanel
-2. At alle filer er uploadet korrekt
-3. At database og SMTP oplysninger er korrekte
-4. At SITE_URL er sat korrekt i config.php
-
----
-
-Held og lykke med din F1 betting app! 🏎️
+Ved problemer, kontakt udvikleren eller tjek Simply.com's dokumentation.
