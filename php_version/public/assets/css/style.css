@@ -1308,6 +1308,11 @@ body.light .logo-light { display: block; }
         font-size: 0.875rem;
     }
     
+    /* Hide podium on mobile */
+    .podium-section {
+        display: none !important;
+    }
+    
     /* Leaderboard */
     .leaderboard-table th,
     .leaderboard-table td {
@@ -1320,11 +1325,6 @@ body.light .logo-light { display: block; }
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-    
-    /* Hide podium on mobile */
-    .podium-section {
-        display: none !important;
     }
     
     /* Admin tabs */
