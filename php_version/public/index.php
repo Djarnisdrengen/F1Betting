@@ -77,7 +77,7 @@ include __DIR__ . '/includes/header.php';
                 <?php if (empty($leaderboard)): ?>
                     <div class="card-body text-center text-muted"><?= t('no_bets') ?></div>
                 <?php else: ?>
-                    <?php foreach ($leaderboard as $i => $entry): ?>
+                    <?php foreach (array_slice($leaderboard, 0, 3) as $i => $entry): ?>
                         <div class="leaderboard-entry <?= $i >= 3 ? 'desktop-only-row' : '' ?>" style="padding: 1rem; border-bottom: 1px solid var(--border-color); <?= $i < 3 ? 'background: linear-gradient(90deg, rgba(225, 6, 0, 0.1), transparent);' : '' ?>">
                             <div class="flex items-center gap-2">
                                 <span class="position-badge <?= $i < 3 ? 'position-' . ($i + 1) : '' ?>" <?= $i >= 3 ? 'style="background: var(--bg-secondary);"' : '' ?>><?= $i + 1 ?></span>
