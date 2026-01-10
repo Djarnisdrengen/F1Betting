@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Rules from "./pages/Rules";
 import "./App.css";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
