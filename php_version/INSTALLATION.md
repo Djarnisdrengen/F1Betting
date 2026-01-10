@@ -178,6 +178,26 @@ INSERT INTO users (id, email, password, display_name, role, points, stars) VALUE
 
 ---
 
+## Trin 8: Opsæt Email Notifikationer (Valgfrit)
+
+For at sende automatiske email-påmindelser når betting-vinduer åbner/lukker:
+
+### Opsæt Cron Job
+
+1. Log ind på Simply.com kontrolpanel
+2. Gå til **Cron Jobs** / **Planlagte opgaver**
+3. Tilføj nyt cron job:
+   - **Kommando**: `php /var/www/dit-domæne.dk/public_html/f1/cron_notifications.php`
+   - **Timing**: Hver time (0 * * * *)
+4. Gem
+
+### Hvad gør cron jobbet?
+- Tjekker for løb hvor betting lige er åbnet (sender "Betting åbent!" email)
+- Tjekker for løb hvor betting lukker om 2 timer (sender "Sidste chance!" email)
+- Springer brugere over der allerede har placeret bet
+
+---
+
 ## Funktioner
 
 ### Bruger funktioner
