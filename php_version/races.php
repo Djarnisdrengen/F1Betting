@@ -2,6 +2,7 @@
 require_once __DIR__ . '/config.php';
 
 $db = getDB();
+$lang = getLang();
 
 // Hent data
 $races = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
@@ -59,7 +60,7 @@ include __DIR__ . '/includes/header.php';
                         <?= escape($race['name']) ?>
                         <?php if ($hasBet): ?>
                             <span class="badge" style="background: #059669; color: white; margin-left: 0.5rem;">
-                                <i class="fas fa-check"></i> <?= getLang() === 'da' ? 'Bet placeret' : 'Bet placed' ?>
+                                <i class="fas fa-check"></i> <?= $lang === 'da' ? 'Bet placeret' : 'Bet placed' ?>
                             </span>
                         <?php endif; ?>
                     </h3>
@@ -107,38 +108,14 @@ include __DIR__ . '/includes/header.php';
                 </div>
             <?php endif; ?>
             
-            <!-- User's own bet -->
-            <?php if ($userBet): ?>
-                <div class="<?= $userBet['is_perfect'] ? 'perfect-bet' : '' ?>" style="background: var(--bg-hover); padding: 0.75rem; border-radius: 8px; margin-top: 1rem; border: 1px solid var(--border-color);">
-                    <small class="text-muted flex items-center gap-1">
-                        <?= t('your_bets') ?>
-                        <?php if ($userBet['is_perfect']): ?>
-                            <span class="star">★</span>
-                        <?php endif; ?>
-                    </small>
-                    <div class="quali-row">
-                        <?php foreach (['p1', 'p2', 'p3'] as $i => $key): 
-                            $driver = $driversById[$userBet[$key]] ?? null;
-                            if ($driver):
-                        ?>
-                            <div class="quali-item">
-                                <span class="position-badge position-<?= $i + 1 ?>">P<?= $i + 1 ?></span>
-                                <?= escape($driver['name']) ?>
-                            </div>
-                        <?php endif; endforeach; ?>
-                    </div>
-                    <?php if ($userBet['points'] > 0): ?>
-                        <p class="text-accent mt-1" style="font-weight: bold;"><?= $userBet['points'] ?> <?= t('points') ?></p>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
-            
             <!-- Actions and Bets -->
             <div class="flex items-center justify-between mt-2">
                 <span class="text-muted"><i class="fas fa-users"></i> <?= count($raceBets) ?> bets</span>
                 <div class="flex gap-1">
                     <?php if ($status['status'] === 'open' && $currentUser && !$hasBet): ?>
                         <a href="bet.php?race=<?= $race['id'] ?>" class="btn btn-primary btn-sm"><?= t('place_bet') ?></a>
+                    <?php elseif ($status['status'] === 'open' && $currentUser && $userBet): ?>
+                        <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> <?= t('edit') ?></a>
                     <?php endif; ?>
                     <?php if (count($raceBets) > 0): ?>
                         <button class="btn btn-ghost btn-sm toggle-bets" data-target="race-bets-<?= $race['id'] ?>">
@@ -152,13 +129,16 @@ include __DIR__ . '/includes/header.php';
             <?php if (count($raceBets) > 0): ?>
                 <div id="race-bets-<?= $race['id'] ?>" class="bets-section hidden">
                     <h4 class="mb-1"><?= t('all_bets') ?> (<?= count($raceBets) ?>)</h4>
-                    <?php foreach ($raceBets as $bet): ?>
-                        <div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?>">
+                    <?php foreach ($raceBets as $bet): 
+                        $isMyBet = $currentUser && $bet['user_id'] === $currentUser['id'];
+                    ?>
+                        <div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?> <?= $isMyBet ? 'my-bet' : '' ?>">
                             <div class="bet-user">
                                 <div class="bet-avatar"><?= strtoupper(substr($bet['display_name'] ?: $bet['email'], 0, 1)) ?></div>
                                 <div>
                                     <strong class="flex items-center gap-1">
                                         <?= escape($bet['display_name'] ?: $bet['email']) ?>
+                                        <?php if ($isMyBet): ?><span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= $lang === 'da' ? 'DIG' : 'YOU' ?></span><?php endif; ?>
                                         <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
                                     </strong>
                                     <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>
