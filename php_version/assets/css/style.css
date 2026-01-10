@@ -657,3 +657,96 @@ body.light {
         gap: 0.75rem;
     }
 }
+
+/* Dark mode date/time inputs */
+body.dark input[type="date"],
+body.dark input[type="time"] {
+    color-scheme: dark;
+}
+
+body.dark input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    background: var(--f1-red);
+}
+
+/* Light mode picker indicator styling */
+body.light input[type="date"]::-webkit-calendar-picker-indicator,
+body.light input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    background: var(--f1-red);
+    filter: invert(1);
+}
+
+/* User's own bet highlight in all bets */
+.bet-item.my-bet {
+    background: linear-gradient(90deg, rgba(225, 6, 0, 0.15), var(--bg-secondary));
+    border-color: var(--f1-red);
+    border-width: 2px;
+}
+
+.bet-item.my-bet .bet-avatar {
+    box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.3);
+}
+
+/* Collapsible forms */
+.collapsible-form {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+}
+
+.collapsible-form.expanded {
+    max-height: 500px;
+}
+
+.collapsible-form .card-body {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.collapsible-form.expanded .card-body {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.collapsible-header {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.collapsible-header:hover {
+    background: var(--bg-hover);
+}
+
+.collapsible-header .toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.collapsible-header.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Edit form highlight */
+.edit-form-active {
+    border: 2px solid var(--f1-red);
+    animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(225, 6, 0, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(225, 6, 0, 0); }
+}
+
+/* Scroll margin for anchors */
+[id^="race-"], [id^="driver-"], [id^="edit-"] {
+    scroll-margin-top: 100px;
+}
+
