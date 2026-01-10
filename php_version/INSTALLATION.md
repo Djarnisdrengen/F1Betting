@@ -12,28 +12,30 @@ public_html/
 └── f1/
     ├── index.php          # Forside
     ├── login.php          # Login side
-    ├── register.php       # Registrering
+    ├── register.php       # Registrering (kun via invitation)
     ├── logout.php         # Log ud
     ├── profile.php        # Profil side
     ├── races.php          # Alle løb
     ├── leaderboard.php    # Rangliste
     ├── bet.php            # Placer bet
-    ├── edit_bet.php       # Rediger bet (NY!)
+    ├── edit_bet.php       # Rediger bet
     ├── admin.php          # Admin panel
     ├── forgot_password.php # Glemt adgangskode
     ├── reset_password.php  # Nulstil adgangskode
     ├── config.php         # KONFIGURATION (REDIGER DENNE!)
     ├── database.sql       # Database schema
-    ├── data_2026.sql      # 2026 kørere og løb (NY!)
+    ├── data_2026.sql      # 2026 kørere og løb
+    ├── setup_admin.php    # CLI script til første admin
     ├── assets/
-    │   ├── css/
-    │   │   └── style.css
-    │   └── js/
-    │       └── app.js
+    │   ├── css/style.css
+    │   ├── js/app.js
+    │   ├── logo.svg       # App logo
+    │   ├── favicon.ico    # Browser favicon
+    │   └── favicon.png
     └── includes/
         ├── header.php
         ├── footer.php
-        └── sendgrid.php   # SendGrid email integration (NY!)
+        └── smtp.php       # SMTP email funktioner
 ```
 
 ---
@@ -65,10 +67,6 @@ For at tilføje alle 22 kørere og 24 løb fra 2026 sæsonen:
 2. Upload filen `data_2026.sql`
 3. Klik **Udfør**
 
-Dette indsætter:
-- 22 F1 kørere (2026 sæson med alle 11 teams inkl. Cadillac)
-- 24 løb med datoer og starttider
-
 ---
 
 ## Trin 3: Konfigurer config.php
@@ -95,39 +93,34 @@ Brug denne side til at generere tilfældige strenge: https://randomkeygen.com/
 
 ---
 
-## Trin 4: Konfigurer SendGrid Email (VALGFRIT men ANBEFALET)
+## Trin 4: Konfigurer SMTP Email (Simply.com)
 
-SendGrid bruges til at sende password reset emails. Uden SendGrid falder systemet tilbage til PHP mail() som ofte ikke virker på webhostels.
+SMTP bruges til at sende password reset og invitation emails.
 
-### 4.1 Opret SendGrid konto
-1. Gå til https://sendgrid.com/ og klik **Start for Free**
-2. Opret en konto (100 gratis emails/dag)
-3. Verificer din email
+### 4.1 Find dine SMTP indstillinger
 
-### 4.2 Opret API nøgle
-1. Log ind på SendGrid
-2. Gå til **Settings** → **API Keys**
-3. Klik **Create API Key**
-4. Vælg et navn (f.eks. "F1 Betting")
-5. Vælg **Full Access** eller **Restricted Access** med "Mail Send" aktiveret
-6. Klik **Create & View**
-7. **KOPIER API NØGLEN NU** - den vises kun én gang!
+1. Log ind på Simply.com kontrolpanel
+2. Gå til **E-mail** → **E-mail konti**
+3. Opret en email konto (f.eks. `noreply@dit-domæne.dk`) eller brug en eksisterende
+4. Noter indstillingerne:
+   - **SMTP Server**: `asmtp.unoeuro.com` (eller `mail.dit-domæne.dk`)
+   - **Port**: `587` (TLS) eller `465` (SSL)
+   - **Brugernavn**: Din fulde email adresse
+   - **Password**: Din email adgangskode
 
-### 4.3 Verificer afsender email
-1. Gå til **Settings** → **Sender Authentication**
-2. Vælg **Single Sender Verification** (nemmest for start)
-3. Indtast din email (f.eks. `noreply@dit-domæne.dk`)
-4. Bekræft emailen du modtager
+### 4.2 Tilføj SMTP til config.php
 
-### 4.4 Tilføj til config.php
 ```php
-// SendGrid Email Konfiguration
-define('SENDGRID_API_KEY', 'SG.din_api_nøgle_her');
-define('SENDGRID_FROM_EMAIL', 'noreply@dit-domæne.dk');
-define('SENDGRID_FROM_NAME', 'F1 Betting');
+// SMTP Email Konfiguration (Simply.com)
+define('SMTP_HOST', 'asmtp.unoeuro.com');        // Simply.com SMTP server
+define('SMTP_PORT', 587);                         // 587 for TLS, 465 for SSL
+define('SMTP_USER', 'noreply@dit-domæne.dk');    // Din email adresse
+define('SMTP_PASS', 'din_email_adgangskode');    // Din email adgangskode
+define('SMTP_FROM_EMAIL', 'noreply@dit-domæne.dk'); // Afsender email
+define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
 ```
 
-### Test email
+### 4.3 Test email
 Efter installation, gå til login siden og klik "Glemt adgangskode?" for at teste.
 
 ---
@@ -145,71 +138,53 @@ Efter installation, gå til login siden og klik "Glemt adgangskode?" for at test
 
 ---
 
-## Trin 6: Test Installation
+## Trin 6: Opret Første Admin Bruger
 
-1. Besøg dit domæne i browseren (f.eks. `https://dit-domæne.dk/f1/`)
-2. **VIGTIG:** Første bruger skal oprettes via databasen (se nedenfor)
-3. Log ind som admin
-4. Gå til **Admin** → **Invitationer** for at invitere nye brugere
+Da offentlig registrering er deaktiveret, skal du oprette første admin bruger manuelt.
 
-### Opret første admin bruger
-Da offentlig registrering er deaktiveret, skal du oprette første admin bruger manuelt:
+### Option 1: Via phpMyAdmin (nemmest)
 
-**Option 1: Via phpMyAdmin**
+Kør denne SQL i phpMyAdmin (husk at ændre email og password):
+
 ```sql
-INSERT INTO users (id, email, password, display_name, role) VALUES (
+INSERT INTO users (id, email, password, display_name, role, points, stars) VALUES (
     UUID(),
     'din@email.dk',
-    '$2y$10$YourHashedPasswordHere',
+    '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',  -- password: "password"
     'Admin',
-    'admin'
+    'admin',
+    0,
+    0
 );
 ```
 
-**Option 2: Midlertidig aktivering**
-1. Åbn `register.php` og ændr linje 23 til: `if (true || ($token && $inviteValid)) {`
-2. Registrér din bruger
-3. Fjern ændringen igen
+**VIGTIGT:** Gå derefter til Profil og skift din adgangskode!
 
-**Option 3: Brug setup script**
-Kør `php setup_admin.php` i terminalen (se script længere nede)
+### Option 2: Via setup script
+
+1. Upload `setup_admin.php` til serveren
+2. Kør via SSH/terminal: `php setup_admin.php`
+3. Følg instruktionerne
+4. **SLET `setup_admin.php` bagefter!**
 
 ---
 
-## Nye funktioner (Januar 2026)
+## Trin 7: Test Installation
 
-### 🔒 Invite-Only Registrering
-- Offentlig registrering er deaktiveret
-- Kun admins kan invitere nye brugere via Admin → Invitationer
-- Invitationer udløber efter 7 dage
-- Email sendes automatisk med registreringslink (hvis SendGrid er konfigureret)
-- Mulighed for at gensende/forny invitationer
-
-### 📧 SendGrid Email Integration
-- Professionelle HTML emails til password reset
-- Fallback til PHP mail() hvis SendGrid ikke er konfigureret
-- Flot F1-temaet email design
-
-### ✏️ Rediger Bets
-- Brugere kan nu redigere deres bets
-- Kun muligt når betting-vinduet stadig er åbent
-- Timestamp opdateres ved redigering
-- Alle valideringsregler gælder stadig
-
-### 🏎️ 2026 Sæson Data
-- 22 kørere fra alle 11 teams (inkl. nye Cadillac team)
-- 24 løb med officielle datoer og tider
-- Klar til brug - bare importér `data_2026.sql`
+1. Besøg dit domæne (f.eks. `https://dit-domæne.dk/f1/`)
+2. Log ind som admin
+3. Gå til **Admin** → **Invitationer** for at invitere nye brugere
+4. Test email ved at sende en invitation
 
 ---
 
 ## Funktioner
 
 ### Bruger funktioner
-- ✅ Registrering og login
-- ✅ Glemt/nulstil adgangskode (med SendGrid email)
+- ✅ Login (kun via invitation)
+- ✅ Glemt/nulstil adgangskode
 - ✅ Placer bets på kommende løb (P1, P2, P3)
-- ✅ **Rediger bets** før løbsstart (NY!)
+- ✅ Rediger bets før løbsstart
 - ✅ Se alle bets pr. løb
 - ✅ Rangliste med point og stjerner
 - ✅ Profil med visningsnavn
@@ -217,6 +192,7 @@ Kør `php setup_admin.php` i terminalen (se script længere nede)
 - ✅ Dansk/engelsk sprog
 
 ### Admin funktioner
+- ✅ Inviter nye brugere via email
 - ✅ Administrer kørere (tilføj, rediger, slet)
 - ✅ Administrer løb (dato, tid, kvalifikation, resultater)
 - ✅ Administrer brugere (roller, slet)
@@ -246,24 +222,25 @@ Kør `php setup_admin.php` i terminalen (se script længere nede)
 - Tjek at DB_HOST, DB_NAME, DB_USER og DB_PASS er korrekte
 - Tjek at databasen er oprettet i Simply.com
 
-### Password reset email kommer ikke
-- Tjek at SENDGRID_API_KEY er korrekt
-- Tjek at SENDGRID_FROM_EMAIL er verificeret i SendGrid
-- Tjek SendGrid dashboard for fejl under Activity
-- Uden SendGrid: emails sendes via PHP mail() som ofte blokeres
+### Email sendes ikke
+- Tjek at SMTP indstillingerne er korrekte
+- Tjek at email kontoen findes i Simply.com
+- Prøv port 465 i stedet for 587
+- Tjek at SMTP_USER er den fulde email adresse
+- Tjek spam/junk mappen
 
 ### Siden vises ikke korrekt
 - Tjek at alle filer er uploadet
 - Tjek at PHP version er 7.4 eller nyere
-- Tjek at SITE_URL matcher din faktiske URL (inkl. undermappe)
+- Tjek at SITE_URL matcher din faktiske URL
 
 ### Kan ikke logge ind
 - Tjek at `database.sql` er importeret korrekt
-- Prøv at registrere en ny bruger
+- Opret admin bruger via phpMyAdmin
 
-### Sletning virker ikke
-- Tjek at JavaScript er aktiveret i browseren
-- Der kommer en bekræftelsesdialog - klik "Slet" for at bekræfte
+### Tema/sprog skifter ikke
+- Tjek at cookies er aktiveret i browseren
+- Tjek at der ikke er PHP fejl i loggen
 
 ---
 
@@ -272,9 +249,8 @@ Kør `php setup_admin.php` i terminalen (se script længere nede)
 Har du problemer? Tjek:
 1. PHP error logs i Simply.com kontrolpanel
 2. At alle filer er uploadet korrekt
-3. At database oplysninger er korrekte
+3. At database og SMTP oplysninger er korrekte
 4. At SITE_URL er sat korrekt i config.php
-5. SendGrid Activity dashboard for email problemer
 
 ---
 
