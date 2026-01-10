@@ -157,38 +157,70 @@ if (isset($_POST['reset_user_password'])) {
 if (isset($_GET['delete_bet'])) {
     $betId = $_GET['delete_bet'];
     
-    // Hent bet info
-    $stmt = $db->prepare("SELECT b.*, u.email, u.display_name, r.name as race_name FROM bets b JOIN users u ON b.user_id = u.id JOIN races r ON b.race_id = r.id WHERE b.id = ?");
+    // Hent bet info inkl race data for at tjekke betting status
+    $stmt = $db->prepare("
+        SELECT b.*, u.email, u.display_name, u.id as bet_user_id, 
+               r.name as race_name, r.race_date, r.race_time, r.result_p1
+        FROM bets b 
+        JOIN users u ON b.user_id = u.id 
+        JOIN races r ON b.race_id = r.id 
+        WHERE b.id = ?
+    ");
     $stmt->execute([$betId]);
     $bet = $stmt->fetch();
     
     if ($bet) {
-        // Slet bet
-        $stmt = $db->prepare("DELETE FROM bets WHERE id = ?");
-        $stmt->execute([$betId]);
+        // Tjek om betting vindue er åbent - kun tillad sletning hvis åbent
+        $raceDateTime = new DateTime($bet['race_date'] . ' ' . $bet['race_time']);
+        $now = new DateTime();
+        $bettingOpens = clone $raceDateTime;
+        $bettingOpens->modify('-48 hours');
         
-        // Send email til bruger
-        require_once __DIR__ . '/includes/smtp.php';
-        $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+        $canDelete = !$bet['result_p1'] && $now >= $bettingOpens && $now < $raceDateTime;
         
-        if ($lang === 'da') {
-            $subject = "Dit bet er blevet slettet - $appName";
-            $greeting = "Hej " . ($bet['display_name'] ?: $bet['email']) . ",";
-            $intro = "Dit bet på <strong>" . htmlspecialchars($bet['race_name']) . "</strong> er blevet slettet af en administrator.";
-            $buttonText = "Gå til appen";
-            $expiry = "Kontakt administrator hvis du har spørgsmål.";
+        if ($canDelete) {
+            // Hvis bet har point, skal vi trække dem fra brugeren
+            if ($bet['points'] > 0 || $bet['is_perfect']) {
+                $stmt2 = $db->prepare("SELECT points, stars FROM users WHERE id = ?");
+                $stmt2->execute([$bet['bet_user_id']]);
+                $user = $stmt2->fetch();
+                
+                $newPoints = max(0, $user['points'] - $bet['points']);
+                $newStars = max(0, $user['stars'] - ($bet['is_perfect'] ? 1 : 0));
+                
+                $stmt3 = $db->prepare("UPDATE users SET points = ?, stars = ? WHERE id = ?");
+                $stmt3->execute([$newPoints, $newStars, $bet['bet_user_id']]);
+            }
+            
+            // Slet bet
+            $stmt = $db->prepare("DELETE FROM bets WHERE id = ?");
+            $stmt->execute([$betId]);
+            
+            // Send email til bruger
+            require_once __DIR__ . '/includes/smtp.php';
+            $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+            
+            if ($lang === 'da') {
+                $subject = "Dit bet er blevet slettet - $appName";
+                $greeting = "Hej " . ($bet['display_name'] ?: $bet['email']) . ",";
+                $intro = "Dit bet på <strong>" . htmlspecialchars($bet['race_name']) . "</strong> er blevet slettet af en administrator.";
+                $buttonText = "Gå til appen";
+                $expiry = "Kontakt administrator hvis du har spørgsmål.";
+            } else {
+                $subject = "Your bet has been deleted - $appName";
+                $greeting = "Hi " . ($bet['display_name'] ?: $bet['email']) . ",";
+                $intro = "Your bet on <strong>" . htmlspecialchars($bet['race_name']) . "</strong> has been deleted by an administrator.";
+                $buttonText = "Go to app";
+                $expiry = "Contact administrator if you have questions.";
+            }
+            
+            $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, SITE_URL, $expiry, '', "Best regards,<br>$appName", $appName);
+            sendEmail($bet['email'], $subject, $htmlContent);
+            
+            $message = $lang === 'da' ? 'Bet slettet og bruger notificeret!' : 'Bet deleted and user notified!';
         } else {
-            $subject = "Your bet has been deleted - $appName";
-            $greeting = "Hi " . ($bet['display_name'] ?: $bet['email']) . ",";
-            $intro = "Your bet on <strong>" . htmlspecialchars($bet['race_name']) . "</strong> has been deleted by an administrator.";
-            $buttonText = "Go to app";
-            $expiry = "Contact administrator if you have questions.";
+            $message = $lang === 'da' ? 'Kan kun slette bets hvor betting vindue er åbent' : 'Can only delete bets where betting window is open';
         }
-        
-        $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, SITE_URL, $expiry, '', "Best regards,<br>$appName", $appName);
-        sendEmail($bet['email'], $subject, $htmlContent);
-        
-        $message = $lang === 'da' ? 'Bet slettet og bruger notificeret!' : 'Bet deleted and user notified!';
     }
     
     header("Location: admin.php?tab=bets&msg=" . urlencode($message));
