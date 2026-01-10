@@ -890,3 +890,71 @@ body.light .logo-light { display: block; }
     flex: 1;
 }
 
+/* Rules page styles */
+.rules-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.rules-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rules-table th,
+.rules-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.rules-table th {
+    background: var(--bg-hover);
+    font-weight: 600;
+}
+
+.rules-table tr:last-child td {
+    border-bottom: none;
+}
+
+.rules-table td:first-child {
+    width: 40%;
+    white-space: nowrap;
+}
+
+.example-box {
+    background: var(--bg-hover);
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--f1-red);
+}
+
+.example-scenario {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.example-scenario h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+}
+
+.example-calc {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+}
+
+.example-calc li {
+    padding: 0.25rem 0;
+}
+
+.example-calc li.total {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 1.1rem;
+}
+
