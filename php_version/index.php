@@ -146,9 +146,9 @@ include __DIR__ . '/includes/header.php';
                             <span class="text-muted"><i class="fas fa-users"></i> <?= count($raceBets) ?> bets</span>
                             <div class="flex gap-1">
                                 <?php if ($status['status'] === 'open' && $currentUser && !$userBet): ?>
-                                    <a href="bet.php?race=<?= $race['id'] ?>" class="btn btn-primary btn-sm"><?= t('place_bet') ?></a>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="openBetModal('<?= $race['id'] ?>', '<?= escape($race['name']) ?>', '<?= escape($race['location']) ?>', '<?= $race['race_date'] ?>', '<?= $race['race_time'] ?>', false)"><?= t('place_bet') ?></button>
                                 <?php elseif ($status['status'] === 'open' && $currentUser && $userBet): ?>
-                                    <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> <?= t('edit') ?></a>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="openBetModal('<?= $race['id'] ?>', '<?= escape($race['name']) ?>', '<?= escape($race['location']) ?>', '<?= $race['race_date'] ?>', '<?= $race['race_time'] ?>', true, '<?= $userBet['id'] ?>', '<?= $userBet['p1'] ?>', '<?= $userBet['p2'] ?>', '<?= $userBet['p3'] ?>')"><i class="fas fa-edit"></i> <?= t('edit') ?></button>
                                 <?php endif; ?>
                                 <?php if (count($raceBets) > 0): ?>
                                     <button class="btn btn-ghost btn-sm toggle-bets" data-target="bets-<?= $race['id'] ?>">
