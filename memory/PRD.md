@@ -88,15 +88,29 @@ All core features implemented
 
 ## PHP Version Files
 Located at `/app/php_version/`:
+
+**Root level (outside webroot for security):**
+- `config.php` - Configuration med CET timezone dokumentation
+
+**Public folder (webroot):**
 - `database.sql` - Base database schema
 - `data_2026.sql` - 2026 season data (22 drivers, 24 races, CET times)
-- `config.php` - Configuration med CET timezone dokumentation
 - `INSTALLATION.md` - Complete setup guide including SMTP
-- `includes/smtp.php` - Custom SMTP email integration
+- `includes/smtp.php` - Custom SMTP email integration + unified template
 - `cron_notifications.php` - Cron job for betting window notifications
 - `edit_bet.php` - Bet editing page
-- `assets/logo.svg` - Custom app logo
+- `rules.php` - Betting rules page
+- `admin.php` - Admin panel med alle funktioner
+- `assets/logo_header_dark.png` - Header logo (dark mode)
+- `assets/logo_header_light.png` - Header logo (light mode)
 - `assets/favicon.*` - Multi-format favicons
+
+**Email Templates (alle bruger `getEmailTemplate()` i smtp.php):**
+- Invitation emails
+- Password reset emails
+- Bet deleted notifications
+- Betting window open notifications
+- Betting window closing notifications
 
 **Zip archive**: `/app/f1betting_php.zip`
 **Download URL**: `https://f1punters.preview.emergentagent.com/f1betting_php.zip`
