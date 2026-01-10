@@ -1322,6 +1322,11 @@ body.light .logo-light { display: block; }
         white-space: nowrap;
     }
     
+    /* Hide podium on mobile */
+    .podium-section {
+        display: none !important;
+    }
+    
     /* Admin tabs */
     .tabs {
         overflow-x: auto;
