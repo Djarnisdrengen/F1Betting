@@ -7,12 +7,20 @@ $lang = getLang();
 
 if (isset($_GET['toggle_theme'])) {
     setTheme($theme === 'dark' ? 'light' : 'dark');
-    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
+    // Preserve query parameters (like tab) when toggling
+    $currentUrl = $_SERVER['REQUEST_URI'];
+    $currentUrl = preg_replace('/([&?])toggle_theme=1(&|$)/', '$1', $currentUrl);
+    $currentUrl = rtrim($currentUrl, '?&');
+    header("Location: " . $currentUrl);
     exit;
 }
 if (isset($_GET['toggle_lang'])) {
     setLang($lang === 'da' ? 'en' : 'da');
-    header("Location: " . strtok($_SERVER['REQUEST_URI'], '?'));
+    // Preserve query parameters (like tab) when toggling
+    $currentUrl = $_SERVER['REQUEST_URI'];
+    $currentUrl = preg_replace('/([&?])toggle_lang=1(&|$)/', '$1', $currentUrl);
+    $currentUrl = rtrim($currentUrl, '?&');
+    header("Location: " . $currentUrl);
     exit;
 }
 
