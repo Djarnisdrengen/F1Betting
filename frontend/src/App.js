@@ -257,6 +257,7 @@ function App() {
                   <Route path="/races" element={<Races />} />
                   <Route path="/bet/:raceId" element={user ? <PlaceBet /> : <Navigate to="/login" />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route path="/rules" element={user ? <Rules /> : <Navigate to="/login" />} />
                   <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                   <Route path="/admin" element={user?.role === "admin" ? <Admin /> : <Navigate to="/" />} />
                 </Routes>
