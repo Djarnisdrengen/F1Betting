@@ -65,6 +65,11 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     <a href="leaderboard.php" class="nav-link <?= $currentPage === 'leaderboard' ? 'active' : '' ?>">
                         <i class="fas fa-trophy"></i> <?= t('leaderboard') ?>
                     </a>
+                    <?php if ($currentUser): ?>
+                    <a href="rules.php" class="nav-link <?= $currentPage === 'rules' ? 'active' : '' ?>">
+                        <i class="fas fa-book"></i> <?= $lang === 'da' ? 'Regler' : 'Rules' ?>
+                    </a>
+                    <?php endif; ?>
                     <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
                     <a href="admin.php" class="nav-link <?= $currentPage === 'admin' ? 'active' : '' ?>">
                         <i class="fas fa-cog"></i> <?= t('admin') ?>
