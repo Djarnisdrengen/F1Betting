@@ -958,3 +958,360 @@ body.light .logo-light { display: block; }
     font-size: 1.1rem;
 }
 
+/* ========================================
+   MOBILE RESPONSIVE STYLES
+   ======================================== */
+
+/* Mobile menu button */
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 101;
+}
+
+/* Mobile nav extras (profile, logout, theme/lang in mobile menu) */
+.mobile-nav-extras {
+    display: none;
+}
+
+/* Desktop only elements */
+.desktop-only {
+    display: flex;
+}
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+    /* Show mobile menu button */
+    .mobile-menu-btn {
+        display: block;
+    }
+    
+    /* Hide desktop controls */
+    .desktop-only {
+        display: none !important;
+    }
+    
+    /* Mobile navigation */
+    .nav {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px;
+        height: 100vh;
+        background: var(--bg-card);
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 5rem 0 2rem 0;
+        transition: left 0.3s ease;
+        z-index: 100;
+        box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+        overflow-y: auto;
+    }
+    
+    .nav.active {
+        left: 0;
+    }
+    
+    .nav-link {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .nav-link i {
+        width: 20px;
+        text-align: center;
+    }
+    
+    .nav-link.active::after {
+        display: none;
+    }
+    
+    .nav-link.active {
+        background: var(--bg-hover);
+        border-left: 3px solid var(--f1-red);
+    }
+    
+    /* Mobile nav extras */
+    .mobile-nav-extras {
+        display: block;
+        margin-top: 1rem;
+        border-top: 2px solid var(--border-color);
+        padding-top: 1rem;
+    }
+    
+    .mobile-nav-extras .nav-link {
+        color: var(--text-secondary);
+    }
+    
+    .mobile-controls {
+        padding: 1rem 1.5rem;
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .mobile-controls .btn {
+        flex: 1;
+        justify-content: flex-start;
+        padding: 0.75rem 1rem;
+    }
+    
+    .mobile-controls .btn span {
+        margin-left: 0.5rem;
+    }
+    
+    /* Mobile overlay */
+    .nav-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 99;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    
+    .nav-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Header adjustments */
+    .header-content {
+        padding: 0;
+    }
+    
+    .logo {
+        flex: 1;
+    }
+    
+    .logo-text {
+        font-size: 1rem;
+    }
+    
+    .logo-year {
+        display: none;
+    }
+    
+    /* Hero section */
+    .hero {
+        padding: 2rem 0 !important;
+    }
+    
+    .hero h1 {
+        font-size: 1.75rem !important;
+    }
+    
+    .hero p {
+        font-size: 0.9rem;
+    }
+    
+    /* Cards */
+    .card {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        border-radius: 0;
+    }
+    
+    .card-header, .card-body {
+        padding: 1rem;
+    }
+    
+    /* Grid layouts */
+    .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem;
+    }
+    
+    /* Race cards */
+    .race-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .race-header .badge {
+        align-self: flex-start;
+    }
+    
+    .race-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    /* Bet predictions */
+    .bet-predictions {
+        flex-wrap: wrap;
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    /* User bet section */
+    .user-bet-section {
+        padding: 0.75rem !important;
+    }
+    
+    .user-bet-section .flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.75rem;
+    }
+    
+    /* Tables */
+    .rules-table td:first-child {
+        width: auto;
+        white-space: normal;
+    }
+    
+    .rules-table th,
+    .rules-table td {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Leaderboard */
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .leaderboard-table .user-name {
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Admin tabs */
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 0;
+        padding-bottom: 0.5rem;
+    }
+    
+    .tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    .tab-count {
+        display: none;
+    }
+    
+    /* Forms */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-input, .form-select {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Collapsible forms in admin */
+    .collapsible-header {
+        padding: 1rem;
+    }
+    
+    /* Betting modal */
+    .bet-modal {
+        margin: 0.5rem;
+        max-height: calc(100vh - 1rem);
+    }
+    
+    .bet-modal-header,
+    .bet-modal-body,
+    .bet-modal-footer {
+        padding: 1rem;
+    }
+    
+    /* Page headers */
+    .page-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    /* Footer */
+    .footer {
+        padding: 1rem 0;
+        font-size: 0.75rem;
+    }
+    
+    /* Countdown timer */
+    .countdown-timer {
+        font-size: 0.8rem;
+    }
+    
+    /* All bets toggle */
+    .all-bets {
+        padding: 0.75rem;
+    }
+    
+    .bet-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .bet-item > .flex {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    /* Hide user name in controls on small screens */
+    .user-name {
+        display: none;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 0.75rem;
+    }
+    
+    .logo-text {
+        font-size: 0.9rem;
+    }
+    
+    .logo-img {
+        height: 32px;
+    }
+    
+    .hero h1 {
+        font-size: 1.5rem !important;
+    }
+    
+    .position-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
