@@ -1,8 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <!-- Background -->
+  <!-- Background with rounded corners -->
   <rect width="32" height="32" rx="6" fill="#e10600"/>
   
-  <!-- Stylized F1 mark -->
-  <path d="M6 24 L14 6 L17 6 L11 21 L22 21 L22 24 Z" fill="white"/>
-  <path d="M19 6 L19 24 L22 24 L22 10 L26 10 L26 6 Z" fill="white"/>
+  <!-- Stylized F1 compact -->
+  <!-- F -->
+  <polygon points="6,26 6,6 20,6 20,9 10,9 10,14 17,14 17,17 10,17 10,26" fill="white"/>
+  
+  <!-- 1 -->
+  <polygon points="22,6 28,6 28,26 24,26 24,11 21,15 21,11" fill="white"/>
 </svg>
