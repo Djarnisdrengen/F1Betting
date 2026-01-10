@@ -76,12 +76,17 @@ All core features implemented
 ## PHP Version Files
 Located at `/app/php_version/`:
 - `database.sql` - Base database schema
-- `data_2026.sql` - 2026 season data (22 drivers, 24 races)
-- `INSTALLATION.md` - Complete setup guide including SendGrid
-- `includes/sendgrid.php` - Email integration
+- `data_2026.sql` - 2026 season data (22 drivers, 24 races, CET times)
+- `config.php` - Configuration med CET timezone dokumentation
+- `INSTALLATION.md` - Complete setup guide including SMTP
+- `includes/smtp.php` - Custom SMTP email integration
+- `cron_notifications.php` - Cron job for betting window notifications
 - `edit_bet.php` - Bet editing page
+- `assets/logo.svg` - Custom app logo
+- `assets/favicon.*` - Multi-format favicons
 
 **Zip archive**: `/app/f1betting_php.zip`
+**Download URL**: `https://formulabets.preview.emergentagent.com/f1betting_php.zip`
 
 ## 2026 F1 Season Data
 
