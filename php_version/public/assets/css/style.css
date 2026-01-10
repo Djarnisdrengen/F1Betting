@@ -1087,11 +1087,12 @@ body.light .logo-light { display: block; }
         display: none !important;
     }
     
-    /* Mobile navigation */
+    /* Mobile navigation - opens from right */
     .nav {
         position: fixed;
         top: 0;
-        left: -100%;
+        right: -100%;
+        left: auto;
         width: 280px;
         height: 100vh;
         background: var(--bg-card);
@@ -1099,14 +1100,14 @@ body.light .logo-light { display: block; }
         align-items: stretch;
         gap: 0;
         padding: 5rem 0 2rem 0;
-        transition: left 0.3s ease;
+        transition: right 0.3s ease;
         z-index: 100;
-        box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+        box-shadow: -2px 0 20px rgba(0,0,0,0.3);
         overflow-y: auto;
     }
     
     .nav.active {
-        left: 0;
+        right: 0;
     }
     
     .nav-link {
