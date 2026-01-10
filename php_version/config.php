@@ -19,11 +19,23 @@ define('PASSWORD_PEPPER', 'skift-ogsaa-denne-streng');
 //   Undermappe: 'https://dit-domæne.dk/f1'
 define('SITE_URL', 'https://dit-domæne.dk/f1');
 
-// SendGrid Email Konfiguration (valgfrit - falder tilbage til PHP mail())
-// Opret API nøgle på: https://app.sendgrid.com/settings/api_keys
-define('SENDGRID_API_KEY', 'SG.din_api_nøgle_her');  // Din SendGrid API nøgle
-define('SENDGRID_FROM_EMAIL', 'noreply@dit-domæne.dk'); // Verificeret afsender email
-define('SENDGRID_FROM_NAME', 'F1 Betting');  // Afsender navn
+// ============================================
+// SMTP EMAIL KONFIGURATION (Simply.com)
+// ============================================
+// Find indstillinger i Simply.com kontrolpanel under "E-mail"
+// 
+// Typiske Simply.com SMTP indstillinger:
+//   Host: asmtp.unoeuro.com eller mail.dit-domæne.dk
+//   Port: 587 (TLS) eller 465 (SSL)
+//   Brugernavn: din fulde email adresse
+//   Password: din email adgangskode
+
+define('SMTP_HOST', 'asmtp.unoeuro.com');        // Simply.com SMTP server
+define('SMTP_PORT', 587);                         // 587 for TLS, 465 for SSL
+define('SMTP_USER', 'noreply@dit-domæne.dk');    // Din email adresse
+define('SMTP_PASS', 'din_email_adgangskode');    // Din email adgangskode
+define('SMTP_FROM_EMAIL', 'noreply@dit-domæne.dk'); // Afsender email
+define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
 
 // Session indstillinger
 session_start();
