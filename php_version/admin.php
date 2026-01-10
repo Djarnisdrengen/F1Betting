@@ -153,6 +153,48 @@ if (isset($_POST['reset_user_password'])) {
     }
 }
 
+// ============ DELETE BET ============
+if (isset($_GET['delete_bet'])) {
+    $betId = $_GET['delete_bet'];
+    
+    // Hent bet info
+    $stmt = $db->prepare("SELECT b.*, u.email, u.display_name, r.name as race_name FROM bets b JOIN users u ON b.user_id = u.id JOIN races r ON b.race_id = r.id WHERE b.id = ?");
+    $stmt->execute([$betId]);
+    $bet = $stmt->fetch();
+    
+    if ($bet) {
+        // Slet bet
+        $stmt = $db->prepare("DELETE FROM bets WHERE id = ?");
+        $stmt->execute([$betId]);
+        
+        // Send email til bruger
+        require_once __DIR__ . '/includes/smtp.php';
+        $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+        
+        if ($lang === 'da') {
+            $subject = "Dit bet er blevet slettet - $appName";
+            $greeting = "Hej " . ($bet['display_name'] ?: $bet['email']) . ",";
+            $intro = "Dit bet på <strong>" . htmlspecialchars($bet['race_name']) . "</strong> er blevet slettet af en administrator.";
+            $buttonText = "Gå til appen";
+            $expiry = "Kontakt administrator hvis du har spørgsmål.";
+        } else {
+            $subject = "Your bet has been deleted - $appName";
+            $greeting = "Hi " . ($bet['display_name'] ?: $bet['email']) . ",";
+            $intro = "Your bet on <strong>" . htmlspecialchars($bet['race_name']) . "</strong> has been deleted by an administrator.";
+            $buttonText = "Go to app";
+            $expiry = "Contact administrator if you have questions.";
+        }
+        
+        $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, SITE_URL, $expiry, '', "Best regards,<br>$appName", $appName);
+        sendEmail($bet['email'], $subject, $htmlContent);
+        
+        $message = $lang === 'da' ? 'Bet slettet og bruger notificeret!' : 'Bet deleted and user notified!';
+    }
+    
+    header("Location: admin.php?tab=bets&msg=" . urlencode($message));
+    exit;
+}
+
 // ============ INVITES ============
 if (isset($_POST['create_invite'])) {
     $inviteEmail = trim($_POST['invite_email'] ?? '');
