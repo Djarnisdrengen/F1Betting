@@ -42,8 +42,13 @@ $leaderboard = $db->query("
 $heroTitle = $lang === 'da' ? $settings['hero_title_da'] : $settings['hero_title_en'];
 $heroText = $lang === 'da' ? $settings['hero_text_da'] : $settings['hero_text_en'];
 
-// Find first upcoming race for scroll
-$upcomingRaces = array_filter($races, fn($r) => !$r['result_p1']);
+// Find first upcoming race for scroll - exclude completed AND past races
+$now = new DateTime();
+$upcomingRaces = array_filter($races, function($r) use ($now) {
+    if ($r['result_p1']) return false; // Har resultat = afsluttet
+    $raceDateTime = new DateTime($r['race_date'] . ' ' . $r['race_time']);
+    return $raceDateTime > $now; // Kun fremtidige løb
+});
 $firstUpcomingRaceId = !empty($upcomingRaces) ? array_values($upcomingRaces)[0]['id'] : null;
 
 include __DIR__ . '/includes/header.php';
