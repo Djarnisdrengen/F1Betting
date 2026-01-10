@@ -80,7 +80,7 @@ include __DIR__ . '/includes/header.php';
                     <?php foreach (array_slice($leaderboard, 0, 3) as $i => $entry): ?>
                         <div class="leaderboard-entry" style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(90deg, rgba(225, 6, 0, 0.1), transparent);">
                             <div class="flex items-center gap-2">
-                                <span class="position-badge <?= $i < 3 ? 'position-' . ($i + 1) : '' ?>" <?= $i >= 3 ? 'style="background: var(--bg-secondary);"' : '' ?>><?= $i + 1 ?></span>
+                                <span class="position-badge position-<?= $i + 1 ?>"><?= $i + 1 ?></span>
                                 <div>
                                     <strong><?= escape($entry['display_name'] ?: $entry['email']) ?></strong>
                                     <br><small class="text-muted"><?= $entry['bets_count'] ?> bets</small>
