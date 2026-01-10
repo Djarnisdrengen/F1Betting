@@ -51,6 +51,11 @@ include __DIR__ . '/includes/header.php';
             }
         }
     }
+    
+    // Beregn countdown
+    $raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
+    $bettingOpens = clone $raceDateTime;
+    $bettingOpens->modify('-48 hours');
 ?>
     <div class="card mb-2">
         <div class="race-card">
@@ -66,8 +71,24 @@ include __DIR__ . '/includes/header.php';
                     </h3>
                     <div class="race-meta">
                         <span><i class="fas fa-map-marker-alt"></i> <?= escape($race['location']) ?></span>
-                        <span><i class="fas fa-clock"></i> <?= date('d M Y', strtotime($race['race_date'])) ?> - <?= substr($race['race_time'], 0, 5) ?></span>
+                        <span><i class="fas fa-clock"></i> <?= date('d M Y', strtotime($race['race_date'])) ?> - <?= substr($race['race_time'], 0, 5) ?> CET</span>
                     </div>
+                    <!-- Countdown Timer for upcoming races -->
+                    <?php if (!$race['result_p1']): ?>
+                        <?php if ($status['status'] === 'pending'): ?>
+                            <div class="countdown-timer" data-opens="<?= $bettingOpens->format('c') ?>">
+                                <i class="fas fa-hourglass-half"></i>
+                                <?= $lang === 'da' ? 'Betting åbner om' : 'Betting opens in' ?>:
+                                <span class="countdown-value">--</span>
+                            </div>
+                        <?php elseif ($status['status'] === 'open'): ?>
+                            <div class="countdown-timer betting-open" data-closes="<?= $raceDateTime->format('c') ?>">
+                                <i class="fas fa-stopwatch"></i>
+                                <?= $lang === 'da' ? 'Betting lukker om' : 'Betting closes in' ?>:
+                                <span class="countdown-value">--</span>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </div>
                 <span class="badge <?= $status['class'] ?>"><?= $status['label'] ?></span>
             </div>
