@@ -45,12 +45,18 @@ Create a web application with authentication where users can bet on top 3 driver
 ### PHP/MySQL Version (for Simply.com)
 - ✅ **Invite-only registration** - Public signup removed
 - ✅ Admin invite management (create, resend, delete invites)
-- ✅ Invite emails via SendGrid
-- ✅ SendGrid email integration for password reset
+- ✅ **Custom SMTP email** - SendGrid replaced with generic SMTP for Simply.com
 - ✅ Edit bets functionality (before race start)
-- ✅ 2026 F1 data SQL script (22 drivers, 24 races)
+- ✅ 2026 F1 data SQL script (22 drivers, 24 races in CET)
 - ✅ setup_admin.php CLI script for initial admin creation
 - ✅ Complete installation guide for Simply.com
+- ✅ **Custom logo & favicon** - Based on user-provided image (Jan 2026)
+- ✅ **Cron notifications** - Email when betting window opens
+- ✅ **Admin bet deletion** - With email notification to user
+- ✅ **Auto-scroll to upcoming race** on homepage
+- ✅ **Collapsible admin forms** - Cleaner admin UX
+- ✅ **Tab counts** in admin panel
+- ✅ **Timezone configured** - CET/Copenhagen with documentation
 
 ## Prioritized Backlog
 
