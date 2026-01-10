@@ -220,17 +220,11 @@ if (isset($_GET['resend_invite'])) {
         
         $inviteLink = SITE_URL . "/register.php?token=" . $invite['token'];
         
-        // Prøv at sende email
-        $emailSent = false;
-        if (file_exists(__DIR__ . '/includes/sendgrid.php')) {
-            require_once __DIR__ . '/includes/sendgrid.php';
-            if (defined('SENDGRID_API_KEY') && !empty(SENDGRID_API_KEY) && SENDGRID_API_KEY !== 'SG.din_api_nøgle_her') {
-                $result = sendInviteEmail($invite['email'], $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
-                $emailSent = $result['success'];
-            }
-        }
+        // Send email via SMTP
+        require_once __DIR__ . '/includes/smtp.php';
+        $result = sendInviteEmail($invite['email'], $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
         
-        if ($emailSent) {
+        if ($result['success']) {
             $message = $lang === 'da' ? 'Invitation gensendt!' : 'Invitation resent!';
         } else {
             $message = $lang === 'da' 
