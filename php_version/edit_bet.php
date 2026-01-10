@@ -110,7 +110,7 @@ include __DIR__ . '/includes/header.php';
             </div>
             
             <p class="text-muted" style="margin-top: 0.5rem;">
-                <i class="fas fa-clock"></i> <?= date('d M Y', strtotime($bet['race_date'])) ?> - <?= substr($bet['race_time'], 0, 5) ?>
+                <i class="fas fa-clock"></i> <?= date('d M Y', strtotime($bet['race_date'])) ?> - <?= substr($bet['race_time'], 0, 5) ?> CET
             </p>
             
             <!-- Qualifying -->
