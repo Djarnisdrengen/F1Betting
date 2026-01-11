@@ -915,6 +915,24 @@ include __DIR__ . '/includes/header.php';
                         </div>
                     </div>
                     
+                    <h4 class="mb-1 mt-2"><i class="fas fa-clock text-accent"></i> <?= $lang === 'da' ? 'Betting Vindue' : 'Betting Window' ?></h4>
+                    <p class="text-muted mb-2" style="font-size: 0.875rem;">
+                        <?= $lang === 'da' ? 'Konfigurer hvornår betting åbner før løbsstart.' : 'Configure when betting opens before race start.' ?>
+                    </p>
+                    <div class="grid grid-2 mb-2">
+                        <div class="form-group">
+                            <label class="form-label"><?= $lang === 'da' ? 'Timer før løb' : 'Hours before race' ?></label>
+                            <input type="number" name="betting_window_hours" class="form-input" value="<?= intval($settings['betting_window_hours'] ?? 48) ?>" min="1" max="168">
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                <?= $lang === 'da' 
+                                    ? 'Betting åbner ' . intval($settings['betting_window_hours'] ?? 48) . ' timer før løbsstart og lukker ved løbsstart.'
+                                    : 'Betting opens ' . intval($settings['betting_window_hours'] ?? 48) . ' hours before race start and closes at race start.' ?>
+                            </p>
+                        </div>
+                    </div>
+                    
                     <h4 class="mb-1 mt-2"><i class="fas fa-star text-accent"></i> <?= $lang === 'da' ? 'Point System' : 'Points System' ?></h4>
                     <p class="text-muted mb-2" style="font-size: 0.875rem;">
                         <?= $lang === 'da' ? 'Konfigurer hvor mange point der gives for korrekte forudsigelser.' : 'Configure how many points are awarded for correct predictions.' ?>
