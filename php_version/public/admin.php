@@ -6,15 +6,20 @@ $db = getDB();
 $currentUser = getCurrentUser();
 $lang = getLang();
 
+// Validate CSRF for all POST requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrf();
+}
+
 // Handle actions
 $message = '';
 $error = '';
 
 // ============ DRIVERS ============
 if (isset($_POST['add_driver'])) {
-    $name = trim($_POST['driver_name'] ?? '');
-    $team = trim($_POST['driver_team'] ?? '');
-    $number = intval($_POST['driver_number'] ?? 0);
+    $name = sanitizeString($_POST['driver_name'] ?? '');
+    $team = sanitizeString($_POST['driver_team'] ?? '');
+    $number = sanitizeInt($_POST['driver_number'] ?? 0, 1, 99);
     
     if ($name && $team && $number) {
         $id = generateUUID();
@@ -25,9 +30,9 @@ if (isset($_POST['add_driver'])) {
 }
 
 if (isset($_POST['update_driver'])) {
-    $id = $_POST['driver_id'] ?? '';
-    $name = trim($_POST['driver_name'] ?? '');
-    $team = trim($_POST['driver_team'] ?? '');
+    $id = sanitizeString($_POST['driver_id'] ?? '');
+    $name = sanitizeString($_POST['driver_name'] ?? '');
+    $team = sanitizeString($_POST['driver_team'] ?? '');
     $number = intval($_POST['driver_number'] ?? 0);
     
     if ($id && $name && $team && $number) {
