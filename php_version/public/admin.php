@@ -528,7 +528,7 @@ include __DIR__ . '/includes/header.php';
                                 </div>
                                 <div class="form-group" style="margin:0;">
                                     <label class="form-label"><?= t('race_date') ?></label>
-                                    <input type="date" name="race_date" class="form-input" value="<?= $race['race_date'] ?>" required>
+                                    <input type="date" name="race_date" class="form-input" value="<?= escape($race['race_date']) ?>" required>
                                 </div>
                                 <div class="form-group" style="margin:0;">
                                     <label class="form-label"><?= t('race_time') ?> (CET)</label>
