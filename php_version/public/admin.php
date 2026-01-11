@@ -498,7 +498,7 @@ include __DIR__ . '/includes/header.php';
                     <div class="flex items-center justify-between mb-1">
                         <div>
                             <strong><?= escape($race['name']) ?></strong>
-                            <br><small class="text-muted"><?= escape($race['location']) ?> - <?= $race['race_date'] ?> <?= substr($race['race_time'], 0, 5) ?> CET</small>
+                            <br><small class="text-muted"><?= escape($race['location']) ?> - <?= escape($race['race_date']) ?> <?= escape(substr($race['race_time'], 0, 5)) ?> CET</small>
                         </div>
                         <div class="flex gap-1">
                             <a href="?tab=races&edit=<?= $race['id'] ?>#race-<?= $race['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
