@@ -673,7 +673,8 @@ include __DIR__ . '/includes/header.php';
                 <?php if ($user['id'] !== $currentUser['id']): ?>
                     <div id="reset-pw-<?= $user['id'] ?>" class="hidden" style="padding: 1rem; border-top: 1px solid var(--border-color);">
                         <form method="POST" class="flex gap-1 items-end">
-                            <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                            <?= csrfField() ?>
+                            <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
                             <div class="form-group" style="margin:0; flex:1;">
                                 <label class="form-label"><?= $lang === 'da' ? 'Ny adgangskode' : 'New password' ?></label>
                                 <input type="password" name="new_password" class="form-input" required minlength="6" placeholder="••••••••">
@@ -694,6 +695,7 @@ include __DIR__ . '/includes/header.php';
             <div class="card-header"><h3><?= $lang === 'da' ? 'Inviter ny bruger' : 'Invite new user' ?></h3></div>
             <div class="card-body">
                 <form method="POST" class="flex gap-2" style="align-items: end;">
+                    <?= csrfField() ?>
                     <div class="form-group" style="margin:0; flex:1;">
                         <label class="form-label"><?= t('email') ?></label>
                         <input type="email" name="invite_email" class="form-input" required placeholder="name@example.com">
