@@ -506,10 +506,10 @@ include __DIR__ . '/includes/header.php';
                         </div>
                     </div>
                     <?php if ($race['quali_p1']): ?>
-                        <small class="text-muted"><?= t('qualifying') ?>: <?= $driversById[$race['quali_p1']]['name'] ?? '?' ?>, <?= $driversById[$race['quali_p2']]['name'] ?? '?' ?>, <?= $driversById[$race['quali_p3']]['name'] ?? '?' ?></small>
+                        <small class="text-muted"><?= t('qualifying') ?>: <?= escape($driversById[$race['quali_p1']]['name'] ?? '?') ?>, <?= escape($driversById[$race['quali_p2']]['name'] ?? '?') ?>, <?= escape($driversById[$race['quali_p3']]['name'] ?? '?') ?></small>
                     <?php endif; ?>
                     <?php if ($race['result_p1']): ?>
-                        <br><small class="text-accent"><?= t('results') ?>: <?= $driversById[$race['result_p1']]['name'] ?? '?' ?>, <?= $driversById[$race['result_p2']]['name'] ?? '?' ?>, <?= $driversById[$race['result_p3']]['name'] ?? '?' ?></small>
+                        <br><small class="text-accent"><?= t('results') ?>: <?= escape($driversById[$race['result_p1']]['name'] ?? '?') ?>, <?= escape($driversById[$race['result_p2']]['name'] ?? '?') ?>, <?= escape($driversById[$race['result_p3']]['name'] ?? '?') ?></small>
                     <?php endif; ?>
                 </div>
                 <?php if (isset($_GET['edit']) && $_GET['edit'] === $race['id']): ?>
