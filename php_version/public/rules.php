@@ -17,10 +17,9 @@ $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
 include __DIR__ . '/includes/header.php';
 ?>
 
-<div class="container">
-    <h1 class="mb-3"><i class="fas fa-book text-accent"></i> <?= $lang === 'da' ? 'Spilleregler' : 'Betting Rules' ?></h1>
-    
-    <div class="rules-container">
+<h1 class="mb-3"><i class="fas fa-book text-accent"></i> <?= $lang === 'da' ? 'Spilleregler' : 'Betting Rules' ?></h1>
+
+<div class="rules-container">
         <!-- Betting Window -->
         <div class="card mb-2">
             <div class="card-header">
