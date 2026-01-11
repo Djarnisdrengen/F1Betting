@@ -600,18 +600,18 @@ include __DIR__ . '/includes/header.php';
         </div>
         
         <?php foreach ($drivers as $driver): ?>
-            <div class="card mb-1 <?= isset($_GET['edit']) && $_GET['edit'] === $driver['id'] ? 'edit-form-active' : '' ?>" id="driver-<?= $driver['id'] ?>">
+            <div class="card mb-1 <?= isset($_GET['edit']) && $_GET['edit'] === $driver['id'] ? 'edit-form-active' : '' ?>" id="driver-<?= escape($driver['id']) ?>">
                 <div class="card-body flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <span class="text-accent" style="font-weight: bold; font-size: 1.25rem;">#<?= $driver['number'] ?></span>
+                        <span class="text-accent" style="font-weight: bold; font-size: 1.25rem;">#<?= intval($driver['number']) ?></span>
                         <div>
                             <strong><?= escape($driver['name']) ?></strong>
                             <br><small class="text-muted"><?= escape($driver['team']) ?></small>
                         </div>
                     </div>
                     <div class="flex gap-1">
-                        <a href="?tab=drivers&edit=<?= $driver['id'] ?>#driver-<?= $driver['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
-                        <a href="?tab=drivers&delete_driver=<?= $driver['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($driver['name']) ?>"><i class="fas fa-trash"></i></a>
+                        <a href="?tab=drivers&edit=<?= escape($driver['id']) ?>#driver-<?= escape($driver['id']) ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+                        <a href="?tab=drivers&delete_driver=<?= escape($driver['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($driver['name']) ?>"><i class="fas fa-trash"></i></a>
                     </div>
                 </div>
                 <?php if (isset($_GET['edit']) && $_GET['edit'] === $driver['id']): ?>
@@ -626,7 +626,7 @@ include __DIR__ . '/includes/header.php';
                                 <input type="text" name="driver_team" class="form-input" value="<?= escape($driver['team']) ?>" required>
                             </div>
                             <div class="form-group" style="margin:0;">
-                                <input type="number" name="driver_number" class="form-input" value="<?= $driver['number'] ?>" required>
+                                <input type="number" name="driver_number" class="form-input" value="<?= intval($driver['number']) ?>" required>
                             </div>
                             <div class="flex gap-1">
                                 <button type="submit" name="update_driver" class="btn btn-primary btn-sm"><?= t('save') ?></button>
