@@ -70,7 +70,7 @@ echo "Notification check complete.\n";
 /**
  * Send betting window open email
  */
-function sendBettingOpenEmail($user, $race) {
+function sendBettingOpenEmail($user, $race, $bettingWindowHours = 48) {
     global $appName;
     
     $name = $user['display_name'] ?: $user['email'];
@@ -82,7 +82,7 @@ function sendBettingOpenEmail($user, $race) {
     $subject = "Betting åbent: {$race['name']} - $appName";
     $greeting = "Hej $name!";
     $intro = "Betting er nu åbent for <strong>{$race['name']}</strong> ({$race['location']})!";
-    $details = "Løbet starter: <strong>$raceDate kl. $raceTime</strong><br>Du har 48 timer til at placere dit bet.";
+    $details = "Løbet starter: <strong>$raceDate kl. $raceTime</strong><br>Du har {$bettingWindowHours} timer til at placere dit bet.";
     $buttonText = "Placer dit bet nu";
     $footer = "Held og lykke!<br>$appName";
     
