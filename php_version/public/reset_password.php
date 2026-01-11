@@ -10,7 +10,7 @@ $error = '';
 $success = '';
 $lang = getLang();
 $validToken = false;
-$token = $_GET['token'] ?? '';
+$token = sanitizeString($_GET['token'] ?? '');
 
 $db = getDB();
 
@@ -36,6 +36,8 @@ if ($token) {
 
 // Handle password reset
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
+    requireCsrf();
+    
     $password = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
     
@@ -90,6 +92,7 @@ include __DIR__ . '/includes/header.php';
                 </a>
             <?php elseif ($validToken): ?>
                 <form method="POST">
+                    <?= csrfField() ?>
                     <div class="form-group">
                         <label class="form-label"><?= $lang === 'da' ? 'Ny adgangskode' : 'New password' ?></label>
                         <input type="password" name="password" class="form-input" required minlength="6" placeholder="••••••••">
