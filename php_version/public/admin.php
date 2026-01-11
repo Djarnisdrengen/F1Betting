@@ -322,9 +322,13 @@ if (isset($_POST['update_settings'])) {
     $pointsP2 = intval($_POST['points_p2'] ?? 18);
     $pointsP3 = intval($_POST['points_p3'] ?? 15);
     $pointsWrongPos = intval($_POST['points_wrong_pos'] ?? 5);
+    $bettingWindowHours = intval($_POST['betting_window_hours'] ?? 48);
     
-    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ? WHERE id = 1");
-    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos]);
+    // Validate betting window (minimum 1 hour, maximum 168 hours = 1 week)
+    $bettingWindowHours = max(1, min(168, $bettingWindowHours));
+    
+    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ? WHERE id = 1");
+    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours]);
     $message = $lang === 'da' ? 'Indstillinger gemt!' : 'Settings saved!';
 }
 
