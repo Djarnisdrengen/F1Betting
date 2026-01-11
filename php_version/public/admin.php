@@ -617,7 +617,8 @@ include __DIR__ . '/includes/header.php';
                 <?php if (isset($_GET['edit']) && $_GET['edit'] === $driver['id']): ?>
                     <div class="card-body" style="border-top: 1px solid var(--border-color); background: var(--bg-hover);">
                         <form method="POST" class="grid grid-3" style="align-items: end;">
-                            <input type="hidden" name="driver_id" value="<?= $driver['id'] ?>">
+                            <?= csrfField() ?>
+                            <input type="hidden" name="driver_id" value="<?= escape($driver['id']) ?>">
                             <div class="form-group" style="margin:0;">
                                 <input type="text" name="driver_name" class="form-input" value="<?= escape($driver['name']) ?>" required>
                             </div>
