@@ -4,6 +4,7 @@ requireLogin();
 
 $currentUser = getCurrentUser();
 $db = getDB();
+$settings = getSettings();
 
 $raceId = $_GET['race'] ?? '';
 if (!$raceId) {
@@ -22,7 +23,7 @@ if (!$race) {
 }
 
 // Tjek betting status
-$status = getBettingStatus($race);
+$status = getBettingStatus($race, $settings);
 if ($status['status'] !== 'open') {
     header("Location: races.php");
     exit;
