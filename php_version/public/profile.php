@@ -6,7 +6,9 @@ $currentUser = getCurrentUser();
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $displayName = trim($_POST['display_name'] ?? '');
+    requireCsrf();
+    
+    $displayName = sanitizeString($_POST['display_name'] ?? '');
     
     $db = getDB();
     $stmt = $db->prepare("UPDATE users SET display_name = ? WHERE id = ?");
@@ -51,6 +53,7 @@ include __DIR__ . '/includes/header.php';
             <?php endif; ?>
             
             <form method="POST">
+                <?= csrfField() ?>
                 <div class="form-group">
                     <label class="form-label"><?= t('email') ?></label>
                     <input type="email" class="form-input" value="<?= escape($currentUser['email']) ?>" disabled style="opacity: 0.7;">
