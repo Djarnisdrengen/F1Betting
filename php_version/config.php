@@ -35,7 +35,7 @@ define('SMTP_HOST', 'websmtp.simply.com');        // Simply.com SMTP server
 define('SMTP_PORT', 587);                         // 587 for TLS, 465 for SSL
 define('SMTP_USER', 'ff1k@helvegpovlsen.dk');    // Din email adresse
 define('SMTP_PASS', '%oFi9Bpl9Se8MH*Hc*kvirey&Rmsh7IuYrcx27!x5LYws8wm121!vY4xXzk936HB');    // Din email adgangskode
-define('SMTP_FROM_EMAIL', 'noreply@helvegpovlsen.dk'); // Afsender email
+define('SMTP_FROM_EMAIL', 'noreply@formula-1.dk'); // Afsender email
 define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
 
 // Session indstillinger
