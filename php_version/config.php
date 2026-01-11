@@ -24,13 +24,14 @@ define('SITE_URL', 'https://dit-domæne.dk/f1');
 // ============================================
 // Find indstillinger i Simply.com kontrolpanel under "E-mail"
 // 
-// Typiske Simply.com SMTP indstillinger:
-//   Host: asmtp.unoeuro.com eller mail.dit-domæne.dk
-//   Port: 587 (TLS) eller 465 (SSL)
+// Simply.com SMTP servere:
+//   - websmtp.simply.com (anbefalet)
+//   - asmtp.unoeuro.com (alternativ)
+//   Port: 587 (TLS/STARTTLS) eller 465 (SSL)
 //   Brugernavn: din fulde email adresse
 //   Password: din email adgangskode
 
-define('SMTP_HOST', 'asmtp.unoeuro.com');        // Simply.com SMTP server
+define('SMTP_HOST', 'websmtp.simply.com');        // Simply.com SMTP server
 define('SMTP_PORT', 587);                         // 587 for TLS, 465 for SSL
 define('SMTP_USER', 'noreply@dit-domæne.dk');    // Din email adresse
 define('SMTP_PASS', 'din_email_adgangskode');    // Din email adgangskode
