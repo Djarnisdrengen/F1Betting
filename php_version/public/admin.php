@@ -578,6 +578,7 @@ include __DIR__ . '/includes/header.php';
             <div id="driver-form-body" class="collapsible-form">
                 <div class="card-body">
                     <form method="POST" class="grid grid-3" style="align-items: end;">
+                        <?= csrfField() ?>
                         <div class="form-group" style="margin:0;">
                             <label class="form-label"><?= t('name') ?></label>
                             <input type="text" name="driver_name" class="form-input" required>
