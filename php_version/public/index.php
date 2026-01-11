@@ -111,8 +111,10 @@ include __DIR__ . '/includes/header.php';
                 </div>
             </div>
         <?php else: ?>
-            <?php foreach ($upcomingRaces as $race): 
-                $status = getBettingStatus($race);
+            <?php 
+            $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
+            foreach ($upcomingRaces as $race): 
+                $status = getBettingStatus($race, $settings);
                 $raceBets = $betsByRace[$race['id']] ?? [];
                 $userBet = null;
                 if ($currentUser) {
@@ -127,7 +129,7 @@ include __DIR__ . '/includes/header.php';
                 // Beregn countdown
                 $raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
                 $bettingOpens = clone $raceDateTime;
-                $bettingOpens->modify('-48 hours');
+                $bettingOpens->modify("-{$bettingWindowHours} hours");
                 $now = new DateTime();
             ?>
                 <div class="card mb-2" id="race-<?= $race['id'] ?>">
