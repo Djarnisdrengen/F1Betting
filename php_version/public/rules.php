@@ -120,6 +120,25 @@ include __DIR__ . '/includes/header.php';
             </div>
         </div>
         
+        <!-- Leaderboard Sorting -->
+        <div class="card mb-2">
+            <div class="card-header">
+                <h3><i class="fas fa-trophy text-accent"></i> <?= $lang === 'da' ? 'Rangliste Sortering' : 'Leaderboard Sorting' ?></h3>
+            </div>
+            <div class="card-body">
+                <table class="rules-table">
+                    <tr>
+                        <td><strong>1.</strong></td>
+                        <td><?= $lang === 'da' ? 'Point (højeste først)' : 'Points (highest first)' ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>2.</strong></td>
+                        <td><?= $lang === 'da' ? 'Ved lige point: Stjerner (flest først)' : 'If tied: Stars (most first)' ?></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
         <!-- Example -->
         <div class="card mb-2">
             <div class="card-header">
