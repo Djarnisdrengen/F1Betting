@@ -493,7 +493,7 @@ include __DIR__ . '/includes/header.php';
         </div>
         
         <?php foreach ($races as $race): ?>
-            <div class="card mb-1 <?= isset($_GET['edit']) && $_GET['edit'] === $race['id'] ? 'edit-form-active' : '' ?>" id="race-<?= $race['id'] ?>">
+            <div class="card mb-1 <?= isset($_GET['edit']) && $_GET['edit'] === $race['id'] ? 'edit-form-active' : '' ?>" id="race-<?= escape($race['id']) ?>">
                 <div class="card-body">
                     <div class="flex items-center justify-between mb-1">
                         <div>
