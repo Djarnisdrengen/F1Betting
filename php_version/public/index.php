@@ -203,7 +203,7 @@ include __DIR__ . '/includes/header.php';
                                 ?>
                                     <div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?> <?= $isMyBet ? 'my-bet' : '' ?>">
                                         <div class="bet-user">
-                                            <div class="bet-avatar"><?= strtoupper(substr($bet['display_name'] ?: $bet['email'], 0, 1)) ?></div>
+                                            <div class="bet-avatar"><?= escape(strtoupper(substr($bet['display_name'] ?: $bet['email'], 0, 1))) ?></div>
                                             <div>
                                                 <strong class="flex items-center gap-1">
                                                     <?= escape($bet['display_name'] ?: $bet['email']) ?>
