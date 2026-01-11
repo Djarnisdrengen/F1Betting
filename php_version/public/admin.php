@@ -651,16 +651,16 @@ include __DIR__ . '/includes/header.php';
                             <br><small class="text-muted"><?= escape($user['email']) ?></small>
                         </div>
                         <span class="badge" style="background: <?= $user['role'] === 'admin' ? 'var(--f1-red)' : 'var(--bg-secondary)' ?>; color: <?= $user['role'] === 'admin' ? 'white' : 'var(--text-primary)' ?>;">
-                            <?= $user['role'] ?>
+                            <?= escape($user['role']) ?>
                         </span>
                         <?php if ($user['stars'] > 0): ?>
-                            <span class="star">★<?= $user['stars'] ?></span>
+                            <span class="star">★<?= intval($user['stars']) ?></span>
                         <?php endif; ?>
-                        <span class="text-accent"><?= $user['points'] ?> pts</span>
+                        <span class="text-accent"><?= intval($user['points']) ?> pts</span>
                     </div>
                     <?php if ($user['id'] !== $currentUser['id']): ?>
                         <div class="flex gap-1">
-                            <a href="?tab=users&toggle_role=<?= $user['id'] ?>" class="btn btn-secondary btn-sm">
+                            <a href="?tab=users&toggle_role=<?= escape($user['id']) ?>" class="btn btn-secondary btn-sm">
                                 <?= $user['role'] === 'admin' ? ($lang === 'da' ? 'Gør Bruger' : 'Make User') : ($lang === 'da' ? 'Gør Admin' : 'Make Admin') ?>
                             </a>
                             <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('reset-pw-<?= $user['id'] ?>').classList.toggle('hidden')">
