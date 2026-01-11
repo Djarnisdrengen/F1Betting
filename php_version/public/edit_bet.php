@@ -148,6 +148,7 @@ include __DIR__ . '/includes/header.php';
             <?php endif; ?>
             
             <form method="POST">
+                <?= csrfField() ?>
                 <?php 
                 $positions = [
                     ['key' => 'p1', 'label' => 'P1 (25 pts)', 'position' => 1],
