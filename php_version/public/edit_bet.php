@@ -7,7 +7,7 @@ $db = getDB();
 $lang = getLang();
 $settings = getSettings();
 
-$betId = $_GET['id'] ?? '';
+$betId = sanitizeString($_GET['id'] ?? '');
 if (!$betId) {
     header("Location: index.php");
     exit;
@@ -58,9 +58,11 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $p1 = $_POST['p1'] ?? '';
-    $p2 = $_POST['p2'] ?? '';
-    $p3 = $_POST['p3'] ?? '';
+    requireCsrf();
+    
+    $p1 = sanitizeString($_POST['p1'] ?? '');
+    $p2 = sanitizeString($_POST['p2'] ?? '');
+    $p3 = sanitizeString($_POST['p3'] ?? '');
     
     // Validering
     if (!$p1 || !$p2 || !$p3) {
