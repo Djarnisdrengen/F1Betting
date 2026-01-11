@@ -6,7 +6,7 @@
  *   0 * * * * php /path/to/cron_notifications.php
  * 
  * It sends email notifications when:
- * - Betting window opens (48 hours before race)
+ * - Betting window opens (configurable hours before race)
  * - Betting window closes soon (2 hours before race)
  */
 
@@ -14,6 +14,8 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/smtp.php';
 
 $db = getDB();
+$settings = getSettings();
+$bettingWindowHours = $settings['betting_window_hours'] ?? 48;
 
 // Get all users who want notifications (all active users for now)
 $users = $db->query("SELECT * FROM users")->fetchAll();
@@ -26,7 +28,7 @@ $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
 
 foreach ($races as $race) {
     $raceDateTime = strtotime($race['race_date'] . ' ' . $race['race_time']);
-    $bettingOpens = $raceDateTime - (48 * 60 * 60); // 48 hours before
+    $bettingOpens = $raceDateTime - ($bettingWindowHours * 60 * 60);
     $bettingClosesWarning = $raceDateTime - (2 * 60 * 60); // 2 hours before
     
     // Check if betting just opened (within last hour)
@@ -41,7 +43,7 @@ foreach ($races as $race) {
             $stmt->execute([$user['id'], $race['id']]);
             if ($stmt->fetch()) continue; // Already has bet, skip
             
-            sendBettingOpenEmail($user, $race);
+            sendBettingOpenEmail($user, $race, $bettingWindowHours);
         }
     }
     
