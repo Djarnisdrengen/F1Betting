@@ -377,13 +377,13 @@ function sendInviteEmail($email, $inviteLink, $inviterName, $lang = 'da') {
  * Get HTML email template
  */
 function getEmailTemplate($greeting, $intro, $buttonText, $buttonLink, $expiry, $ignore, $footer, $appName) {
-    // Use formula-1.dk for email assets and links (without /f1 subfolder)
-    $emailBaseUrl = 'https://formula-1.dk';
+    // Use EMAIL_BASE_URL for email assets and links (falls back to SITE_URL)
+    $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : (defined('SITE_URL') ? SITE_URL : '');
     $logoUrl = $emailBaseUrl . '/assets/logo_header_dark.png';
     
-    // Convert buttonLink to use formula-1.dk if it uses SITE_URL
+    // Convert buttonLink to use EMAIL_BASE_URL if it uses SITE_URL
     $siteUrl = defined('SITE_URL') ? SITE_URL : '';
-    if (!empty($siteUrl) && strpos($buttonLink, $siteUrl) === 0) {
+    if (!empty($siteUrl) && !empty($emailBaseUrl) && $siteUrl !== $emailBaseUrl && strpos($buttonLink, $siteUrl) === 0) {
         $buttonLink = str_replace($siteUrl, $emailBaseUrl, $buttonLink);
     }
     

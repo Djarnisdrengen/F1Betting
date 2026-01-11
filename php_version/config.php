@@ -38,6 +38,10 @@ define('SMTP_PASS', '%oFi9Bpl9Se8MH*Hc*kvirey&Rmsh7IuYrcx27!x5LYws8wm121!vY4xXzk
 define('SMTP_FROM_EMAIL', 'noreply@formula-1.dk'); // Afsender email
 define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
 
+// Email URL (bruges i email templates - uden trailing slash)
+// Hvis du bruger et andet domæne til emails end SITE_URL
+define('EMAIL_BASE_URL', 'https://formula-1.dk');
+
 // Session indstillinger
 session_start();
 
