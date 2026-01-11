@@ -5,6 +5,7 @@ requireLogin();
 $currentUser = getCurrentUser();
 $db = getDB();
 $lang = getLang();
+$settings = getSettings();
 
 $betId = $_GET['id'] ?? '';
 if (!$betId) {
@@ -34,7 +35,7 @@ $race = [
     'race_time' => $bet['race_time'],
     'result_p1' => $bet['result_p1']
 ];
-$status = getBettingStatus($race);
+$status = getBettingStatus($race, $settings);
 
 if ($status['status'] !== 'open') {
     header("Location: index.php?error=betting_closed");
