@@ -6,7 +6,7 @@ $currentUser = getCurrentUser();
 $db = getDB();
 $settings = getSettings();
 
-$raceId = $_GET['race'] ?? '';
+$raceId = sanitizeString($_GET['race'] ?? '');
 if (!$raceId) {
     header("Location: races.php");
     exit;
@@ -53,9 +53,11 @@ $error = '';
 $lang = getLang();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $p1 = $_POST['p1'] ?? '';
-    $p2 = $_POST['p2'] ?? '';
-    $p3 = $_POST['p3'] ?? '';
+    requireCsrf();
+    
+    $p1 = sanitizeString($_POST['p1'] ?? '');
+    $p2 = sanitizeString($_POST['p2'] ?? '');
+    $p3 = sanitizeString($_POST['p3'] ?? '');
     
     // Validering
     if (!$p1 || !$p2 || !$p3) {
