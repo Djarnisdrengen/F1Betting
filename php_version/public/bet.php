@@ -136,6 +136,7 @@ include __DIR__ . '/includes/header.php';
             <?php endif; ?>
             
             <form method="POST">
+                <?= csrfField() ?>
                 <?php 
                 $settings = getSettings();
                 $positions = [
