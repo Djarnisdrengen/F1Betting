@@ -44,14 +44,14 @@ body.dark {
 
 /* Light Theme */
 body.light {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f5f5f7;
-    --bg-card: #ffffff;
-    --bg-hover: #ebebed;
+    --bg-primary: #f0f0f2;
+    --bg-secondary: #e5e5e8;
+    --bg-card: #f8f8fa;
+    --bg-hover: #dcdce0;
     --text-primary: #1a1a1d;
     --text-secondary: #4a4a50;
     --text-muted: #6a6a70;
-    --border-color: #d4d4d8;
+    --border-color: #c8c8cc;
     background-color: var(--bg-primary);
     color: var(--text-primary);
 }
