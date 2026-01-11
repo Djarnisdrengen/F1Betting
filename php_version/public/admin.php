@@ -454,6 +454,7 @@ include __DIR__ . '/includes/header.php';
             <div id="race-form-body" class="collapsible-form">
                 <div class="card-body">
                     <form method="POST">
+                    <?= csrfField() ?>
                         <div class="grid grid-2 mb-2">
                             <div class="form-group" style="margin:0;">
                                 <label class="form-label"><?= t('name') ?></label>
@@ -514,6 +515,7 @@ include __DIR__ . '/includes/header.php';
                 <?php if (isset($_GET['edit']) && $_GET['edit'] === $race['id']): ?>
                     <div class="card-body" style="border-top: 1px solid var(--border-color); background: var(--bg-hover);">
                         <form method="POST">
+                    <?= csrfField() ?>
                             <input type="hidden" name="race_id" value="<?= $race['id'] ?>">
                             <div class="grid grid-2 mb-2">
                                 <div class="form-group" style="margin:0;">
@@ -891,6 +893,7 @@ include __DIR__ . '/includes/header.php';
             <div class="card-header"><h3><?= t('settings') ?></h3></div>
             <div class="card-body">
                 <form method="POST">
+                    <?= csrfField() ?>
                     <div class="grid grid-2 mb-2">
                         <div class="form-group">
                             <label class="form-label">App Title</label>
