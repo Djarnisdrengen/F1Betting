@@ -42,7 +42,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
     <link rel="apple-touch-icon" href="assets/favicon.png">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
 </head>
 <body class="<?= $theme ?>">
     <header class="header">
