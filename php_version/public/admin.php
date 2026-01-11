@@ -516,7 +516,7 @@ include __DIR__ . '/includes/header.php';
                     <div class="card-body" style="border-top: 1px solid var(--border-color); background: var(--bg-hover);">
                         <form method="POST">
                     <?= csrfField() ?>
-                            <input type="hidden" name="race_id" value="<?= $race['id'] ?>">
+                            <input type="hidden" name="race_id" value="<?= escape($race['id']) ?>">
                             <div class="grid grid-2 mb-2">
                                 <div class="form-group" style="margin:0;">
                                     <label class="form-label"><?= t('name') ?></label>
