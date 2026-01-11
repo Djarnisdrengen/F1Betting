@@ -42,7 +42,16 @@ define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
 // Hvis du bruger et andet domæne til emails end SITE_URL
 define('EMAIL_BASE_URL', 'https://formula-1.dk');
 
-// Session indstillinger
+// ============================================
+// SECURE SESSION CONFIGURATION
+// ============================================
+// Set secure session cookie parameters BEFORE session_start()
+ini_set('session.cookie_secure', 1);       // Only send cookie over HTTPS
+ini_set('session.cookie_httponly', 1);     // Prevent JavaScript access to session cookie
+ini_set('session.cookie_samesite', 'Lax'); // CSRF protection
+ini_set('session.use_strict_mode', 1);     // Reject uninitialized session IDs
+ini_set('session.use_only_cookies', 1);    // Only use cookies for sessions (no URL params)
+
 session_start();
 
 // ============================================
