@@ -12,6 +12,7 @@ $pointsP1 = $settings['points_p1'] ?? 25;
 $pointsP2 = $settings['points_p2'] ?? 18;
 $pointsP3 = $settings['points_p3'] ?? 15;
 $pointsWrongPos = $settings['points_wrong_pos'] ?? 5;
+$bettingWindowHours = $settings['betting_window_hours'] ?? 48;
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -31,7 +32,7 @@ include __DIR__ . '/includes/header.php';
                 <table class="rules-table">
                     <tr>
                         <td><strong><?= $lang === 'da' ? 'Åbner' : 'Opens' ?></strong></td>
-                        <td><?= $lang === 'da' ? '48 timer før løbets starttid' : '48 hours before race start time' ?></td>
+                        <td><?= $lang === 'da' ? $bettingWindowHours . ' timer før løbets starttid' : $bettingWindowHours . ' hours before race start time' ?></td>
                     </tr>
                     <tr>
                         <td><strong><?= $lang === 'da' ? 'Lukker' : 'Closes' ?></strong></td>
