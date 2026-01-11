@@ -236,20 +236,4 @@ include __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<?php if ($firstUpcomingRaceId): ?>
-<script>
-// Scroll to first upcoming race on page load (only on desktop)
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.innerWidth > 768) {
-        const raceEl = document.getElementById('race-<?= $firstUpcomingRaceId ?>');
-        if (raceEl) {
-            setTimeout(() => {
-                raceEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 300);
-        }
-    }
-});
-</script>
-<?php endif; ?>
-
 <?php include __DIR__ . '/includes/footer.php'; ?>
