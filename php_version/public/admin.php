@@ -731,13 +731,13 @@ include __DIR__ . '/includes/header.php';
                             </small>
                         </div>
                         <div class="flex gap-1">
-                            <a href="?tab=invites&resend_invite=<?= $invite['id'] ?>" class="btn btn-secondary btn-sm" title="<?= $lang === 'da' ? 'Gensend' : 'Resend' ?>">
+                            <a href="?tab=invites&resend_invite=<?= escape($invite['id']) ?>" class="btn btn-secondary btn-sm" title="<?= $lang === 'da' ? 'Gensend' : 'Resend' ?>">
                                 <i class="fas fa-redo"></i>
                             </a>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="copyInviteLink('<?= escape(SITE_URL . '/register.php?token=' . $invite['token']) ?>')" title="<?= $lang === 'da' ? 'Kopiér link' : 'Copy link' ?>">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="copyInviteLink('<?= escape((defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL) . '/register.php?token=' . $invite['token']) ?>')" title="<?= $lang === 'da' ? 'Kopiér link' : 'Copy link' ?>">
                                 <i class="fas fa-copy"></i>
                             </button>
-                            <a href="?tab=invites&delete_invite=<?= $invite['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($invite['email']) ?>">
+                            <a href="?tab=invites&delete_invite=<?= escape($invite['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($invite['email']) ?>">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
