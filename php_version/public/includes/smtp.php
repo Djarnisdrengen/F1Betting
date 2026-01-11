@@ -4,7 +4,7 @@
  * Works with simply.com and other SMTP providers
  * 
  * Konfiguration i config.php:
- *   define('SMTP_HOST', 'mail.simply.com');
+ *   define('SMTP_HOST', 'websmtp.simply.com');  // eller 'asmtp.unoeuro.com'
  *   define('SMTP_PORT', 587);
  *   define('SMTP_USER', 'din@email.dk');
  *   define('SMTP_PASS', 'dit_password');
@@ -22,6 +22,7 @@ class SMTPMailer {
     private $socket;
     private $debug = false;
     private $lastError = '';
+    private $debugLog = [];
 
     public function __construct($host, $port, $user, $pass, $fromEmail, $fromName) {
         $this->host = $host;
@@ -35,9 +36,18 @@ class SMTPMailer {
     public function getLastError() {
         return $this->lastError;
     }
+    
+    public function getDebugLog() {
+        return implode("\n", $this->debugLog);
+    }
+    
+    private function log($message) {
+        $this->debugLog[] = date('H:i:s') . " - " . $message;
+    }
 
     public function send($to, $subject, $htmlBody, $textBody = null) {
         $this->lastError = '';
+        $this->debugLog = [];
         
         // Create message with proper headers
         $boundary = md5(uniqid(time()));
@@ -58,11 +68,17 @@ class SMTPMailer {
         $message .= $htmlBody . "\r\n\r\n";
         $message .= "--{$boundary}--\r\n";
 
+        $this->log("Attempting SMTP to {$this->host}:{$this->port}");
+        
         // Try SMTP first
         if ($this->sendViaSMTP($to, $subject, $message, $headers)) {
+            $this->log("SMTP send successful");
             return true;
         }
 
+        $this->log("SMTP failed: {$this->lastError}");
+        $this->log("Falling back to PHP mail()");
+        
         // Fallback to PHP mail()
         return $this->sendViaMail($to, $subject, $message, $headers);
     }
@@ -74,25 +90,27 @@ class SMTPMailer {
                 'ssl' => [
                     'verify_peer' => false,
                     'verify_peer_name' => false,
-                    'allow_self_signed' => true
+                    'allow_self_signed' => true,
+                    'crypto_method' => STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
                 ]
             ]);
 
             $errno = 0;
             $errstr = '';
             
-            // Try TLS connection first (port 587)
-            if ($this->port == 587) {
+            $this->log("Connecting to {$this->host}:{$this->port}");
+            
+            // For port 465, use SSL directly. For 587/25, use TCP then upgrade to TLS
+            if ($this->port == 465) {
                 $this->socket = @stream_socket_client(
-                    "tcp://{$this->host}:{$this->port}",
+                    "ssl://{$this->host}:{$this->port}",
                     $errno, $errstr, 30,
                     STREAM_CLIENT_CONNECT,
                     $context
                 );
             } else {
-                // For port 465, use SSL directly
                 $this->socket = @stream_socket_client(
-                    "ssl://{$this->host}:{$this->port}",
+                    "tcp://{$this->host}:{$this->port}",
                     $errno, $errstr, 30,
                     STREAM_CLIENT_CONNECT,
                     $context
@@ -101,42 +119,114 @@ class SMTPMailer {
 
             if (!$this->socket) {
                 $this->lastError = "Could not connect to SMTP server: $errstr ($errno)";
+                $this->log($this->lastError);
                 return false;
             }
 
+            $this->log("Connected successfully");
+
             // Read greeting
-            $this->getResponse();
-
-            // Send EHLO
-            $this->sendCommand("EHLO " . gethostname());
+            $greeting = $this->getResponse();
+            $this->log("Server greeting: " . trim($greeting));
             
-            // Start TLS if port 587
-            if ($this->port == 587) {
-                $this->sendCommand("STARTTLS");
-                if (!@stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-                    $this->lastError = "Could not enable TLS";
-                    fclose($this->socket);
-                    return false;
-                }
-                // Send EHLO again after TLS
-                $this->sendCommand("EHLO " . gethostname());
-            }
-
-            // Authenticate
-            $this->sendCommand("AUTH LOGIN");
-            $this->sendCommand(base64_encode($this->user));
-            $response = $this->sendCommand(base64_encode($this->pass));
-            
-            if (strpos($response, '235') === false && strpos($response, '334') === false) {
-                $this->lastError = "SMTP Authentication failed: $response";
+            if (strpos($greeting, '220') === false) {
+                $this->lastError = "Invalid server greeting: $greeting";
                 fclose($this->socket);
                 return false;
             }
 
+            // Send EHLO
+            $ehloHost = gethostname() ?: 'localhost';
+            $response = $this->sendCommand("EHLO {$ehloHost}");
+            $this->log("EHLO response: " . trim($response));
+            
+            // Start TLS if port 587 or 25 (not needed for 465 which is already SSL)
+            if ($this->port == 587 || $this->port == 25) {
+                $response = $this->sendCommand("STARTTLS");
+                $this->log("STARTTLS response: " . trim($response));
+                
+                if (strpos($response, '220') === false) {
+                    $this->lastError = "STARTTLS failed: $response";
+                    fclose($this->socket);
+                    return false;
+                }
+                
+                $cryptoMethod = STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
+                if (defined('STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT')) {
+                    $cryptoMethod |= STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT;
+                }
+                
+                if (!@stream_socket_enable_crypto($this->socket, true, $cryptoMethod)) {
+                    $this->lastError = "Could not enable TLS encryption";
+                    $this->log($this->lastError);
+                    fclose($this->socket);
+                    return false;
+                }
+                
+                $this->log("TLS enabled successfully");
+                
+                // Send EHLO again after TLS
+                $response = $this->sendCommand("EHLO {$ehloHost}");
+                $this->log("EHLO after TLS: " . trim($response));
+            }
+
+            // Authenticate
+            $response = $this->sendCommand("AUTH LOGIN");
+            $this->log("AUTH LOGIN response: " . trim($response));
+            
+            if (strpos($response, '334') === false) {
+                $this->lastError = "AUTH LOGIN not accepted: $response";
+                fclose($this->socket);
+                return false;
+            }
+            
+            $response = $this->sendCommand(base64_encode($this->user));
+            $this->log("Username response: " . trim($response));
+            
+            if (strpos($response, '334') === false) {
+                $this->lastError = "Username not accepted: $response";
+                fclose($this->socket);
+                return false;
+            }
+            
+            $response = $this->sendCommand(base64_encode($this->pass));
+            $this->log("Password response: " . trim($response));
+            
+            if (strpos($response, '235') === false) {
+                $this->lastError = "SMTP Authentication failed: $response";
+                fclose($this->socket);
+                return false;
+            }
+            
+            $this->log("Authentication successful");
+
             // Send email
-            $this->sendCommand("MAIL FROM:<{$this->fromEmail}>");
-            $this->sendCommand("RCPT TO:<{$to}>");
-            $this->sendCommand("DATA");
+            $response = $this->sendCommand("MAIL FROM:<{$this->fromEmail}>");
+            $this->log("MAIL FROM response: " . trim($response));
+            
+            if (strpos($response, '250') === false) {
+                $this->lastError = "MAIL FROM rejected: $response";
+                fclose($this->socket);
+                return false;
+            }
+            
+            $response = $this->sendCommand("RCPT TO:<{$to}>");
+            $this->log("RCPT TO response: " . trim($response));
+            
+            if (strpos($response, '250') === false) {
+                $this->lastError = "RCPT TO rejected: $response";
+                fclose($this->socket);
+                return false;
+            }
+            
+            $response = $this->sendCommand("DATA");
+            $this->log("DATA response: " . trim($response));
+            
+            if (strpos($response, '354') === false) {
+                $this->lastError = "DATA command rejected: $response";
+                fclose($this->socket);
+                return false;
+            }
 
             // Send headers and body
             $data = "To: {$to}\r\n";
@@ -147,15 +237,22 @@ class SMTPMailer {
             $data .= "\r\n.";
             
             $response = $this->sendCommand($data);
+            $this->log("Message send response: " . trim($response));
 
             // Quit
             $this->sendCommand("QUIT");
             fclose($this->socket);
 
-            return (strpos($response, '250') !== false || strpos($response, '354') !== false);
+            if (strpos($response, '250') !== false) {
+                return true;
+            }
+            
+            $this->lastError = "Message not accepted: $response";
+            return false;
 
         } catch (Exception $e) {
             $this->lastError = "SMTP Error: " . $e->getMessage();
+            $this->log($this->lastError);
             if ($this->socket) {
                 fclose($this->socket);
             }
@@ -170,10 +267,11 @@ class SMTPMailer {
 
     private function getResponse() {
         $response = '';
-        stream_set_timeout($this->socket, 10);
+        stream_set_timeout($this->socket, 30);
         while (($line = fgets($this->socket, 515)) !== false) {
             $response .= $line;
-            if (substr($line, 3, 1) == ' ') {
+            // Check if this is the last line (4th char is space, not hyphen)
+            if (isset($line[3]) && $line[3] == ' ') {
                 break;
             }
         }
