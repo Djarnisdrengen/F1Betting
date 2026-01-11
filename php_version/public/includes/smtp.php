@@ -306,10 +306,10 @@ function sendEmail($to, $subject, $htmlContent, $textContent = null) {
     );
 
     if ($mailer->send($to, $subject, $htmlContent, $textContent)) {
-        return ['success' => true, 'message' => 'Email sent successfully'];
+        return ['success' => true, 'message' => 'Email sent successfully via SMTP'];
     }
 
-    return ['success' => false, 'message' => $mailer->getLastError()];
+    return ['success' => false, 'message' => $mailer->getLastError(), 'debug' => $mailer->getDebugLog()];
 }
 
 /**
