@@ -171,10 +171,11 @@ if (isset($_GET['delete_bet'])) {
     
     if ($bet) {
         // Tjek om betting vindue er åbent - kun tillad sletning hvis åbent
+        $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
         $raceDateTime = new DateTime($bet['race_date'] . ' ' . $bet['race_time']);
         $now = new DateTime();
         $bettingOpens = clone $raceDateTime;
-        $bettingOpens->modify('-48 hours');
+        $bettingOpens->modify("-{$bettingWindowHours} hours");
         
         $canDelete = !$bet['result_p1'] && $now >= $bettingOpens && $now < $raceDateTime;
         
