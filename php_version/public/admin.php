@@ -645,7 +645,7 @@ include __DIR__ . '/includes/header.php';
             <div class="card mb-1">
                 <div class="card-body flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <div class="user-avatar"><?= strtoupper(substr($user['display_name'] ?: $user['email'], 0, 1)) ?></div>
+                        <div class="user-avatar"><?= escape(strtoupper(substr($user['display_name'] ?: $user['email'], 0, 1))) ?></div>
                         <div>
                             <strong><?= escape($user['display_name'] ?: $user['email']) ?></strong>
                             <br><small class="text-muted"><?= escape($user['email']) ?></small>
@@ -855,7 +855,7 @@ include __DIR__ . '/includes/header.php';
                     <?php foreach ($raceBets as $bet): ?>
                         <div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?>">
                             <div class="bet-user">
-                                <div class="bet-avatar"><?= strtoupper(substr($bet['display_name'] ?: $bet['email'], 0, 1)) ?></div>
+                                <div class="bet-avatar"><?= escape(strtoupper(substr($bet['display_name'] ?: $bet['email'], 0, 1))) ?></div>
                                 <div>
                                     <strong class="flex items-center gap-1">
                                         <?= escape($bet['display_name'] ?: $bet['email']) ?>

@@ -68,7 +68,7 @@ include __DIR__ . '/includes/header.php';
                     <td>
                         <div class="flex items-center gap-2">
                             <div class="user-avatar" style="<?= $i >= 3 ? 'background: var(--bg-secondary); color: var(--text-primary);' : '' ?>">
-                                <?= strtoupper(substr($entry['display_name'] ?: $entry['email'], 0, 1)) ?>
+                                <?= escape(strtoupper(substr($entry['display_name'] ?: $entry['email'], 0, 1))) ?>
                             </div>
                             <?= escape($entry['display_name'] ?: $entry['email']) ?>
                         </div>
