@@ -4,20 +4,20 @@
 // ============================================
 
 // Database indstillinger (fra Simply.com kontrolpanel)
-define('DB_HOST', 'mysql.simply.com');  // Eller din specifikke MySQL host
-define('DB_NAME', 'dit_database_navn');  // Dit database navn
-define('DB_USER', 'dit_brugernavn');     // Dit MySQL brugernavn
-define('DB_PASS', 'dit_password');       // Dit MySQL password
+define('DB_HOST', 'mysql2.unoeuro.com');  // Eller din specifikke MySQL host
+define('DB_NAME', 'helvegpovlsen_dk_db_f1betting');  // Dit database navn
+define('DB_USER', 'helvegpovlsen_dk');     // Dit MySQL brugernavn
+define('DB_PASS', 'b4BfaRk9FdgwmEDzt3Gx');       // Dit MySQL password
 
 // Sikkerhed
-define('JWT_SECRET', 'skift-denne-til-en-lang-tilfaeldig-streng-1234567890');
-define('PASSWORD_PEPPER', 'skift-ogsaa-denne-streng');
+define('JWT_SECRET', '7af95bfd-34be-4dfc-8e73-3d615fa77ca7');
+define('PASSWORD_PEPPER', '4bb0fb66f449b36936a8b32d');
 
 // Site URL (uden trailing slash)
 // Eksempler:
 //   Rodmappe: 'https://dit-domæne.dk'
 //   Undermappe: 'https://dit-domæne.dk/f1'
-define('SITE_URL', 'https://dit-domæne.dk/f1');
+define('SITE_URL', 'https://helvegpovlsen.dk/f1');
 
 // ============================================
 // SMTP EMAIL KONFIGURATION (Simply.com)
@@ -33,9 +33,9 @@ define('SITE_URL', 'https://dit-domæne.dk/f1');
 
 define('SMTP_HOST', 'websmtp.simply.com');        // Simply.com SMTP server
 define('SMTP_PORT', 587);                         // 587 for TLS, 465 for SSL
-define('SMTP_USER', 'noreply@dit-domæne.dk');    // Din email adresse
-define('SMTP_PASS', 'din_email_adgangskode');    // Din email adgangskode
-define('SMTP_FROM_EMAIL', 'noreply@dit-domæne.dk'); // Afsender email
+define('SMTP_USER', 'ff1k@helvegpovlsen.dk');    // Din email adresse
+define('SMTP_PASS', '%oFi9Bpl9Se8MH*Hc*kvirey&Rmsh7IuYrcx27!x5LYws8wm121!vY4xXzk936HB');    // Din email adgangskode
+define('SMTP_FROM_EMAIL', 'noreply@helvegpovlsen.dk'); // Afsender email
 define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
 
 // Session indstillinger
