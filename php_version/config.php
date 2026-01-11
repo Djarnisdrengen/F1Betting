@@ -258,11 +258,16 @@ function setTheme($theme) {
 }
 
 // Hjælpefunktioner
-function getBettingStatus($race) {
+function getBettingStatus($race, $settings = null) {
+    if (!$settings) {
+        $settings = getSettings();
+    }
+    $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
+    
     $raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
     $now = new DateTime();
     $bettingOpens = clone $raceDateTime;
-    $bettingOpens->modify('-48 hours');
+    $bettingOpens->modify("-{$bettingWindowHours} hours");
     
     if ($race['result_p1']) {
         return ['status' => 'completed', 'label' => t('race_completed'), 'class' => 'status-completed'];
