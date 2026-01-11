@@ -663,15 +663,15 @@ include __DIR__ . '/includes/header.php';
                             <a href="?tab=users&toggle_role=<?= escape($user['id']) ?>" class="btn btn-secondary btn-sm">
                                 <?= $user['role'] === 'admin' ? ($lang === 'da' ? 'Gør Bruger' : 'Make User') : ($lang === 'da' ? 'Gør Admin' : 'Make Admin') ?>
                             </a>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('reset-pw-<?= $user['id'] ?>').classList.toggle('hidden')">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('reset-pw-<?= escape($user['id']) ?>').classList.toggle('hidden')">
                                 <i class="fas fa-key"></i>
                             </button>
-                            <a href="?tab=users&delete_user=<?= $user['id'] ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>"><i class="fas fa-trash"></i></a>
+                            <a href="?tab=users&delete_user=<?= escape($user['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>"><i class="fas fa-trash"></i></a>
                         </div>
                     <?php endif; ?>
                 </div>
                 <?php if ($user['id'] !== $currentUser['id']): ?>
-                    <div id="reset-pw-<?= $user['id'] ?>" class="hidden" style="padding: 1rem; border-top: 1px solid var(--border-color);">
+                    <div id="reset-pw-<?= escape($user['id']) ?>" class="hidden" style="padding: 1rem; border-top: 1px solid var(--border-color);">
                         <form method="POST" class="flex gap-1 items-end">
                             <?= csrfField() ?>
                             <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
