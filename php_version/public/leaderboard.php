@@ -16,9 +16,14 @@ include __DIR__ . '/includes/header.php';
 
 <h1 class="mb-3"><i class="fas fa-trophy text-accent"></i> <?= t('leaderboard') ?></h1>
 
-<!-- Top 3 Podium (hidden on mobile) -->
+<!-- Top 3 Podium (hidden on mobile via inline media query) -->
 <?php if (count($leaderboard) >= 3): ?>
-<div class="podium-section grid grid-3 mb-3" style="align-items: end;">
+<style>
+@media (max-width: 768px) {
+    .podium-section { display: none !important; }
+}
+</style>
+<div class="podium-section mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); align-items: end;">
     <?php 
     $podiumOrder = [1, 0, 2]; // P2, P1, P3
     $heights = ['8rem', '10rem', '6rem'];
