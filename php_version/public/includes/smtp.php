@@ -377,8 +377,15 @@ function sendInviteEmail($email, $inviteLink, $inviterName, $lang = 'da') {
  * Get HTML email template
  */
 function getEmailTemplate($greeting, $intro, $buttonText, $buttonLink, $expiry, $ignore, $footer, $appName) {
+    // Use formula-1.dk for email assets and links (without /f1 subfolder)
+    $emailBaseUrl = 'https://formula-1.dk';
+    $logoUrl = $emailBaseUrl . '/assets/logo_header_dark.png';
+    
+    // Convert buttonLink to use formula-1.dk if it uses SITE_URL
     $siteUrl = defined('SITE_URL') ? SITE_URL : '';
-    $logoUrl = $siteUrl . '/assets/logo_header_dark.png';
+    if (!empty($siteUrl) && strpos($buttonLink, $siteUrl) === 0) {
+        $buttonLink = str_replace($siteUrl, $emailBaseUrl, $buttonLink);
+    }
     
     return <<<HTML
 <!DOCTYPE html>
