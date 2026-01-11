@@ -532,7 +532,7 @@ include __DIR__ . '/includes/header.php';
                                 </div>
                                 <div class="form-group" style="margin:0;">
                                     <label class="form-label"><?= t('race_time') ?> (CET)</label>
-                                    <input type="time" name="race_time" class="form-input" value="<?= $race['race_time'] ?>" required>
+                                    <input type="time" name="race_time" class="form-input" value="<?= escape($race['race_time']) ?>" required>
                                 </div>
                             </div>
                             <label class="form-label"><?= t('qualifying') ?></label>
