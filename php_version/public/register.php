@@ -13,7 +13,7 @@ $inviteValid = false;
 $inviteEmail = '';
 
 // Tjek invite token
-$token = $_GET['token'] ?? $_POST['token'] ?? '';
+$token = sanitizeString($_GET['token'] ?? $_POST['token'] ?? '');
 
 if ($token) {
     $db = getDB();
@@ -36,16 +36,18 @@ if ($token) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $inviteValid) {
-    $email = trim($_POST['email'] ?? '');
+    requireCsrf();
+    
+    $email = sanitizeEmail($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    $displayName = trim($_POST['display_name'] ?? '');
+    $displayName = sanitizeString($_POST['display_name'] ?? '');
     
     // Email skal matche invite email
     if ($email !== $inviteEmail) {
         $error = $lang === 'da' 
-            ? 'Email skal matche invitationens email: ' . $inviteEmail 
-            : 'Email must match the invitation email: ' . $inviteEmail;
-    } elseif ($email && $password) {
+            ? 'Email skal matche invitationens email: ' . escape($inviteEmail) 
+            : 'Email must match the invitation email: ' . escape($inviteEmail);
+    } elseif ($email && $password && strlen($password) >= 6) {
         $db = getDB();
         
         // Check om email allerede findes
@@ -69,9 +71,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $inviteValid) {
             $stmt->execute([$token]);
             
             $_SESSION['user_id'] = $userId;
+            session_regenerate_id(true);
             header("Location: index.php?success=welcome");
             exit;
         }
+    } else {
+        $error = $lang === 'da' ? 'Adgangskode skal være mindst 6 tegn' : 'Password must be at least 6 characters';
     }
 }
 
@@ -96,6 +101,7 @@ include __DIR__ . '/includes/header.php';
             
             <?php if ($inviteValid): ?>
                 <form method="POST">
+                    <?= csrfField() ?>
                     <input type="hidden" name="token" value="<?= escape($token) ?>">
                     <div class="form-group">
                         <label class="form-label"><?= t('display_name') ?></label>
