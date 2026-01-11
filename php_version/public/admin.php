@@ -814,6 +814,7 @@ include __DIR__ . '/includes/header.php';
         foreach ($bets as $bet) {
             $betsByRace[$bet['race_id']][] = $bet;
         }
+        $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
         ?>
         <?php foreach ($betsByRace as $raceId => $raceBets): 
             $raceName = $raceBets[0]['race_name'];
@@ -825,7 +826,7 @@ include __DIR__ . '/includes/header.php';
                 $raceDateTime = new DateTime($raceData['race_date'] . ' ' . $raceData['race_time']);
                 $now = new DateTime();
                 $bettingOpens = clone $raceDateTime;
-                $bettingOpens->modify('-48 hours');
+                $bettingOpens->modify("-{$bettingWindowHours} hours");
                 $canDeleteBets = !$raceData['result_p1'] && $now >= $bettingOpens && $now < $raceDateTime;
             }
         ?>
