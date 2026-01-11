@@ -12,7 +12,9 @@ $success = '';
 $lang = getLang();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
+    requireCsrf();
+    
+    $email = sanitizeEmail($_POST['email'] ?? '');
     
     if ($email) {
         $db = getDB();
@@ -50,8 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = $lang === 'da' 
                     ? 'Email kunne ikke sendes. Kontakt administrator.' 
                     : 'Email could not be sent. Contact administrator.';
-                // Uncomment below line for testing without email:
-                // $success .= "<br><br>Reset link (for testing): <a href='$resetLink'>$resetLink</a>";
             }
         } else {
             // Don't reveal if email exists or not (security)
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 : 'If the email exists in our system, you will receive a reset link.';
         }
     } else {
-        $error = $lang === 'da' ? 'Indtast din email' : 'Enter your email';
+        $error = $lang === 'da' ? 'Indtast en gyldig email' : 'Enter a valid email';
     }
 }
 
@@ -81,9 +81,10 @@ include __DIR__ . '/includes/header.php';
                 <div class="alert alert-error"><?= escape($error) ?></div>
             <?php endif; ?>
             <?php if ($success): ?>
-                <div class="alert alert-success"><?= $success ?></div>
+                <div class="alert alert-success"><?= escape($success) ?></div>
             <?php else: ?>
                 <form method="POST">
+                    <?= csrfField() ?>
                     <div class="form-group">
                         <label class="form-label"><?= t('email') ?></label>
                         <input type="email" name="email" class="form-input" required placeholder="din@email.dk">
