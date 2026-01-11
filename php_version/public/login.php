@@ -9,7 +9,9 @@ if (getCurrentUser()) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
+    requireCsrf();
+    
+    $email = sanitizeEmail($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     
     if ($email && $password) {
@@ -20,6 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($user && verifyPassword($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
+            // Regenerate session ID to prevent session fixation
+            session_regenerate_id(true);
             header("Location: index.php");
             exit;
         } else {
@@ -45,6 +49,7 @@ include __DIR__ . '/includes/header.php';
             <?php endif; ?>
             
             <form method="POST">
+                <?= csrfField() ?>
                 <div class="form-group">
                     <label class="form-label"><?= t('email') ?></label>
                     <input type="email" name="email" class="form-input" required placeholder="name@example.com">
