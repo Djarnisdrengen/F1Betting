@@ -288,6 +288,19 @@ class SMTPMailer {
 }
 
 /**
+ * Convert SITE_URL to EMAIL_BASE_URL in links
+ */
+function convertToEmailUrl($link) {
+    $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : '';
+    $siteUrl = defined('SITE_URL') ? SITE_URL : '';
+    
+    if (!empty($siteUrl) && !empty($emailBaseUrl) && $siteUrl !== $emailBaseUrl && strpos($link, $siteUrl) === 0) {
+        return str_replace($siteUrl, $emailBaseUrl, $link);
+    }
+    return $link;
+}
+
+/**
  * Send email using configured SMTP
  */
 function sendEmail($to, $subject, $htmlContent, $textContent = null) {
