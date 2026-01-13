@@ -5,7 +5,7 @@
     
     <footer class="footer">
         <div class="container">
-            <p><?= escape($settings['app_title']) ?> <?= escape($settings['app_year']) ?> - <?= t('points_system') ?></p>
+            <p><?= escape($settings['app_title']) ?> <?= escape($settings['app_year']) ?> - <?= $lang === 'da' ? 'Kontakt:' : 'Contact:' ?> info@formula-1.dk</p>
         </div>
     </footer>
     
