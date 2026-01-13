@@ -99,7 +99,7 @@ define('DB_USER', 'dit_brugernavn');     // Database bruger
 define('DB_PASS', 'dit_password');       // Database password
 
 // Site URL (VIGTIGT: Uden trailing slash)
-define('SITE_URL', 'https://dinside.dk/f1');
+define('SITE_URL', 'https://dinside.dk');
 
 // SMTP Email konfiguration
 define('SMTP_HOST', 'asmtp.simply.com');
