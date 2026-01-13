@@ -16,7 +16,7 @@ include __DIR__ . '/includes/header.php';
 
 <h1 class="mb-3"><i class="fas fa-trophy text-accent"></i> <?= t('leaderboard') ?></h1>
 
-<!-- Top 3 Podium (hidden on mobile via inline media query) -->
+<!-- Top 3 Podium & bets column (hidden on mobile via inline media query) -->
 <?php if (count($leaderboard) >= 3): ?>
 <style>
 @media (max-width: 768px) {
@@ -52,7 +52,7 @@ include __DIR__ . '/includes/header.php';
             <tr>
                 <th><?= t('rank') ?></th>
                 <th><?= t('user') ?></th>
-                <th class="text-center">Bets</th>
+                <th class="text-center podium-section">Bets</th>
                 <th class="text-center"><?= t('stars') ?></th>
                 <th class="text-right"><?= t('points') ?></th>
             </tr>
@@ -73,7 +73,7 @@ include __DIR__ . '/includes/header.php';
                             <?= escape($entry['display_name'] ?: $entry['email']) ?>
                         </div>
                     </td>
-                    <td class="text-center text-muted"><?= $entry['bets_count'] ?></td>
+                    <td class="text-center text-muted podium-section"><?= $entry['bets_count'] ?></td>
                     <td class="text-center">
                         <?php if ($entry['stars'] > 0): ?>
                             <span class="star">★<?= $entry['stars'] ?></span>

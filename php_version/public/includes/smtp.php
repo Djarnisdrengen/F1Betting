@@ -80,7 +80,7 @@ class SMTPMailer {
         $this->log("Falling back to PHP mail()");
         
         // Fallback to PHP mail()
-        return $this->sendViaMail($to, $subject, $message, $headers);
+       return $this->sendViaMail($to, $subject, $message, $headers);
     }
 
     private function sendViaSMTP($to, $subject, $message, $headers) {

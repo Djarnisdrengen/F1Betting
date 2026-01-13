@@ -17,7 +17,7 @@ define('PASSWORD_PEPPER', '4bb0fb66f449b36936a8b32d');
 // Eksempler:
 //   Rodmappe: 'https://dit-domæne.dk'
 //   Undermappe: 'https://dit-domæne.dk/f1'
-define('SITE_URL', 'https://helvegpovlsen.dk/f1');
+define('SITE_URL', 'https://hpovlsen.dk');
 
 // ============================================
 // SMTP EMAIL KONFIGURATION (Simply.com)
@@ -35,12 +35,12 @@ define('SMTP_HOST', 'websmtp.simply.com');        // Simply.com SMTP server
 define('SMTP_PORT', 587);                         // 587 for TLS, 465 for SSL
 define('SMTP_USER', 'ff1k@helvegpovlsen.dk');    // Din email adresse
 define('SMTP_PASS', '%oFi9Bpl9Se8MH*Hc*kvirey&Rmsh7IuYrcx27!x5LYws8wm121!vY4xXzk936HB');    // Din email adgangskode
-define('SMTP_FROM_EMAIL', 'noreply@formula-1.dk'); // Afsender email
+define('SMTP_FROM_EMAIL', 'noreply@hpovlsen.dk'); // Afsender email
 define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
 
 // Email URL (bruges i email templates - uden trailing slash)
 // Hvis du bruger et andet domæne til emails end SITE_URL
-define('EMAIL_BASE_URL', 'https://formula-1.dk');
+define('EMAIL_BASE_URL', 'https://hpovlsen.dk');
 
 // ============================================
 // SECURE SESSION CONFIGURATION
