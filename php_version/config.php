@@ -4,20 +4,19 @@
 // ============================================
 
 // Database indstillinger (fra Simply.com kontrolpanel)
-define('DB_HOST', 'mysql2.unoeuro.com');  // Eller din specifikke MySQL host
-define('DB_NAME', 'helvegpovlsen_dk_db_f1betting');  // Dit database navn
-define('DB_USER', 'helvegpovlsen_dk');     // Dit MySQL brugernavn
-define('DB_PASS', 'b4BfaRk9FdgwmEDzt3Gx');       // Dit MySQL password
+define('DB_HOST', 'xxx');  // Eller din specifikke MySQL host
+define('DB_NAME', 'xxx');  // Dit database navn
+define('DB_USER', 'xxx');     // Dit MySQL brugernavn
+define('DB_PASS', 'xxx');       // Dit MySQL password
 
 // Sikkerhed
-define('JWT_SECRET', '7af95bfd-34be-4dfc-8e73-3d615fa77ca7');
-define('PASSWORD_PEPPER', '4bb0fb66f449b36936a8b32d');
+define('JWT_SECRET', 'xxx');
+define('PASSWORD_PEPPER', 'xxx');
 
 // Site URL (uden trailing slash)
 // Eksempler:
 //   Rodmappe: 'https://dit-domæne.dk'
-//   Undermappe: 'https://dit-domæne.dk/f1'
-define('SITE_URL', 'https://hpovlsen.dk');
+define('SITE_URL', 'xxx');
 
 // ============================================
 // SMTP EMAIL KONFIGURATION (Simply.com)
@@ -31,16 +30,16 @@ define('SITE_URL', 'https://hpovlsen.dk');
 //   Brugernavn: din fulde email adresse
 //   Password: din email adgangskode
 
-define('SMTP_HOST', 'websmtp.simply.com');        // Simply.com SMTP server
+define('SMTP_HOST', 'xxx');        // Simply.com SMTP server
 define('SMTP_PORT', 587);                         // 587 for TLS, 465 for SSL
-define('SMTP_USER', 'ff1k@helvegpovlsen.dk');    // Din email adresse
-define('SMTP_PASS', '%oFi9Bpl9Se8MH*Hc*kvirey&Rmsh7IuYrcx27!x5LYws8wm121!vY4xXzk936HB');    // Din email adgangskode
-define('SMTP_FROM_EMAIL', 'noreply@hpovlsen.dk'); // Afsender email
-define('SMTP_FROM_NAME', 'F1 Betting');          // Afsender navn
+define('SMTP_USER', 'xxx');    // Din email adresse
+define('SMTP_PASS', 'xxx');    // Din email adgangskode
+define('SMTP_FROM_EMAIL', 'xxx'); // Afsender email
+define('SMTP_FROM_NAME', 'xxx');          // Afsender navn
 
 // Email URL (bruges i email templates - uden trailing slash)
 // Hvis du bruger et andet domæne til emails end SITE_URL
-define('EMAIL_BASE_URL', 'https://hpovlsen.dk');
+define('EMAIL_BASE_URL', 'xxx');
 
 // ============================================
 // SECURE SESSION CONFIGURATION
