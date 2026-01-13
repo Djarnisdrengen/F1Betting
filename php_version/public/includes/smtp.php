@@ -332,6 +332,9 @@ function sendPasswordResetEmail($email, $displayName, $resetLink, $lang = 'da') 
     $name = $displayName ?: $email;
     $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
     
+    // Convert link to use EMAIL_BASE_URL
+    $resetLink = convertToEmailUrl($resetLink);
+    
     if ($lang === 'da') {
         $subject = "Nulstil din adgangskode - $appName";
         $greeting = "Hej $name,";
