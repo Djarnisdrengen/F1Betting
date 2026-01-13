@@ -365,6 +365,9 @@ function sendPasswordResetEmail($email, $displayName, $resetLink, $lang = 'da') 
 function sendInviteEmail($email, $inviteLink, $inviterName, $lang = 'da') {
     $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
     
+    // Convert link to use EMAIL_BASE_URL
+    $inviteLink = convertToEmailUrl($inviteLink);
+    
     if ($lang === 'da') {
         $subject = "Du er inviteret til $appName!";
         $greeting = "Hej!";
