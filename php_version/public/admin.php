@@ -147,15 +147,44 @@ if (isset($_GET['delete_user'])) {
 if (isset($_POST['reset_user_password'])) {
     $userId = $_POST['user_id'] ?? '';
     $newPassword = $_POST['new_password'] ?? '';
-    
+    $userEmail = $_POST['user_email'] ?? '';
+    $userName = $_POST['user_name'] ?? '';
+
     if ($userId && strlen($newPassword) >= 6) {
         $hashedPassword = hashPassword($newPassword);
         $stmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
         $stmt->execute([$hashedPassword, $userId]);
         $message = $lang === 'da' ? 'Adgangskode nulstillet!' : 'Password reset!';
+
+        // Send email til bruger
+        require_once __DIR__ . '/includes/smtp.php';
+        $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+        
+        if ($lang === 'da') {
+            $subject = "Dit kodeord er nulstillet! - $appName";
+            $greeting = "Hej " . $userName . ",";
+            $intro = "Dit kodeord er blevet nulstillet af " . $currentUser['display_name'] . ". Den nye kode er: '" . $newPassword . "'";
+            $buttonText = "Gå til appen";
+            $expiry = "Kontakt administrator hvis du har spørgsmål.";
+            $regards = "Venlig hilsen,<br>$appName";
+        } else {
+            $subject = "Your password has been reset! - $appName";
+            $greeting = "Hi " . $userName . ",";
+            $intro = "Your password has been reset by " . $currentUser['display_name'] . "). The new password is: '" . $newPassword . "'";
+            $buttonText = "Go to app";
+            $expiry = "Contact administrator if you have questions.";
+            $regards = "Regards,<br>$appName";
+        }
+        
+        $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
+        $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', $regards, $appName);
+        sendEmail($userEmail, $subject, $htmlContent);
+
     } else {
         $error = $lang === 'da' ? 'Adgangskoden skal være mindst 6 tegn' : 'Password must be at least 6 characters';
     }
+
+
 }
 
 // ============ DELETE BET ============
@@ -676,6 +705,9 @@ include __DIR__ . '/includes/header.php';
                         <form method="POST" class="flex gap-1 items-end">
                             <?= csrfField() ?>
                             <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
+                            <input type="hidden" name="user_email" value="<?= escape($user['email']) ?>">
+                            <input type="hidden" name="user_name" value="<?= escape($user['display_name']) ?>">
+
                             <div class="form-group" style="margin:0; flex:1;">
                                 <label class="form-label"><?= $lang === 'da' ? 'Ny adgangskode' : 'New password' ?></label>
                                 <input type="password" name="new_password" class="form-input" required minlength="6" placeholder="••••••••">
