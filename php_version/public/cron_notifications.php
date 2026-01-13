@@ -76,7 +76,7 @@ function sendBettingOpenEmail($user, $race, $bettingWindowHours = 48) {
     $name = $user['display_name'] ?: $user['email'];
     $raceDate = date('d M Y', strtotime($race['race_date']));
     $raceTime = substr($race['race_time'], 0, 5);
-    $betLink = SITE_URL . "/bet.php?race=" . $race['id'];
+    $betLink = convertToEmailUrl(SITE_URL . "/bet.php?race=" . $race['id']);
     
     // Try Danish first, then English
     $subject = "Betting åbent: {$race['name']} - $appName";
@@ -107,7 +107,7 @@ function sendBettingClosingEmail($user, $race) {
     $name = $user['display_name'] ?: $user['email'];
     $raceDate = date('d M Y', strtotime($race['race_date']));
     $raceTime = substr($race['race_time'], 0, 5);
-    $betLink = SITE_URL . "/bet.php?race=" . $race['id'];
+    $betLink = convertToEmailUrl(SITE_URL . "/bet.php?race=" . $race['id']);
     
     $subject = "⏰ Sidste chance: {$race['name']} - $appName";
     $greeting = "Hej $name!";
