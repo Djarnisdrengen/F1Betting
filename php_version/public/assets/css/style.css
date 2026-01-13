@@ -797,7 +797,7 @@ body.light input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .collapsible-form.expanded {
-    max-height: 500px;
+    max-height: 1000px;
 }
 
 .collapsible-form .card-body {
