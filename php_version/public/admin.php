@@ -220,7 +220,8 @@ if (isset($_GET['delete_bet'])) {
                 $expiry = "Contact administrator if you have questions.";
             }
             
-            $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, SITE_URL, $expiry, '', "Best regards,<br>$appName", $appName);
+            $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
+            $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', "Best regards,<br>$appName", $appName);
             sendEmail($bet['email'], $subject, $htmlContent);
             
             $message = $lang === 'da' ? 'Bet slettet og bruger notificeret!' : 'Bet deleted and user notified!';
