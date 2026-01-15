@@ -1,6 +1,11 @@
 <?php
 // ============================================
 // KONFIGURATION - REDIGER DISSE VÆRDIER
+// VALUES DOMAIN SPECIFIC: (rest is same for all domains)
+//    * define('DB_NAME', 'xxx') 
+//    * define('SITE_URL', 'xxx')
+//    * define('SMTP_FROM_EMAIL', 'xxx'); 
+//    * define('EMAIL_BASE_URL', 'xxx');
 // ============================================
 
 // Database indstillinger (fra Simply.com kontrolpanel)
