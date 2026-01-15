@@ -118,7 +118,7 @@ define('SMTP_FROM_NAME', 'F1 Betting');
 Kør denne SQL i phpMyAdmin (erstat værdier):
 ```sql
 INSERT INTO users (id, name, display_name, email, password, role) VALUES 
-(UUID(), 'Admin', 'Admin', 'din@email.dk', 
+(UUID(), 'Djarnis', 'thomas@helvegpovlsen.dk', 
  '$2y$10$YourHashedPasswordHere', 'admin');
 ```
 
