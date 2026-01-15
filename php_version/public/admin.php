@@ -767,7 +767,7 @@ include __DIR__ . '/includes/header.php';
                             <a href="?tab=invites&resend_invite=<?= escape($invite['id']) ?>" class="btn btn-secondary btn-sm" title="<?= $lang === 'da' ? 'Gensend' : 'Resend' ?>">
                                 <i class="fas fa-redo"></i>
                             </a>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="copyInviteLink('<?= escape((defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL) . '/register.php?token=' . $invite['token']) ?>')" title="<?= $lang === 'da' ? 'Kopiér link' : 'Copy link' ?>">
+                            <button type="button" class="btn btn-secondary btn-sm"  data-link="<?= escape((defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL) . '/register.php?token=' . $invite['token']) ?>" title="<?= $lang === 'da' ? 'Kopiér link' : 'Copy link' ?>">
                                 <i class="fas fa-copy"></i>
                             </button>
                             <a href="?tab=invites&delete_invite=<?= escape($invite['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($invite['email']) ?>">
@@ -837,6 +837,18 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
         
         <script nonce="<?php echo $nonce; ?>">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select all buttons with the specific class
+            const buttons = document.querySelectorAll('.invite-copy-btn');
+            
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const link = this.getAttribute('data-link');
+                    copyInviteLink(link); // Your existing function
+                });
+            });
+        });
+
         function copyInviteLink(link) {
             navigator.clipboard.writeText(link).then(function() {
                 alert('<?= $lang === 'da' ? 'Link kopieret!' : 'Link copied!' ?>');
