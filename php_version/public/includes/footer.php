@@ -10,7 +10,7 @@
     </footer>
     
     <script nonce="<?php echo $nonce; ?>" src="assets/js/app.js"></script>
-    <script>
+    <script nonce="<?php echo $nonce; ?>">
     // Mobile menu toggle
     function toggleMobileMenu() {
         const nav = document.getElementById('main-nav');

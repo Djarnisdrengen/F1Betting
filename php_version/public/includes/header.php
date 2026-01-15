@@ -7,11 +7,13 @@ require_once __DIR__ . '/../../config.php';
 $nonce = bin2hex(random_bytes(16));
 
 // 2. Define the CSP policy using the generated nonce
-$csp_policy = "default-src 'self'; " .
+              $csp_policy = "default-src 'self'; " .
               "script-src 'self' 'nonce-$nonce'; " .
-              "style-src 'self' 'unsafe-inline'; " .
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
               "img-src 'self' data:; " .
-              "connect-src 'self';";
+              "connect-src 'self'; " .
+              "font-src 'self' https://fonts.gstatic.com;"; 
+
 
 // 3. Send the CSP header to the browser
 header("Content-Security-Policy: $csp_policy");

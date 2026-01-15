@@ -477,7 +477,7 @@ include __DIR__ . '/includes/header.php';
     <!-- RACES TAB -->
     <?php if ($currentTab === 'races'): ?>
         <div class="card mb-2" id="add-race-form">
-            <div class="card-header collapsible-header" onclick="toggleForm('race-form-body')" id="race-form-header">
+            <div class="card-header collapsible-header toggleForm" data-link="race-form-body" id="race-form-header">
                 <h3><i class="fas fa-plus-circle text-accent"></i> <?= $lang === 'da' ? 'Tilføj Løb' : 'Add Race' ?></h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
@@ -596,12 +596,41 @@ include __DIR__ . '/includes/header.php';
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
+
+        <script nonce="<?php echo $nonce; ?>">
+   
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Select all div with the specific class
+            const divs = document.querySelectorAll('.toggleForm');            
+            divs.forEach(div => {
+                div.addEventListener('click', function() {
+                    const form = this.getAttribute('data-link');         
+                    toggleForm(form); // Your existing function
+                });
+            });
+        });
+
+        function toggleForm(formId) {
+            const form = document.getElementById(formId);
+            const header = form.previousElementSibling;
+            
+            if (form.classList.contains('expanded')) {
+                form.classList.remove('expanded');
+                header.classList.remove('expanded');
+            } else {
+                form.classList.add('expanded');
+                header.classList.add('expanded');
+            }
+        };
+
+        </script>
     <?php endif; ?>
     
     <!-- DRIVERS TAB -->
     <?php if ($currentTab === 'drivers'): ?>
         <div class="card mb-2" id="add-driver-form">
-            <div class="card-header collapsible-header" onclick="toggleForm('driver-form-body')" id="driver-form-header">
+            <div class="card-header collapsible-header toggleForm" data-link="driver-form-body" id="driver-form-header">
                 <h3><i class="fas fa-plus-circle text-accent"></i> <?= $lang === 'da' ? 'Tilføj Kører' : 'Add Driver' ?></h3>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
@@ -767,7 +796,7 @@ include __DIR__ . '/includes/header.php';
                             <a href="?tab=invites&resend_invite=<?= escape($invite['id']) ?>" class="btn btn-secondary btn-sm" title="<?= $lang === 'da' ? 'Gensend' : 'Resend' ?>">
                                 <i class="fas fa-redo"></i>
                             </a>
-                            <button type="button" class="btn btn-secondary btn-sm"  data-link="<?= escape((defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL) . '/register.php?token=' . $invite['token']) ?>" title="<?= $lang === 'da' ? 'Kopiér link' : 'Copy link' ?>">
+                            <button type="button" class="btn btn-secondary btn-sm invite-copy-btn"  data-link="<?= escape((defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL) . '/register.php?token=' . $invite['token']) ?>" title="<?= $lang === 'da' ? 'Kopiér link' : 'Copy link' ?>">
                                 <i class="fas fa-copy"></i>
                             </button>
                             <a href="?tab=invites&delete_invite=<?= escape($invite['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($invite['email']) ?>">
@@ -837,10 +866,10 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
         
         <script nonce="<?php echo $nonce; ?>">
+   
         document.addEventListener('DOMContentLoaded', function() {
             // Select all buttons with the specific class
-            const buttons = document.querySelectorAll('.invite-copy-btn');
-            
+            const buttons = document.querySelectorAll('.invite-copy-btn');            
             buttons.forEach(button => {
                 button.addEventListener('click', function() {
                     const link = this.getAttribute('data-link');
