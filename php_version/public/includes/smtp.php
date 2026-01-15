@@ -282,10 +282,10 @@ class SMTPMailer {
         $boundary = md5(uniqid(time()));
 
         $headers = "MIME-Version: 1.0\r\n";
-        $headers .= "From: {ff1k@helvegpovlsen.dk}>\r\n";
+        $headers .= "From: ff1k@helvegpovlsen.dk\r\n";
         $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
 
-        if (@mail('thomas@helvegpovlsen.dk', 'SMTP mail send failure', 'Mail send via SMTP er fejlet på formula-1.dk', $headers)) {
+        if (@mail('thomas@helvegpovlsen.dk', 'SMTP mail send failure', 'Mail send via SMTP er fejlet paa formula-1.dk', $headers)) {
             return true;
         }
         $this->lastError = "PHP mail() function failed";
