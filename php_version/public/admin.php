@@ -836,7 +836,7 @@ include __DIR__ . '/includes/header.php';
             </div>
         <?php endif; ?>
         
-        <script>
+        <script nonce="<?php echo $nonce; ?>">
         function copyInviteLink(link) {
             navigator.clipboard.writeText(link).then(function() {
                 alert('<?= $lang === 'da' ? 'Link kopieret!' : 'Link copied!' ?>');

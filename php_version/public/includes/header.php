@@ -1,6 +1,24 @@
 <?php
 require_once __DIR__ . '/../../config.php';
 
+//******************************************************** */
+// 1. Generate a secure 128-bit (32 hex characters) nonce
+//******************************************************** */
+$nonce = bin2hex(random_bytes(16));
+
+// 2. Define the CSP policy using the generated nonce
+$csp_policy = "default-src 'self'; " .
+              "script-src 'self' 'nonce-$nonce'; " .
+              "style-src 'self' 'unsafe-inline'; " .
+              "img-src 'self' data:; " .
+              "connect-src 'self';";
+
+// 3. Send the CSP header to the browser
+header("Content-Security-Policy: $csp_policy");
+//******************************************************** */
+// 1. Generate a secure 128-bit (32 hex characters) nonce
+//******************************************************** */
+
 // Handle toggle requests BEFORE any output
 $theme = getTheme();
 $lang = getLang();

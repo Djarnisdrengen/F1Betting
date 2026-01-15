@@ -9,7 +9,7 @@
         </div>
     </footer>
     
-    <script src="assets/js/app.js"></script>
+    <script nonce="<?php echo $nonce; ?>" src="assets/js/app.js"></script>
     <script>
     // Mobile menu toggle
     function toggleMobileMenu() {
