@@ -78,37 +78,38 @@ INSERT INTO drivers (id, name, team, number) VALUES
 DELETE FROM races;
 
 INSERT INTO races (id, name, location, race_date, race_time) VALUES
--- Runde 1-6 (CET tider)
-(UUID(), 'Australian Grand Prix', 'Melbourne', '2026-03-08', '06:00'),
-(UUID(), 'Chinese Grand Prix', 'Shanghai', '2026-03-15', '08:00'),
-(UUID(), 'Japanese Grand Prix', 'Suzuka', '2026-03-29', '07:00'),
-(UUID(), 'Bahrain Grand Prix', 'Sakhir', '2026-04-12', '17:00'),
-(UUID(), 'Saudi Arabian Grand Prix', 'Jeddah', '2026-04-19', '19:00'),
-(UUID(), 'Miami Grand Prix', 'Miami', '2026-05-03', '22:00'),
+-- Runde 1-6 (CET/CEST tider)
+(UUID(), 'Australian Grand Prix', 'Melbourne', '2026-03-08', '05:00'),  -- 15:00 lokal = 05:00 CET
+(UUID(), 'Chinese Grand Prix', 'Shanghai', '2026-03-15', '08:00'),      -- 15:00 lokal = 08:00 CET
+(UUID(), 'Japanese Grand Prix', 'Suzuka', '2026-03-29', '07:00'),       -- 14:00 lokal = 07:00 CET
+(UUID(), 'Bahrain Grand Prix', 'Sakhir', '2026-04-12', '17:00'),        -- 18:00 lokal = 17:00 CEST
+(UUID(), 'Saudi Arabian Grand Prix', 'Jeddah', '2026-04-19', '19:00'),  -- 20:00 lokal = 19:00 CEST
+(UUID(), 'Miami Grand Prix', 'Miami', '2026-05-03', '22:00'),           -- 16:00 lokal = 22:00 CEST
 
--- Runde 7-12 (CET tider)
-(UUID(), 'Canadian Grand Prix', 'Montreal', '2026-05-24', '20:00'),
-(UUID(), 'Monaco Grand Prix', 'Monaco', '2026-06-07', '15:00'),
-(UUID(), 'Barcelona-Catalunya Grand Prix', 'Barcelona', '2026-06-14', '15:00'),
-(UUID(), 'Austrian Grand Prix', 'Spielberg', '2026-06-28', '15:00'),
-(UUID(), 'British Grand Prix', 'Silverstone', '2026-07-05', '16:00'),
-(UUID(), 'Belgian Grand Prix', 'Spa-Francorchamps', '2026-07-19', '15:00'),
+-- Runde 7-12 (CEST tider)
+(UUID(), 'Canadian Grand Prix', 'Montreal', '2026-05-24', '22:00'),     -- 16:00 lokal = 22:00 CEST
+(UUID(), 'Monaco Grand Prix', 'Monaco', '2026-06-07', '15:00'),         -- 15:00 lokal = 15:00 CEST
+(UUID(), 'Barcelona-Catalunya Grand Prix', 'Barcelona', '2026-06-14', '15:00'), -- 15:00 lokal = 15:00 CEST
+(UUID(), 'Austrian Grand Prix', 'Spielberg', '2026-06-28', '15:00'),    -- 15:00 lokal = 15:00 CEST
+(UUID(), 'British Grand Prix', 'Silverstone', '2026-07-05', '16:00'),   -- 15:00 lokal = 16:00 CEST
+(UUID(), 'Belgian Grand Prix', 'Spa-Francorchamps', '2026-07-19', '15:00'), -- 15:00 lokal = 15:00 CEST
 
--- Runde 13-18 (CET tider)
-(UUID(), 'Hungarian Grand Prix', 'Budapest', '2026-07-26', '15:00'),
-(UUID(), 'Dutch Grand Prix', 'Zandvoort', '2026-08-23', '15:00'),
-(UUID(), 'Italian Grand Prix', 'Monza', '2026-09-06', '15:00'),
-(UUID(), 'Spanish Grand Prix', 'Madrid', '2026-09-13', '15:00'),
-(UUID(), 'Azerbaijan Grand Prix', 'Baku', '2026-09-26', '14:00'),
-(UUID(), 'Singapore Grand Prix', 'Marina Bay', '2026-10-11', '14:00'),
+-- Runde 13-18 (CEST tider)
+(UUID(), 'Hungarian Grand Prix', 'Budapest', '2026-07-26', '15:00'),    -- 15:00 lokal = 15:00 CEST
+(UUID(), 'Dutch Grand Prix', 'Zandvoort', '2026-08-23', '15:00'),       -- 15:00 lokal = 15:00 CEST
+(UUID(), 'Italian Grand Prix', 'Monza', '2026-09-06', '15:00'),         -- 15:00 lokal = 15:00 CEST
+(UUID(), 'Spanish Grand Prix', 'Madrid', '2026-09-13', '15:00'),        -- 15:00 lokal = 15:00 CEST
+(UUID(), 'Azerbaijan Grand Prix', 'Baku', '2026-09-26', '13:00'),       -- 15:00 lokal = 13:00 CEST
+(UUID(), 'Singapore Grand Prix', 'Marina Bay', '2026-10-11', '14:00'),  -- 20:00 lokal = 14:00 CEST
 
--- Runde 19-24 (CET tider)
-(UUID(), 'United States Grand Prix', 'Austin', '2026-10-25', '21:00'),
-(UUID(), 'Mexico City Grand Prix', 'Mexico City', '2026-11-01', '21:00'),
-(UUID(), 'Brazilian Grand Prix', 'São Paulo', '2026-11-08', '19:00'),
-(UUID(), 'Las Vegas Grand Prix', 'Las Vegas', '2026-11-21', '07:00'),
-(UUID(), 'Qatar Grand Prix', 'Lusail', '2026-11-29', '17:00'),
-(UUID(), 'Abu Dhabi Grand Prix', 'Abu Dhabi', '2026-12-06', '14:00');
+-- Runde 19-24 (CET/CEST tider)
+(UUID(), 'United States Grand Prix', 'Austin', '2026-10-25', '21:00'),  -- 15:00 lokal = 21:00 CEST
+(UUID(), 'Mexico City Grand Prix', 'Mexico City', '2026-11-01', '21:00'),-- 14:00 lokal = 21:00 CET
+(UUID(), 'Brazilian Grand Prix', 'São Paulo', '2026-11-08', '18:00'),   -- 14:00 lokal = 18:00 CET
+(UUID(), 'Las Vegas Grand Prix', 'Las Vegas', '2026-11-22', '05:00'),   -- 20:00 lokal = 05:00 CET (+1 dag)
+(UUID(), 'Qatar Grand Prix', 'Lusail', '2026-11-29', '17:00'),          -- 19:00 lokal = 17:00 CET
+(UUID(), 'Abu Dhabi Grand Prix', 'Abu Dhabi', '2026-12-06', '14:00');   -- 17:00 lokal = 14:00 CET
+
 
 -- =====================================================
 -- VERIFICER DATA
