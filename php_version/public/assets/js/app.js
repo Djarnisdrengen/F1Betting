@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Collapsible forms toggle
-    window.toggleForm = function(formId) {
+    window.toggleFormOLD = function(formId) {
         const form = document.getElementById(formId);
         const header = form.previousElementSibling;
         
