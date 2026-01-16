@@ -95,13 +95,13 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteModal = document.createElement('div');
             deleteModal.id = 'delete-modal';
             deleteModal.innerHTML = `
-                <div class="modal-overlay" onclick="closeDeleteModal()"></div>
+                <div class="modal-overlay" ></div>
                 <div class="modal-content">
                     <h3 id="delete-modal-title">Bekræft sletning</h3>
                     <p id="delete-modal-text">Er du sikker?</p>
                     <div class="modal-buttons">
-                        <button class="btn btn-secondary" onclick="closeDeleteModal()">Annuller</button>
-                        <button class="btn btn-danger" onclick="confirmDelete()">Slet</button>
+                        <button class="btn btn-secondary btn-user-delete-cancel" >Annuller</button>
+                        <button class="btn btn-danger btn-user-delete-confirm" >Slet</button>
                     </div>
                 </div>
             `;
@@ -122,6 +122,17 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('delete-modal-text').textContent = 
             (document.documentElement.lang === 'da' ? 'Er du sikker på at du vil slette ' : 'Are you sure you want to delete ') + itemName + '?';
         deleteModal.style.display = 'block';
+        
+        /// Handle modal button clicks
+        deleteModal.addEventListener('click', e => {
+            if (e.target.closest('.btn-user-delete-cancel')) {
+                closeDeleteModal();
+            }
+            if (e.target.closest('.btn-user-delete-confirm')) {
+                confirmDelete();
+            }
+        });
+
     }
     
     window.showDeleteModal = showDeleteModal;
