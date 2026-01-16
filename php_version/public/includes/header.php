@@ -76,7 +76,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                 </a>
                 
                 <!-- Mobile menu button -->
-                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+                <button class="mobile-menu-btn" data-link="toggleMobileMenu" aria-label="Menu">
                     <i class="fas fa-bars"></i>
                 </button>
                 

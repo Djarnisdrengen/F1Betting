@@ -9,9 +9,24 @@
         </div>
     </footer>
     
+    <!--  APP.JS INCLUDE -->
     <script nonce="<?php echo $nonce; ?>" src="assets/js/app.js"></script>
+
+    <!--  INLINE SCRIPT TO ENSURE EARLY LOAD -->
     <script nonce="<?php echo $nonce; ?>">
+
     // Mobile menu toggle
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Select all div with the specific class
+        const bottons = document.querySelectorAll('.mobile-menu-btn');            
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {                        
+                toggleMobileMenu(); // Your existing function
+            });
+        });
+    });
+
     function toggleMobileMenu() {
         const nav = document.getElementById('main-nav');
         const overlay = document.getElementById('nav-overlay');
