@@ -732,6 +732,7 @@ include __DIR__ . '/includes/header.php';
                         </div>
                     <?php endif; ?>
                 </div>
+                
                 <!-- RESET PASSWORD FORM -->
                 <?php if ($user['id'] !== $currentUser['id']): ?>
                     <div id="reset-pw-<?= escape($user['id']) ?>" class="hidden" style="padding: 1rem; border-top: 1px solid var(--border-color);">
@@ -752,6 +753,7 @@ include __DIR__ . '/includes/header.php';
                     </div>
                 <?php endif; ?>                
                 <!-- RESET PASSWORD FORM -->
+        
             </div>
         <?php endforeach; ?>
 
@@ -772,7 +774,7 @@ include __DIR__ . '/includes/header.php';
             function toggleResetPasswordForm(userID) {  
                document.getElementById('reset-pw-' + userID).classList.toggle('hidden') 
             }
-            
+
         </script>
         <!-- RESET PASSWORD + DELETE USER SCRIPT -->
     <?php endif; ?>
