@@ -719,16 +719,20 @@ include __DIR__ . '/includes/header.php';
                     </div>
                     <?php if ($user['id'] !== $currentUser['id']): ?>
                         <div class="flex gap-1">
+                            <!-- TOGGLE ROLE BUTTON -->
                             <a href="?tab=users&toggle_role=<?= escape($user['id']) ?>" class="btn btn-secondary btn-sm">
                                 <?= $user['role'] === 'admin' ? ($lang === 'da' ? 'Gør Bruger' : 'Make User') : ($lang === 'da' ? 'Gør Admin' : 'Make Admin') ?>
                             </a>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('reset-pw-<?= escape($user['id']) ?>').classList.toggle('hidden')">
+                            <!-- RESET PASSWORD BUTTON -->
+                            <button type="button" class="btn btn-secondary btn-sm btn-reset-pwd" data-link="<?= escape($user['id']) ?>">
                                 <i class="fas fa-key"></i>
-                            </button>
+                            </button>                            
+                            <!-- DELETE USER BUTTON -->
                             <a href="?tab=users&delete_user=<?= escape($user['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>"><i class="fas fa-trash"></i></a>
                         </div>
                     <?php endif; ?>
                 </div>
+                <!-- RESET PASSWORD FORM -->
                 <?php if ($user['id'] !== $currentUser['id']): ?>
                     <div id="reset-pw-<?= escape($user['id']) ?>" class="hidden" style="padding: 1rem; border-top: 1px solid var(--border-color);">
                         <form method="POST" class="flex gap-1 items-end">
@@ -746,9 +750,31 @@ include __DIR__ . '/includes/header.php';
                             </button>
                         </form>
                     </div>
-                <?php endif; ?>
+                <?php endif; ?>                
+                <!-- RESET PASSWORD FORM -->
             </div>
         <?php endforeach; ?>
+
+        <!-- RESET PASSWORD + DELETE USER SCRIPT -->
+        <script nonce="<?php echo $nonce; ?>">
+
+            document.addEventListener('DOMContentLoaded', function() {
+                // Select all buttons with the specific class
+                const buttons = document.querySelectorAll('.btn-reset-pwd');            
+                buttons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userID = this.getAttribute('data-link');
+                        toggleResetPasswordForm(userID); // Your existing function
+                    });
+                });
+            });
+
+            function toggleResetPasswordForm(userID) {  
+               document.getElementById('reset-pw-' + userID).classList.toggle('hidden') 
+            }
+            
+        </script>
+        <!-- RESET PASSWORD + DELETE USER SCRIPT -->
     <?php endif; ?>
     
     <!-- INVITES TAB -->
@@ -865,6 +891,7 @@ include __DIR__ . '/includes/header.php';
             </div>
         <?php endif; ?>
         
+        <!-- COPY INVITE LINK SCRIPT -->
         <script nonce="<?php echo $nonce; ?>">
    
         document.addEventListener('DOMContentLoaded', function() {

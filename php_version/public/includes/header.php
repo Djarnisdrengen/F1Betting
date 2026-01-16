@@ -7,7 +7,8 @@ require_once __DIR__ . '/../../config.php';
 $nonce = bin2hex(random_bytes(16));
 
 // 2. Define the CSP policy using the generated nonce
-              $csp_policy = "default-src 'self'; " .
+              $csp_policy = "frame-ancestors 'none'; " .
+              "default-src 'self'; " .
               "script-src 'self' 'nonce-$nonce'; " .
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
               "img-src 'self' data:; " .
