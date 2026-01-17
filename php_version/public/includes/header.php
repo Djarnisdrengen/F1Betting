@@ -92,7 +92,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                 </button>
                 
                 <nav class="nav" id="main-nav">
-                    <a href="index.php" class="nav-link <?= $currentPage === 'index' ? 'active' : '' ?>">
+                    <a href="/" class="nav-link <?= $currentPage === 'index' ? 'active' : '' ?>">
                         <i class="fas fa-home"></i> <span><?= t('home') ?></span>
                     </a>
                     <a href="leaderboard.php" class="nav-link <?= $currentPage === 'leaderboard' ? 'active' : '' ?>">
