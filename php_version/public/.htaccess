@@ -2,14 +2,15 @@
 # F1 Betting - Security & Performance Configuration
 # ==================================================
 
-# ==================================================
-# Whitelist probely temporary
-# ==================================================
-
 # Force HTTPS
 RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Tving www foran, hvis det mangler
+RewriteCond %{HTTP_HOST} !^www\. [NC]
+RewriteCond %{HTTP_HOST} ^([a-z0-9.-]+)$ [NC]
+RewriteRule ^(.*)$ https://www.%1/$1 [L,R=301]
 
 # ==================================================
 # SECURITY HEADERS

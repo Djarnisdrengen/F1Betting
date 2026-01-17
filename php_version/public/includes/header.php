@@ -55,6 +55,10 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 <!DOCTYPE html>
 <html lang="<?= $lang ?>">
 <head>
+    <!-- Cookiebot -->
+    <script nonce="<?php echo $nonce; ?>" id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="762114b7-e449-4131-af32-d8ad521ade04" data-blockingmode="auto" type="text/javascript"></script>
+
+    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= escape($settings['app_title']) ?> <?= escape($settings['app_year']) ?></title>
