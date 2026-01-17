@@ -2,6 +2,14 @@
 # F1 Betting - Security & Performance Configuration
 # ==================================================
 
+# ==================================================
+# Whitelist probely temporary
+# ==================================================
+<RequireAll>  
+    Require ip 52.19.40.38 # Allow probely target scan
+    Require ip 52.16.191.244 # Allow probely discovery scan
+</RequireAll>
+
 # Force HTTPS
 RewriteEngine On
 RewriteCond %{HTTPS} off

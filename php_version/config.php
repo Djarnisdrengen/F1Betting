@@ -22,6 +22,7 @@ define('PASSWORD_PEPPER', 'xxx');
 // Eksempler:
 //   Rodmappe: 'https://dit-domæne.dk'
 define('SITE_URL', 'xxx');
+define('SITE_DOMAIN', parse_url(SITE_URL, PHP_URL_HOST));
 
 // ============================================
 // SMTP EMAIL KONFIGURATION (Simply.com)

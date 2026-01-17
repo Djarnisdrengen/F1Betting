@@ -597,16 +597,17 @@ include __DIR__ . '/includes/header.php';
             </div>
         <?php endforeach; ?>
 
+        <!-- Toggle Form Script for RACES-->
         <script nonce="<?php echo $nonce; ?>">
    
         document.addEventListener('DOMContentLoaded', function() {
 
-            // Select all div with the specific class
-            const divs = document.querySelectorAll('.toggleForm');            
-            divs.forEach(div => {
-                div.addEventListener('click', function() {
-                    const form = this.getAttribute('data-link');         
-                    toggleForm(form); // Your existing function
+        // Select all div with the specific class
+        const divs = document.querySelectorAll('.toggleForm');            
+        divs.forEach(div => {
+            div.addEventListener('click', function() {
+                const form = this.getAttribute('data-link');         
+                toggleForm(form); // Your existing function
                 });
             });
         });
@@ -696,6 +697,36 @@ include __DIR__ . '/includes/header.php';
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
+
+        <!-- Toggle Form Script for DRIVERS-->
+        <script nonce="<?php echo $nonce; ?>">
+   
+        document.addEventListener('DOMContentLoaded', function() {
+
+        // Select all div with the specific class
+        const divs = document.querySelectorAll('.toggleForm');            
+        divs.forEach(div => {
+            div.addEventListener('click', function() {
+                const form = this.getAttribute('data-link');         
+                toggleForm(form); // Your existing function
+                });
+            });
+        });
+
+        function toggleForm(formId) {
+            const form = document.getElementById(formId);
+            const header = form.previousElementSibling;
+            
+            if (form.classList.contains('expanded')) {
+                form.classList.remove('expanded');
+                header.classList.remove('expanded');
+            } else {
+                form.classList.add('expanded');
+                header.classList.add('expanded');
+            }
+        };
+
+        </script>
     <?php endif; ?>
     
     <!-- USERS TAB -->

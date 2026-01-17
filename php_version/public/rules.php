@@ -93,6 +93,21 @@ include __DIR__ . '/includes/header.php';
             </div>
         </div>
         
+        <!-- Betting pool -->
+        <div class="card mb-2">
+            <div class="card-header">
+                <h3><span class="star">$</span> <?= $lang === 'da' ? 'Puljen' : 'Betting pool' ?></h3>
+            </div>
+            <div class="card-body">
+                <table class="rules-table">
+                    <tr>
+                        <td><strong><?= $lang === 'da' ? 'Perfekt bet' : 'Perfect bet' ?></strong></td>
+                        <td><?= $lang === 'da' ? 'Når du får en stjerne vinder du også puljen' : 'If you get a start you also win the betting pool ' ?> <span class="star">$</span>.</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
         <!-- Restrictions -->
         <div class="card mb-2">
             <div class="card-header">
