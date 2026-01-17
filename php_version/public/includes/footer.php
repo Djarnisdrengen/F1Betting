@@ -17,7 +17,6 @@
 
     // Mobile menu toggle
     document.addEventListener('DOMContentLoaded', function() {
-
         // Select all div with the specific class
         const buttons = document.querySelectorAll('.mobile-menu-btn');            
         buttons.forEach(button => {
@@ -25,6 +24,19 @@
                 toggleMobileMenu(); // Your existing function
             });
         });
+    });
+
+
+    //Mobile leaderboard toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select all div with the specific class
+        const divs = document.querySelectorAll('.leaderboard-section');            
+        divs.forEach(div => {
+            div.addEventListener('click', function() {                        
+                toggleLeaderboard(); 
+            });
+        });
+
     });
 
     function toggleMobileMenu() {
