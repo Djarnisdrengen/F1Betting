@@ -62,9 +62,9 @@ include __DIR__ . '/includes/header.php';
 
 <div class="homepage-grid">
     <!-- Leaderboard Sidebar (shows first on mobile, collapsed by default) -->
-    <div class="leaderboard-section">
+    <div class="leaderboard-section"> 
         <!-- Mobile collapsible header -->
-        <div class="leaderboard-collapse-header" onclick="toggleLeaderboard()">
+        <div class="leaderboard-collapse-header">
             <h2><i class="fas fa-trophy text-accent"></i> <?= t('leaderboard') ?></h2>
             <i class="fas fa-chevron-down toggle-icon"></i>
         </div>

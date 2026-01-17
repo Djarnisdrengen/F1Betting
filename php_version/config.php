@@ -56,6 +56,8 @@ ini_set('session.cookie_httponly', 1);     // Prevent JavaScript access to sessi
 ini_set('session.cookie_samesite', 'Lax'); // CSRF protection
 ini_set('session.use_strict_mode', 1);     // Reject uninitialized session IDs
 ini_set('session.use_only_cookies', 1);    // Only use cookies for sessions (no URL params)
+ini_set('session.cookie_domain', '.' . SITE_DOMAIN);
+ini_set('session.cookie_path', '/');
 
 session_start();
 
