@@ -5,7 +5,7 @@
     
     <footer class="footer">
         <div class="container">
-            <p><?= escape($settings['app_title']) ?> <?= escape($settings['app_year']) ?> - <?= $lang === 'da' ? 'Kontakt:' : 'Contact:' ?> info@formula-1.dk</p>
+            <p>&copy; 1996-<?= date("Y") ?> - <?= $lang === 'da' ? 'Kontakt:' : 'Contact:' ?> info@<?= SITE_DOMAIN ?></p>
         </div>
     </footer>
     
@@ -19,7 +19,7 @@
     document.addEventListener('DOMContentLoaded', function() {
 
         // Select all div with the specific class
-        const bottons = document.querySelectorAll('.mobile-menu-btn');            
+        const buttons = document.querySelectorAll('.mobile-menu-btn');            
         buttons.forEach(button => {
             button.addEventListener('click', function() {                        
                 toggleMobileMenu(); // Your existing function

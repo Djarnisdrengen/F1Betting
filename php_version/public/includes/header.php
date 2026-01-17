@@ -7,14 +7,13 @@ require_once __DIR__ . '/../../config.php';
 $nonce = bin2hex(random_bytes(16));
 
 // 2. Define the CSP policy using the generated nonce
-              $csp_policy = "frame-ancestors 'none'; " .
-              "default-src 'self'; " .
-              "script-src 'self' 'nonce-$nonce'; " .
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
-              "img-src 'self' data:; " .
-              "connect-src 'self'; " .
-              "font-src 'self' https://fonts.gstatic.com;"; 
-
+              $csp_policy = "frame-ancestors 'none'; " . 
+              "default-src 'self'; " . 
+              "script-src 'self' 'nonce-$nonce' https://www.googletagmanager.com https://www.google-analytics.com; " . 
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " . 
+              "img-src 'self' data: https://www.google-analytics.com; " . 
+              "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; " . 
+              "font-src 'self' https://fonts.gstatic.com;";
 
 // 3. Send the CSP header to the browser
 header("Content-Security-Policy: $csp_policy");
@@ -64,6 +63,17 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <link rel="apple-touch-icon" href="assets/favicon.png">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+
+    <!-- Google tag (gtag.js) -->
+    <script  nonce="<?php echo $nonce; ?>" async src="https://www.googletagmanager.com/gtag/js?id=G-BFRVL7RX1N"></script>
+    <script  nonce="<?php echo $nonce; ?>">
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-BFRVL7RX1N');
+    </script>
+
 </head>
 <body class="<?= $theme ?>">
     <header class="header">
