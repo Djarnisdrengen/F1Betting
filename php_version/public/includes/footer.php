@@ -7,6 +7,20 @@
         <div class="container">
             <p>&copy; 1996-<?= date("Y") ?> - <?= $lang === 'da' ? 'Kontakt:' : 'Contact:' ?> info@<?= SITE_DOMAIN ?></p>
         </div>
+
+        <!-- Cookiebot script to handle cookie preferences dialog -->
+        <script nonce="<?php echo $nonce; ?>">
+        document.addEventListener("DOMContentLoaded", function() {
+            const cookieLink = document.getElementById("cookie-preferences-link");
+
+            if (cookieLink && window.Cookiebot) {
+            cookieLink.addEventListener("click", function(event) {
+                event.preventDefault();      // prevent default link behavior
+                Cookiebot.show();            // open Cookie Preferences dialog
+            });
+            }
+        });
+        </script>
     </footer>
     
     <!--  APP.JS INCLUDE -->

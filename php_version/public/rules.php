@@ -128,8 +128,8 @@ include __DIR__ . '/includes/header.php';
                         <td><?= $lang === 'da' ? 'To brugere kan ikke have identisk P1/P2/P3 kombination' : 'Two users cannot have identical P1/P2/P3 combination' ?></td>
                     </tr>
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Ikke kvalifikation' : 'Not qualifying' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'Bet kan ikke matche kvalifikationsresultatet 100%' : 'Bet cannot match qualifying result 100%' ?></td>
+                        <td><strong><?= $lang === 'da' ? 'Kvalifikationsresultat' : 'Qualifying result' ?></strong></td>
+                        <td><?= $lang === 'da' ? 'Bet kan ikke matche kvalifikationsresultatet 100%. Uanset om systemet har fået blokeret for det.' : 'Bet cannot match qualifying result 100%. Even if the system did not block for it.' ?></td>
                     </tr>
                 </table>
             </div>
