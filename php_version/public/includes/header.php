@@ -7,13 +7,24 @@ require_once __DIR__ . '/../../config.php';
 $nonce = bin2hex(random_bytes(16));
 
 // 2. Define the CSP policy using the generated nonce
-              $csp_policy = "frame-ancestors 'none'; " . 
-              "default-src 'self'; " . 
-              "script-src 'self' 'nonce-$nonce' https://www.googletagmanager.com https://www.google-analytics.com; " . 
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " . 
-              "img-src 'self' data: https://www.google-analytics.com; " . 
-              "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; " . 
-              "font-src 'self' https://fonts.gstatic.com;";
+$csp_policy =
+    "frame-ancestors 'none'; " .
+    "default-src 'self'; " .
+    "frame-src 'self' https://consent.cookiebot.com https://consentcdn.cookiebot.com; " .
+    "script-src 'self' 'nonce-$nonce' " .
+        "'sha256-g7fzz0TV6GRE7YO5Psf4wohzOVdQHxCLJMkJ1eUqZIk=' " .
+        "'sha256-5ofhTBu470bVNSfmSODufleilOm4vGBr+Ysw7pxWXsQ=' " .
+        "'sha256-q9FEvsEcv32ce7lbHps7PEYb4/B1N/0+rYZYTTdgF0U=' " . 
+        "https://www.googletagmanager.com " .
+        "https://www.google-analytics.com " .
+        "https://consentcdn.cookiebot.com " .
+        "https://cookiebot.com " .
+        "https://consent.cookiebot.com; " .
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
+    "img-src 'self' data: https://www.google-analytics.com https://imgsct.cookiebot.com; " .
+    "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://consent.cookiebot.com https://consentcdn.cookiebot.com; " .
+    "font-src 'self' https://fonts.gstatic.com;";
+
 
 // 3. Send the CSP header to the browser
 header("Content-Security-Policy: $csp_policy");
@@ -83,7 +94,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="index.php" class="logo">
+                <a href="/" class="logo">
                     <img src="assets/logo_header_dark.png" alt="<?= escape($settings['app_title']) ?>" class="logo-img logo-dark">
                     <img src="assets/logo_header_light.png" alt="<?= escape($settings['app_title']) ?>" class="logo-img logo-light">
                     <span class="logo-text"><?= escape($settings['app_title']) ?></span>

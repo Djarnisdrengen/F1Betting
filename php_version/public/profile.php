@@ -41,9 +41,9 @@ include __DIR__ . '/includes/header.php';
             </div>
         </div>
     </div>
-    
+
     <!-- Profile Form -->
-    <div class="card">
+    <div class="card mb-3">
         <div class="card-header">
             <h3><?= getLang() === 'da' ? 'Rediger Profil' : 'Edit Profile' ?></h3>
         </div>
@@ -70,8 +70,21 @@ include __DIR__ . '/includes/header.php';
                     <i class="fas fa-save"></i> <?= t('save') ?>
                 </button>
             </form>
+        </div> <!--- End Card Body-->
+    </div> <!--- End Card--> 
+
+    <!-- Cookie Preferences Link -->
+    <div class="card text-center">
+        <div class="card-body">
+            <a href="#" id="cookie-preferences-link">
+                <?= $lang === 'da' ? 'Cookie præferencer' : 'Cookie preferences' ?>
+            </a>
         </div>
-    </div>
-</div>
+    </div> <!--- End Cookiebot Card-->
+
+</div>    
+
+
+
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
