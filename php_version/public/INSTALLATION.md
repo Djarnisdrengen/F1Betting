@@ -99,7 +99,7 @@ define('DB_USER', 'dit_brugernavn');     // Database bruger
 define('DB_PASS', 'dit_password');       // Database password
 
 // Site URL (VIGTIGT: Uden trailing slash)
-define('SITE_URL', 'https://dinside.dk');
+define('SITE_URL', 'https://dinside.dk/f1');
 
 // SMTP Email konfiguration
 define('SMTP_HOST', 'asmtp.simply.com');
@@ -118,7 +118,7 @@ define('SMTP_FROM_NAME', 'F1 Betting');
 Kør denne SQL i phpMyAdmin (erstat værdier):
 ```sql
 INSERT INTO users (id, name, display_name, email, password, role) VALUES 
-(UUID(), 'Djarnis', 'thomas@helvegpovlsen.dk', 
+(UUID(), 'Admin', 'Admin', 'din@email.dk', 
  '$2y$10$YourHashedPasswordHere', 'admin');
 ```
 
@@ -140,14 +140,37 @@ php setup_admin.php admin@example.com password123
 
 ---
 
-## Trin 7: Opsæt Cron Job (Valgfrit)
+## Trin 7: Opsæt Cron Jobs
 
+### Email Notifikationer (Valgfrit)
 For automatiske email-notifikationer når betting åbner:
 
 1. Gå til Simply.com kontrolpanel → **Cron Jobs**
 2. Tilføj nyt cron job:
    - **Kommando:** `php /home/dit-brugernavn/public_html/f1/cron_notifications.php`
    - **Interval:** Hver time (`0 * * * *`)
+
+### Automatisk Import af Resultater (Valgfrit)
+For automatisk import af kvalifikations- og løbsresultater:
+
+**Kvalifikation (kører lørdag kl. 15-18):**
+- **Kommando:** `php /home/dit-brugernavn/public_html/f1/cron_import_qualifying.php`
+
+**Cron job URL'er
+Import
+URL med secret: https://www.formula-1.dk/cron_import_qualifying.php?token=
+URL med secret: https://www.hpovlsen.dk/cron_import_qualifying.php?token=
+
+Reset kvalifikation result for all races: UPDATE `races` SET `quali_p1`=null,`quali_p2`=null,`quali_p3`=null
+
+Notifikationer
+URL med secret: https://www.formula-1.dk/cron_notifications.php
+URL med secret: https://www.hpovlsen.dk/cron_notifications.php
+
+**Bemærk:** 
+- Resultaterne hentes fra Jolpica F1 API (gratis)
+- Der kan være 15-60 minutters forsinkelse fra officielle resultater
+- Scripts kan også køres manuelt via SSH eller browser
 
 ---
 

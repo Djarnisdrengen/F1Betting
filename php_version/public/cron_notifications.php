@@ -13,6 +13,37 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/smtp.php';
 
+//***************************************** */
+// Log file setup
+//***************************************** */
+$logFile = __DIR__ . '/cron_import_log.txt';
+
+function logMessage($message) {
+    global $logFile;
+    $timestamp = date('Y-m-d H:i:s');
+    $line = "[$timestamp] $message\n";
+    echo $line;
+    file_put_contents($logFile, $line, FILE_APPEND);
+}
+
+//***************************************** */
+// Cron token validation
+//***************************************** */
+$tokenValid = false;
+
+if (php_sapi_name() === 'cli') {
+    global $argv;
+    $tokenValid = isset($argv[1]) && $argv[1] === CRON_SECRET;
+} else {
+    $tokenValid = isset($_GET['token']) && $_GET['token'] === CRON_SECRET;
+}
+
+if (!$tokenValid) {
+    logMessage("Unauthorized access. Exiting.");
+    exit(1);
+}
+
+
 $db = getDB();
 $settings = getSettings();
 $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
