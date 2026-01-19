@@ -47,6 +47,15 @@ define('SMTP_FROM_NAME', 'xxx');          // Afsender navn
 // Hvis du bruger et andet domæne til emails end SITE_URL
 define('EMAIL_BASE_URL', 'xxx');
 
+// Cron job secret (bruges til sikring af cron scripts)
+define('CRON_SECRET', 'xxx');
+define('CRON_LOG_FILE', __DIR__ . '/cron_import_log.txt');
+
+// API Configuration for F1 data
+define('F1_API_BASE', 'https://api.jolpi.ca/ergast/f1');  // Jolpica (Ergast successor)
+define('F1_API_TIMEOUT', 30);
+
+
 // ============================================
 // SECURE SESSION CONFIGURATION
 // ============================================
