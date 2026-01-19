@@ -4,6 +4,13 @@
 .idea/
 .vscode/
 
+# Environment/config files
+config.php
+cron_import_log.txt
+
+# git-ftp metadata
+.git/ftp/
+
 # Dependencies
 node_modules/
 /node_modules
