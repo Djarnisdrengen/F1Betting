@@ -288,6 +288,11 @@ body.light {
     text-transform: uppercase;
 }
 
+.status-pool-won {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #1a1a1d;
+}
+
 .status-open {
     background: linear-gradient(135deg, #059669, #047857);
     color: white;
@@ -883,6 +888,10 @@ body.light input[type="time"]::-webkit-calendar-picker-indicator {
     color: #10b981;
 }
 
+/*Pool size highlight*/
+.bettingpool_size {
+    color: #b98f10;
+}
 /* Logo image fix */
 .logo-img {
     height: 40px;

@@ -368,7 +368,7 @@ if (isset($_POST['update_settings'])) {
     $message = $lang === 'da' ? 'Indstillinger gemt!' : 'Settings saved!';
 }
 
-// Funktion til at beregne point
+// Funktion til at beregne point og pulje størrelse for næste løb
 function calculateRacePoints($raceId, $p1, $p2, $p3) {
     global $db;
     $results = [$p1, $p2, $p3];
@@ -384,6 +384,10 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
     $stmt->execute([$raceId]);
     $bets = $stmt->fetchAll();
     
+    // Reset bettingpool_won at all race updates
+    $stmt0 = $db->prepare("UPDATE races SET bettingpool_won = 0 WHERE id = ?");
+    $stmt0->execute([$raceId]);
+
     foreach ($bets as $bet) {
         $oldPoints = $bet['points'];
         $oldIsPerfect = $bet['is_perfect'];
@@ -404,8 +408,55 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
             }
         }
         
+        // Check for perfect bet 
         $isPerfect = ($bet['p1'] === $p1 && $bet['p2'] === $p2 && $bet['p3'] === $p3) ? 1 : 0;
         
+        //Update current race
+        //if bet is perfect with betting pool won       
+        if ($isPerfect) {            
+            $stmt1 = $db->prepare("UPDATE races SET bettingpool_won = 1 WHERE id = ?");
+            $stmt1->execute([$raceId]);
+        }
+
+        //Update pool size for upcoming race
+        //Get date for current race    
+        $stmtCurrentRace = $db->prepare("SELECT * FROM races WHERE id = ?");
+        $stmtCurrentRace->execute([$raceId]);
+        $currentRace = $stmtCurrentRace->fetch(PDO::FETCH_ASSOC);
+        $currentRaceDate = $currentRace['race_date'];
+
+        // Previous race
+        $stmtPreviousRace = $db->prepare("SELECT * FROM races WHERE race_date < ? ORDER BY race_date DESC LIMIT 1");
+        $stmtPreviousRace->execute([$currentRaceDate]);
+        $previousRace = $stmtPreviousRace->fetch(PDO::FETCH_ASSOC);
+
+        // Upcoming race
+        $stmtSelectUpcomingRace = $db->prepare("SELECT * FROM races WHERE race_date > ? ORDER BY race_date ASC LIMIT 1");
+        $stmtSelectUpcomingRace->execute([$currentRaceDate]);
+        $upcomingRace = $stmtSelectUpcomingRace->fetch(PDO::FETCH_ASSOC);
+
+        // Update upcoming race if it exists
+        if ($upcomingRace !== false) {
+
+            $numberOfBetters = 5;
+            $betSize = 10;
+            $newPoolSize = $numberOfBetters * $betSize; //Default pool size
+
+        if (!$isPerfect) {
+            if ($previousRace !== false) {
+                $newPoolSize += $previousRace['bettingpool_size'];
+            } else {
+                // First race, no previous race
+                $newPoolSize += $currentRace['bettingpool_size'];
+            }
+        }
+
+            $stmtUpdateUpcomingRace = $db->prepare("UPDATE races SET bettingpool_size = ? WHERE id = ?");
+            $stmtUpdateUpcomingRace->execute([$newPoolSize, $upcomingRace['id']]);
+        }
+
+
+
         // Update bet
         $stmt2 = $db->prepare("UPDATE bets SET points = ?, is_perfect = ? WHERE id = ?");
         $stmt2->execute([$points, $isPerfect, $bet['id']]);

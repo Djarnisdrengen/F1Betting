@@ -40,6 +40,7 @@ include __DIR__ . '/includes/header.php';
 
 <?php foreach ($races as $race): 
     $status = getBettingStatus($race);
+    $bettingpool_won = $race['bettingpool_won'];
     $raceBets = $betsByRace[$race['id']] ?? [];
     $hasBet = in_array($race['id'], $myBets);
     $userBet = null;
@@ -68,6 +69,11 @@ include __DIR__ . '/includes/header.php';
                                 <i class="fas fa-check"></i> <?= $lang === 'da' ? 'Bet placeret' : 'Bet placed' ?>
                             </span>
                         <?php endif; ?>
+                        <?php if ($bettingpool_won): ?>
+                            <span class="badge status-pool-won">
+                                <i class="fas fa-check"></i> <?= $lang === 'da' ? 'Puljen vundet' : 'Bettingpool won' ?>
+                            </span>
+                        <?php endif; ?>
                     </h3>
                     <div class="race-meta">
                         <span><i class="fas fa-map-marker-alt"></i> <?= escape($race['location']) ?></span>
@@ -89,6 +95,13 @@ include __DIR__ . '/includes/header.php';
                             </div>
                         <?php endif; ?>
                     <?php endif; ?>
+                    <div class="countdown-timer">
+                        <i class="fas fa-dollar-sign"></i>
+                        <?= $lang === 'da' ? 'Puljestørrelse: ' : 'Pool size: ' ?>
+                        <span class="countdown-value bettingpool_size">
+                            <?= $race['bettingpool_size'] ?: '-' ?>
+                        </span>
+                    </div> 
                 </div>
                 <span class="badge <?= $status['class'] ?>"><?= $status['label'] ?></span>
             </div>

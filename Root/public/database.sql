@@ -37,6 +37,8 @@ CREATE TABLE races (
     result_p1 VARCHAR(36),
     result_p2 VARCHAR(36),
     result_p3 VARCHAR(36),
+    bettingpool_won tinyint(1),
+    bettingpool_size INT,
     FOREIGN KEY (quali_p1) REFERENCES drivers(id) ON DELETE SET NULL,
     FOREIGN KEY (quali_p2) REFERENCES drivers(id) ON DELETE SET NULL,
     FOREIGN KEY (quali_p3) REFERENCES drivers(id) ON DELETE SET NULL,
@@ -77,7 +79,8 @@ CREATE TABLE settings (
     points_p2 INT DEFAULT 18,
     points_p3 INT DEFAULT 15,
     points_wrong_pos INT DEFAULT 5,
-    betting_window_hours INT DEFAULT 48
+    betting_window_hours INT DEFAULT 48,
+    bet_size INT DEFAULT 10
 );
 
 -- Indsæt standard indstillinger

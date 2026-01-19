@@ -110,6 +110,8 @@ INSERT INTO races (id, name, location, race_date, race_time) VALUES
 (UUID(), 'Qatar Grand Prix', 'Lusail', '2026-11-29', '17:00'),          -- 19:00 lokal = 17:00 CET
 (UUID(), 'Abu Dhabi Grand Prix', 'Abu Dhabi', '2026-12-06', '14:00');   -- 17:00 lokal = 14:00 CET
 
+// Sæt standard bettingpool størrelse for første løb
+UPDATE races SET bettingpool_size = 5000 WHERE name = 'Australian Grand Prix';
 
 -- =====================================================
 -- VERIFICER DATA
