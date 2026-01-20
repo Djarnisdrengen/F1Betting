@@ -1,0 +1,15 @@
+config.php
+cron_import_log.txt
+.git
+.gitignore
+node_modules
+deploy.js
+package.json
+package-lock.json
+.env
+.deployignore
+memory/
+.vscode/
+.php-cs-fixer.php
+.gitconfig
+*.zip
