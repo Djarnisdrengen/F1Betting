@@ -4,9 +4,10 @@
   "description": "F1 Betting deployment system",
   "main": "deploy.js",
   "scripts": {
-    "deploy:test": "node deploy.js test",
-    "deploy:live": "node deploy.js live",
-    "build": "node deploy.js --build-only"
+    "deploy:test": "node build/deploy/deploy.js test",
+    "deploy:live": "node build/deploy/deploy.js live",
+    "build": "node build/deploy/deploy.js --build-only",
+    "setup:deploy": "node build/deploy/setup-deployment.js"
   },
   "dependencies": {
     "dotenv": "^16.0.3",
