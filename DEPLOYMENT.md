@@ -2,6 +2,17 @@
 
 This repository includes automated deployment scripts to zip the `public` folder and upload it to your FTP servers.
 
+All deployment files are organized in the `build/deploy/` folder.
+
+## Folder structure
+build/deploy/
+├── deploy.js              # Node.js deployment script
+├── deploy.ps1             # PowerShell deployment script  
+├── setup-deployment.js    # Interactive setup wizard
+├── .env.example           # FTP credentials template
+├── .deployignore          # Files to exclude
+└── README.md              # Documentation
+
 ## Setup
 
 ### 1. Install Dependencies (Node.js version)
@@ -12,13 +23,13 @@ npm install
 
 ### 2. Configure Environment Variables
 
-Copy `.env.example` to `.env` and update with your credentials:
+Copy `build/deploy/.env.example` to `build/deploy/.env` and update with your credentials:
 
 ```bash
-cp .env.example .env
+cp build/deploy/.env.example build/deploy/.env
 ```
 
-Edit `.env` with your FTP server details:
+Edit `build/deploy/.env` with your FTP server details:
 
 ```env
 FTP_HOST=your-ftp-server.com
@@ -52,7 +63,14 @@ Build ZIP only (without uploading):
 npm run build
 ```
 
+Setup/configure deployment:
+```bash
+npm run setup:deploy
+```
+
 ### PowerShell Version (Windows)
+
+From the `build/deploy/` folder:
 
 Deploy to test environment:
 ```powershell
@@ -66,7 +84,7 @@ Deploy to live environment:
 
 Build ZIP only:
 ```powershell
-.\deploy.ps1 -Environment test -BuildOnly
+.\deploy.ps1 -Environment test -BuildOnbuild/deploy/ly
 ```
 
 ## What Gets Deployed
@@ -126,7 +144,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ## Development
 
-To modify deployment patterns, edit `.deployignore`:
+To modify deployment patterns, edit `build/deploy/.deployignore`:
 ```
 config.php
 cron_import_log.txt
