@@ -359,12 +359,13 @@ if (isset($_POST['update_settings'])) {
     $pointsP3 = intval($_POST['points_p3'] ?? 15);
     $pointsWrongPos = intval($_POST['points_wrong_pos'] ?? 5);
     $bettingWindowHours = intval($_POST['betting_window_hours'] ?? 48);
+    $betSize = intval($_POST['bet_size'] ?? 10);
     
     // Validate betting window (minimum 1 hour, maximum 168 hours = 1 week)
     $bettingWindowHours = max(1, min(168, $bettingWindowHours));
     
-    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ? WHERE id = 1");
-    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours]);
+    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ? WHERE id = 1");
+    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize]);
     $message = $lang === 'da' ? 'Indstillinger gemt!' : 'Settings saved!';
 }
 
@@ -439,7 +440,7 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
         if ($upcomingRace !== false) {
 
             $numberOfBetters = 5;
-            $betSize = 10;
+            $betSize = $settings['bet_size'] ?? 10;
             $newPoolSize = $numberOfBetters * $betSize; //Default pool size
 
         if (!$isPerfect) {
@@ -1166,6 +1167,15 @@ include __DIR__ . '/includes/header.php';
                             ? '"Forkert position" point gives når en kører er i top 3, men på forkert position.'
                             : '"Wrong position" points are awarded when a driver is in top 3 but in wrong position.' ?>
                     </p>
+                    
+                    <h4 class="mb-1 mt-3"><i class="fas fa-money-bill-wave text-accent"></i> <?= $lang === 'da' ? 'Betting Størrelse' : 'Bet Size' ?></h4>
+                    <p class="text-muted mb-2" style="font-size: 0.875rem;">
+                        <?= $lang === 'da' ? 'Standardstørrelse for hver indsats.' : 'Default size for each bet.' ?>
+                    </p>
+                    <div class="form-group mb-2" style="max-width: 200px;">
+                        <label class="form-label"><?= $lang === 'da' ? 'Indsatsstørrelse' : 'Bet Size' ?></label>
+                        <input type="number" name="bet_size" class="form-input" value="<?= intval($settings['bet_size'] ?? 10) ?>" min="1" max="1000">
+                    </div>
                     
                     <button type="submit" name="update_settings" class="btn btn-primary">
                         <i class="fas fa-save"></i> <?= t('save') ?>

@@ -84,11 +84,11 @@ CREATE TABLE settings (
 );
 
 -- Indsæt standard indstillinger
-INSERT INTO settings (id, app_title, app_year, hero_title_en, hero_title_da, hero_text_en, hero_text_da, points_p1, points_p2, points_p3, points_wrong_pos, betting_window_hours) VALUES 
+INSERT INTO settings (id, app_title, app_year, hero_title_en, hero_title_da, hero_text_en, hero_text_da, points_p1, points_p2, points_p3, points_wrong_pos, betting_window_hours, bet_size) VALUES 
 (1, 'F1 Betting', '2025', 'Predict the Podium', 'Forudsig Podiet', 
 'Compete with friends by predicting top 3 for each Grand Prix. Earn points for correct predictions.',
 'Konkurrér med venner ved at forudsige top 3 for hvert Grand Prix. Optjen point for korrekte forudsigelser.',
-25, 18, 15, 5, 48);
+25, 18, 15, 5, 48, 10);
 
 -- Password reset tokens
 CREATE TABLE password_resets (
