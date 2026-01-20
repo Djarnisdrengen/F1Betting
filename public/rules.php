@@ -129,7 +129,7 @@ include __DIR__ . '/includes/header.php';
                     </tr>
                     <tr>
                         <td><strong><?= $lang === 'da' ? 'Kvalifikationsresultat' : 'Qualifying result' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'Bet kan ikke matche kvalifikationsresultatet 100%. Uanset om systemet har fået blokeret for det.' : 'Bet cannot match qualifying result 100%. Even if the system did not block for it.' ?></td>
+                        <td><?= $lang === 'da' ? 'Bet kan ikke matche kvalifikationsresultatet 100%. Uanset om systemet har fået blokeret for det eller ej er bettet ugyldigt.' : 'Bet cannot match qualifying result 100%. Even if the system did not block for it.' ?></td>
                     </tr>
                 </table>
             </div>

@@ -158,7 +158,16 @@ include __DIR__ . '/includes/header.php';
                             </div>
                             <span class="badge <?= $status['class'] ?>"><?= $status['label'] ?></span>
                         </div>
-                        
+                        <!-- Betting Pool Size if there is a poolsize on the race-->
+                        <?php if ($race['bettingpool_size']): ?>
+                            <div class="countdown-timer bettingpool_size">
+                                <i class="fas fa-dollar-sign bettingpool_size"></i>
+                                <?= $lang === 'da' ? 'Puljestørrelse: ' : 'Pool size: ' ?>
+                                <span class="bettingpool_size">
+                                    <?= $race['bettingpool_size'] ?>
+                                </span>
+                            </div> 
+                        <?php endif; ?>
                         <!-- Qualifying -->
                         <?php if ($race['quali_p1']): ?>
                             <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 8px; margin-top: 1rem;">
