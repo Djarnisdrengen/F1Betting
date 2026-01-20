@@ -46,6 +46,16 @@ DRY_RUN=false
 
 ## Usage
 
+### Keyboard Shortcuts (VS Code)
+
+The fastest way to deploy:
+
+| Shortcut | Action |
+|----------|--------|
+| **Ctrl+Shift+B** | Deploy to TEST (hpovlsen.dk) |
+| **Ctrl+Shift+L** | Deploy to LIVE (formula-1.dk) - requires "yes" confirmation |
+| **Ctrl+Alt+P** | Preview files (lists what would be deployed) |
+
 ### Node.js Version (Cross-platform)
 
 Deploy to test environment:
