@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
 requireLogin();
 
 $currentUser = getCurrentUser();
@@ -26,6 +27,12 @@ if (!$race) {
 $status = getBettingStatus($race, $settings);
 if ($status['status'] !== 'open') {
     header("Location: races.php");
+    exit;
+}
+
+// Tjek om bruger er med i konkurrence
+if (!$currentUser['in_competition']) {
+    header("Location: races.php?error=not_in_competition");
     exit;
 }
 

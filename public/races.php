@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
 
 $db = getDB();
 $lang = getLang();
@@ -37,6 +38,19 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <h1 class="mb-3"><i class="fas fa-flag text-accent"></i> <?= t('races') ?></h1>
+
+<?php if (isset($_GET['error'])): ?>
+    <?php 
+    $errorMessages = [
+        'already_bet' => $lang === 'da' ? 'Du har allerede placed et bet på dette løb.' : 'You have already placed a bet on this race.',
+        'not_in_competition' => $lang === 'da' ? 'Du er ikke medlem af konkurrencen. Kontakt administrator.' : 'You are not a member of the competition. Contact administrator.',
+    ];
+    $errorMsg = $errorMessages[$_GET['error']] ?? 'An error occurred.';
+    ?>
+    <div class="alert" style="background: #fee; color: #c33; border: 1px solid #fcc; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-exclamation-circle"></i> <?= $errorMsg ?>
+    </div>
+<?php endif; ?>
 
 <?php foreach ($races as $race): 
     $status = getBettingStatus($race);

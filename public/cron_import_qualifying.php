@@ -4,6 +4,7 @@
  */
 
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
 
 //***************************************** */
 // Log file setup from config.php
