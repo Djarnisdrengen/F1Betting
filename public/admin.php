@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
 requireAdmin();
 
 $db = getDB();
@@ -126,6 +127,23 @@ if (isset($_GET['toggle_role'])) {
         $stmt->execute([$newRole, $userId]);
     }
     header("Location: admin.php?tab=users");
+    exit;
+}
+
+if (isset($_GET['toggle_competition'])) {
+    $userId = $_GET['toggle_competition'];
+    $stmt = $db->prepare("SELECT in_competition FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch();
+    if ($user) {
+        $newStatus = $user['in_competition'] ? 0 : 1;
+        $stmt = $db->prepare("UPDATE users SET in_competition = ? WHERE id = ?");
+        $stmt->execute([$newStatus, $userId]);
+        $message = $lang === 'da' 
+            ? ($newStatus ? 'Bruger tilføjet til konkurrence' : 'Bruger fjernet fra konkurrence')
+            : ($newStatus ? 'User added to competition' : 'User removed from competition');
+    }
+    header("Location: admin.php?tab=users&msg=" . urlencode($message));
     exit;
 }
 
@@ -439,8 +457,11 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
         // Update upcoming race if it exists
         if ($upcomingRace !== false) {
 
-            $numberOfBetters = 5;
-            $betSize = $settings['bet_size'] ?? 10;
+            $stmtCount = $db->prepare("SELECT COUNT(*) as count FROM users WHERE in_competition = 1");
+            $stmtCount->execute();
+            $countResult = $stmtCount->fetch();
+            $numberOfBetters = $countResult['count'] ?? 0;
+            $betSize = $settings['bet_size'] ?? 0;
             $newPoolSize = $numberOfBetters * $betSize; //Default pool size
 
         if (!$isPerfect) {
@@ -800,8 +821,12 @@ include __DIR__ . '/includes/header.php';
                         <?php endif; ?>
                         <span class="text-accent"><?= intval($user['points']) ?> pts</span>
                     </div>
-                    <?php if ($user['id'] !== $currentUser['id']): ?>
-                        <div class="flex gap-1">
+                    <div class="flex gap-1">
+                        <!-- TOGGLE COMPETITION BUTTON -->
+                        <a href="?tab=users&toggle_competition=<?= escape($user['id']) ?>" class="btn btn-sm" style="background: <?= $user['in_competition'] ? 'var(--f1-red)' : 'var(--bg-secondary)' ?>; color: <?= $user['in_competition'] ? 'white' : 'var(--text-primary)' ?>; border: none;">
+                            <i class="fas fa-<?= $user['in_competition'] ? 'check-circle' : 'times-circle' ?>"></i> <?= $user['in_competition'] ? ($lang === 'da' ? 'I Konkurrence' : 'In Competition') : ($lang === 'da' ? 'Ikke I Konkurrence' : 'Not In Competition') ?>
+                        </a>
+                        <?php if ($user['id'] !== $currentUser['id']): ?>
                             <!-- TOGGLE ROLE BUTTON -->
                             <a href="?tab=users&toggle_role=<?= escape($user['id']) ?>" class="btn btn-secondary btn-sm">
                                 <?= $user['role'] === 'admin' ? ($lang === 'da' ? 'Gør Bruger' : 'Make User') : ($lang === 'da' ? 'Gør Admin' : 'Make Admin') ?>
@@ -812,8 +837,8 @@ include __DIR__ . '/includes/header.php';
                             </button>                            
                             <!-- DELETE USER BUTTON -->
                             <a href="?tab=users&delete_user=<?= escape($user['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>"><i class="fas fa-trash"></i></a>
-                        </div>
-                    <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 
                 <!-- RESET PASSWORD FORM -->

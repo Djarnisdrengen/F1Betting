@@ -9,6 +9,7 @@
  */
 
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
 
 // Check if running from CLI
 if (php_sapi_name() !== 'cli') {

@@ -13,6 +13,7 @@ CREATE TABLE users (
     role ENUM('user', 'admin') DEFAULT 'user',
     points INT DEFAULT 0,
     stars INT DEFAULT 0,
+    in_competition TINYINT(1) DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

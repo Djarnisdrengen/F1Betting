@@ -66,29 +66,33 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 <!DOCTYPE html>
 <html lang="<?= $lang ?>">
 <head>
-    <!-- Cookiebot -->
-    <script nonce="<?php echo $nonce; ?>" id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="762114b7-e449-4131-af32-d8ad521ade04" data-blockingmode="auto" type="text/javascript"></script>
+    <?php if (@SITE_URL === 'https://formula-1.dk'): ?>
+            <!-- Cookiebot -->
+            <script nonce="<?php echo $nonce; ?>" id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="762114b7-e449-4131-af32-d8ad521ade04" data-blockingmode="auto" type="text/javascript"></script>
+   <?php endif; ?>
 
-    <!-- Meta Tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= escape($settings['app_title']) ?> <?= escape($settings['app_year']) ?></title>
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
-    <link rel="apple-touch-icon" href="assets/favicon.png">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+            <!-- Meta Tags -->
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title><?= escape($settings['app_title']) ?> <?= escape($settings['app_year']) ?></title>
+            <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+            <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+            <link rel="apple-touch-icon" href="assets/favicon.png">
+            <link rel="stylesheet" href="assets/css/style.css">
+            <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+            
+    <?php if (@SITE_URL === 'https://formula-1.dk'): ?>
+            <!-- Google tag (gtag.js) -->
+            <script  nonce="<?php echo $nonce; ?>" async src="https://www.googletagmanager.com/gtag/js?id=G-BFRVL7RX1N"></script>
+            <script  nonce="<?php echo $nonce; ?>">
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
 
-    <!-- Google tag (gtag.js) -->
-    <script  nonce="<?php echo $nonce; ?>" async src="https://www.googletagmanager.com/gtag/js?id=G-BFRVL7RX1N"></script>
-    <script  nonce="<?php echo $nonce; ?>">
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
+                gtag('config', 'G-BFRVL7RX1N');
 
-        gtag('config', 'G-BFRVL7RX1N');
-    </script>
-
+            </script>
+    <?php endif; ?>
 </head>
 <body class="<?= $theme ?>">
     <header class="header">
