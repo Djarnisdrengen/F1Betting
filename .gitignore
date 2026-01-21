@@ -4,6 +4,10 @@
 .idea/
 .vscode/
 
+# Ignore todolist configuration files
+.todolistrc
+.todolistrc_config
+
 # Environment/config files
 config.php
 cron_import_log.txt
