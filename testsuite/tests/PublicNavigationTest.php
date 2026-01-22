@@ -20,14 +20,27 @@ class PublicNavigationTest extends BaseTestCase
         // Assertions
         $this->assertEquals(200, $status, "Homepage failed to load with status 200.");
         $this->assertStringContainsString('<body', $body, "Homepage body content is missing.");
+            }
+
+    /**
+     * Test that the leaderboard page is accessible.
+     */
+    public function testLeaderboardPageLoads()
+    {
+        list($status, $body) = $this->client->get('leaderboard.php');
+        $this->assertEquals(200, $status, "Leaderboard failed to load with status 200.");
+        $this->assertStringContainsString('<body', $body, "Leaderboard body content is missing.");
+
     }
 
     /**
-     * Test that the contact page is accessible.
+     * Test that the races page is accessible.
      */
-    public function testContactPageLoads()
+    public function testLeaderboardPageLoads()
     {
-        list($status, $body) = $this->client->get('kontakt.php');
-        $this->assertEquals(200, $status, "Contact page is missing or broken.");
+        list($status, $body) = $this->client->get('races.php');
+        $this->assertEquals(200, $status, "Races failed to load with status 200.");
+        $this->assertStringContainsString('<body', $body, "Races body content is missing.");
+
     }
 }
