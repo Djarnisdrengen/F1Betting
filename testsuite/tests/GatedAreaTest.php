@@ -11,5 +11,7 @@ class GatedAreaTest extends TestCase
 
         $this->assertEquals(200, $status);
         $this->assertStringContainsString('Log ud', $body);
+        $this->assertStringContainsString('Placer Bet', $body);
+
     }
 }
