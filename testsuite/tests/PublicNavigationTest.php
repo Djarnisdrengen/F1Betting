@@ -36,7 +36,7 @@ class PublicNavigationTest extends BaseTestCase
     /**
      * Test that the races page is accessible.
      */
-    public function testLeaderboardPageLoads()
+    public function testRacesPageLoads()
     {
         list($status, $body) = $this->client->get('races.php');
         $this->assertEquals(200, $status, "Races failed to load with status 200.");
