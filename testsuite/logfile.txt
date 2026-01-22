@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="CLI Arguments" tests="3" assertions="5" errors="0" failures="1" skipped="0" time="0.099044">
+    <testsuite name="GatedAreaTest" file="/var/www/helvegpovlsen.dk/public_html/testsuite/tests/GatedAreaTest.php" tests="1" assertions="2" errors="0" failures="0" skipped="0" time="0.031005">
+      <testcase name="testAuthenticatedAccess" file="/var/www/helvegpovlsen.dk/public_html/testsuite/tests/GatedAreaTest.php" line="7" class="GatedAreaTest" classname="GatedAreaTest" assertions="2" time="0.031005"/>
+    </testsuite>
+    <testsuite name="PublicNavigationTest" file="/var/www/helvegpovlsen.dk/public_html/testsuite/tests/PublicNavigationTest.php" tests="2" assertions="3" errors="0" failures="1" skipped="0" time="0.068039">
+      <testcase name="testHomePageLoads" file="/var/www/helvegpovlsen.dk/public_html/testsuite/tests/PublicNavigationTest.php" line="10" class="PublicNavigationTest" classname="PublicNavigationTest" assertions="2" time="0.039744"/>
+      <testcase name="testContactPageLoads" file="/var/www/helvegpovlsen.dk/public_html/testsuite/tests/PublicNavigationTest.php" line="28" class="PublicNavigationTest" classname="PublicNavigationTest" assertions="1" time="0.028294">
+        <failure type="PHPUnit\Framework\ExpectationFailedException">PublicNavigationTest::testContactPageLoads
+Contact page is missing or broken.
+Failed asserting that 404 matches expected 200.
+
+/var/www/helvegpovlsen.dk/public_html/testsuite/tests/PublicNavigationTest.php:31
+/var/www/helvegpovlsen.dk/public_html/testsuite/run-tests.php:69</failure>
+      </testcase>
+    </testsuite>
+  </testsuite>
+</testsuites>

@@ -14,6 +14,7 @@ require __DIR__ . '/tests/BaseTestCase.php';
 
 use PHPUnit\TextUI\Application;
 
+$logFile = 'logfile.txt';
 $output = '';
 $error = '';
 $environments = [
@@ -47,31 +48,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $testDir = __DIR__ . '/tests';
         
         // Arguments optimized for PHPUnit 10.5.x
-        $argv = [
-            'phpunit',
-            '--no-configuration',
-            '--bootstrap', __DIR__ . '/tests/BaseTestCase.php',
-            '--testdox',
-            '--display-errors',
-            '--display-warnings',
-            '--colors=never',
-            $testDir
-        ];
+$argv = [
+    'phpunit',
+    '--no-configuration',
+    '--bootstrap', __DIR__ . '/tests/BaseTestCase.php',
+    '--testdox',
+    '--display-errors',
+    '--display-warnings',
+    '--colors=never',
+    '--log-junit', $logFile, // Optional: for structured data
+    '--testdox-text', $logFile . '_text', // Better for your display
+    $testDir
+];
+      
 
         $exitCode = 1;
-        try {
-            if (!is_dir($testDir)) {
-                echo "ERROR: Test directory not found at $testDir\n";
-            }
-
-            $application = new Application();
-            $exitCode = $application->run($argv);
-            
-            $phpunitOutput = ob_get_clean();
-            
-            if (empty($phpunitOutput)) {
-                $phpunitOutput = "⚠️ PHPUnit returned no output.\nPossible reasons:\n1. No files ending in 'Test.php' found in $testDir\n2. A fatal PHP error occurred inside a test file.";
-            }
+try {
+    $application = new Application();
+    // Use the second parameter to prevent the script from exiting immediately
+    $exitCode = $application->run($argv); 
+    
+    // Read the text results
+    if (file_exists($logFile . '_text')) {
+        $phpunitOutput = file_get_contents($logFile . '_text');
+        unlink($logFile . '_text'); // Cleanup
+    }
+    
+    if (empty($phpunitOutput)) {
+        $phpunitOutput = "⚠️ No tests were executed. Check if files end in 'Test.php'.";
+    }
         } catch (Throwable $t) {
             $phpunitOutput = ob_get_clean() . "\nCRITICAL ERROR DURING RUN: " . $t->getMessage() . "\nIn: " . $t->getFile() . " line " . $t->getLine();
         }
