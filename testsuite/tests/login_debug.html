@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    
+            <!-- Meta Tags -->
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>HPOVLSEN anno 1996</title>
+            <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+            <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+            <link rel="apple-touch-icon" href="assets/favicon.png">
+            <link rel="stylesheet" href="assets/css/style.css">
+            <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+            
+    </head>
+<body class="dark">
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <img src="assets/logo_header_dark.png" alt="HPOVLSEN" class="logo-img logo-dark">
+                    <img src="assets/logo_header_light.png" alt="HPOVLSEN" class="logo-img logo-light">
+                    <span class="logo-text">HPOVLSEN</span>
+                    <span class="logo-year">anno 1996</span>
+                </a>
+                
+                <!-- Mobile menu button -->
+                <button class="mobile-menu-btn" data-link="toggleMobileMenu" aria-label="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <nav class="nav" id="main-nav">
+                    <a href="/" class="nav-link ">
+                        <i class="fas fa-home"></i> <span>Hjem</span>
+                    </a>
+                    <a href="leaderboard.php" class="nav-link ">
+                        <i class="fas fa-trophy"></i> <span>Rangliste</span>
+                    </a>
+                    <a href="races.php" class="nav-link ">
+                        <i class="fas fa-flag"></i> <span>Løb</span>
+                    </a>
+                                                            
+                    <!-- Mobile-only items -->
+                    <div class="mobile-nav-extras">
+                                                    <a href="login.php" class="nav-link">
+                                <i class="fas fa-sign-in-alt"></i> <span>Log ind</span>
+                            </a>
+                                                <div class="mobile-controls">
+                            <a href="?toggle_theme=1" class="btn btn-ghost btn-icon">
+                                <i class="fas fa-sun"></i>
+                                <span>Skift tema</span>
+                            </a>
+                            <a href="?toggle_lang=1" class="btn btn-ghost btn-icon">
+                                <i class="fas fa-globe"></i>
+                                <span>English</span>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+                
+                <div class="controls desktop-only">
+                    <!-- Theme Toggle -->
+                    <a href="?toggle_theme=1" class="btn btn-ghost btn-icon" title="Skift tema">
+                        <i class="fas fa-sun"></i>
+                    </a>
+                    
+                    <!-- Language Toggle -->
+                    <a href="?toggle_lang=1" class="btn btn-ghost btn-icon" title="Skift sprog">
+                        <i class="fas fa-globe"></i>
+                    </a>
+                    
+                                            <a href="login.php" class="btn btn-primary">Log ind</a>
+                                    </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container" style="padding: 2rem 1rem; min-height: calc(100vh - 200px);">
+
+<div style="max-width: 400px; margin: 3rem auto;">
+    <div class="card">
+        <div class="card-header text-center">
+            <div style="width: 64px; height: 64px; background: var(--f1-red); border-radius: 16px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-flag-checkered" style="font-size: 2rem; color: white;"></i>
+            </div>
+            <h2>Log ind</h2>
+        </div>
+        <div class="card-body">
+                            <div class="alert alert-error">Forkert email eller adgangskode</div>
+                        
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="50ee5d36848bf018a7db1e012e020774143100cf1b7d64f201c58f45acc58915">                <div class="form-group">
+                    <label class="form-label">E-mail</label>
+                    <input type="email" name="email" class="form-input" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Adgangskode</label>
+                    <input type="password" name="password" class="form-input" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Log ind</button>
+            </form>
+            
+            <p class="text-center mt-2 text-muted">
+                <a href="forgot_password.php" class="text-accent">Glemt adgangskode?</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+    </main>
+    
+    <!-- Mobile nav overlay -->
+    <div class="nav-overlay" id="nav-overlay" onclick="toggleMobileMenu()"></div>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 1996-2026 - Kontakt: info@hpovlsen.dk</p>
+        </div>
+
+        <!-- Cookiebot script to handle cookie preferences dialog -->
+        <script nonce="c7fc195eb28c4093e7b8903a4c4ee821">
+        document.addEventListener("DOMContentLoaded", function() {
+            const cookieLink = document.getElementById("cookie-preferences-link");
+
+            if (cookieLink && window.Cookiebot) {
+            cookieLink.addEventListener("click", function(event) {
+                event.preventDefault();      // prevent default link behavior
+                Cookiebot.show();            // open Cookie Preferences dialog
+            });
+            }
+        });
+        </script>
+    </footer>
+    
+    <!--  APP.JS INCLUDE -->
+    <script nonce="c7fc195eb28c4093e7b8903a4c4ee821" src="assets/js/app.js"></script>
+
+    <!--  INLINE SCRIPT TO ENSURE EARLY LOAD -->
+    <script nonce="c7fc195eb28c4093e7b8903a4c4ee821">
+
+    // Mobile menu toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select all div with the specific class
+        const buttons = document.querySelectorAll('.mobile-menu-btn');            
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {                        
+                toggleMobileMenu(); // Your existing function
+            });
+        });
+    });
+
+
+    //Mobile leaderboard toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select all div with the specific class
+        const divs = document.querySelectorAll('.leaderboard-section');            
+        divs.forEach(div => {
+            div.addEventListener('click', function() {                        
+                toggleLeaderboard(); 
+            });
+        });
+
+    });
+
+    function toggleMobileMenu() {
+        const nav = document.getElementById('main-nav');
+        const overlay = document.getElementById('nav-overlay');
+        const btn = document.querySelector('.mobile-menu-btn i');
+        
+        nav.classList.toggle('active');
+        overlay.classList.toggle('active');
+        
+        if (nav.classList.contains('active')) {
+            btn.className = 'fas fa-times';
+            document.body.style.overflow = 'hidden';
+        } else {
+            btn.className = 'fas fa-bars';
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Toggle leaderboard on mobile
+    function toggleLeaderboard() {
+        const header = document.querySelector('.leaderboard-collapse-header');
+        const content = document.getElementById('leaderboard-content');
+        
+        if (header && content) {
+            header.classList.toggle('expanded');
+            content.classList.toggle('expanded');
+        }
+    }
+    
+    // Close mobile menu on resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            const nav = document.getElementById('main-nav');
+            const overlay = document.getElementById('nav-overlay');
+            if (nav && nav.classList.contains('active')) {
+                nav.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+    });
+    
+    // Countdown timer functionality
+    function updateCountdowns() {
+        document.querySelectorAll('.countdown-timer').forEach(timer => {
+            const opens = timer.dataset.opens;
+            const closes = timer.dataset.closes;
+            const targetDate = opens ? new Date(opens) : (closes ? new Date(closes) : null);
+            
+            if (!targetDate) return;
+            
+            const now = new Date();
+            const diff = targetDate - now;
+            
+            const countdownEl = timer.querySelector('.countdown-value');
+            if (!countdownEl) return;
+            
+            if (diff <= 0) {
+                countdownEl.textContent = 'Nu!';
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            let text = '';
+            if (days > 0) {
+                text = `${days}d ${hours}t ${minutes}m`;
+            } else if (hours > 0) {
+                text = `${hours}t ${minutes}m ${seconds}s`;
+            } else {
+                text = `${minutes}m ${seconds}s`;
+            }
+            
+            countdownEl.textContent = text;
+        });
+    }
+    
+    // Update every second
+    updateCountdowns();
+    setInterval(updateCountdowns, 1000);
+    </script>
+</body>
+</html>
