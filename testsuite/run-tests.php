@@ -52,7 +52,7 @@ $argv = [
     'phpunit',
     '--no-configuration',
     '--bootstrap', __DIR__ . '/tests/BaseTestCase.php',
-    '--testdox',
+  '--testdox',
     '--display-errors',
     '--display-warnings',
     '--colors=never',
@@ -60,7 +60,6 @@ $argv = [
     '--testdox-text', $logFile . '_text', // Better for your display
     $testDir
 ];
-      
 
         $exitCode = 1;
 try {
