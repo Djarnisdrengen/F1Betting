@@ -1,6 +1,9 @@
 <?php
 
-
+// ============================================
+// LOAD UTILITY FUNCTIONS
+// ============================================
+require_once __DIR__ . '/public/functions.php';
 
 // ============================================
 // KONFIGURATION - REDIGER DISSE VÆRDIER
@@ -71,10 +74,6 @@ ini_set('session.use_only_cookies', 1);    // Only use cookies for sessions (no 
 
 session_start();
 
-// ============================================
-// LOAD UTILITY FUNCTIONS
-// ============================================
-require_once __DIR__ . '/public/functions.php';
 
 
 // ============================================

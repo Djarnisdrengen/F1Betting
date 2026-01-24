@@ -16,7 +16,7 @@ CREATE TABLE users (
     in_competition TINYINT(1) DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
+ 
 -- Kørere
 CREATE TABLE drivers (
     id VARCHAR(36) PRIMARY KEY,
