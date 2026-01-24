@@ -64,6 +64,7 @@ include __DIR__ . '/includes/header.php';
 <div class="homepage-grid">
     <!-- Leaderboard Sidebar (shows first on mobile, collapsed by default) -->
     <div class="leaderboard-section"> 
+
         <!-- Mobile collapsible header -->
         <div class="leaderboard-collapse-header">
             <h2><i class="fas fa-trophy text-accent"></i> <?= t('leaderboard') ?></h2>
@@ -219,6 +220,11 @@ include __DIR__ . '/includes/header.php';
                                                     <?= escape($bet['display_name'] ?: $bet['email']) ?>
                                                     <?php if ($isMyBet): ?><span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= $lang === 'da' ? 'DIG' : 'YOU' ?></span><?php endif; ?>
                                                     <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
+                                                    <?php if ($bet['points'] > 0): ?>
+                                                        <!-- <span class="badge" style="background: var(--f1-red); color: white;"><?= $bet['points'] ?> pts</span> -->
+                                                         <span class="badge position-1"> <?= $bet['points'] ?> pts</span>
+                                                    <?php endif; ?>
+
                                                 </strong>
                                                 <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>
                                             </div>
@@ -227,13 +233,11 @@ include __DIR__ . '/includes/header.php';
                                             <div class="bet-predictions">
                                                 <?php foreach (['p1', 'p2', 'p3'] as $i => $key): 
                                                     $driver = $driversById[$bet[$key]] ?? null;
+                                                    $isP3 = ($key === 'p3'); // Check if this is the third position                                                   
                                                 ?>
-                                                    <span class="bet-pred"><b>P<?= $i + 1 ?>:</b> <?= $driver ? explode(' ', $driver['name'])[count(explode(' ', $driver['name']))-1] : '?' ?></span>
+                                                    <span class="bet-pred"><b>P<?= $i + 1 ?>:</b> <?= $driver ? explode(' ', $driver['name'])[count(explode(' ', $driver['name']))-1] : '?' ?></span>          
                                                 <?php endforeach; ?>
                                             </div>
-                                            <?php if ($bet['points'] > 0): ?>
-                                                <span class="badge" style="background: var(--f1-red); color: white;"><?= $bet['points'] ?> pts</span>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
