@@ -1,21 +1,5 @@
-{
-  "name": "f1-betting-deploy",
-  "version": "1.0.0",
-  "description": "F1 Betting deployment system",
-  "main": "deploy.js",
-  "scripts": {
-    "deploy:test": "node build/deploy/deploy.js test",
-    "deploy:live": "node build/deploy/deploy.js live",
-    "build": "node build/deploy/deploy.js --build-only",
-    "setup:deploy": "node build/deploy/setup-deployment.js"
-  },
-  "dependencies": {
-    "dotenv": "^16.0.3",
-    "ftp": "^0.3.10",
-    "archiver": "^6.0.0"
-  },
-  "devDependencies": {},
-  "keywords": ["f1", "betting", "deployment"],
-  "author": "",
-  "license": "ISC"
+"scripts": {
+  "deploy:test": "node build-deploy/deploy.js test",
+  "deploy:live": "node build-deploy/deploy.js live",
+  "setup:deploy": "node build-deploy/setup-deployment.js"
 }
