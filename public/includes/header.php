@@ -11,7 +11,7 @@ $csp_policy =
     "frame-ancestors 'none'; " .
     "default-src 'self'; " .
     "frame-src 'self' https://consent.cookiebot.com https://consentcdn.cookiebot.com; " .
-    "script-src 'self' 'nonce-$nonce' 'strict-dynamic'" .
+    "script-src 'self' 'nonce-$nonce' 'strict-dynamic' " .
         "'sha256-g7fzz0TV6GRE7YO5Psf4wohzOVdQHxCLJMkJ1eUqZIk=' " .
         "'sha256-5ofhTBu470bVNSfmSODufleilOm4vGBr+Ysw7pxWXsQ=' " .
         "'sha256-q9FEvsEcv32ce7lbHps7PEYb4/B1N/0+rYZYTTdgF0U=' " . 
