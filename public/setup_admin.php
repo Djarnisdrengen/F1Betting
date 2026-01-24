@@ -11,6 +11,12 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
+// Only allow admins to run this test
+$currentUser = getCurrentUser();
+if (!$currentUser || $currentUser['role'] !== 'admin') {
+    die("Access denied. Admin login required.");
+}
+
 // Check if running from CLI
 if (php_sapi_name() !== 'cli') {
     die("Dette script skal køres fra terminalen (CLI).\n");
