@@ -53,13 +53,14 @@ class SMTPMailer {
         $boundary = md5(uniqid(time()));
         
         $headers = "MIME-Version: 1.0\r\n";
+        $headers .= "Content-Type: text/html; charset=UTF-8";
         $headers .= "From: {$this->fromName} <{$this->fromEmail}>\r\n";
         $headers .= "Reply-To: {$this->fromEmail}\r\n";
         $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
         
         // Build message body
         $message = "--{$boundary}\r\n";
-        $message .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        $message .= "Content-Type: text/html; charset=UTF-8\r\n";
         $message .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
         $message .= ($textBody ?: strip_tags($htmlBody)) . "\r\n\r\n";
         $message .= "--{$boundary}\r\n";
