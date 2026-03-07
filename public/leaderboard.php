@@ -8,6 +8,7 @@ $leaderboard = $db->query("
     SELECT u.id, u.email, u.display_name, u.points, u.stars, COUNT(b.id) as bets_count 
     FROM users u 
     LEFT JOIN bets b ON u.id = b.user_id 
+    WHERE u.in_competition = 1
     GROUP BY u.id 
     ORDER BY u.points DESC, u.stars DESC
 ")->fetchAll();
