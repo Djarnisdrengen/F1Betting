@@ -141,10 +141,10 @@ include __DIR__ . '/includes/header.php';
                 </div>
             <?php endif; ?>
             
-            <!-- Results -->
+            <!-- Result -->
             <?php if ($race['result_p1']): ?>
                 <div style="margin-top: 1rem;">
-                    <small class="text-muted"><?= t('results') ?>:</small>
+                    <small class="text-muted"><?= t('result') ?>:</small>
                     <div class="quali-row">
                         <?php foreach (['result_p1', 'result_p2', 'result_p3'] as $i => $key): 
                             $driver = $driversById[$race[$key]] ?? null;
