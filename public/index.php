@@ -47,9 +47,11 @@ $heroText = $lang === 'da' ? $settings['hero_text_da'] : $settings['hero_text_en
 // Find first upcoming race for scroll - exclude completed AND past races
 $now = new DateTime();
 $upcomingRaces = array_filter($races, function($r) use ($now) {
-    if ($r['result_p1']) return false; // Har resultat = afsluttet
+    //if ($r['result_p1']) return false; // Har resultat = afsluttet
     $raceDateTime = new DateTime($r['race_date'] . ' ' . $r['race_time']);
-    return $raceDateTime > $now; // Kun fremtidige løb
+
+    $eightHoursAgo = (clone $now)->modify('-8 hours');
+    return $raceDateTime > $eightHoursAgo; // Fremtidige løb + op til 8 timer gamle
 });
 $firstUpcomingRaceId = !empty($upcomingRaces) ? array_values($upcomingRaces)[0]['id'] : null;
 
@@ -171,6 +173,7 @@ include __DIR__ . '/includes/header.php';
                                 </span>
                             </div> 
                         <?php endif; ?>
+
                         <!-- Qualifying -->
                         <?php if ($race['quali_p1']): ?>
                             <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 8px; margin-top: 1rem;">
@@ -189,6 +192,24 @@ include __DIR__ . '/includes/header.php';
                             </div>
                         <?php endif; ?>
                         
+                        <!-- Race result -->
+                        <?php if ($race['result_p1']): ?>
+                            <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 8px; margin-top: 1rem;">
+                                <small class="text-muted"><?= t('result') ?></small>
+                                <div class="quali-row">
+                                    <?php foreach (['result_p1', 'result_p2', 'result_p3'] as $i => $key): 
+                                        $driver = $driversById[$race[$key]] ?? null;
+                                        if ($driver):
+                                    ?>
+                                        <div class="quali-item">
+                                            <span class="position-badge position-<?= $i + 1 ?>">P<?= $i + 1 ?></span>
+                                            <?= escape($driver['name']) ?>
+                                        </div>
+                                    <?php endif; endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
                         <!-- Actions -->
                         <div class="flex items-center justify-between mt-2">
                             <span class="text-muted"><i class="fas fa-users"></i> <?= count($raceBets) ?> bets</span>
