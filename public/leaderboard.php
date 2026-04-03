@@ -10,7 +10,7 @@ $leaderboard = $db->query("
     LEFT JOIN bets b ON u.id = b.user_id 
     WHERE u.in_competition = 1
     GROUP BY u.id 
-    ORDER BY u.points DESC, u.stars DESC
+    ORDER BY u.stars DESC, u.points DESC
 ")->fetchAll();
 
 include __DIR__ . '/includes/header.php';
