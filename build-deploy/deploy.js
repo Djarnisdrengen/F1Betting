@@ -1,6 +1,7 @@
 const ftp = require("basic-ftp");
 const fs = require("fs");
 const path = require("path");
+const readline = require("readline");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 function loadIgnores() {
@@ -65,4 +66,19 @@ async function deploy() {
         client.close();
     }
 }
-deploy();
+async function main() {
+    const env = process.argv[2] || "test";
+    if (env === "live") {
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+        await new Promise(resolve => rl.question("⚠️  Deploy to LIVE (formula-1.dk)? Type YES to confirm: ", answer => {
+            rl.close();
+            if (answer !== "YES") {
+                console.log("Aborted.");
+                process.exit(0);
+            }
+            resolve();
+        }));
+    }
+    deploy();
+}
+main();

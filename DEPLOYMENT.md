@@ -1,165 +1,105 @@
-# F1 Betting Deployment Guide
+# Deployment Strategy
 
-This repository includes automated deployment scripts to zip the `public` folder and upload it to your FTP servers.
+## Overview
 
-All deployment files are organized in the `build/deploy/` folder.
+| Environment | Site | Branch |
+|-------------|------|--------|
+| Local dev   | Direct file editing | `main` |
+| Test        | hpovlsen.dk | `main` |
+| Live        | formula-1.dk | `main` (only after test verified) |
 
-## Folder structure
-build/deploy/
-├── deploy.js              # Node.js deployment script
-├── deploy.ps1             # PowerShell deployment script  
-├── setup-deployment.js    # Interactive setup wizard
-├── .env.example           # FTP credentials template
-├── .deployignore          # Files to exclude
-└── README.md              # Documentation
+---
 
-## Setup
+## Local Folder Setup
 
-### 1. Install Dependencies (Node.js version)
+You only need **one local folder** — the GitHub repo:
 
-```bash
-npm install
+```
+~/Documents/Websites/github/F1Betting/
 ```
 
-### 2. Configure Environment Variables
+Do all development here. No need for a separate live copy locally.
 
-Copy `build/deploy/.env.example` to `build/deploy/.env` and update with your credentials:
+---
 
+## Workflow
+
+### 1. Develop locally
+Edit files in the repo.
+
+### 2. Commit to GitHub
 ```bash
-cp build/deploy/.env.example build/deploy/.env
+git add .
+git commit -m "describe change"
+git push
 ```
 
-Edit `build/deploy/.env` with your FTP server details:
+### 3. Deploy to test
+```bash
+node build-deploy/deploy.js test
+```
+Verify everything works on **hpovlsen.dk**.
+
+### 4. Deploy to live — only when test is confirmed working
+```bash
+node build-deploy/deploy.js live
+```
+
+---
+
+## Preventing Accidental Live Deploys
+
+The deploy script has a confirmation prompt for live deploys.
+When you run `node build-deploy/deploy.js live`, you must type `YES` exactly to proceed — pressing enter or any other input cancels it.
+
+To add this guard to the deploy script, update `build-deploy/deploy.js`:
+
+1. Add `const readline = require("readline");` at the top.
+2. Replace the final `deploy();` line with:
+
+```js
+async function main() {
+    const env = process.argv[2] || "test";
+    if (env === "live") {
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+        await new Promise(resolve => rl.question("⚠️  Deploy to LIVE (formula-1.dk)? Type YES to confirm: ", answer => {
+            rl.close();
+            if (answer !== "YES") {
+                console.log("Aborted.");
+                process.exit(0);
+            }
+            resolve();
+        }));
+    }
+    deploy();
+}
+main();
+```
+
+---
+
+## What Gets Deployed
+
+- Everything in the `public/` folder
+- Respects exclusions listed in `build-deploy/.deployignore`
+
+## Environment Variables
+
+Stored in `build-deploy/.env` (never committed to git):
 
 ```env
 FTP_HOST=your-ftp-server.com
 FTP_USER=your-ftp-username
 FTP_PASS=your-ftp-password
-
-# Different root folders for each environment
-FTP_ROOT_TEST=/public_html_test
-FTP_ROOT_LIVE=/public_html
-
-# Optional: Set to true to test without uploading
+FTP_ROOT_TEST=/path/to/test/root
+FTP_ROOT_LIVE=/path/to/live/root
 DRY_RUN=false
 ```
 
-## Usage
+---
 
-### Keyboard Shortcuts (VS Code)
+## Summary
 
-The fastest way to deploy:
-
-| Shortcut | Action |
-|----------|--------|
-| **Ctrl+Shift+B** | Deploy to TEST (hpovlsen.dk) |
-| **Shift+Alt+L** | Deploy to LIVE (formula-1.dk) - requires "yes" confirmation |
-| **Ctrl+Alt+P** | Preview files (lists what would be deployed) |
-
-### Node.js Version (Cross-platform)
-
-Deploy to test environment:
-```bash
-npm run deploy:test
 ```
-
-Deploy to live environment:
-```bash
-npm run deploy:live
+edit code → git commit → deploy test → verify on hpovlsen.dk → deploy live
 ```
-
-Build ZIP only (without uploading):
-```bash
-npm run build
-```
-
-Setup/configure deployment:
-```bash
-npm run setup:deploy
-```
-
-### PowerShell Version (Windows)
-
-From the `build/deploy/` folder:
-
-Deploy to test environment:
-```powershell
-.\deploy.ps1 -Environment test
-```
-
-Deploy to live environment:
-```powershell
-.\deploy.ps1 -Environment live
-```
-
-Build ZIP only:
-```powershell
-.\deploy.ps1 -Environment test -BuildOnbuild/deploy/ly
-```
-
-## What Gets Deployed
-
-✅ **Deployed:** Everything in the `public` folder (HTML, CSS, JS, assets, includes, etc.)
-
-❌ **Never Deployed:** Files listed in `.deployignore`
-- `config.php` (keep server-specific config)
-- `cron_import_log.txt` (keep local logs)
-- `node_modules`, `.git`, and other development files
-
-## Deployment Flow
-
-1. **ZIP Creation**: The script reads all files in `public/`, excluding patterns in `.deployignore`
-2. **FTP Upload**: Uploads the ZIP with timestamp (e.g., `public-test-2026-01-20.zip`)
-3. **Manual Extraction**: SSH into server and manually extract/deploy
-
-## Manual Server Steps
-
-After the ZIP is uploaded, SSH into your server and:
-
-```bash
-cd /path/to/root
-unzip public-test-2026-01-20.zip
-mv public/* ./
-rm -rf public public-test-2026-01-20.zip
-```
-
-## Two Environment Setup
-
-- **Test**: `hpovlsen.dk` → `FTP_ROOT_TEST`
-- **Live**: `formula-1.dk` → `FTP_ROOT_LIVE`
-
-Both use the same FTP server and credentials, but different root paths.
-
-## Security Notes
-
-- **Never commit `.env`** to git (it's already in `.gitignore`)
-- **Keep `config.php` on server** - don't deploy it
-- Use `.deployignore` to exclude sensitive/local files
-
-## Troubleshooting
-
-### FTP Connection Issues
-- Verify `FTP_HOST`, `FTP_USER`, `FTP_PASS` in `.env`
-- Check firewall/FTP port access
-- Try `DRY_RUN=true` to test configuration
-
-### ZIP File Size
-- Too large? Check what's being included with verbose output
-- Consider compressing assets or using CDN
-
-### PowerShell Script Won't Run
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-## Development
-
-To modify deployment patterns, edit `build/deploy/.deployignore`:
-```
-config.php
-cron_import_log.txt
-.git
-node_modules
-```
-
-One pattern per line. Lines starting with `#` are comments.
