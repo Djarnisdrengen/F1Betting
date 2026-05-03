@@ -1,5 +1,12 @@
-"scripts": {
-  "deploy:test": "node build-deploy/deploy.js test",
-  "deploy:live": "node build-deploy/deploy.js live",
-  "setup:deploy": "node build-deploy/setup-deployment.js"
+{
+  "scripts": {
+    "deploy:test": "node build-deploy/deploy.js test",
+    "deploy:live": "node build-deploy/deploy.js live",
+    "setup:deploy": "node build-deploy/setup-deployment.js"
+  },
+  "dependencies": {
+    "basic-ftp": "^5.0.5",
+    "archiver": "^7.0.1",
+    "dotenv": "^16.4.5"
+  }
 }
