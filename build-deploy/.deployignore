@@ -1,5 +1,5 @@
 config.php
-cron_import_log.txt
+cron/cron_import_log.txt
 .git
 node_modules
 build-deploy/

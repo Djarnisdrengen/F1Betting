@@ -6,8 +6,8 @@
  * DELETE THIS FILE after testing for security!
  */
 
-require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/includes/smtp.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../includes/smtp.php';
 
 // Only allow admins to run this test
 $currentUser = getCurrentUser();

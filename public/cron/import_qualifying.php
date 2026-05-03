@@ -3,8 +3,8 @@
  * F1 Qualifying Results Auto-Import (Debug + Logging)
  */
 
-require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../functions.php';
 
 //***************************************** */
 // Log file setup from config.php
@@ -101,7 +101,7 @@ logMessage("[DEBUG] Fetching qualifying results for season $currentYear...");
 // Fetch data from API or stub
 if ($TEST_MODE) {
     // Load stub data from separate file
-    $data = require __DIR__ . '/f1_testdata.php';
+    $data = require __DIR__ . '/../tools/f1_testdata.php';
     logMessage("[TEST MODE] Loaded stub F1 data with " . count($data['MRData']['RaceTable']['Races']) . " races");
 } else {
     $data = fetchF1Api("/$currentYear/qualifying");
