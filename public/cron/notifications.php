@@ -3,16 +3,16 @@
  * Cron Job Script for F1 Betting Email Notifications
  * 
  * This script should be run every hour via cron:
- *   0 * * * * php /path/to/cron_notifications.php
+ *   0 * * * * php /home/dit-brugernavn/public_html/f1/cron/notifications.php
  * 
  * It sends email notifications when:
  * - Betting window opens (configurable hours before race)
  * - Betting window closes soon (2 hours before race)
  */
 
-require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/includes/smtp.php';
-require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../includes/smtp.php';
+require_once __DIR__ . '/../functions.php';
 
 //***************************************** */
 // Log file setup

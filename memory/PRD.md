@@ -92,12 +92,17 @@ Located at `/app/php_version/`:
 **Root level (outside webroot for security):**
 - `config.php` - Configuration med CET timezone dokumentation
 
-**Public folder (webroot):**
-- `database.sql` - Base database schema
-- `data_2026.sql` - 2026 season data (22 drivers, 24 races, CET times)
+**Database folder:**
+- `database/schema.sql` - Base database schema
+- `database/seasons/data_2026.sql` - 2026 season data (22 drivers, 24 races, CET times)
+
+**Root level:**
 - `INSTALLATION.md` - Complete setup guide including SMTP
+
+**Public folder (webroot):**
 - `includes/smtp.php` - Custom SMTP email integration + unified template
-- `cron_notifications.php` - Cron job for betting window notifications
+- `cron/notifications.php` - Cron job for betting window notifications
+- `cron/import_qualifying.php` - Auto-import of qualifying results
 - `edit_bet.php` - Bet editing page
 - `rules.php` - Betting rules page
 - `admin.php` - Admin panel med alle funktioner

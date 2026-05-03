@@ -24,11 +24,13 @@ Config-filen er nu placeret UDENFOR web-roden for bedre sikkerhed.
         ├── admin.php
         ├── forgot_password.php
         ├── reset_password.php
-        ├── cron_notifications.php
-        ├── database.sql
-        ├── data_2026.sql
-        ├── migration_points.sql
-        ├── setup_admin.php
+        ├── cron/
+        │   ├── notifications.php
+        │   └── import_qualifying.php
+        ├── tools/
+        │   ├── setup_admin.php
+        │   ├── test_smtp.php
+        │   └── f1_testdata.php
         ├── assets/
         │   ├── css/style.css
         │   ├── js/app.js
@@ -82,8 +84,8 @@ Config-filen er nu placeret UDENFOR web-roden for bedre sikkerhed.
 1. Gå til **phpMyAdmin** i Simply.com kontrolpanel
 2. Vælg din nye database
 3. Klik på **Import** fanen
-4. Vælg `database.sql` og klik **Udfør**
-5. Importér derefter `data_2026.sql` for 2026 sæsondata
+4. Vælg `database/schema.sql` og klik **Udfør**
+5. Importér derefter `database/seasons/data_2026.sql` for 2026 sæsondata
 
 ---
 
@@ -126,7 +128,7 @@ INSERT INTO users (id, name, display_name, email, password, role) VALUES
 Hvis du har SSH-adgang:
 ```bash
 cd /home/dit-brugernavn/public_html/f1
-php setup_admin.php admin@example.com password123
+php tools/setup_admin.php admin@example.com password123
 ```
 
 ---
@@ -147,25 +149,25 @@ For automatiske email-notifikationer når betting åbner:
 
 1. Gå til Simply.com kontrolpanel → **Cron Jobs**
 2. Tilføj nyt cron job:
-   - **Kommando:** `php /home/dit-brugernavn/public_html/f1/cron_notifications.php`
+   - **Kommando:** `php /home/dit-brugernavn/public_html/f1/cron/notifications.php`
    - **Interval:** Hver time (`0 * * * *`)
 
 ### Automatisk Import af Resultater (Valgfrit)
 For automatisk import af kvalifikations- og løbsresultater:
 
 **Kvalifikation (kører lørdag kl. 15-18):**
-- **Kommando:** `php /home/dit-brugernavn/public_html/f1/cron_import_qualifying.php`
+- **Kommando:** `php /home/dit-brugernavn/public_html/f1/cron/import_qualifying.php`
 
 **Cron job URL'er
 Import
-URL med secret: https://www.formula-1.dk/cron_import_qualifying.php?token=
-URL med secret: https://www.hpovlsen.dk/cron_import_qualifying.php?token=
+URL med secret: https://www.formula-1.dk/cron/import_qualifying.php?token=
+URL med secret: https://www.hpovlsen.dk/cron/import_qualifying.php?token=
 
 Reset kvalifikation result for all races: UPDATE `races` SET `quali_p1`=null,`quali_p2`=null,`quali_p3`=null
 
 Notifikationer
-URL med secret: https://www.formula-1.dk/cron_notifications.php
-URL med secret: https://www.hpovlsen.dk/cron_notifications.php
+URL med secret: https://www.formula-1.dk/cron/notifications.php
+URL med secret: https://www.hpovlsen.dk/cron/notifications.php
 
 **Bemærk:** 
 - Resultaterne hentes fra Jolpica F1 API (gratis)
