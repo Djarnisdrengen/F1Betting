@@ -94,4 +94,7 @@ frontend/node_modules/.cache/default-development/0.pack
 # Environment files
 *.env
 *.env.*
--e 
+
+# Deploy backups and test screenshots
+build-deploy/backups/
+build-deploy/screenshots/
