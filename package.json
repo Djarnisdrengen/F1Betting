@@ -2,11 +2,17 @@
   "scripts": {
     "deploy:test": "node build-deploy/deploy.js test",
     "deploy:live": "node build-deploy/deploy.js live",
-    "setup:deploy": "node build-deploy/setup-deployment.js"
+    "setup:deploy": "node build-deploy/setup-deployment.js",
+    "test:smoke": "node tests/smoke.js",
+    "test:e2e": "npx playwright test --config tests/playwright.config.js",
+    "test:all": "npm run test:smoke && npm run test:e2e"
   },
   "dependencies": {
-    "basic-ftp": "^5.0.5",
     "archiver": "^7.0.1",
+    "basic-ftp": "^5.0.5",
     "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
   }
 }
