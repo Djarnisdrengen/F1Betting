@@ -5,7 +5,7 @@ async function login(page) {
     await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL);
     await page.fill('input[name="password"]', process.env.TEST_USER_PASSWORD);
     await page.click('button[type="submit"]');
-    await expect(page.locator('a[href="logout.php"]').first()).toBeVisible({ timeout: 5000 });
+    await page.waitForURL(/index\.php/, { timeout: 5000 });
 }
 
 test("Public pages load", async ({ page }) => {
@@ -28,7 +28,7 @@ test("Login succeeds", async ({ page }) => {
 test("Authenticated index visible", async ({ page }) => {
     await login(page);
     await page.goto("/");
-    await expect(page.locator('a[href="logout.php"]').first()).toBeVisible();
+    await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
 });
 
 test("Leaderboard has rows", async ({ page }) => {
