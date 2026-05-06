@@ -120,6 +120,73 @@ TEST_USER_PASSWORD_LIVE=...
 
 ---
 
+## Terminal Output
+
+Every deploy prints a clear summary of each test stage and a final result.
+
+### Smoke tests (pass)
+```
+🧪 Running smoke tests against https://hpovlsen.dk...
+  ✅ GET /            → 200
+  ✅ GET /login.php   → 200
+  ✅ GET /leaderboard.php → 200
+  ✅ GET /races.php   → 200
+✅ Smoke tests passed (4/4)
+```
+
+### Smoke tests (fail)
+```
+🧪 Running smoke tests against https://hpovlsen.dk...
+  ✅ GET /            → 200
+  ❌ GET /login.php   → 500 (expected 200)
+  ✅ GET /leaderboard.php → 200
+  ✅ GET /races.php   → 200
+❌ Smoke tests failed (1/4 failed)
+```
+
+### Playwright E2E (pass)
+```
+🎭 Running Playwright E2E tests against https://hpovlsen.dk...
+  ✅ Public pages load
+  ✅ Login form renders
+  ✅ Login succeeds
+  ✅ Authenticated index visible
+  ✅ Leaderboard has rows
+  ✅ Races page loads
+  ✅ Rules page accessible
+  ✅ Bet page accessible
+✅ E2E tests passed (8/8)
+```
+
+### Playwright E2E (fail)
+```
+🎭 Running Playwright E2E tests against https://hpovlsen.dk...
+  ✅ Public pages load
+  ❌ Login succeeds → Expected user menu, got login page
+  ...
+❌ E2E tests failed (1/8 failed) — screenshot saved to build-deploy/screenshots/
+```
+
+### Deploy summary (test, fail)
+```
+❌ Deploy to TEST failed — fix and redeploy.
+```
+
+### Deploy summary (live, fail + rollback)
+```
+❌ Tests failed — rolling back to backup 2026-05-07T10-30-00...
+  ↑ Restoring files...
+✅ Rollback complete.
+❌ Deploy to LIVE failed — fix and redeploy.
+```
+
+### Deploy summary (pass)
+```
+✅ Deploy to TEST complete. All tests passed.
+```
+
+---
+
 ## Package.json Changes
 
 Add `@playwright/test` as a dev dependency.
