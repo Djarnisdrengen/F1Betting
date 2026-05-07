@@ -10,11 +10,12 @@
 | `npm run deploy:live` | Uploads all files from `public/` to **formula-1.dk** via FTP. Requires typing `YES` at the confirmation prompt. Before uploading, creates a timestamped backup of the current live site. After upload, runs smoke tests + Playwright E2E tests. If either fails, automatically rolls back to the backup. Test-only files are excluded via `.deployignore.live`. |
 | `npm run setup:deploy` | One-time interactive setup that writes FTP credentials and URLs into `build-deploy/.env`. Run this when setting up the project on a new machine. |
 
-### Sync
+### Sync & Restore
 
 | Command | What it does |
 |---|---|
 | `npm run sync:live` | Copies all data from the live database (formula-1.dk) into the test database (hpovlsen.dk), overwriting everything except the `settings` table. Drops any `old_` prefixed legacy tables. Useful for testing against real data. Requires `LIVE_DB_NAME` to be defined in the test server's `config.php`. |
+| `npm run restore:db` | Lists all available DB backups (from `build-deploy/backups/live/`). Run with a timestamp and target to restore: `npm run restore:db -- <timestamp> [test\|live]`. Reads `db-backup.json` from the chosen backup folder and re-imports all tables into the target database. Restoring to **live** has a 5-second abort window before it proceeds. `db-restore.php` must be present on the target server — it is deployed to test automatically but **excluded from live** by default (remove it from `.deployignore.live` temporarily if you need a live restore). |
 
 ### Test
 
