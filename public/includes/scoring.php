@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../config.php';
 
 function calculateRacePoints($raceId, $p1, $p2, $p3) {
-    global $db;
+    $db = getDB();
     $results = [$p1, $p2, $p3];
 
     $settings       = getSettings();
