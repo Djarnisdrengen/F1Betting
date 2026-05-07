@@ -21,11 +21,13 @@ async function sync() {
         process.exit(1);
     }
 
+    const text = await res.text();
     let body;
     try {
-        body = await res.json();
+        body = JSON.parse(text);
     } catch {
-        console.error(`❌ Invalid JSON response (HTTP ${res.status})`);
+        console.error(`❌ Invalid JSON response (HTTP ${res.status}):`);
+        console.error(text.slice(0, 500));
         process.exit(1);
     }
 
