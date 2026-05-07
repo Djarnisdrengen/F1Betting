@@ -34,6 +34,11 @@ async function sync() {
         process.exit(1);
     }
 
+    if (!body.copied || typeof body.dropped_old_tables !== "number") {
+        console.error("❌ Unexpected response shape:", JSON.stringify(body));
+        process.exit(1);
+    }
+
     const { dropped_old_tables: dropped, copied } = body;
     const parts = [];
     if (dropped > 0) parts.push(`${dropped} old_ tables dropped`);
