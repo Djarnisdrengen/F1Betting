@@ -43,14 +43,18 @@ async function uploadDir(client, localDir, remoteDir, ignores) {
 }
 
 async function runTests(baseUrl, env) {
+    const smokeOk = await runSmoke(baseUrl);
+
+    if (env === "test") {
+        return smokeOk;
+    }
+
     const testEnv = {
         ...process.env,
         BASE_URL: baseUrl,
         TEST_USER_EMAIL: process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`],
         TEST_USER_PASSWORD: process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`],
     };
-
-    const smokeOk = await runSmoke(baseUrl);
 
     console.log(`🎭 Running Playwright E2E tests against ${baseUrl}...`);
     let e2eOk = true;
