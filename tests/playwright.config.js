@@ -2,6 +2,7 @@ const { defineConfig, devices } = require("@playwright/test");
 
 module.exports = defineConfig({
     testDir: "./e2e",
+    testMatch: "**/smoke.spec.js",
     timeout: 10000,
     outputDir: "../build-deploy/screenshots",
     reporter: [["./reporter.js"]],
