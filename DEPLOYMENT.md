@@ -2,16 +2,30 @@
 
 ## npm Commands
 
+### Deploy
+
 | Command | What it does |
 |---|---|
-| `npm run deploy:test` | Deploy `public/` to hpovlsen.dk, then run smoke tests. |
-| `npm run deploy:live` | Deploy `public/` to formula-1.dk (prompts "YES" confirmation), backs up first, runs smoke + E2E tests. Rolls back on failure. |
-| `npm run sync:live` | Overwrite all test-site data (except settings) with a live copy from formula-1.dk. |
-| `npm run test:smoke` | HTTP smoke tests against the deployed site. |
-| `npm run test:e2e` | Playwright E2E tests against the deployed site. |
-| `npm run test:integration` | Playwright integration tests — seeds deterministic data on hpovlsen.dk and asserts points, leaderboard order, and pool sizes. |
-| `npm run test:all` | `test:smoke` + `test:e2e`. |
-| `npm run setup:deploy` | One-time setup for FTP deploy credentials. |
+| `npm run deploy:test` | Uploads all files from `public/` to **hpovlsen.dk** via FTP, respecting `.deployignore`. After upload, runs HTTP smoke tests. Test-only files (`test-seed.php`, `sync-from-live.php`) **are** uploaded here — they live only on the test server. |
+| `npm run deploy:live` | Uploads all files from `public/` to **formula-1.dk** via FTP. Requires typing `YES` at the confirmation prompt. Before uploading, creates a timestamped backup of the current live site. After upload, runs smoke tests + Playwright E2E tests. If either fails, automatically rolls back to the backup. Test-only files are excluded via `.deployignore.live`. |
+| `npm run setup:deploy` | One-time interactive setup that writes FTP credentials and URLs into `build-deploy/.env`. Run this when setting up the project on a new machine. |
+
+### Sync
+
+| Command | What it does |
+|---|---|
+| `npm run sync:live` | Copies all data from the live database (formula-1.dk) into the test database (hpovlsen.dk), overwriting everything except the `settings` table. Drops any `old_` prefixed legacy tables. Useful for testing against real data. Requires `LIVE_DB_NAME` to be defined in the test server's `config.php`. |
+
+### Test
+
+| Command | What it does |
+|---|---|
+| `npm run test:smoke` | Fires HTTP requests against the deployed site and checks that key pages return 200. Fast, no browser. Runs automatically as part of every deploy. Requires `BASE_URL` to be set. |
+| `npm run test:e2e` | Runs the Playwright E2E browser tests (`smoke.spec.js`) against whichever `BASE_URL` is set. Reads credentials from `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`. Used internally by `deploy:live`. |
+| `npm run test:e2e:live` | Manually runs E2E tests against **formula-1.dk**. Reads `BASE_URL_LIVE`, `TEST_USER_EMAIL_LIVE`, and `TEST_USER_PASSWORD_LIVE` from `build-deploy/.env` automatically. |
+| `npm run test:e2e:test` | Manually runs E2E tests against **hpovlsen.dk**. Reads `BASE_URL_TEST`, `TEST_USER_EMAIL_TEST`, and `TEST_USER_PASSWORD_TEST` from `build-deploy/.env` automatically. |
+| `npm run test:integration` | Runs the Playwright integration test suite against **hpovlsen.dk** only. Before asserting, calls `test-seed.php` to reset the test database and seed 5 races of deterministic data (3 users, 10 drivers, 15 bets). Asserts correct points totals, leaderboard order, star counts, and betting pool sizes. **Never run this against the live site — it seeds fake data.** Run manually after deploying to test. |
+| `npm run test:all` | Runs `test:smoke` then `test:e2e`. Equivalent to what `deploy:live` runs automatically after upload. |
 
 ---
 
