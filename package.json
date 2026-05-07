@@ -6,7 +6,8 @@
     "test:smoke": "node tests/smoke.js",
     "test:e2e": "npx playwright test --config tests/playwright.config.js",
     "test:integration": "npx playwright test --config tests/playwright.integration.config.js",
-    "test:all": "npm run test:smoke && npm run test:e2e"
+    "test:all": "npm run test:smoke && npm run test:e2e",
+    "sync:live": "node build-deploy/sync.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",
