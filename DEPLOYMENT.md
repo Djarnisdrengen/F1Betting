@@ -1,5 +1,20 @@
 # Deployment Strategy
 
+## npm Commands
+
+| Command | What it does |
+|---|---|
+| `npm run deploy:test` | Deploy `public/` to hpovlsen.dk, then run smoke tests. |
+| `npm run deploy:live` | Deploy `public/` to formula-1.dk (prompts "YES" confirmation), backs up first, runs smoke + E2E tests. Rolls back on failure. |
+| `npm run sync:live` | Overwrite all test-site data (except settings) with a live copy from formula-1.dk. |
+| `npm run test:smoke` | HTTP smoke tests against the deployed site. |
+| `npm run test:e2e` | Playwright E2E tests against the deployed site. |
+| `npm run test:integration` | Playwright integration tests — seeds deterministic data on hpovlsen.dk and asserts points, leaderboard order, and pool sizes. |
+| `npm run test:all` | `test:smoke` + `test:e2e`. |
+| `npm run setup:deploy` | One-time setup for FTP deploy credentials. |
+
+---
+
 ## Overview
 
 | Environment | Site | Branch |
