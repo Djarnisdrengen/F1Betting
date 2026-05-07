@@ -34,13 +34,17 @@ try {
 
 try {
     // Drop any old_ prefixed tables (before transaction — DROP TABLE causes implicit commit in MySQL)
+    // FK checks disabled so drop order doesn't matter across old_ tables
     $tables = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
     $droppedCount = 0;
-    foreach ($tables as $table) {
-        if (strpos($table, 'old_') === 0) {
+    $oldTables = array_filter($tables, fn($t) => strpos($t, 'old_') === 0);
+    if ($oldTables) {
+        $db->query("SET foreign_key_checks = 0");
+        foreach ($oldTables as $table) {
             $db->query("DROP TABLE IF EXISTS `$table`");
             $droppedCount++;
         }
+        $db->query("SET foreign_key_checks = 1");
     }
 
     $db->beginTransaction();
@@ -85,5 +89,5 @@ try {
     }
     http_response_code(500);
     error_log('sync-from-live: operation failed: ' . $e->getMessage());
-    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+    echo json_encode(['ok' => false, 'error' => 'Sync failed — check server logs']);
 }
