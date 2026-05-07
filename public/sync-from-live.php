@@ -33,9 +33,7 @@ try {
 }
 
 try {
-    $db->beginTransaction();
-
-    // Drop any old_ prefixed tables (legacy leftovers on test site)
+    // Drop any old_ prefixed tables (before transaction — DROP TABLE causes implicit commit in MySQL)
     $tables = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
     $droppedCount = 0;
     foreach ($tables as $table) {
@@ -44,6 +42,8 @@ try {
             $droppedCount++;
         }
     }
+
+    $db->beginTransaction();
 
     // Delete in FK-safe order (dependents first)
     $db->query("DELETE FROM bets");
@@ -82,5 +82,6 @@ try {
 } catch (PDOException $e) {
     $db->rollBack();
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+    error_log('sync-from-live: operation failed: ' . $e->getMessage());
+    echo json_encode(['ok' => false, 'error' => 'Sync failed — check server logs']);
 }
