@@ -15,9 +15,10 @@ npm run sync:live
         └── GET https://hpovlsen.dk/sync-from-live.php?token=...
               ├── PDO → test DB  (DB_HOST / DB_NAME / DB_USER / DB_PASS)
               ├── PDO → live DB  (DB_HOST / LIVE_DB_NAME / DB_USER / DB_PASS)
+              ├── DROP old_ tables (any table prefixed old_)
               ├── DELETE test tables (FK-safe order)
               ├── SELECT from live → INSERT into test (FK-safe order)
-              └── {"ok": true, "copied": {"drivers": N, "users": N, "races": N, "bets": N}}
+              └── {"ok": true, "dropped_old_tables": N, "copied": {"drivers": N, "users": N, "races": N, "bets": N}}
 ```
 
 Both sites are hosted on the same MySQL server (Simply.com / UnoEuro) with identical credentials. Only the database name differs.
@@ -55,6 +56,8 @@ $live = new PDO(
 );
 ```
 
+**Drop `old_` tables:** Before deleting, query `SHOW TABLES` on the test DB and `DROP TABLE IF EXISTS` any table whose name starts with `old_`. No fixed list — drops whatever is found.
+
 **Delete order** (FK-safe — removes dependents first):
 1. `DELETE FROM bets`
 2. `DELETE FROM users`
@@ -78,7 +81,7 @@ foreach ($rows as $row) {
 
 **`settings` table:** never touched.
 
-**Response:** `{"ok": true, "copied": {"drivers": N, "users": N, "races": N, "bets": N}}`
+**Response:** `{"ok": true, "dropped_old_tables": N, "copied": {"drivers": N, "users": N, "races": N, "bets": N}}`
 
 **Error handling:** any PDO exception returns HTTP 500 with `{"ok": false, "error": "<message>"}`.
 
@@ -90,7 +93,7 @@ Node.js runner script. Loads `.env` from `build-deploy/.env`, calls the endpoint
 
 ```
 🔄 Syncing live data to test site...
-✅ Sync complete: 10 drivers, 3 users, 5 races, 15 bets copied
+✅ Sync complete: 2 old_ tables dropped, 10 drivers, 3 users, 5 races, 15 bets copied
 ```
 
 Exits with code 1 on HTTP error or `ok: false`.
