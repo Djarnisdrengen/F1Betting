@@ -5,6 +5,7 @@
     "setup:deploy": "node build-deploy/setup-deployment.js",
     "test:smoke": "node tests/smoke.js",
     "test:e2e": "npx playwright test --config tests/playwright.config.js",
+    "test:integration": "npx playwright test --config tests/playwright.integration.config.js",
     "test:all": "npm run test:smoke && npm run test:e2e"
   },
   "dependencies": {
