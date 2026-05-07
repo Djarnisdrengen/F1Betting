@@ -9,13 +9,13 @@ const { backup, pruneBackups } = require("./backup");
 const { rollback } = require("./rollback");
 const { runSmoke } = require("../tests/smoke");
 
-function loadIgnores() {
-    const ignorePath = path.join(__dirname, ".deployignore");
-    if (!fs.existsSync(ignorePath)) return [];
-    return fs.readFileSync(ignorePath, "utf8")
-        .split("\n")
-        .map(line => line.trim())
-        .filter(line => line && !line.startsWith("#"));
+function loadIgnores(isLive) {
+    const parse = file => fs.existsSync(file)
+        ? fs.readFileSync(file, "utf8").split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("#"))
+        : [];
+    const base = parse(path.join(__dirname, ".deployignore"));
+    const live = isLive ? parse(path.join(__dirname, ".deployignore.live")) : [];
+    return [...base, ...live];
 }
 
 function isIgnored(relPath, ignores) {
@@ -73,7 +73,7 @@ async function deploy() {
     const remoteDir = isLive ? process.env.FTP_ROOT_LIVE : process.env.FTP_ROOT_TEST;
     const baseUrl = isLive ? process.env.BASE_URL_LIVE : process.env.BASE_URL_TEST;
     const publicDir = path.join(__dirname, "../public");
-    const ignores = loadIgnores();
+    const ignores = loadIgnores(isLive);
 
     console.log(`🚀 Deploying to ${env.toUpperCase()}...`);
 

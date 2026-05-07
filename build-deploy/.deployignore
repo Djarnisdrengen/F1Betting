@@ -4,5 +4,3 @@ cron/cron_import_log.txt
 node_modules
 build-deploy/
 .env
-test-seed.php
-sync-from-live.php
