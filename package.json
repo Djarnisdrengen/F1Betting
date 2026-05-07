@@ -9,7 +9,8 @@
     "test:e2e:test": "DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js",
     "test:integration": "npx playwright test --config tests/playwright.integration.config.js",
     "test:all": "npm run test:smoke && npm run test:e2e",
-    "sync:live": "node build-deploy/sync.js"
+    "sync:live": "node build-deploy/sync.js",
+    "restore:db": "node build-deploy/restore-db.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",
