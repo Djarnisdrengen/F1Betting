@@ -27,11 +27,14 @@ try {
     );
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Live DB connection failed: ' . $e->getMessage()]);
+    error_log('sync-from-live: live DB connection failed: ' . $e->getMessage());
+    echo json_encode(['ok' => false, 'error' => 'Live DB connection failed — check server logs']);
     exit;
 }
 
 try {
+    $db->beginTransaction();
+
     // Drop any old_ prefixed tables (legacy leftovers on test site)
     $tables = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
     $droppedCount = 0;
@@ -47,6 +50,10 @@ try {
     $db->query("DELETE FROM users");
     $db->query("DELETE FROM races");
     $db->query("DELETE FROM drivers");
+
+    // settings, password_resets, and invites are intentionally excluded:
+    // settings — test server keeps its own settings
+    // password_resets, invites — session-scoped, not meaningful to sync
 
     // Copy in FK-safe order (parents first)
     $copied = [];
@@ -65,12 +72,15 @@ try {
         }
     }
 
+    $db->commit();
+
     echo json_encode([
         'ok' => true,
         'dropped_old_tables' => $droppedCount,
         'copied' => $copied,
     ]);
 } catch (PDOException $e) {
+    $db->rollBack();
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
 }
