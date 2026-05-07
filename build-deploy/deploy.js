@@ -51,6 +51,7 @@ async function runTests(baseUrl, env) {
 
     const testEnv = {
         ...process.env,
+        DEPLOY_ENV: env,
         BASE_URL: baseUrl,
         TEST_USER_EMAIL: process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`],
         TEST_USER_PASSWORD: process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`],
