@@ -1,0 +1,118 @@
+<?php
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/includes/scoring.php';
+
+header('Content-Type: application/json');
+
+$token = $_GET['token'] ?? '';
+if (!defined('INTEGRATION_SEED_TOKEN') || $token !== INTEGRATION_SEED_TOKEN) {
+    http_response_code(403);
+    echo json_encode(['ok' => false, 'error' => 'Forbidden']);
+    exit;
+}
+
+$db = getDB();
+
+// Reset to known state — settings table is preserved
+$db->query("UPDATE settings SET bet_size = 10");
+$db->query("DELETE FROM bets");
+$db->query("DELETE FROM users");
+$db->query("DELETE FROM drivers");
+$db->query("DELETE FROM races");
+
+function seed_uuid() {
+    return sprintf(
+        '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
+}
+
+// Users — shared test password, all in competition
+$hash = password_hash('Integration2026!', PASSWORD_BCRYPT);
+$uids = [];
+foreach ([
+    ['Alice',   'alice@test.local'],
+    ['Bob',     'bob@test.local'],
+    ['Charlie', 'charlie@test.local'],
+] as [$name, $email]) {
+    $id = seed_uuid();
+    $uids[$name] = $id;
+    $db->prepare("INSERT INTO users (id, email, password, display_name, in_competition, points, stars) VALUES (?, ?, ?, ?, 1, 0, 0)")
+       ->execute([$id, $email, $hash, $name]);
+}
+
+// Drivers — $d[number] = UUID
+$d = [];
+foreach ([
+    [44, 'Lewis Hamilton',  'Mercedes'],
+    [63, 'George Russell',  'Mercedes'],
+    [1,  'Max Verstappen',  'Red Bull'],
+    [11, 'Sergio Perez',    'Red Bull'],
+    [16, 'Charles Leclerc', 'Ferrari'],
+    [55, 'Carlos Sainz',    'Ferrari'],
+    [4,  'Lando Norris',    'McLaren'],
+    [81, 'Oscar Piastri',   'McLaren'],
+    [14, 'Fernando Alonso', 'Aston Martin'],
+    [18, 'Lance Stroll',    'Aston Martin'],
+] as [$num, $name, $team]) {
+    $id = seed_uuid();
+    $d[$num] = $id;
+    $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")
+       ->execute([$id, $name, $team, $num]);
+}
+
+// Races — [name, date, initial_bettingpool_size, rp1, rp2, rp3]
+// Race 1 pool seeded as 3 users x bet_size 10 = 30
+$rids = []; // name => [id, rp1, rp2, rp3]
+foreach ([
+    ['Race 1', '2026-01-01', 30, $d[44], $d[63], $d[1]],
+    ['Race 2', '2026-02-01', 0,  $d[11], $d[16], $d[55]],
+    ['Race 3', '2026-03-01', 0,  $d[4],  $d[81], $d[14]],
+    ['Race 4', '2026-04-01', 0,  $d[44], $d[1],  $d[16]],
+    ['Race 5', '2026-05-01', 0,  $d[11], $d[55], $d[81]],
+] as [$name, $date, $pool, $rp1, $rp2, $rp3]) {
+    $id = seed_uuid();
+    $rids[$name] = [$id, $rp1, $rp2, $rp3];
+    $db->prepare("INSERT INTO races (id, name, race_date, bettingpool_size, result_p1, result_p2, result_p3) VALUES (?, ?, ?, ?, ?, ?, ?)")
+       ->execute([$id, $name, $date, $pool, $rp1, $rp2, $rp3]);
+}
+
+// Bets — Race 3: Bob and Charlie inserted before Alice so her perfect bet
+// is last in SELECT order, giving deterministic pool write for Race 4.
+foreach ([
+    // Race 1
+    [$uids['Alice'],   $rids['Race 1'][0], $d[44], $d[63], $d[11]],
+    [$uids['Bob'],     $rids['Race 1'][0], $d[44], $d[1],  $d[63]],
+    [$uids['Charlie'], $rids['Race 1'][0], $d[63], $d[44], $d[1]],
+    // Race 2
+    [$uids['Alice'],   $rids['Race 2'][0], $d[11], $d[16], $d[4]],
+    [$uids['Bob'],     $rids['Race 2'][0], $d[16], $d[11], $d[55]],
+    [$uids['Charlie'], $rids['Race 2'][0], $d[55], $d[4],  $d[16]],
+    // Race 3 — Alice LAST (her perfect bet must be the final pool update)
+    [$uids['Bob'],     $rids['Race 3'][0], $d[4],  $d[14], $d[81]],
+    [$uids['Charlie'], $rids['Race 3'][0], $d[81], $d[4],  $d[18]],
+    [$uids['Alice'],   $rids['Race 3'][0], $d[4],  $d[81], $d[14]], // PERFECT
+    // Race 4
+    [$uids['Alice'],   $rids['Race 4'][0], $d[63], $d[1],  $d[16]],
+    [$uids['Bob'],     $rids['Race 4'][0], $d[44], $d[16], $d[1]],
+    [$uids['Charlie'], $rids['Race 4'][0], $d[1],  $d[44], $d[63]],
+    // Race 5
+    [$uids['Alice'],   $rids['Race 5'][0], $d[11], $d[55], $d[18]],
+    [$uids['Bob'],     $rids['Race 5'][0], $d[16], $d[11], $d[55]],
+    [$uids['Charlie'], $rids['Race 5'][0], $d[81], $d[16], $d[11]],
+] as [$uid, $rid, $bp1, $bp2, $bp3]) {
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $uid, $rid, $bp1, $bp2, $bp3]);
+}
+
+// Run scoring engine for all races in chronological order
+foreach (['Race 1', 'Race 2', 'Race 3', 'Race 4', 'Race 5'] as $raceName) {
+    [$rid, $rp1, $rp2, $rp3] = $rids[$raceName];
+    calculateRacePoints($rid, $rp1, $rp2, $rp3);
+}
+
+echo json_encode(['ok' => true]);
