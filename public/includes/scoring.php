@@ -11,11 +11,22 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
     $pointsP3       = $settings['points_p3']       ?? 15;
     $pointsWrongPos = $settings['points_wrong_pos'] ?? 5;
 
-    $stmt = $db->prepare("SELECT * FROM bets WHERE race_id = ?");
+    $stmt = $db->prepare("SELECT * FROM bets WHERE race_id = ? ORDER BY placed_at ASC, id ASC");
     $stmt->execute([$raceId]);
     $bets = $stmt->fetchAll();
 
     $db->prepare("UPDATE races SET bettingpool_won = 0 WHERE id = ?")->execute([$raceId]);
+
+    // Fetch current race and next race once, before the per-bet loop
+    $stmtRace = $db->prepare("SELECT * FROM races WHERE id = ?");
+    $stmtRace->execute([$raceId]);
+    $currentRace = $stmtRace->fetch(PDO::FETCH_ASSOC);
+
+    $stmtNext = $db->prepare("SELECT * FROM races WHERE race_date > ? ORDER BY race_date ASC LIMIT 1");
+    $stmtNext->execute([$currentRace['race_date']]);
+    $upcomingRace = $stmtNext->fetch(PDO::FETCH_ASSOC);
+
+    $anyPerfect = false;
 
     foreach ($bets as $bet) {
         $oldPoints    = $bet['points'];
@@ -35,30 +46,8 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
         $isPerfect = ($bet['p1'] === $p1 && $bet['p2'] === $p2 && $bet['p3'] === $p3) ? 1 : 0;
 
         if ($isPerfect) {
+            $anyPerfect = true;
             $db->prepare("UPDATE races SET bettingpool_won = 1 WHERE id = ?")->execute([$raceId]);
-        }
-
-        $stmtRace = $db->prepare("SELECT * FROM races WHERE id = ?");
-        $stmtRace->execute([$raceId]);
-        $currentRace = $stmtRace->fetch(PDO::FETCH_ASSOC);
-
-        $stmtNext = $db->prepare("SELECT * FROM races WHERE race_date > ? ORDER BY race_date ASC LIMIT 1");
-        $stmtNext->execute([$currentRace['race_date']]);
-        $upcomingRace = $stmtNext->fetch(PDO::FETCH_ASSOC);
-
-        if ($upcomingRace !== false) {
-            $stmtCount = $db->prepare("SELECT COUNT(*) as count FROM users WHERE in_competition = 1");
-            $stmtCount->execute();
-            $numberOfBetters = $stmtCount->fetch()['count'] ?? 0;
-            $betSize     = $settings['bet_size'] ?? 0;
-            $newPoolSize = $numberOfBetters * $betSize;
-
-            if (!$isPerfect) {
-                $newPoolSize += $currentRace['bettingpool_size']; // fixed: was previousRace
-            }
-
-            $db->prepare("UPDATE races SET bettingpool_size = ? WHERE id = ?")
-               ->execute([$newPoolSize, $upcomingRace['id']]);
         }
 
         $db->prepare("UPDATE bets SET points = ?, is_perfect = ? WHERE id = ?")
@@ -73,5 +62,21 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
 
         $db->prepare("UPDATE users SET points = ?, stars = ? WHERE id = ?")
            ->execute([max(0, $newPoints), max(0, $newStars), $bet['user_id']]);
+    }
+
+    // Update next race pool once, after all bets are scored
+    if ($upcomingRace !== false) {
+        $stmtCount = $db->prepare("SELECT COUNT(*) as count FROM users WHERE in_competition = 1");
+        $stmtCount->execute();
+        $numberOfBetters = $stmtCount->fetch()['count'] ?? 0;
+        $betSize     = $settings['bet_size'] ?? 0;
+        $newPoolSize = $numberOfBetters * $betSize;
+
+        if (!$anyPerfect) {
+            $newPoolSize += $currentRace['bettingpool_size'];
+        }
+
+        $db->prepare("UPDATE races SET bettingpool_size = ? WHERE id = ?")
+           ->execute([$newPoolSize, $upcomingRace['id']]);
     }
 }
