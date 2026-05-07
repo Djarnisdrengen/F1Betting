@@ -161,67 +161,67 @@ Password: value of `INTEGRATION_USER_PASSWORD` (same for all three).
 | 14 | Fernando Alonso | Aston Martin |
 | 18 | Lance Stroll | Aston Martin |
 
-Shorthand used below: D1=Hamilton, D2=Russell, D3=Verstappen, D4=Perez, D5=Leclerc, D6=Sainz, D7=Norris, D8=Piastri, D9=Alonso, D10=Stroll.
+Shorthand: D\<number\> refers to the driver with that race number (e.g. D44 = Hamilton, D4 = Norris).
 
 ### Races, Bets & Expected Points
 
-**Race 1** — 2026-01-01 — Results: P1=D1, P2=D2, P3=D3 — seed `bettingpool_size = 30` (3 users × 10)
+**Race 1** — 2026-01-01 — Results: P1=D44, P2=D63, P3=D1 — seed `bettingpool_size = 30` (3 users × 10)
 
 | User | Bet P1 | Bet P2 | Bet P3 | Calc | pts |
 |------|--------|--------|--------|------|-----|
-| Alice | D1 ✓ | D2 ✓ | D4 ✗ | 25+18+0 | 43 |
-| Bob | D1 ✓ | D3 ↔ | D2 ↔ | 25+5+5 | 35 |
-| Charlie | D2 ↔ | D1 ↔ | D3 ✓ | 5+5+15 | 25 |
+| Alice | D44 ✓ | D63 ✓ | D11 ✗ | 25+18+0 | 43 |
+| Bob | D44 ✓ | D1 ↔ | D63 ↔ | 25+5+5 | 35 |
+| Charlie | D63 ↔ | D44 ↔ | D1 ✓ | 5+5+15 | 25 |
 
 No perfect bet. Pool for R2 = base(30) + R1.pool(30) = **60**.
 
 ---
 
-**Race 2** — 2026-02-01 — Results: P1=D4, P2=D5, P3=D6 — pool set to 60 by engine
+**Race 2** — 2026-02-01 — Results: P1=D11, P2=D16, P3=D55 — pool set to 60 by engine
 
 | User | Bet P1 | Bet P2 | Bet P3 | Calc | pts |
 |------|--------|--------|--------|------|-----|
-| Alice | D4 ✓ | D5 ✓ | D7 ✗ | 25+18+0 | 43 |
-| Bob | D5 ↔ | D4 ↔ | D6 ✓ | 5+5+15 | 25 |
-| Charlie | D6 ↔ | D7 ✗ | D5 ↔ | 5+0+5 | 10 |
+| Alice | D11 ✓ | D16 ✓ | D4 ✗ | 25+18+0 | 43 |
+| Bob | D16 ↔ | D11 ↔ | D55 ✓ | 5+5+15 | 25 |
+| Charlie | D55 ↔ | D4 ✗ | D16 ↔ | 5+0+5 | 10 |
 
 No perfect bet. Pool for R3 = base(30) + R2.pool(60) = **90**.
 
 ---
 
-**Race 3** — 2026-03-01 — Results: P1=D7, P2=D8, P3=D9 — pool set to 90 by engine
+**Race 3** — 2026-03-01 — Results: P1=D4, P2=D81, P3=D14 — pool set to 90 by engine
 
 Bets inserted in order: Bob, Charlie, **Alice last** (ensures her perfect bet is the final pool update written).
 
 | User | Bet P1 | Bet P2 | Bet P3 | Calc | pts | perfect |
 |------|--------|--------|--------|------|-----|---------|
-| Bob | D7 ✓ | D9 ↔ | D8 ↔ | 25+5+5 | 35 | — |
-| Charlie | D8 ↔ | D7 ↔ | D10 ✗ | 5+5+0 | 10 | — |
-| Alice | D7 ✓ | D8 ✓ | D9 ✓ | 25+18+15 | 58 | ★ +1 star |
+| Bob | D4 ✓ | D14 ↔ | D81 ↔ | 25+5+5 | 35 | — |
+| Charlie | D81 ↔ | D4 ↔ | D18 ✗ | 5+5+0 | 10 | — |
+| Alice | D4 ✓ | D81 ✓ | D14 ✓ | 25+18+15 | 58 | ★ +1 star |
 
 Perfect bet (Alice, processed last). Pool for R4 = base(30) only = **30**.
 
 ---
 
-**Race 4** — 2026-04-01 — Results: P1=D1, P2=D3, P3=D5 — pool set to 30 by engine
+**Race 4** — 2026-04-01 — Results: P1=D44, P2=D1, P3=D16 — pool set to 30 by engine
 
 | User | Bet P1 | Bet P2 | Bet P3 | Calc | pts |
 |------|--------|--------|--------|------|-----|
-| Alice | D2 ✗ | D3 ✓ | D5 ✓ | 0+18+15 | 33 |
-| Bob | D1 ✓ | D5 ↔ | D3 ↔ | 25+5+5 | 35 |
-| Charlie | D3 ↔ | D1 ↔ | D2 ✗ | 5+5+0 | 10 |
+| Alice | D63 ✗ | D1 ✓ | D16 ✓ | 0+18+15 | 33 |
+| Bob | D44 ✓ | D16 ↔ | D1 ↔ | 25+5+5 | 35 |
+| Charlie | D1 ↔ | D44 ↔ | D63 ✗ | 5+5+0 | 10 |
 
 No perfect bet. Pool for R5 = base(30) + R4.pool(30) = **60**.
 
 ---
 
-**Race 5** — 2026-05-01 — Results: P1=D4, P2=D6, P3=D8 — pool set to 60 by engine
+**Race 5** — 2026-05-01 — Results: P1=D11, P2=D55, P3=D81 — pool set to 60 by engine
 
 | User | Bet P1 | Bet P2 | Bet P3 | Calc | pts |
 |------|--------|--------|--------|------|-----|
-| Alice | D4 ✓ | D6 ✓ | D10 ✗ | 25+18+0 | 43 |
-| Bob | D5 ✗ | D4 ↔ | D6 ↔ | 0+5+5 | 10 |
-| Charlie | D8 ↔ | D5 ✗ | D4 ↔ | 5+0+5 | 10 |
+| Alice | D11 ✓ | D55 ✓ | D18 ✗ | 25+18+0 | 43 |
+| Bob | D16 ✗ | D11 ↔ | D55 ↔ | 0+5+5 | 10 |
+| Charlie | D81 ↔ | D16 ✗ | D11 ↔ | 5+0+5 | 10 |
 
 No perfect bet. No race 6, pool update is skipped.
 
