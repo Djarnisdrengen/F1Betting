@@ -80,8 +80,10 @@ try {
         'copied' => $copied,
     ]);
 } catch (PDOException $e) {
-    $db->rollBack();
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
     http_response_code(500);
     error_log('sync-from-live: operation failed: ' . $e->getMessage());
-    echo json_encode(['ok' => false, 'error' => 'Sync failed — check server logs']);
+    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
 }
