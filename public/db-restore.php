@@ -24,14 +24,28 @@ $db = getDB();
 try {
     $db->beginTransaction();
 
-    // Delete in FK-safe order (dependents first)
-    $db->query("DELETE FROM bets");
-    $db->query("DELETE FROM password_resets");
-    $db->query("DELETE FROM invites");
-    $db->query("DELETE FROM users");
-    $db->query("DELETE FROM races");
-    $db->query("DELETE FROM drivers");
-    $db->query("DELETE FROM settings");
+    if (!empty($data['schema'])) {
+        // Schema present — drop and recreate tables for a clean restore
+        $db->query("SET foreign_key_checks = 0");
+        foreach (array_reverse(['settings', 'drivers', 'users', 'races', 'bets', 'password_resets', 'invites']) as $table) {
+            $db->query("DROP TABLE IF EXISTS `$table`");
+        }
+        foreach (['settings', 'drivers', 'users', 'races', 'bets', 'password_resets', 'invites'] as $table) {
+            if (!empty($data['schema'][$table])) {
+                $db->query($data['schema'][$table]);
+            }
+        }
+        $db->query("SET foreign_key_checks = 1");
+    } else {
+        // No schema — clear existing data in FK-safe order
+        $db->query("DELETE FROM bets");
+        $db->query("DELETE FROM password_resets");
+        $db->query("DELETE FROM invites");
+        $db->query("DELETE FROM users");
+        $db->query("DELETE FROM races");
+        $db->query("DELETE FROM drivers");
+        $db->query("DELETE FROM settings");
+    }
 
     $restored = [];
 
