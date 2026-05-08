@@ -428,8 +428,12 @@ include __DIR__ . '/includes/header.php';
     <div class="alert alert-success"><?= escape($message) ?></div>
 <?php endif; ?>
 
-<?php if (isset($_GET['msg']) && $_GET['msg'] === 'deleted'): ?>
-    <div class="alert alert-success"><?= $lang === 'da' ? 'Slettet!' : 'Deleted!' ?></div>
+<?php if ($error): ?>
+    <div class="alert alert-danger"><?= escape($error) ?></div>
+<?php endif; ?>
+
+<?php if (isset($_GET['msg']) && $_GET['msg'] !== ''): ?>
+    <div class="alert alert-success"><?= escape(urldecode($_GET['msg'])) ?></div>
 <?php endif; ?>
 
 <!-- Tabs -->
