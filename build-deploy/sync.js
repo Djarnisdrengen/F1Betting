@@ -2,11 +2,11 @@ const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 async function sync() {
-    const baseUrl = process.env.INTEGRATION_BASE_URL;
+    const baseUrl = process.env.BASE_URL_TEST;
     const token = process.env.INTEGRATION_SEED_TOKEN;
 
     if (!baseUrl || !token) {
-        console.error("❌ INTEGRATION_BASE_URL and INTEGRATION_SEED_TOKEN must be set in build-deploy/.env");
+        console.error("❌ BASE_URL_TEST and INTEGRATION_SEED_TOKEN must be set in build-deploy/.env");
         process.exit(1);
     }
 

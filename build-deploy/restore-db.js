@@ -45,7 +45,7 @@ async function main() {
 
     const baseUrl = env === "live"
         ? process.env.BASE_URL_LIVE
-        : process.env.INTEGRATION_BASE_URL;
+        : process.env.BASE_URL_TEST;
     const token = process.env.INTEGRATION_SEED_TOKEN;
 
     if (!baseUrl || !token) {
