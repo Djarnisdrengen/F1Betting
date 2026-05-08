@@ -123,6 +123,55 @@ if (isset($_POST['delete_race'])) {
     exit;
 }
 
+if (isset($_POST['reset_race_result'])) {
+    $id = $_POST['race_id'] ?? '';
+
+    // Safety: only allow resetting the most recently completed race
+    $lastId = $db->query("SELECT id FROM races WHERE result_p1 IS NOT NULL ORDER BY race_date DESC LIMIT 1")->fetchColumn();
+
+    if ($lastId && $lastId === $id) {
+        $stmtRace = $db->prepare("SELECT * FROM races WHERE id = ?");
+        $stmtRace->execute([$id]);
+        $race = $stmtRace->fetch();
+
+        $stmtBets = $db->prepare("SELECT * FROM bets WHERE race_id = ?");
+        $stmtBets->execute([$id]);
+        foreach ($stmtBets->fetchAll() as $bet) {
+            $stmtUser = $db->prepare("SELECT points, stars FROM users WHERE id = ?");
+            $stmtUser->execute([$bet['user_id']]);
+            $user = $stmtUser->fetch();
+            $db->prepare("UPDATE users SET points = ?, stars = ? WHERE id = ?")
+               ->execute([
+                   max(0, $user['points'] - $bet['points']),
+                   max(0, $user['stars'] - ($bet['is_perfect'] ? 1 : 0)),
+                   $bet['user_id'],
+               ]);
+            $db->prepare("UPDATE bets SET points = 0, is_perfect = 0 WHERE id = ?")
+               ->execute([$bet['id']]);
+        }
+
+        // Undo pool rollover to next race if no one won
+        if (!$race['bettingpool_won']) {
+            $stmtNext = $db->prepare("SELECT id, bettingpool_size FROM races WHERE race_date > ? ORDER BY race_date ASC LIMIT 1");
+            $stmtNext->execute([$race['race_date']]);
+            $nextRace = $stmtNext->fetch();
+            if ($nextRace) {
+                $db->prepare("UPDATE races SET bettingpool_size = ? WHERE id = ?")
+                   ->execute([max(0, $nextRace['bettingpool_size'] - $race['bettingpool_size']), $nextRace['id']]);
+            }
+        }
+
+        $db->prepare("UPDATE races SET result_p1 = NULL, result_p2 = NULL, result_p3 = NULL, bettingpool_won = NULL WHERE id = ?")
+           ->execute([$id]);
+
+        $resetMsg = $lang === 'da' ? 'Resultat nulstillet! Indtast det korrekte resultat nedenfor.' : 'Result reset! Enter the correct result below.';
+        header("Location: admin.php?tab=races&edit=" . urlencode($id) . "&msg=" . urlencode($resetMsg));
+        exit;
+    } else {
+        $error = $lang === 'da' ? 'Kan kun nulstille det seneste løb med resultat' : 'Can only reset the most recently completed race';
+    }
+}
+
 // ============ USERS ============
 if (isset($_POST['toggle_role'])) {
     $userId = $_POST['user_id'];
@@ -404,12 +453,13 @@ $tabCounts = [
 ];
 
 // $drivers always needed: races add/edit dropdowns and bets display
-$drivers    = $db->query("SELECT * FROM drivers ORDER BY number")->fetchAll();
+$drivers    = $db->query("SELECT * FROM drivers ORDER BY SUBSTRING_INDEX(name, ' ', -1)")->fetchAll();
 $driversById = array_column($drivers, null, 'id');
 
 switch ($currentTab) {
     case 'races':
         $races = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
+        $lastCompletedRaceId = $db->query("SELECT id FROM races WHERE result_p1 IS NOT NULL ORDER BY race_date DESC LIMIT 1")->fetchColumn() ?: null;
         break;
     case 'users':
         $users = $db->query("SELECT * FROM users ORDER BY points DESC")->fetchAll();

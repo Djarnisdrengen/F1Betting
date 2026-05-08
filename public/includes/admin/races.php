@@ -32,7 +32,7 @@
                             <select name="<?= $key ?>" class="form-select">
                                 <option value=""><?= t('select_driver') ?></option>
                                 <?php foreach ($drivers as $d): ?>
-                                    <option value="<?= $d['id'] ?>"><?= escape($d['name']) ?></option>
+                                    <option value="<?= $d['id'] ?>"><?= driverLabel($d) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -53,7 +53,9 @@
                     <br><small class="text-muted"><?= escape($race['location']) ?> - <?= escape($race['race_date']) ?> <?= escape(substr($race['race_time'], 0, 5)) ?> CET</small>
                 </div>
                 <div class="flex gap-1">
-                    <a href="?tab=races&edit=<?= escape($race['id']) ?>#race-<?= escape($race['id']) ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+                    <?php if (!$race['result_p1']): ?>
+                        <a href="?tab=races&edit=<?= escape($race['id']) ?>#race-<?= escape($race['id']) ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+                    <?php endif; ?>
                     <form method="POST" style="display:inline">
                         <?= csrfField() ?>
                         <input type="hidden" name="race_id" value="<?= escape($race['id']) ?>">
@@ -69,8 +71,17 @@
             <?php if ($race['result_p1']): ?>
                 <br><small class="text-accent"><?= t('results') ?>: <?= escape($driversById[$race['result_p1']]['name'] ?? '?') ?>, <?= escape($driversById[$race['result_p2']]['name'] ?? '?') ?>, <?= escape($driversById[$race['result_p3']]['name'] ?? '?') ?></small>
             <?php endif; ?>
+            <?php if (($lastCompletedRaceId ?? null) === $race['id']): ?>
+                <form method="POST" style="display:inline; margin-top: 0.5rem;">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="race_id" value="<?= escape($race['id']) ?>">
+                    <button type="submit" name="reset_race_result" class="btn btn-danger btn-sm btn-reset-result" data-name="<?= escape($race['name']) ?>" style="margin-top: 0.5rem;">
+                        <i class="fas fa-undo"></i> <?= $lang === 'da' ? 'Nulstil Resultat' : 'Reset Result' ?>
+                    </button>
+                </form>
+            <?php endif; ?>
         </div>
-        <?php if (isset($_GET['edit']) && $_GET['edit'] === $race['id']): ?>
+        <?php if (!$race['result_p1'] && isset($_GET['edit']) && $_GET['edit'] === $race['id']): ?>
             <div class="card-body" style="border-top: 1px solid var(--border-color); background: var(--bg-hover);">
                 <form method="POST">
                 <?= csrfField() ?>
@@ -99,7 +110,7 @@
                             <select name="<?= $key ?>" class="form-select">
                                 <option value="">P<?= $i + 1 ?></option>
                                 <?php foreach ($drivers as $d): ?>
-                                    <option value="<?= $d['id'] ?>" <?= $race[$key] === $d['id'] ? 'selected' : '' ?>><?= escape($d['name']) ?></option>
+                                    <option value="<?= $d['id'] ?>" <?= $race[$key] === $d['id'] ? 'selected' : '' ?>><?= driverLabel($d) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         <?php endforeach; ?>
@@ -110,7 +121,7 @@
                             <select name="<?= $key ?>" class="form-select">
                                 <option value="">P<?= $i + 1 ?></option>
                                 <?php foreach ($drivers as $d): ?>
-                                    <option value="<?= $d['id'] ?>" <?= $race[$key] === $d['id'] ? 'selected' : '' ?>><?= escape($d['name']) ?></option>
+                                    <option value="<?= $d['id'] ?>" <?= $race[$key] === $d['id'] ? 'selected' : '' ?>><?= driverLabel($d) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         <?php endforeach; ?>

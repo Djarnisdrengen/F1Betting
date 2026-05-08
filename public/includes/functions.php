@@ -31,6 +31,13 @@ function escape($str) {
     return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+function driverLabel($driver) {
+    $parts = explode(' ', $driver['name'] ?? '');
+    $last  = array_pop($parts);
+    $first = implode(' ', $parts);
+    return escape($last) . ', ' . escape($first) . ' (#' . intval($driver['number']) . ', ' . escape($driver['team']) . ')';
+}
+
 // Generer UUID
 function generateUUID() {
     return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',

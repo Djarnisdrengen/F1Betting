@@ -45,7 +45,7 @@ if ($stmt->fetch()) {
 }
 
 // Hent kørere
-$drivers = $db->query("SELECT * FROM drivers ORDER BY number")->fetchAll();
+$drivers = $db->query("SELECT * FROM drivers ORDER BY SUBSTRING_INDEX(name, ' ', -1)")->fetchAll();
 $driversById = [];
 foreach ($drivers as $d) {
     $driversById[$d['id']] = $d;
@@ -161,9 +161,7 @@ include __DIR__ . '/includes/header.php';
                         <select name="<?= $pos['key'] ?>" class="form-select" required>
                             <option value=""><?= t('select_driver') ?></option>
                             <?php foreach ($drivers as $driver): ?>
-                                <option value="<?= $driver['id'] ?>" <?= ($_POST[$pos['key']] ?? '') === $driver['id'] ? 'selected' : '' ?>>
-                                    #<?= $driver['number'] ?> <?= escape($driver['name']) ?> - <?= escape($driver['team']) ?>
-                                </option>
+                                <option value="<?= $driver['id'] ?>" <?= ($_POST[$pos['key']] ?? '') === $driver['id'] ? 'selected' : '' ?>><?= driverLabel($driver) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

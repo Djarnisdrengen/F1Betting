@@ -111,6 +111,74 @@ test.describe("Admin panel", () => {
         });
     });
 
+    test.describe.serial("reset race result", () => {
+        let seedData;
+
+        test.beforeAll(async ({ browser }) => {
+            // Cleanup any leftover state from a previous failed run
+            const cleanPage = await browser.newPage();
+            await cleanPage.goto(
+                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=cleanup_reset_result`
+            );
+            await cleanPage.close();
+
+            const page = await browser.newPage();
+            const res = await page.goto(
+                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=seed_reset_result`
+            );
+            expect(res.status()).toBe(200);
+            seedData = JSON.parse(await page.textContent("body"));
+            expect(seedData.ok).toBe(true);
+            expect(seedData.points).toBeGreaterThan(0);
+            await page.close();
+        });
+
+        test.afterAll(async ({ browser }) => {
+            const page = await browser.newPage();
+            await page.goto(
+                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=cleanup_reset_result`
+            );
+            await page.close();
+        });
+
+        test("reset button visible on last completed race", async ({ page }) => {
+            await loginAsAdmin(page);
+            await page.goto("/admin.php?tab=races");
+
+            const raceCard = page
+                .locator(".card")
+                .filter({ has: page.locator("strong", { hasText: "E2E Reset Race" }) });
+            await expect(raceCard.locator('button[name="reset_race_result"]')).toBeVisible();
+        });
+
+        test("reset clears results and removes points from users", async ({ page }) => {
+            await loginAsAdmin(page);
+            await page.goto("/admin.php?tab=races");
+
+            const raceCard = page
+                .locator(".card")
+                .filter({ has: page.locator("strong", { hasText: "E2E Reset Race" }) });
+
+            await raceCard.locator('button[name="reset_race_result"]').click();
+            await page.locator(".btn-user-delete-confirm").click();
+            await page.waitForURL(/msg=/);
+
+            // Race card no longer shows results
+            const raceCardAfter = page
+                .locator(".card")
+                .filter({ has: page.locator("strong", { hasText: "E2E Reset Race" }) });
+            await expect(raceCardAfter.locator("small.text-accent")).toHaveCount(0);
+            await expect(raceCardAfter.locator('button[name="reset_race_result"]')).toHaveCount(0);
+
+            // User points back to 0
+            await page.goto("/admin.php?tab=users");
+            const userCard = page
+                .locator(".card")
+                .filter({ has: page.locator("small", { hasText: "e2e_reset_race_f1@helvegpovlsen.dk" }) });
+            await expect(userCard.locator(".text-accent")).toContainText("0 pts");
+        });
+    });
+
     test.describe("test user management", () => {
         test.describe.configure({ mode: "serial" });
 

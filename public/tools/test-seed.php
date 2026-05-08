@@ -80,6 +80,79 @@ if (($_GET['action'] ?? '') === 'cleanup_cron_qualifying') {
     exit;
 }
 
+// Action: seed_reset_result — creates a scored race so the reset-result feature can be tested
+if (($_GET['action'] ?? '') === 'seed_reset_result') {
+    $e2eResetUser = 'e2e_reset_race_f1@helvegpovlsen.dk';
+
+    // Idempotent cleanup
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eResetUser]);
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name IN ('E2E Reset Race', 'E2E Next Race'))");
+    $db->query("DELETE FROM races WHERE name IN ('E2E Reset Race', 'E2E Next Race')");
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eResetUser]);
+
+    // Ensure Hamilton / Verstappen / Leclerc drivers exist
+    $driverIds = [];
+    foreach ([
+        [44, 'Hamilton',   'Lewis Hamilton',   'Mercedes'],
+        [1,  'Verstappen', 'Max Verstappen',   'Red Bull'],
+        [16, 'Leclerc',    'Charles Leclerc',  'Ferrari'],
+    ] as [$num, $lastName, $fullName, $team]) {
+        $stmt = $db->prepare("SELECT id FROM drivers WHERE LOWER(name) LIKE LOWER(?)");
+        $stmt->execute(['%' . $lastName . '%']);
+        $row = $stmt->fetch();
+        if ($row) {
+            $driverIds[] = $row['id'];
+        } else {
+            $newId = seed_uuid();
+            $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")->execute([$newId, $fullName, $team, $num]);
+            $driverIds[] = $newId;
+        }
+    }
+    [$hamId, $verId, $lecId] = $driverIds;
+
+    // Test user (in competition so pool calc includes them)
+    $userId = seed_uuid();
+    $hash = password_hash('E2ETestPassword2026!', PASSWORD_BCRYPT);
+    $db->prepare("INSERT INTO users (id, email, password, display_name, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Reset User', 1, 0, 0)")
+       ->execute([$userId, $e2eResetUser, $hash]);
+
+    // Past race (2026-05-15) with pool 30 — will become the last completed race
+    // Results are set in the INSERT so result_p1 IS NOT NULL, matching how admin.php saves them
+    $raceId = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size, result_p1, result_p2, result_p3) VALUES (?, 'E2E Reset Race', 'Test', '2026-05-15', '14:00:00', 30, ?, ?, ?)")
+       ->execute([$raceId, $hamId, $verId, $lecId]);
+
+    // Future race (2026-06-15) — acts as next race for pool rollover
+    $nextRaceId = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Next Race', 'Test', '2026-06-15', '14:00:00', 0)")
+       ->execute([$nextRaceId]);
+
+    // Bet: p1=Hamilton (correct), p2=Leclerc (wrong pos), p3=Verstappen (wrong pos) → 35 pts, 0 stars, no perfect
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userId, $raceId, $hamId, $lecId, $verId]);
+
+    // Score the race: results p1=Hamilton, p2=Verstappen, p3=Leclerc
+    calculateRacePoints($raceId, $hamId, $verId, $lecId);
+
+    $stmt = $db->prepare("SELECT points, stars FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $userAfter = $stmt->fetch();
+
+    echo json_encode(['ok' => true, 'points' => (int)$userAfter['points'], 'stars' => (int)$userAfter['stars']]);
+    exit;
+}
+
+// Action: cleanup_reset_result — removes data created by seed_reset_result
+if (($_GET['action'] ?? '') === 'cleanup_reset_result') {
+    $e2eResetUser = 'e2e_reset_race_f1@helvegpovlsen.dk';
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eResetUser]);
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name IN ('E2E Reset Race', 'E2E Next Race'))");
+    $db->query("DELETE FROM races WHERE name IN ('E2E Reset Race', 'E2E Next Race')");
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eResetUser]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Reset to known state — settings table is preserved
 $db->query("UPDATE settings SET bet_size = 10");
 $db->query("DELETE FROM bets");
