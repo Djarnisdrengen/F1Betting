@@ -6,6 +6,7 @@
                 <div>
                     <strong><?= escape($user['display_name'] ?: $user['email']) ?></strong>
                     <br><small class="text-muted"><?= escape($user['email']) ?></small>
+                    <br><small class="text-muted"><?= $lang === 'da' ? 'Sidst set: ' : 'Last seen: ' ?><?= $user['last_login'] ? date('d M Y, H:i', strtotime($user['last_login'])) : ($lang === 'da' ? 'Aldrig' : 'Never') ?></small>
                 </div>
                 <span class="badge" style="background: <?= $user['role'] === 'admin' ? 'var(--f1-red)' : 'var(--bg-secondary)' ?>; color: <?= $user['role'] === 'admin' ? 'white' : 'var(--text-primary)' ?>;">
                     <?= escape($user['role']) ?>

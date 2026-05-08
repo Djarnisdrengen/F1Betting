@@ -23,8 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($user && verifyPassword($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
-            // Regenerate session ID to prevent session fixation
             session_regenerate_id(true);
+            $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
             header("Location: index.php");
             exit;
         } else {

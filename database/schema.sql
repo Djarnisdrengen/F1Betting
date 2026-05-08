@@ -14,7 +14,8 @@ CREATE TABLE users (
     points INT DEFAULT 0,
     stars INT DEFAULT 0,
     in_competition TINYINT(1) DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_login DATETIME NULL
 );
  
 -- Kørere

@@ -46,7 +46,7 @@ include __DIR__ . '/includes/header.php';
                     <label class="form-label"><?= t('display_name') ?></label>
                     <input type="text" name="display_name" class="form-input" value="<?= escape($currentUser['display_name']) ?>">
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
+<button type="submit" class="btn btn-primary" style="width: 100%;">
                     <i class="fas fa-save"></i> <?= t('save') ?>
                 </button>
             </form>

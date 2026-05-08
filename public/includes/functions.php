@@ -237,7 +237,7 @@ function getCurrentUser() {
         return null;
     }
     $db = getDB();
-    $stmt = $db->prepare("SELECT id, email, display_name, role, points, stars, created_at, in_competition FROM users WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, email, display_name, role, points, stars, created_at, in_competition, last_login FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     return $stmt->fetch();
 }
