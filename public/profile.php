@@ -26,6 +26,33 @@ include __DIR__ . '/includes/header.php';
 <div style="max-width: 600px; margin: 0 auto;">
     <h1 class="mb-3"><i class="fas fa-user text-accent"></i> <?= t('profile') ?></h1>
     
+    <!-- Profile Form -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3><?= getLang() === 'da' ? 'Rediger Profil' : 'Edit Profile' ?></h3>
+        </div>
+        <div class="card-body">
+            <?php if ($success): ?>
+                <div class="alert alert-success"><?= escape($success) ?></div>
+            <?php endif; ?>
+            
+            <form method="POST">
+                <?= csrfField() ?>
+                <div class="form-group">
+                    <label class="form-label"><?= t('email') ?></label>
+                    <input type="email" class="form-input" value="<?= escape($currentUser['email']) ?>" disabled style="opacity: 0.7;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><?= t('display_name') ?></label>
+                    <input type="text" name="display_name" class="form-input" value="<?= escape($currentUser['display_name']) ?>">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-save"></i> <?= t('save') ?>
+                </button>
+            </form>
+        </div> <!--- End Card Body-->
+    </div> <!--- End Card-->
+
     <!-- Stats -->
     <div class="grid grid-2 mb-3">
         <div class="card text-center">
@@ -57,33 +84,6 @@ include __DIR__ . '/includes/header.php';
             </div>
         </div>
     </div>
-
-    <!-- Profile Form -->
-    <div class="card mb-3">
-        <div class="card-header">
-            <h3><?= getLang() === 'da' ? 'Rediger Profil' : 'Edit Profile' ?></h3>
-        </div>
-        <div class="card-body">
-            <?php if ($success): ?>
-                <div class="alert alert-success"><?= escape($success) ?></div>
-            <?php endif; ?>
-            
-            <form method="POST">
-                <?= csrfField() ?>
-                <div class="form-group">
-                    <label class="form-label"><?= t('email') ?></label>
-                    <input type="email" class="form-input" value="<?= escape($currentUser['email']) ?>" disabled style="opacity: 0.7;">
-                </div>
-                <div class="form-group">
-                    <label class="form-label"><?= t('display_name') ?></label>
-                    <input type="text" name="display_name" class="form-input" value="<?= escape($currentUser['display_name']) ?>">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <i class="fas fa-save"></i> <?= t('save') ?>
-                </button>
-            </form>
-        </div> <!--- End Card Body-->
-    </div> <!--- End Card--> 
 
     <!-- Cookie Preferences Link -->
     <div class="card text-center">
