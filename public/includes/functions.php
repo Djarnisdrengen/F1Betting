@@ -256,3 +256,67 @@ function requireAdmin() {
         exit;
     }
 }
+
+// ============================================
+// DATABASE
+// ============================================
+function getDB() {
+    static $pdo = null;
+    if ($pdo === null) {
+        try {
+            $pdo = new PDO(
+                "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+                DB_USER,
+                DB_PASS,
+                [
+                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES   => false,
+                ]
+            );
+        } catch (PDOException $e) {
+            die("Database forbindelse fejlede: " . $e->getMessage());
+        }
+    }
+    return $pdo;
+}
+
+// ============================================
+// PASSWORDS
+// ============================================
+function hashPassword($password) {
+    return password_hash($password . PASSWORD_PEPPER, PASSWORD_BCRYPT);
+}
+
+function verifyPassword($password, $hash) {
+    return password_verify($password . PASSWORD_PEPPER, $hash);
+}
+
+// ============================================
+// CSRF
+// ============================================
+function generateCsrfToken() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function validateCsrfToken($token) {
+    if (empty($_SESSION['csrf_token']) || empty($token)) {
+        return false;
+    }
+    return hash_equals($_SESSION['csrf_token'], $token);
+}
+
+function csrfField() {
+    return '<input type="hidden" name="csrf_token" value="' . escape(generateCsrfToken()) . '">';
+}
+
+function requireCsrf() {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            die('CSRF token validation failed. Please refresh the page and try again.');
+        }
+    }
+}

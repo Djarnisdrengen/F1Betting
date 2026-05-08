@@ -66,7 +66,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 <!DOCTYPE html>
 <html lang="<?= $lang ?>">
 <head>
-    <?php if (@SITE_URL === 'https://formula-1.dk'): ?>
+    <?php if (defined('APP_ENV') && APP_ENV === 'live'): ?>
             <!-- Cookiebot -->
             <script nonce="<?php echo $nonce; ?>" id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="762114b7-e449-4131-af32-d8ad521ade04" data-blockingmode="auto" type="text/javascript"></script>
    <?php endif; ?>
@@ -81,7 +81,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             <link rel="stylesheet" href="assets/css/style.css">
             <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
             
-    <?php if (@SITE_URL === 'https://formula-1.dk'): ?>
+    <?php if (defined('APP_ENV') && APP_ENV === 'live'): ?>
             <!-- Google tag (gtag.js) -->
             <script  nonce="<?php echo $nonce; ?>" async src="https://www.googletagmanager.com/gtag/js?id=G-BFRVL7RX1N"></script>
             <script  nonce="<?php echo $nonce; ?>">

@@ -10,6 +10,8 @@
 
 # Environment/config files
 config.php
+config.test.php
+config.live.php
 public/cron/cron_import_log.txt
 
 # git-ftp metadata

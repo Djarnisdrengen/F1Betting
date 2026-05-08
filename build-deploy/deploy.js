@@ -101,6 +101,13 @@ async function deploy() {
         });
         await client.ensureDir(`${remoteDir}/public`);
         await uploadDir(client, publicDir, `${remoteDir}/public`, ignores);
+        const configSrc = path.join(__dirname, `../config.${env}.php`);
+        if (fs.existsSync(configSrc)) {
+            process.stdout.write(`  ↑ config.php\n`);
+            await client.uploadFrom(configSrc, `${remoteDir}/config.php`);
+        } else {
+            console.warn(`⚠️  config.${env}.php not found — skipping config upload`);
+        }
         console.log(`✅ Done! Uploaded to ${remoteDir}`);
     } catch (err) {
         console.error("❌ FTP Error:", err.message);
