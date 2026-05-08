@@ -9,7 +9,9 @@
       "Bash(xargs ls -la)",
       "Bash(cp /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/functions.php /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes/functions.php)",
       "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting mv public/functions.php public/includes/functions.php)",
-      "Bash(rm /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes/functions.php && git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting mv public/functions.php public/includes/functions.php)"
+      "Bash(rm /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes/functions.php && git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting mv public/functions.php public/includes/functions.php)",
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting check-ignore config.php config.live.php config.test.php)",
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting ls-files config.php config.test.php config.live.php config.example.php)"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes"
