@@ -14,7 +14,8 @@ $csp_policy =
     "script-src 'self' 'nonce-$nonce' " .
         "'sha256-g7fzz0TV6GRE7YO5Psf4wohzOVdQHxCLJMkJ1eUqZIk=' " .
         "'sha256-5ofhTBu470bVNSfmSODufleilOm4vGBr+Ysw7pxWXsQ=' " .
-        "'sha256-q9FEvsEcv32ce7lbHps7PEYb4/B1N/0+rYZYTTdgF0U=' " . 
+        "'sha256-q9FEvsEcv32ce7lbHps7PEYb4/B1N/0+rYZYTTdgF0U=' " .
+        "'sha256-KBQLybohuOuiDS9F0AN087dh5NOyPgOWLDAAj2zy2fY=' " .
         "https://www.googletagmanager.com " .
         "https://www.google-analytics.com " .
         "https://consentcdn.cookiebot.com " .
