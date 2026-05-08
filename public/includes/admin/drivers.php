@@ -39,7 +39,13 @@
             </div>
             <div class="flex gap-1">
                 <a href="?tab=drivers&edit=<?= escape($driver['id']) ?>#driver-<?= escape($driver['id']) ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
-                <a href="?tab=drivers&delete_driver=<?= escape($driver['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($driver['name']) ?>"><i class="fas fa-trash"></i></a>
+                <form method="POST" style="display:inline">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="driver_id" value="<?= escape($driver['id']) ?>">
+                    <button type="submit" name="delete_driver" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($driver['name']) ?>">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
             </div>
         </div>
         <?php if (isset($_GET['edit']) && $_GET['edit'] === $driver['id']): ?>

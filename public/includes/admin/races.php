@@ -54,7 +54,13 @@
                 </div>
                 <div class="flex gap-1">
                     <a href="?tab=races&edit=<?= escape($race['id']) ?>#race-<?= escape($race['id']) ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
-                    <a href="?tab=races&delete_race=<?= escape($race['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($race['name']) ?>"><i class="fas fa-trash"></i></a>
+                    <form method="POST" style="display:inline">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="race_id" value="<?= escape($race['id']) ?>">
+                        <button type="submit" name="delete_race" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($race['name']) ?>">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
             <?php if ($race['quali_p1']): ?>

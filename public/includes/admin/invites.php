@@ -38,15 +38,23 @@ $expiredInvites = array_filter($invites, fn($i) => !$i['used'] && strtotime($i['
                     </small>
                 </div>
                 <div class="flex gap-1">
-                    <a href="?tab=invites&resend_invite=<?= escape($invite['id']) ?>" class="btn btn-secondary btn-sm" title="<?= $lang === 'da' ? 'Gensend' : 'Resend' ?>">
-                        <i class="fas fa-redo"></i>
-                    </a>
+                    <form method="POST" style="display:inline">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="invite_id" value="<?= escape($invite['id']) ?>">
+                        <button type="submit" name="resend_invite" class="btn btn-secondary btn-sm" title="<?= $lang === 'da' ? 'Gensend' : 'Resend' ?>">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </form>
                     <button type="button" class="btn btn-secondary btn-sm invite-copy-btn" data-link="<?= escape((defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL) . '/register.php?token=' . $invite['token']) ?>" title="<?= $lang === 'da' ? 'Kopiér link' : 'Copy link' ?>">
                         <i class="fas fa-copy"></i>
                     </button>
-                    <a href="?tab=invites&delete_invite=<?= escape($invite['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($invite['email']) ?>">
-                        <i class="fas fa-trash"></i>
-                    </a>
+                    <form method="POST" style="display:inline">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="invite_id" value="<?= escape($invite['id']) ?>">
+                        <button type="submit" name="delete_invite" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($invite['email']) ?>">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -63,7 +71,11 @@ $expiredInvites = array_filter($invites, fn($i) => !$i['used'] && strtotime($i['
                     <span class="badge" style="background: #10b981; color: white; margin-left: 0.5rem;"><?= $lang === 'da' ? 'Registreret' : 'Registered' ?></span>
                     <br><small class="text-muted"><?= $lang === 'da' ? 'Inviteret' : 'Invited' ?> <?= date('d M Y', strtotime($invite['created_at'])) ?></small>
                 </div>
-                <a href="?tab=invites&delete_invite=<?= $invite['id'] ?>" class="btn btn-ghost btn-sm"><i class="fas fa-trash"></i></a>
+                <form method="POST" style="display:inline">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="invite_id" value="<?= escape($invite['id']) ?>">
+                    <button type="submit" name="delete_invite" class="btn btn-ghost btn-sm"><i class="fas fa-trash"></i></button>
+                </form>
             </div>
         </div>
     <?php endforeach; ?>
@@ -80,10 +92,18 @@ $expiredInvites = array_filter($invites, fn($i) => !$i['used'] && strtotime($i['
                     <br><small class="text-muted"><?= $lang === 'da' ? 'Udløb' : 'Expired' ?> <?= date('d M Y', strtotime($invite['expires_at'])) ?></small>
                 </div>
                 <div class="flex gap-1">
-                    <a href="?tab=invites&resend_invite=<?= $invite['id'] ?>" class="btn btn-secondary btn-sm" title="<?= $lang === 'da' ? 'Gensend' : 'Resend' ?>">
-                        <i class="fas fa-redo"></i> <?= $lang === 'da' ? 'Forny' : 'Renew' ?>
-                    </a>
-                    <a href="?tab=invites&delete_invite=<?= $invite['id'] ?>" class="btn btn-ghost btn-sm"><i class="fas fa-trash"></i></a>
+                    <form method="POST" style="display:inline">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="invite_id" value="<?= escape($invite['id']) ?>">
+                        <button type="submit" name="resend_invite" class="btn btn-secondary btn-sm" title="<?= $lang === 'da' ? 'Gensend' : 'Resend' ?>">
+                            <i class="fas fa-redo"></i> <?= $lang === 'da' ? 'Forny' : 'Renew' ?>
+                        </button>
+                    </form>
+                    <form method="POST" style="display:inline">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="invite_id" value="<?= escape($invite['id']) ?>">
+                        <button type="submit" name="delete_invite" class="btn btn-ghost btn-sm"><i class="fas fa-trash"></i></button>
+                    </form>
                 </div>
             </div>
         </div>

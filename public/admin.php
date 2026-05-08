@@ -45,8 +45,8 @@ if (isset($_POST['update_driver'])) {
     }
 }
 
-if (isset($_GET['delete_driver'])) {
-    $id = $_GET['delete_driver'];
+if (isset($_POST['delete_driver'])) {
+    $id = $_POST['driver_id'];
     $stmt = $db->prepare("DELETE FROM drivers WHERE id = ?");
     $stmt->execute([$id]);
     header("Location: admin.php?tab=drivers&msg=deleted");
@@ -107,8 +107,8 @@ if (isset($_POST['update_race'])) {
     }
 }
 
-if (isset($_GET['delete_race'])) {
-    $id = $_GET['delete_race'];
+if (isset($_POST['delete_race'])) {
+    $id = $_POST['race_id'];
     $stmt = $db->prepare("DELETE FROM bets WHERE race_id = ?");
     $stmt->execute([$id]);
     $stmt = $db->prepare("DELETE FROM races WHERE id = ?");
@@ -118,8 +118,8 @@ if (isset($_GET['delete_race'])) {
 }
 
 // ============ USERS ============
-if (isset($_GET['toggle_role'])) {
-    $userId = $_GET['toggle_role'];
+if (isset($_POST['toggle_role'])) {
+    $userId = $_POST['user_id'];
     if ($userId !== $currentUser['id']) {
         $stmt = $db->prepare("SELECT role FROM users WHERE id = ?");
         $stmt->execute([$userId]);
@@ -132,8 +132,8 @@ if (isset($_GET['toggle_role'])) {
     exit;
 }
 
-if (isset($_GET['toggle_competition'])) {
-    $userId = $_GET['toggle_competition'];
+if (isset($_POST['toggle_competition'])) {
+    $userId = $_POST['user_id'];
     $stmt = $db->prepare("SELECT in_competition FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch();
@@ -149,8 +149,8 @@ if (isset($_GET['toggle_competition'])) {
     exit;
 }
 
-if (isset($_GET['delete_user'])) {
-    $userId = $_GET['delete_user'];
+if (isset($_POST['delete_user'])) {
+    $userId = $_POST['user_id'];
     if ($userId !== $currentUser['id']) {
         $stmt = $db->prepare("DELETE FROM bets WHERE user_id = ?");
         $stmt->execute([$userId]);
@@ -208,8 +208,8 @@ if (isset($_POST['reset_user_password'])) {
 }
 
 // ============ DELETE BET ============
-if (isset($_GET['delete_bet'])) {
-    $betId = $_GET['delete_bet'];
+if (isset($_POST['delete_bet'])) {
+    $betId = $_POST['bet_id'];
     
     // Hent bet info inkl race data for at tjekke betting status
     $stmt = $db->prepare("
@@ -328,16 +328,16 @@ if (isset($_POST['create_invite'])) {
     }
 }
 
-if (isset($_GET['delete_invite'])) {
-    $inviteId = intval($_GET['delete_invite']);
+if (isset($_POST['delete_invite'])) {
+    $inviteId = intval($_POST['invite_id']);
     $stmt = $db->prepare("DELETE FROM invites WHERE id = ?");
     $stmt->execute([$inviteId]);
     header("Location: admin.php?tab=invites&msg=deleted");
     exit;
 }
 
-if (isset($_GET['resend_invite'])) {
-    $inviteId = intval($_GET['resend_invite']);
+if (isset($_POST['resend_invite'])) {
+    $inviteId = intval($_POST['invite_id']);
     $stmt = $db->prepare("SELECT * FROM invites WHERE id = ? AND used = 0");
     $stmt->execute([$inviteId]);
     $invite = $stmt->fetch();

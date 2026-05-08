@@ -16,17 +16,31 @@
                 <span class="text-accent"><?= intval($user['points']) ?> pts</span>
             </div>
             <div class="flex gap-1">
-                <a href="?tab=users&toggle_competition=<?= escape($user['id']) ?>" class="btn btn-sm" style="background: <?= $user['in_competition'] ? 'var(--f1-red)' : 'var(--bg-secondary)' ?>; color: <?= $user['in_competition'] ? 'white' : 'var(--text-primary)' ?>; border: none;">
-                    <i class="fas fa-<?= $user['in_competition'] ? 'check-circle' : 'times-circle' ?>"></i> <?= $user['in_competition'] ? ($lang === 'da' ? 'I Konkurrence' : 'In Competition') : ($lang === 'da' ? 'Ikke I Konkurrence' : 'Not In Competition') ?>
-                </a>
+                <form method="POST" style="display:inline">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
+                    <button type="submit" name="toggle_competition" class="btn btn-sm" style="background: <?= $user['in_competition'] ? 'var(--f1-red)' : 'var(--bg-secondary)' ?>; color: <?= $user['in_competition'] ? 'white' : 'var(--text-primary)' ?>; border: none;">
+                        <i class="fas fa-<?= $user['in_competition'] ? 'check-circle' : 'times-circle' ?>"></i> <?= $user['in_competition'] ? ($lang === 'da' ? 'I Konkurrence' : 'In Competition') : ($lang === 'da' ? 'Ikke I Konkurrence' : 'Not In Competition') ?>
+                    </button>
+                </form>
                 <?php if ($user['id'] !== $currentUser['id']): ?>
-                    <a href="?tab=users&toggle_role=<?= escape($user['id']) ?>" class="btn btn-secondary btn-sm">
-                        <?= $user['role'] === 'admin' ? ($lang === 'da' ? 'Gør Bruger' : 'Make User') : ($lang === 'da' ? 'Gør Admin' : 'Make Admin') ?>
-                    </a>
+                    <form method="POST" style="display:inline">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
+                        <button type="submit" name="toggle_role" class="btn btn-secondary btn-sm">
+                            <?= $user['role'] === 'admin' ? ($lang === 'da' ? 'Gør Bruger' : 'Make User') : ($lang === 'da' ? 'Gør Admin' : 'Make Admin') ?>
+                        </button>
+                    </form>
                     <button type="button" class="btn btn-secondary btn-sm btn-reset-pwd" data-link="<?= escape($user['id']) ?>">
                         <i class="fas fa-key"></i>
                     </button>
-                    <a href="?tab=users&delete_user=<?= escape($user['id']) ?>" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>"><i class="fas fa-trash"></i></a>
+                    <form method="POST" style="display:inline">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
+                        <button type="submit" name="delete_user" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
                 <?php endif; ?>
             </div>
         </div>
