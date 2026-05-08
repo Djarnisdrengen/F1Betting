@@ -72,6 +72,9 @@ try {
         $placeholders = implode(', ', array_fill(0, count($cols), '?'));
         $stmt = $db->prepare("INSERT INTO `$table` ($colList) VALUES ($placeholders)");
         foreach ($rows as $row) {
+            if ($table === 'races' && isset($row['race_name']) && strpos($row['race_name'], 'test: ') !== 0) {
+                $row['race_name'] = 'test: ' . $row['race_name'];
+            }
             $stmt->execute(array_values($row));
         }
     }
