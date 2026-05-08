@@ -36,7 +36,7 @@ if (isset($_POST['update_driver'])) {
     $id = sanitizeString($_POST['driver_id'] ?? '');
     $name = sanitizeString($_POST['driver_name'] ?? '');
     $team = sanitizeString($_POST['driver_team'] ?? '');
-    $number = intval($_POST['driver_number'] ?? 0);
+    $number = sanitizeInt($_POST['driver_number'] ?? 0, 1, 99);
     
     if ($id && $name && $team && $number) {
         $stmt = $db->prepare("UPDATE drivers SET name = ?, team = ?, number = ? WHERE id = ?");
@@ -378,11 +378,8 @@ if (isset($_POST['update_settings'])) {
     $pointsP2 = intval($_POST['points_p2'] ?? 18);
     $pointsP3 = intval($_POST['points_p3'] ?? 15);
     $pointsWrongPos = intval($_POST['points_wrong_pos'] ?? 5);
-    $bettingWindowHours = intval($_POST['betting_window_hours'] ?? 48);
+    $bettingWindowHours = sanitizeInt($_POST['betting_window_hours'] ?? 48, 1, 168);
     $betSize = intval($_POST['bet_size'] ?? 10);
-    
-    // Validate betting window (minimum 1 hour, maximum 168 hours = 1 week)
-    $bettingWindowHours = max(1, min(168, $bettingWindowHours));
     
     $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ? WHERE id = 1");
     $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize]);
