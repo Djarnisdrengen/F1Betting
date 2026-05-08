@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Handle actions
 $message = '';
 $error = '';
+$settings = getSettings();
 
 // ============ DRIVERS ============
 if (isset($_POST['add_driver'])) {
@@ -388,20 +389,38 @@ if (isset($_POST['update_settings'])) {
     $message = $lang === 'da' ? 'Indstillinger gemt!' : 'Settings saved!';
 }
 
-// Hent data
-$drivers = $db->query("SELECT * FROM drivers ORDER BY number")->fetchAll();
-$races = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
-$users = $db->query("SELECT * FROM users ORDER BY points DESC")->fetchAll();
-$bets = $db->query("SELECT b.*, u.display_name, u.email, r.name as race_name FROM bets b JOIN users u ON b.user_id = u.id JOIN races r ON b.race_id = r.id ORDER BY b.placed_at DESC")->fetchAll();
-$invites = $db->query("SELECT i.*, u.display_name as created_by_name, u.email as created_by_email FROM invites i JOIN users u ON i.created_by = u.id ORDER BY i.created_at DESC")->fetchAll();
-$settings = getSettings();
-
-$driversById = [];
-foreach ($drivers as $d) {
-    $driversById[$d['id']] = $d;
-}
-
 $currentTab = $_GET['tab'] ?? 'races';
+
+// Tab count badges — lightweight COUNT queries for all tabs
+$tabCounts = [
+    'races'   => $db->query("SELECT COUNT(*) FROM races")->fetchColumn(),
+    'drivers' => $db->query("SELECT COUNT(*) FROM drivers")->fetchColumn(),
+    'users'   => $db->query("SELECT COUNT(*) FROM users")->fetchColumn(),
+    'invites' => $db->query("SELECT COUNT(*) FROM invites")->fetchColumn(),
+    'bets'    => $db->query("SELECT COUNT(*) FROM bets")->fetchColumn(),
+];
+
+// $drivers always needed: races add/edit dropdowns and bets display
+$drivers    = $db->query("SELECT * FROM drivers ORDER BY number")->fetchAll();
+$driversById = array_column($drivers, null, 'id');
+
+switch ($currentTab) {
+    case 'races':
+        $races = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
+        break;
+    case 'users':
+        $users = $db->query("SELECT * FROM users ORDER BY points DESC")->fetchAll();
+        break;
+    case 'bets':
+        $races      = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
+        $racesById  = array_column($races, null, 'id');
+        $bets       = $db->query("SELECT b.*, u.display_name, u.email, r.name as race_name FROM bets b JOIN users u ON b.user_id = u.id JOIN races r ON b.race_id = r.id ORDER BY b.placed_at DESC")->fetchAll();
+        break;
+    case 'invites':
+        $invites = $db->query("SELECT i.*, u.display_name as created_by_name, u.email as created_by_email FROM invites i JOIN users u ON i.created_by = u.id ORDER BY i.created_at DESC")->fetchAll();
+        break;
+    // settings and drivers tabs: $settings + $drivers already loaded
+}
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -420,19 +439,19 @@ include __DIR__ . '/includes/header.php';
 <div class="tabs-container">
     <div class="tabs">
         <a href="?tab=races" class="tab <?= $currentTab === 'races' ? 'active' : '' ?>">
-            <i class="fas fa-flag"></i> <?= t('races') ?> <span class="tab-count">(<?= count($races) ?>)</span>
+            <i class="fas fa-flag"></i> <?= t('races') ?> <span class="tab-count">(<?= $tabCounts['races'] ?>)</span>
         </a>
         <a href="?tab=drivers" class="tab <?= $currentTab === 'drivers' ? 'active' : '' ?>">
-            <i class="fas fa-car"></i> <?= t('drivers') ?> <span class="tab-count">(<?= count($drivers) ?>)</span>
+            <i class="fas fa-car"></i> <?= t('drivers') ?> <span class="tab-count">(<?= $tabCounts['drivers'] ?>)</span>
         </a>
         <a href="?tab=users" class="tab <?= $currentTab === 'users' ? 'active' : '' ?>">
-            <i class="fas fa-users"></i> <?= t('users') ?> <span class="tab-count">(<?= count($users) ?>)</span>
+            <i class="fas fa-users"></i> <?= t('users') ?> <span class="tab-count">(<?= $tabCounts['users'] ?>)</span>
         </a>
         <a href="?tab=invites" class="tab <?= $currentTab === 'invites' ? 'active' : '' ?>">
-            <i class="fas fa-envelope"></i> <?= $lang === 'da' ? 'Invitationer' : 'Invites' ?> <span class="tab-count">(<?= count($invites) ?>)</span>
+            <i class="fas fa-envelope"></i> <?= $lang === 'da' ? 'Invitationer' : 'Invites' ?> <span class="tab-count">(<?= $tabCounts['invites'] ?>)</span>
         </a>
         <a href="?tab=bets" class="tab <?= $currentTab === 'bets' ? 'active' : '' ?>">
-            <i class="fas fa-trophy"></i> <?= t('bets') ?> <span class="tab-count">(<?= count($bets) ?>)</span>
+            <i class="fas fa-trophy"></i> <?= t('bets') ?> <span class="tab-count">(<?= $tabCounts['bets'] ?>)</span>
         </a>
         <a href="?tab=settings" class="tab <?= $currentTab === 'settings' ? 'active' : '' ?>">
             <i class="fas fa-cog"></i> <?= t('settings') ?>
