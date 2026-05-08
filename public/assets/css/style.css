@@ -764,23 +764,28 @@ body.dark input[type="time"] {
     color-scheme: dark;
 }
 
-body.dark input[type="date"]::-webkit-calendar-picker-indicator,
-body.dark input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e10600' d='M19 4h-1V2h-2v2H8V2H6v2H5C3.89 4 3 4.9 3 6v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z'/%3E%3C/svg%3E");
+    background-size: 16px 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    background: var(--f1-red);
+    opacity: 1;
 }
 
-/* Light mode picker indicator styling */
-body.light input[type="date"]::-webkit-calendar-picker-indicator,
-body.light input[type="time"]::-webkit-calendar-picker-indicator {
+input[type="time"]::-webkit-calendar-picker-indicator {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e10600' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z'/%3E%3C/svg%3E");
+    background-size: 16px 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    background: var(--f1-red);
-    filter: invert(1);
+    opacity: 1;
 }
 
 /* User's own bet highlight in all bets */
