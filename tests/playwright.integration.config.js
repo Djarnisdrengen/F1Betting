@@ -8,7 +8,7 @@ module.exports = defineConfig({
     outputDir: "../build-deploy/screenshots",
     reporter: [["./reporter.js"]],
     use: {
-        baseURL: process.env.INTEGRATION_BASE_URL,
+        baseURL: process.env.BASE_URL_TEST,
         screenshot: "only-on-failure",
         userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
         extraHTTPHeaders: {
