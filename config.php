@@ -7,6 +7,7 @@ define('DB_HOST', 'xxx');
 define('DB_NAME', 'xxx');
 define('DB_USER', 'xxx');
 define('DB_PASS', 'xxx');
+define('LIVE_DB_NAME', 'xxx');                      // test only — live DB on same host, used by sync-from-live.php
 
 // ── SITE ──────────────────────────────────────────────────────────────
 define('SITE_URL',    'https://www.hpovlsen.dk');   // no trailing slash, always www

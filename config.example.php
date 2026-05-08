@@ -11,6 +11,7 @@ define('DB_HOST', 'db1234.simply.com');
 define('DB_NAME', 'mydb');
 define('DB_USER', 'myuser');
 define('DB_PASS', 'secret');
+// define('LIVE_DB_NAME', 'mydb_live');             // test only — needed by sync-from-live.php
 
 // ── SITE ──────────────────────────────────────────────────────────────
 // Always use www — non-www may 301-redirect and strip POST bodies.
