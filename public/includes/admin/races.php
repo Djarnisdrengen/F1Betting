@@ -118,20 +118,3 @@
         <?php endif; ?>
     </div>
 <?php endforeach; ?>
-
-<script nonce="<?= $nonce ?>">
-document.addEventListener('DOMContentLoaded', function() {
-    const divs = document.querySelectorAll('.toggleForm');
-    divs.forEach(div => {
-        div.addEventListener('click', function() {
-            toggleForm(this.getAttribute('data-link'));
-        });
-    });
-});
-function toggleForm(formId) {
-    const form = document.getElementById(formId);
-    const header = form.previousElementSibling;
-    form.classList.toggle('expanded');
-    header.classList.toggle('expanded');
-}
-</script>

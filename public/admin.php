@@ -448,4 +448,21 @@ include __DIR__ . '/includes/header.php';
     ?>
 </div>
 
+<script nonce="<?= $nonce ?>">
+document.addEventListener('DOMContentLoaded', function() {
+    const divs = document.querySelectorAll('.toggleForm');
+    divs.forEach(div => {
+        div.addEventListener('click', function() {
+            toggleForm(this.getAttribute('data-link'));
+        });
+    });
+});
+function toggleForm(formId) {
+    const form = document.getElementById(formId);
+    const header = form.previousElementSibling;
+    form.classList.toggle('expanded');
+    header.classList.toggle('expanded');
+}
+</script>
+
 <?php include __DIR__ . '/includes/footer.php'; ?>
