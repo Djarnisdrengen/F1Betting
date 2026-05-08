@@ -10,20 +10,15 @@ $nonce = bin2hex(random_bytes(16));
 $csp_policy =
     "frame-ancestors 'none'; " .
     "default-src 'self'; " .
-    "frame-src 'self' https://consent.cookiebot.com https://consentcdn.cookiebot.com; " .
     "script-src 'self' 'nonce-$nonce' " .
         "'sha256-g7fzz0TV6GRE7YO5Psf4wohzOVdQHxCLJMkJ1eUqZIk=' " .
         "'sha256-5ofhTBu470bVNSfmSODufleilOm4vGBr+Ysw7pxWXsQ=' " .
         "'sha256-q9FEvsEcv32ce7lbHps7PEYb4/B1N/0+rYZYTTdgF0U=' " .
-        "'sha256-KBQLybohuOuiDS9F0AN087dh5NOyPgOWLDAAj2zy2fY=' " .
         "https://www.googletagmanager.com " .
-        "https://www.google-analytics.com " .
-        "https://consentcdn.cookiebot.com " .
-        "https://cookiebot.com " .
-        "https://consent.cookiebot.com; " .
+        "https://www.google-analytics.com; " .
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
-    "img-src 'self' data: https://www.google-analytics.com https://imgsct.cookiebot.com; " .
-    "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://consent.cookiebot.com https://consentcdn.cookiebot.com; " .
+    "img-src 'self' data: https://www.google-analytics.com; " .
+    "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; " .
     "font-src 'self' https://fonts.gstatic.com;";
 
 
@@ -67,11 +62,6 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 <!DOCTYPE html>
 <html lang="<?= $lang ?>">
 <head>
-    <?php if (defined('APP_ENV') && APP_ENV === 'live'): ?>
-            <!-- Cookiebot -->
-            <script nonce="<?php echo $nonce; ?>" id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="762114b7-e449-4131-af32-d8ad521ade04" data-blockingmode="auto" type="text/javascript"></script>
-   <?php endif; ?>
-
             <!-- Meta Tags -->
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">

@@ -13,7 +13,7 @@ module.exports = defineConfig({
     testDir: "./e2e",
     testMatch: isLive
         ? ["**/smoke.spec.js"]
-        : ["**/smoke.spec.js", "**/admin.spec.js"],
+        : ["**/smoke.spec.js", "**/admin.spec.js", "**/cron.spec.js"],
     timeout: 10000,
     outputDir: "../build-deploy/screenshots",
     reporter: [["./reporter.js"]],
@@ -21,6 +21,7 @@ module.exports = defineConfig({
         baseURL: process.env.BASE_URL,
         screenshot: "only-on-failure",
     },
+    workers: 1,
     projects: [
         { name: "chromium", use: { ...devices["Desktop Chrome"] } },
     ],

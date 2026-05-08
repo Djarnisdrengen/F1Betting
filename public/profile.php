@@ -85,15 +85,6 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <!-- Cookie Preferences Link -->
-    <div class="card text-center">
-        <div class="card-body">
-            <a href="#" id="cookie-preferences-link">
-                <?= $lang === 'da' ? 'Cookie præferencer' : 'Cookie preferences' ?>
-            </a>
-        </div>
-    </div> <!--- End Cookiebot Card-->
-
 </div>    
 
 

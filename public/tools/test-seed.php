@@ -43,6 +43,43 @@ if (($_GET['action'] ?? '') === 'cleanup_e2e_invite') {
     exit;
 }
 
+// Action: seed_cron_qualifying — idempotent, used by cron e2e tests
+// Ensures Hamilton/Verstappen/Leclerc drivers exist and adds Australian Grand Prix on 2026-03-08 with no quali results
+if (($_GET['action'] ?? '') === 'seed_cron_qualifying') {
+    foreach ([
+        [44, 'Lewis Hamilton',  'Mercedes'],
+        [1,  'Max Verstappen',  'Red Bull'],
+        [16, 'Charles Leclerc', 'Ferrari'],
+    ] as [$num, $name, $team]) {
+        $parts = explode(' ', $name);
+        $lastName = end($parts);
+        $stmt = $db->prepare("SELECT id FROM drivers WHERE LOWER(name) LIKE LOWER(?)");
+        $stmt->execute(['%' . $lastName . '%']);
+        if (!$stmt->fetch()) {
+            $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")
+               ->execute([seed_uuid(), $name, $team, $num]);
+        }
+    }
+    $db->prepare("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = ? AND race_date = ?)")
+       ->execute(['Australian Grand Prix', '2026-03-08']);
+    $db->prepare("DELETE FROM races WHERE name = ? AND race_date = ?")
+       ->execute(['Australian Grand Prix', '2026-03-08']);
+    $db->prepare("INSERT INTO races (id, name, race_date, bettingpool_size) VALUES (?, ?, ?, 0)")
+       ->execute([seed_uuid(), 'Australian Grand Prix', '2026-03-08']);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: cleanup_cron_qualifying — removes race created by seed_cron_qualifying
+if (($_GET['action'] ?? '') === 'cleanup_cron_qualifying') {
+    $db->prepare("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = ? AND race_date = ?)")
+       ->execute(['Australian Grand Prix', '2026-03-08']);
+    $db->prepare("DELETE FROM races WHERE name = ? AND race_date = ?")
+       ->execute(['Australian Grand Prix', '2026-03-08']);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Reset to known state — settings table is preserved
 $db->query("UPDATE settings SET bet_size = 10");
 $db->query("DELETE FROM bets");
