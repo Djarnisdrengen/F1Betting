@@ -17,7 +17,7 @@
                 </div>
                 <div class="form-group" style="margin:0;">
                     <label class="form-label"><?= t('number') ?></label>
-                    <input type="number" name="driver_number" class="form-input" required>
+                    <input type="number" name="driver_number" class="form-input" min="1" max="99" required>
                 </div>
                 <button type="submit" name="add_driver" class="btn btn-primary">
                     <i class="fas fa-plus"></i> <?= t('add') ?>
@@ -60,7 +60,7 @@
                         <input type="text" name="driver_team" class="form-input" value="<?= escape($driver['team']) ?>" required>
                     </div>
                     <div class="form-group" style="margin:0;">
-                        <input type="number" name="driver_number" class="form-input" value="<?= intval($driver['number']) ?>" required>
+                        <input type="number" name="driver_number" class="form-input" min="1" max="99" value="<?= intval($driver['number']) ?>" required>
                     </div>
                     <div class="flex gap-1">
                         <button type="submit" name="update_driver" class="btn btn-primary btn-sm"><?= t('save') ?></button>

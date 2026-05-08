@@ -13,6 +13,36 @@ if (!defined('INTEGRATION_SEED_TOKEN') || $token !== INTEGRATION_SEED_TOKEN) {
 
 $db = getDB();
 
+$e2eUserEmail   = 'e2e_testing_testuser_f1@helvegpovlsen.dk';
+$e2eInviteEmail = 'e2e_testing_invite_f1@helvegpovlsen.dk';
+
+// Action: create_e2e_user — idempotent, used by admin e2e tests
+if (($_GET['action'] ?? '') === 'create_e2e_user') {
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")
+       ->execute([$e2eUserEmail]);
+    $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")
+       ->execute([$e2eUserEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")
+       ->execute([$e2eUserEmail]);
+    $id = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0,0xffff), mt_rand(0,0xffff), mt_rand(0,0xffff),
+        mt_rand(0,0x0fff)|0x4000, mt_rand(0,0x3fff)|0x8000,
+        mt_rand(0,0xffff), mt_rand(0,0xffff), mt_rand(0,0xffff));
+    $hash = password_hash('E2ETestPassword2026!', PASSWORD_BCRYPT);
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Test User', 'user', 0, 0, 0)")
+       ->execute([$id, $e2eUserEmail, $hash]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: cleanup_e2e_invite — removes stale invite from a failed test run
+if (($_GET['action'] ?? '') === 'cleanup_e2e_invite') {
+    $db->prepare("DELETE FROM invites WHERE email = ?")
+       ->execute([$e2eInviteEmail]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Reset to known state — settings table is preserved
 $db->query("UPDATE settings SET bet_size = 10");
 $db->query("DELETE FROM bets");

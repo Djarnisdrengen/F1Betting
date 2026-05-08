@@ -7,9 +7,13 @@ process.env.BASE_URL = process.env[`BASE_URL_${env.toUpperCase()}`] || process.e
 process.env.TEST_USER_EMAIL = process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`] || process.env.TEST_USER_EMAIL;
 process.env.TEST_USER_PASSWORD = process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`] || process.env.TEST_USER_PASSWORD;
 
+const isLive = env === "live";
+
 module.exports = defineConfig({
     testDir: "./e2e",
-    testMatch: "**/smoke.spec.js",
+    testMatch: isLive
+        ? ["**/smoke.spec.js"]
+        : ["**/smoke.spec.js", "**/admin.spec.js"],
     timeout: 10000,
     outputDir: "../build-deploy/screenshots",
     reporter: [["./reporter.js"]],

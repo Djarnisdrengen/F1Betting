@@ -86,10 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Delete confirmation modal
     let deleteModal = null;
-    let deleteUrl = null;
-    
-    function showDeleteModal(url, itemName) {
-        deleteUrl = url;
+    let deleteTarget = null; // HTMLFormElement (POST) or URL string (GET)
+
+    function showDeleteModal(target, itemName) {
+        deleteTarget = target;
         
         if (!deleteModal) {
             deleteModal = document.createElement('div');
@@ -139,22 +139,34 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.closeDeleteModal = function() {
         if (deleteModal) deleteModal.style.display = 'none';
-        deleteUrl = null;
+        deleteTarget = null;
     };
-    
+
     window.confirmDelete = function() {
-        if (deleteUrl) {
-            window.location.href = deleteUrl;
+        if (!deleteTarget) return;
+        if (deleteTarget instanceof HTMLFormElement) {
+            const btn = deleteTarget.querySelector('button[type="submit"]');
+            if (btn && btn.name) {
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = btn.name;
+                hidden.value = btn.value || '';
+                deleteTarget.appendChild(hidden);
+            }
+            deleteTarget.submit();
+        } else {
+            window.location.href = deleteTarget;
         }
+        deleteTarget = null;
     };
-    
+
     // Attach to delete buttons
     document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            const url = this.href || this.dataset.url;
+            const form = this.closest('form');
             const name = this.dataset.name || 'dette element';
-            showDeleteModal(url, name);
+            showDeleteModal(form || this.href || this.dataset.url, name);
         });
     });
     

@@ -42,6 +42,20 @@ include __DIR__ . '/includes/header.php';
                 <p class="text-muted"><?= t('stars') ?></p>
             </div>
         </div>
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-<?= $currentUser['role'] === 'admin' ? 'user-shield' : 'user' ?> text-accent" style="font-size: 2rem;"></i>
+                <h2><?= $currentUser['role'] === 'admin' ? 'Admin' : ($lang === 'da' ? 'Bruger' : 'User') ?></h2>
+                <p class="text-muted"><?= $lang === 'da' ? 'Rolle' : 'Role' ?></p>
+            </div>
+        </div>
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-<?= $currentUser['in_competition'] ? 'check-circle' : 'times-circle' ?>" style="font-size: 2rem; color: <?= $currentUser['in_competition'] ? 'var(--f1-red)' : 'var(--text-muted)' ?>;"></i>
+                <h2><?= $currentUser['in_competition'] ? ($lang === 'da' ? 'Ja' : 'Yes') : ($lang === 'da' ? 'Nej' : 'No') ?></h2>
+                <p class="text-muted"><?= $lang === 'da' ? 'I konkurrence' : 'In competition' ?></p>
+            </div>
+        </div>
     </div>
 
     <!-- Profile Form -->
@@ -63,10 +77,6 @@ include __DIR__ . '/includes/header.php';
                 <div class="form-group">
                     <label class="form-label"><?= t('display_name') ?></label>
                     <input type="text" name="display_name" class="form-input" value="<?= escape($currentUser['display_name']) ?>">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Rolle</label>
-                    <input type="text" class="form-input" value="<?= $currentUser['role'] === 'admin' ? 'Administrator' : 'Bruger' ?>" disabled style="opacity: 0.7;">
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     <i class="fas fa-save"></i> <?= t('save') ?>

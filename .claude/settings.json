@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n 'nonce\\\\|$nonce' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/functions.php)",
+      "Bash(grep -rn '$nonce' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/functions.php)",
+      "Bash(php -l public/includes/admin/races.php)",
+      "Bash(php -l public/includes/admin/drivers.php)",
+      "Bash(xargs cat)",
+      "Bash(xargs ls -la)"
+    ]
+  }
+}

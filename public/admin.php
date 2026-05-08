@@ -29,6 +29,8 @@ if (isset($_POST['add_driver'])) {
         $stmt = $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)");
         $stmt->execute([$id, $name, $team, $number]);
         $message = $lang === 'da' ? 'Kører tilføjet!' : 'Driver added!';
+    } else {
+        $error = $lang === 'da' ? 'Udfyld alle felter korrekt (nummer skal være 1–99)' : 'Fill in all fields correctly (number must be 1–99)';
     }
 }
 
@@ -42,6 +44,8 @@ if (isset($_POST['update_driver'])) {
         $stmt = $db->prepare("UPDATE drivers SET name = ?, team = ?, number = ? WHERE id = ?");
         $stmt->execute([$name, $team, $number, $id]);
         $message = $lang === 'da' ? 'Kører opdateret!' : 'Driver updated!';
+    } else {
+        $error = $lang === 'da' ? 'Udfyld alle felter korrekt (nummer skal være 1–99)' : 'Fill in all fields correctly (number must be 1–99)';
     }
 }
 
@@ -97,13 +101,15 @@ if (isset($_POST['update_race'])) {
     if ($id && $name) {
         $stmt = $db->prepare("UPDATE races SET name = ?, location = ?, race_date = ?, race_time = ?, quali_p1 = ?, quali_p2 = ?, quali_p3 = ?, result_p1 = ?, result_p2 = ?, result_p3 = ? WHERE id = ?");
         $stmt->execute([$name, $location, $date, $time, $quali_p1, $quali_p2, $quali_p3, $result_p1, $result_p2, $result_p3, $id]);
-        
+
         // Beregn point hvis resultater er sat
         if ($result_p1 && $result_p2 && $result_p3) {
             calculateRacePoints($id, $result_p1, $result_p2, $result_p3);
         }
-        
+
         $message = $lang === 'da' ? 'Løb opdateret!' : 'Race updated!';
+    } else {
+        $error = $lang === 'da' ? 'Navn er påkrævet' : 'Name is required';
     }
 }
 

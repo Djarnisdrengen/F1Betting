@@ -99,6 +99,7 @@ async function deploy() {
             user: process.env.FTP_USER,
             password: process.env.FTP_PASS,
         });
+        await client.ensureDir(`${remoteDir}/public`);
         await uploadDir(client, publicDir, `${remoteDir}/public`, ignores);
         console.log(`✅ Done! Uploaded to ${remoteDir}`);
     } catch (err) {
