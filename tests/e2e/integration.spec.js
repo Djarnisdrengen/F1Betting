@@ -3,7 +3,7 @@ const { test, expect } = require("@playwright/test");
 const SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN;
 
 test.beforeAll(async ({ request }) => {
-    const res = await request.get(`/test-seed.php?token=${SEED_TOKEN}`);
+    const res = await request.get(`/tools/test-seed.php?token=${SEED_TOKEN}`);
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);

@@ -10,7 +10,7 @@ async function sync() {
         process.exit(1);
     }
 
-    const url = `${baseUrl}/sync-from-live.php?token=${token}`;
+    const url = `${baseUrl}/tools/sync-from-live.php?token=${token}`;
     console.log("🔄 Syncing live data to test site...");
 
     let res;

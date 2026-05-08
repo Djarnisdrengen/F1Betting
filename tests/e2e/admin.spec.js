@@ -90,7 +90,7 @@ test.describe("Admin: invite CRUD", () => {
     test.beforeAll(async ({ request }) => {
         // Remove any stale invite from a previous failed run
         await request.get(
-            `/test-seed.php?token=${SEED_TOKEN}&action=cleanup_e2e_invite`
+            `/tools/test-seed.php?token=${SEED_TOKEN}&action=cleanup_e2e_invite`
         );
     });
 
@@ -122,7 +122,7 @@ test.describe("Admin: test user management", () => {
     test.beforeAll(async ({ browser }) => {
         const page = await browser.newPage();
         const res = await page.goto(
-            `${process.env.BASE_URL}/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=create_e2e_user`
+            `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=create_e2e_user`
         );
         expect(res.status()).toBe(200);
         const body = JSON.parse(await page.textContent("body"));

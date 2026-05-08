@@ -3,7 +3,7 @@
 // ============================================
 // LOAD UTILITY FUNCTIONS
 // ============================================
-require_once __DIR__ . '/public/functions.php';
+require_once __DIR__ . '/public/includes/functions.php';
 
 // ============================================
 // KONFIGURATION - REDIGER DISSE VÆRDIER
