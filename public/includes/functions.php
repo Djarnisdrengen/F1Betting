@@ -1,6 +1,4 @@
 <?php
-require_once __DIR__ . '/../../config.php';
-
 // ============================================
 // UTILITY FUNCTIONS
 // Non-security-sensitive helper functions
