@@ -11,10 +11,31 @@
       "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting mv public/functions.php public/includes/functions.php)",
       "Bash(rm /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes/functions.php && git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting mv public/functions.php public/includes/functions.php)",
       "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting check-ignore config.php config.live.php config.test.php)",
-      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting ls-files config.php config.test.php config.live.php config.example.php)"
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting ls-files config.php config.test.php config.live.php config.example.php)",
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting log --oneline -5)",
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting ls-files config.php config.example.php)",
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting mv DEPLOYMENT.md build-deploy/DEPLOYMENT.md)",
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting commit -m \"Move DEPLOYMENT.md into build-deploy/\")",
+      "Bash(xargs grep -n '$lang ===')",
+      "Bash(grep -rn '$lang ===' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public '--include=*.php' ! -path '*/build-deploy/*' ! -path '*/tools/*')",
+      "Bash(grep -rn '$lang ===' . '--include=*.php')",
+      "Bash(cat > *)",
+      "Bash(grep -rn '$lang ===' .)",
+      "Bash(grep -n '$lang ===' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes/header.php)",
+      "Bash(grep -rn '$lang ===' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/ '--include=*.php')",
+      "Bash(grep -rn '$lang ===' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/admin.php)",
+      "Bash(mkdir -p /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/docs/superpowers/plans && grep -c \"lang === 'da'\" /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes/admin/users.php /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes/admin/settings.php /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes/admin/invites.php /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes/admin/bets.php)",
+      "Bash(sed -n '195,210p' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/admin.php)",
+      "Bash(sed -n '370,385p' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/admin.php)",
+      "Bash(sed -n '410,420p' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/admin.php)",
+      "Bash(sed -n '25,55p' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/register.php)",
+      "Bash(sed -n '44,68p' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/forgot_password.php)",
+      "Bash(sed -n '28,70p' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/reset_password.php)"
     ],
     "additionalDirectories": [
-      "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes"
+      "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",
+      "/tmp",
+      "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/docs/superpowers"
     ]
   }
 }

@@ -7,7 +7,7 @@
 define('APP_ENV', 'test');                          // 'test' | 'live'
 
 // ── DATABASE ──────────────────────────────────────────────────────────
-define('DB_HOST', 'db1234.simply.com');
+define('DB_HOST', 'myhost');
 define('DB_NAME', 'mydb');
 define('DB_USER', 'myuser');
 define('DB_PASS', 'secret');
@@ -25,7 +25,7 @@ define('PASSWORD_PEPPER',        'change-me-32-random-hex-chars');
 define('INTEGRATION_SEED_TOKEN', 'change-me');      // must match INTEGRATION_SEED_TOKEN in build-deploy/.env
 
 // ── SMTP (Simply.com) ─────────────────────────────────────────────────
-define('SMTP_HOST',       'websmtp.simply.com');    // or asmtp.unoeuro.com
+define('SMTP_HOST',       'smtp.example.dk');    
 define('SMTP_PORT',       587);                     // 587=TLS, 465=SSL
 define('SMTP_USER',       'noreply@example.dk');
 define('SMTP_PASS',       'email-password');

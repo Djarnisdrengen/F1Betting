@@ -57,7 +57,7 @@ if (isset($_POST['test_smtp'])) {
     </style>
 </head>
 <body>
-    <h1>🔧 SMTP Test</h1>
+    <h1SMTP Test</h1>
     
     <div class="card">
         <h3>Current SMTP Configuration</h3>
@@ -83,9 +83,9 @@ if (isset($_POST['test_smtp'])) {
     <div class="card">
         <h3>Result</h3>
         <?php if ($result['success']): ?>
-            <div class="success">✅ <?= htmlspecialchars($result['message']) ?></div>
+            <div class="success">PASS: <?= htmlspecialchars($result['message']) ?></div>
         <?php else: ?>
-            <div class="error">❌ <?= htmlspecialchars($result['message']) ?></div>
+            <div class="error">FAIL: <?= htmlspecialchars($result['message']) ?></div>
             <?php if (!empty($result['debug'])): ?>
                 <h4>Debug Log:</h4>
                 <div class="debug"><?= htmlspecialchars($result['debug']) ?></div>
@@ -95,7 +95,7 @@ if (isset($_POST['test_smtp'])) {
     <?php endif; ?>
     
     <div class="card">
-        <h3>⚠️ Security Warning</h3>
+        <h3>!! Security Warning !!</h3>
         <p>Delete this file (<code>test_smtp.php</code>) after testing!</p>
     </div>
 </body>
