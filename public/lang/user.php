@@ -91,6 +91,10 @@ return [
         'timestamp_update_info' => 'Timestamp vil blive opdateret når du gemmer ændringer.',
 
         // Validation errors
+        'select_all_positions'  => 'Vælg alle 3 positioner',
+        'no_same_driver'        => 'Kan ikke vælge samme kører flere gange',
+        'quali_match_error'     => 'Bet kan ikke matche kvalifikationsresultatet',
+        'combo_taken'           => 'Denne kombination er allerede taget',
         'error'                 => 'Der opstod en fejl',
         'invalid_credentials'   => 'Forkert email eller adgangskode',
         'email_exists'          => 'Email er allerede registreret',
@@ -159,6 +163,21 @@ return [
         'quali_restriction'     => 'Kvalifikationsresultat',
         'quali_restriction_desc' => 'Bet kan ikke matche kvalifikationsresultatet 100%. Uanset om systemet har fået blokeret for det eller ej er bettet ugyldigt.',
         'betting_pool_label'    => 'Betting pool',
+
+        // Leaderboard sorting rules
+        'rules_leaderboard_sort'  => 'Rangliste Sortering',
+        'leaderboard_sort_points' => 'Point (højeste først)',
+        'leaderboard_sort_stars'  => 'Ved lige point: Stjerner (flest først)',
+
+        // Example section
+        'rules_example'           => 'Eksempel',
+        'race_result_label'       => 'Løbsresultat',
+        'scenario_1'              => 'Scenarie 1',
+        'scenario_2_perfect'      => 'Scenarie 2 (Perfekt!)',
+        'your_bet'                => 'Dit bet',
+        'correct'                 => 'korrekt',
+        'wrong_but_top3_leclerc'  => 'forkert, men Leclerc i top 3',
+        'wrong_but_top3_norris'   => 'forkert, men Norris i top 3',
     ],
     'en' => [
         // Navigation
@@ -251,6 +270,10 @@ return [
         'timestamp_update_info' => 'Timestamp will be updated when you save changes.',
 
         // Validation errors
+        'select_all_positions'  => 'Select all 3 positions',
+        'no_same_driver'        => 'Cannot select same driver multiple times',
+        'quali_match_error'     => 'Bet cannot match qualifying result',
+        'combo_taken'           => 'This combination is already taken',
         'error'                 => 'An error occurred',
         'invalid_credentials'   => 'Invalid email or password',
         'email_exists'          => 'Email already registered',
@@ -319,5 +342,20 @@ return [
         'quali_restriction'     => 'Qualifying result',
         'quali_restriction_desc' => 'Bet cannot match qualifying result 100%. Even if the system did not block for it.',
         'betting_pool_label'    => 'Betting pool',
+
+        // Leaderboard sorting rules
+        'rules_leaderboard_sort'  => 'Leaderboard Sorting',
+        'leaderboard_sort_points' => 'Points (highest first)',
+        'leaderboard_sort_stars'  => 'If tied: Stars (most first)',
+
+        // Example section
+        'rules_example'           => 'Example',
+        'race_result_label'       => 'Race Result',
+        'scenario_1'              => 'Scenario 1',
+        'scenario_2_perfect'      => 'Scenario 2 (Perfect!)',
+        'your_bet'                => 'Your bet',
+        'correct'                 => 'correct',
+        'wrong_but_top3_leclerc'  => 'wrong, but Leclerc in top 3',
+        'wrong_but_top3_norris'   => 'wrong, but Norris in top 3',
     ],
 ];

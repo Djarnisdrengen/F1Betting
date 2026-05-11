@@ -67,11 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Validering
     if (!$p1 || !$p2 || !$p3) {
-        $error = $lang === 'da' ? 'Vælg alle 3 positioner' : 'Select all 3 positions';
+        $error = t('select_all_positions');
     } elseif ($p1 === $p2 || $p1 === $p3 || $p2 === $p3) {
-        $error = $lang === 'da' ? 'Kan ikke vælge samme kører flere gange' : 'Cannot select same driver multiple times';
+        $error = t('no_same_driver');
     } elseif ($bet['quali_p1'] && $p1 === $bet['quali_p1'] && $p2 === $bet['quali_p2'] && $p3 === $bet['quali_p3']) {
-        $error = $lang === 'da' ? 'Bet kan ikke matche kvalifikationsresultatet' : 'Bet cannot match qualifying result';
+        $error = t('quali_match_error');
     } else {
         // Tjek om kombinationen allerede er taget
         $isTaken = false;
@@ -81,9 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             }
         }
-        
+
         if ($isTaken) {
-            $error = $lang === 'da' ? 'Denne kombination er allerede taget' : 'This combination is already taken';
+            $error = t('combo_taken');
         } else {
             // Opdater bet
             $stmt = $db->prepare("UPDATE bets SET p1 = ?, p2 = ?, p3 = ?, placed_at = NOW() WHERE id = ?");
@@ -106,7 +106,7 @@ include __DIR__ . '/includes/header.php';
                     <i class="fas fa-edit" style="color: white; font-size: 1.25rem;"></i>
                 </div>
                 <div>
-                    <h2 style="margin: 0;"><?= $lang === 'da' ? 'Rediger Bet' : 'Edit Bet' ?></h2>
+                    <h2 style="margin: 0;"><?= t('edit_bet_title') ?></h2>
                     <p class="text-muted" style="margin: 0;">
                         <?= escape($bet['race_name']) ?> · <?= escape($bet['location']) ?>
                     </p>
@@ -139,9 +139,7 @@ include __DIR__ . '/includes/header.php';
         <div class="card-body">
             <div class="alert" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa;">
                 <i class="fas fa-info-circle"></i> 
-                <?= $lang === 'da' 
-                    ? 'Timestamp vil blive opdateret når du gemmer ændringer.' 
-                    : 'Timestamp will be updated when you save changes.' ?>
+                <?= t('timestamp_update_info') ?>
             </div>
             
             <?php if ($error): ?>

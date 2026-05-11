@@ -18,27 +18,27 @@ $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
 include __DIR__ . '/includes/header.php';
 ?>
 
-<h1 class="mb-3"><i class="fas fa-book text-accent"></i> <?= $lang === 'da' ? 'Spilleregler' : 'Betting Rules' ?></h1>
+<h1 class="mb-3"><i class="fas fa-book text-accent"></i> <?= t('rules_title') ?></h1>
 
 <div class="rules-container">
         <!-- Betting Window -->
         <div class="card mb-2">
             <div class="card-header">
-                <h3><i class="fas fa-clock text-accent"></i> <?= $lang === 'da' ? 'Betting Vindue' : 'Betting Window' ?></h3>
+                <h3><i class="fas fa-clock text-accent"></i> <?= t('rules_betting_window') ?></h3>
             </div>
             <div class="card-body">
                 <table class="rules-table">
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Åbner' : 'Opens' ?></strong></td>
-                        <td><?= $lang === 'da' ? $bettingWindowHours . ' timer før løbets starttid' : $bettingWindowHours . ' hours before race start time' ?></td>
+                        <td><strong><?= t('opens') ?></strong></td>
+                        <td><?= sprintf(t('betting_opens_hours'), $bettingWindowHours) ?></td>
                     </tr>
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Lukker' : 'Closes' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'Ved løbets starttid' : 'At race start time' ?></td>
+                        <td><strong><?= t('closes') ?></strong></td>
+                        <td><?= t('at_race_start') ?></td>
                     </tr>
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Rediger' : 'Edit' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'Bets kan redigeres så længe vinduet er åbent' : 'Bets can be edited while window is open' ?></td>
+                        <td><strong><?= t('edit_label') ?></strong></td>
+                        <td><?= t('bets_editable') ?></td>
                     </tr>
                 </table>
             </div>
@@ -47,32 +47,32 @@ include __DIR__ . '/includes/header.php';
         <!-- Points System -->
         <div class="card mb-2">
             <div class="card-header">
-                <h3><i class="fas fa-star text-accent"></i> <?= $lang === 'da' ? 'Point System' : 'Points System' ?></h3>
+                <h3><i class="fas fa-star text-accent"></i> <?= t('rules_points_system') ?></h3>
             </div>
             <div class="card-body">
                 <table class="rules-table">
                     <thead>
                         <tr>
-                            <th><?= $lang === 'da' ? 'Position' : 'Position' ?></th>
-                            <th><?= $lang === 'da' ? 'Korrekt Forudsigelse' : 'Correct Prediction' ?></th>
+                            <th><?= t('position') ?></th>
+                            <th><?= t('correct_prediction') ?></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><span class="position-badge position-1">P1</span></td>
-                            <td><strong><?= $pointsP1 ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></td>
+                            <td><strong><?= $pointsP1 ?> <?= t('points_label') ?></strong></td>
                         </tr>
                         <tr>
                             <td><span class="position-badge position-2">P2</span></td>
-                            <td><strong><?= $pointsP2 ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></td>
+                            <td><strong><?= $pointsP2 ?> <?= t('points_label') ?></strong></td>
                         </tr>
                         <tr>
                             <td><span class="position-badge position-3">P3</span></td>
-                            <td><strong><?= $pointsP3 ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></td>
+                            <td><strong><?= $pointsP3 ?> <?= t('points_label') ?></strong></td>
                         </tr>
                         <tr>
                             <td><i class="fas fa-plus-circle text-accent"></i> <strong>Bonus</strong></td>
-                            <td>+<?= $pointsWrongPos ?> <?= $lang === 'da' ? 'point hvis kører er i top 3, men forkert position' : 'points if driver is in top 3 but wrong position' ?></td>
+                            <td>+<?= $pointsWrongPos ?> <?= t('wrong_pos_rule') ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -82,13 +82,13 @@ include __DIR__ . '/includes/header.php';
         <!-- Stars -->
         <div class="card mb-2">
             <div class="card-header">
-                <h3><span class="star">★</span> <?= $lang === 'da' ? 'Stjerner' : 'Stars' ?></h3>
+                <h3><span class="star">★</span> <?= t('rules_stars') ?></h3>
             </div>
             <div class="card-body">
                 <table class="rules-table">
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Perfekt bet' : 'Perfect bet' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'Hvis alle 3 positioner er korrekte, modtager du' : 'If all 3 positions are correct, you receive' ?> <span class="star">★</span> 1 <?= $lang === 'da' ? 'stjerne' : 'star' ?></td>
+                        <td><strong><?= t('perfect_bet') ?></strong></td>
+                        <td><?= t('perfect_bet_stars_desc') ?> <span class="star">★</span> 1 <?= t('star') ?></td>
                     </tr>
                 </table>
             </div>
@@ -97,13 +97,13 @@ include __DIR__ . '/includes/header.php';
         <!-- Betting pool -->
         <div class="card mb-2">
             <div class="card-header">
-                <h3><span class="star">$</span> <?= $lang === 'da' ? 'Puljen' : 'Betting pool' ?></h3>
+                <h3><span class="star">$</span> <?= t('rules_pool') ?></h3>
             </div>
             <div class="card-body">
                 <table class="rules-table">
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Perfekt bet' : 'Perfect bet' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'Når du får en stjerne vinder du også puljen' : 'If you get a start you also win the betting pool ' ?> <span class="star">$</span>.</td>
+                        <td><strong><?= t('perfect_bet') ?></strong></td>
+                        <td><?= t('pool_win_desc') ?> <span class="star">$</span>.</td>
                     </tr>
                 </table>
             </div>
@@ -112,25 +112,25 @@ include __DIR__ . '/includes/header.php';
         <!-- Restrictions -->
         <div class="card mb-2">
             <div class="card-header">
-                <h3><i class="fas fa-ban text-accent"></i> <?= $lang === 'da' ? 'Restriktioner' : 'Restrictions' ?></h3>
+                <h3><i class="fas fa-ban text-accent"></i> <?= t('rules_restrictions') ?></h3>
             </div>
             <div class="card-body">
                 <table class="rules-table">
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Én bet per løb' : 'One bet per race' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'Hver bruger kan kun have ét bet per løb' : 'Each user can only have one bet per race' ?></td>
+                        <td><strong><?= t('one_bet_per_race') ?></strong></td>
+                        <td><?= t('one_bet_per_race_desc') ?></td>
                     </tr>
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Ingen duplikater' : 'No duplicates' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'Samme kører kan ikke vælges flere gange i ét bet' : 'Same driver cannot be selected multiple times in one bet' ?></td>
+                        <td><strong><?= t('no_duplicates') ?></strong></td>
+                        <td><?= t('no_duplicates_desc') ?></td>
                     </tr>
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Unik kombination' : 'Unique combination' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'To brugere kan ikke have identisk P1/P2/P3 kombination' : 'Two users cannot have identical P1/P2/P3 combination' ?></td>
+                        <td><strong><?= t('unique_combo') ?></strong></td>
+                        <td><?= t('unique_combo_desc') ?></td>
                     </tr>
                     <tr>
-                        <td><strong><?= $lang === 'da' ? 'Kvalifikationsresultat' : 'Qualifying result' ?></strong></td>
-                        <td><?= $lang === 'da' ? 'Bet kan ikke matche kvalifikationsresultatet 100%. Uanset om systemet har fået blokeret for det eller ej er bettet ugyldigt.' : 'Bet cannot match qualifying result 100%. Even if the system did not block for it.' ?></td>
+                        <td><strong><?= t('quali_restriction') ?></strong></td>
+                        <td><?= t('quali_restriction_desc') ?></td>
                     </tr>
                 </table>
             </div>
@@ -139,17 +139,17 @@ include __DIR__ . '/includes/header.php';
         <!-- Leaderboard Sorting -->
         <div class="card mb-2">
             <div class="card-header">
-                <h3><i class="fas fa-trophy text-accent"></i> <?= $lang === 'da' ? 'Rangliste Sortering' : 'Leaderboard Sorting' ?></h3>
+                <h3><i class="fas fa-trophy text-accent"></i> <?= t('rules_leaderboard_sort') ?></h3>
             </div>
             <div class="card-body">
                 <table class="rules-table">
                     <tr>
                         <td><strong>1.</strong></td>
-                        <td><?= $lang === 'da' ? 'Point (højeste først)' : 'Points (highest first)' ?></td>
+                        <td><?= t('leaderboard_sort_points') ?></td>
                     </tr>
                     <tr>
                         <td><strong>2.</strong></td>
-                        <td><?= $lang === 'da' ? 'Ved lige point: Stjerner (flest først)' : 'If tied: Stars (most first)' ?></td>
+                        <td><?= t('leaderboard_sort_stars') ?></td>
                     </tr>
                 </table>
             </div>
@@ -158,32 +158,32 @@ include __DIR__ . '/includes/header.php';
         <!-- Example -->
         <div class="card mb-2">
             <div class="card-header">
-                <h3><i class="fas fa-lightbulb text-accent"></i> <?= $lang === 'da' ? 'Eksempel' : 'Example' ?></h3>
+                <h3><i class="fas fa-lightbulb text-accent"></i> <?= t('rules_example') ?></h3>
             </div>
             <div class="card-body">
                 <div class="example-box">
-                    <p><strong><?= $lang === 'da' ? 'Løbsresultat' : 'Race Result' ?>:</strong> P1 = Verstappen, P2 = Norris, P3 = Leclerc</p>
+                    <p><strong><?= t('race_result_label') ?>:</strong> P1 = Verstappen, P2 = Norris, P3 = Leclerc</p>
                 </div>
                 
                 <div class="example-scenario mt-2">
-                    <h4><?= $lang === 'da' ? 'Scenarie 1' : 'Scenario 1' ?>:</h4>
-                    <p><strong><?= $lang === 'da' ? 'Dit bet' : 'Your bet' ?>:</strong> P1 = Verstappen, P2 = Leclerc, P3 = Norris</p>
+                    <h4><?= t('scenario_1') ?>:</h4>
+                    <p><strong><?= t('your_bet') ?>:</strong> P1 = Verstappen, P2 = Leclerc, P3 = Norris</p>
                     <ul class="example-calc">
-                        <li><span class="text-accent">✓</span> P1 <?= $lang === 'da' ? 'korrekt' : 'correct' ?>: <strong>+<?= $pointsP1 ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></li>
-                        <li><span class="text-muted">○</span> P2 <?= $lang === 'da' ? 'forkert, men Leclerc i top 3' : 'wrong, but Leclerc in top 3' ?>: <strong>+<?= $pointsWrongPos ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></li>
-                        <li><span class="text-muted">○</span> P3 <?= $lang === 'da' ? 'forkert, men Norris i top 3' : 'wrong, but Norris in top 3' ?>: <strong>+<?= $pointsWrongPos ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></li>
-                        <li class="total"><strong>Total: <?= $pointsP1 + $pointsWrongPos + $pointsWrongPos ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></li>
+                        <li><span class="text-accent">✓</span> P1 <?= t('correct') ?>: <strong>+<?= $pointsP1 ?> <?= t('points_label') ?></strong></li>
+                        <li><span class="text-muted">○</span> P2 <?= t('wrong_but_top3_leclerc') ?>: <strong>+<?= $pointsWrongPos ?> <?= t('points_label') ?></strong></li>
+                        <li><span class="text-muted">○</span> P3 <?= t('wrong_but_top3_norris') ?>: <strong>+<?= $pointsWrongPos ?> <?= t('points_label') ?></strong></li>
+                        <li class="total"><strong>Total: <?= $pointsP1 + $pointsWrongPos + $pointsWrongPos ?> <?= t('points_label') ?></strong></li>
                     </ul>
                 </div>
                 
                 <div class="example-scenario mt-2">
-                    <h4><?= $lang === 'da' ? 'Scenarie 2 (Perfekt!)' : 'Scenario 2 (Perfect!)' ?> <span class="star">★</span></h4>
-                    <p><strong><?= $lang === 'da' ? 'Dit bet' : 'Your bet' ?>:</strong> P1 = Verstappen, P2 = Norris, P3 = Leclerc</p>
+                    <h4><?= t('scenario_2_perfect') ?> <span class="star">★</span></h4>
+                    <p><strong><?= t('your_bet') ?>:</strong> P1 = Verstappen, P2 = Norris, P3 = Leclerc</p>
                     <ul class="example-calc">
-                        <li><span class="text-accent">✓</span> P1 <?= $lang === 'da' ? 'korrekt' : 'correct' ?>: <strong>+<?= $pointsP1 ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></li>
-                        <li><span class="text-accent">✓</span> P2 <?= $lang === 'da' ? 'korrekt' : 'correct' ?>: <strong>+<?= $pointsP2 ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></li>
-                        <li><span class="text-accent">✓</span> P3 <?= $lang === 'da' ? 'korrekt' : 'correct' ?>: <strong>+<?= $pointsP3 ?> <?= $lang === 'da' ? 'point' : 'points' ?></strong></li>
-                        <li class="total"><strong>Total: <?= $pointsP1 + $pointsP2 + $pointsP3 ?> <?= $lang === 'da' ? 'point' : 'points' ?> + <span class="star">★</span> 1 <?= $lang === 'da' ? 'stjerne' : 'star' ?></strong></li>
+                        <li><span class="text-accent">✓</span> P1 <?= t('correct') ?>: <strong>+<?= $pointsP1 ?> <?= t('points_label') ?></strong></li>
+                        <li><span class="text-accent">✓</span> P2 <?= t('correct') ?>: <strong>+<?= $pointsP2 ?> <?= t('points_label') ?></strong></li>
+                        <li><span class="text-accent">✓</span> P3 <?= t('correct') ?>: <strong>+<?= $pointsP3 ?> <?= t('points_label') ?></strong></li>
+                        <li class="total"><strong>Total: <?= $pointsP1 + $pointsP2 + $pointsP3 ?> <?= t('points_label') ?> + <span class="star">★</span> 1 <?= t('star') ?></strong></li>
                     </ul>
                 </div>
             </div>

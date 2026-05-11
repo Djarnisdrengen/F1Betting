@@ -68,11 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Validering
     if (!$p1 || !$p2 || !$p3) {
-        $error = $lang === 'da' ? 'Vælg alle 3 positioner' : 'Select all 3 positions';
+        $error = t('select_all_positions');
     } elseif ($p1 === $p2 || $p1 === $p3 || $p2 === $p3) {
-        $error = $lang === 'da' ? 'Kan ikke vælge samme kører flere gange' : 'Cannot select same driver multiple times';
+        $error = t('no_same_driver');
     } elseif ($race['quali_p1'] && $p1 === $race['quali_p1'] && $p2 === $race['quali_p2'] && $p3 === $race['quali_p3']) {
-        $error = $lang === 'da' ? 'Bet kan ikke matche kvalifikationsresultatet' : 'Bet cannot match qualifying result';
+        $error = t('quali_match_error');
     } else {
         // Tjek om kombinationen allerede er taget
         $isTaken = false;
@@ -82,9 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             }
         }
-        
+
         if ($isTaken) {
-            $error = $lang === 'da' ? 'Denne kombination er allerede taget' : 'This combination is already taken';
+            $error = t('combo_taken');
         } else {
             // Opret bet
             $betId = generateUUID();
