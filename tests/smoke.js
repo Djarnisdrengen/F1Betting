@@ -16,7 +16,7 @@ async function runSmoke(baseUrl) {
     console.log(`\n🧪 Running smoke tests against ${baseUrl}...`);
     let failed = 0;
     for (const check of CHECKS) {
-        const label = `GET ${check.path}`.padEnd(28);
+        const label = `GET ${check.path} (${check.contains})`.padEnd(44);
         try {
             const res = await fetch(`${baseUrl}${check.path}`);
             const body = await res.text();
@@ -24,7 +24,7 @@ async function runSmoke(baseUrl) {
             if (ok) {
                 console.log(`  ✅ ${label} → 200`);
             } else {
-                console.log(`  ❌ ${label} → ${res.status} (expected 200 with content)`);
+                console.log(`  ❌ ${label} → ${res.status} (missing "${check.contains}")`);
                 failed++;
             }
         } catch (err) {
