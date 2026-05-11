@@ -281,9 +281,9 @@ class SMTPMailer {
     private function sendViaMail($to, $subject, $message, $headers) {
         $boundary = md5(uniqid(time()));
 
+        $fromEmail = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : '';
         $headers = "MIME-Version: 1.0\r\n";
-        //$headers .= "From: ff1k@helvegpovlsen.dk\r\n";
-        $headers .= "From: info@hpovlsen.dk\r\n";
+        $headers .= "From: {$fromEmail}\r\n";
         $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
 
         $adminEmail = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : '';
