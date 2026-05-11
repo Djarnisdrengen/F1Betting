@@ -32,6 +32,10 @@ define('SMTP_PASS',       'email-password');
 define('SMTP_FROM_EMAIL', 'noreply@example.dk');
 define('SMTP_FROM_NAME',  'F1 Betting');
 
+// ── MAISAC TESTING ───────────────────────────────────────────────────────
+//define('MAILSAC_APIKEY',  'k_d3NqjdXXgJH9bpYf46Cp43o5k1vQ2cN1Sdo0b2');
+//ff1k.bob.ross@mailsac.com / vFxOG09FD2kkNr0LQ3c8Q
+
 // ── CRON ──────────────────────────────────────────────────────────────
 define('CRON_SECRET',   'change-me');
 define('CRON_LOG_FILE', __DIR__ . '/cron_import_log.txt');
