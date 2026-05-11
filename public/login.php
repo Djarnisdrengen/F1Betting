@@ -63,7 +63,7 @@ include __DIR__ . '/includes/header.php';
             </form>
             
             <p class="text-center mt-2 text-muted">
-                <a href="forgot_password.php" class="text-accent"><?= $lang === 'da' ? 'Glemt adgangskode?' : 'Forgot password?' ?></a>
+                <a href="forgot_password.php" class="text-accent"><?= t('forgot_password') ?></a>
             </p>
         </div>
     </div>

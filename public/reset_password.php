@@ -29,9 +29,7 @@ if ($token) {
     if ($resetRequest) {
         $validToken = true;
     } else {
-        $error = $lang === 'da' 
-            ? 'Ugyldigt eller udløbet link. Anmod om et nyt.' 
-            : 'Invalid or expired link. Request a new one.';
+        $error = t('token_invalid_expired');
     }
 }
 
@@ -43,13 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
     $confirmPassword = $_POST['confirm_password'] ?? '';
     
     if (strlen($password) < 6) {
-        $error = $lang === 'da' 
-            ? 'Adgangskoden skal være mindst 6 tegn' 
-            : 'Password must be at least 6 characters';
+        $error = t('passwords_min_6');
     } elseif ($password !== $confirmPassword) {
-        $error = $lang === 'da' 
-            ? 'Adgangskoderne matcher ikke' 
-            : 'Passwords do not match';
+        $error = t('passwords_no_match');
     } else {
         // Update password
         $hashedPassword = hashPassword($password);
@@ -60,9 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
         $stmt = $db->prepare("UPDATE password_resets SET used = 1 WHERE token = ?");
         $stmt->execute([$token]);
         
-        $success = $lang === 'da' 
-            ? 'Din adgangskode er blevet nulstillet. Du kan nu logge ind.' 
-            : 'Your password has been reset. You can now log in.';
+        $success = t('password_reset_done');
         $validToken = false; // Hide form after success
     }
 }
@@ -76,7 +68,7 @@ include __DIR__ . '/includes/header.php';
             <div style="width: 64px; height: 64px; background: var(--f1-red); border-radius: 16px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
                 <i class="fas fa-lock" style="font-size: 2rem; color: white;"></i>
             </div>
-            <h2><?= $lang === 'da' ? 'Nulstil adgangskode' : 'Reset Password' ?></h2>
+            <h2><?= t('reset_password_title') ?></h2>
             <?php if ($validToken && isset($resetRequest)): ?>
                 <p class="text-muted"><?= escape($resetRequest['email']) ?></p>
             <?php endif; ?>
@@ -89,35 +81,35 @@ include __DIR__ . '/includes/header.php';
             <?php if ($success): ?>
                 <div class="alert alert-success"><?= escape($success) ?></div>
                 <a href="login.php" class="btn btn-primary" style="width: 100%;">
-                    <?= $lang === 'da' ? 'Gå til login' : 'Go to login' ?>
+                    <?= t('go_to_login') ?>
                 </a>
             <?php elseif ($validToken): ?>
                 <form method="POST">
                     <?= csrfField() ?>
                     <div class="form-group">
-                        <label class="form-label"><?= $lang === 'da' ? 'Ny adgangskode' : 'New password' ?></label>
+                        <label class="form-label"><?= t('new_password') ?></label>
                         <input type="password" name="password" class="form-input" required minlength="6" placeholder="••••••••">
                     </div>
                     <div class="form-group">
-                        <label class="form-label"><?= $lang === 'da' ? 'Bekræft adgangskode' : 'Confirm password' ?></label>
+                        <label class="form-label"><?= t('confirm_password') ?></label>
                         <input type="password" name="confirm_password" class="form-input" required minlength="6" placeholder="••••••••">
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <?= $lang === 'da' ? 'Nulstil adgangskode' : 'Reset password' ?>
+                        <?= t('reset_password_btn') ?>
                     </button>
                 </form>
             <?php else: ?>
                 <p class="text-center text-muted mb-2">
-                    <?= $lang === 'da' ? 'Linket er ugyldigt eller udløbet.' : 'The link is invalid or expired.' ?>
+                    <?= t('link_invalid_expired') ?>
                 </p>
                 <a href="forgot_password.php" class="btn btn-primary" style="width: 100%;">
-                    <?= $lang === 'da' ? 'Anmod om nyt link' : 'Request new link' ?>
+                    <?= t('request_new_link') ?>
                 </a>
             <?php endif; ?>
             
             <p class="text-center mt-2 text-muted">
                 <a href="login.php" class="text-accent">
-                    <i class="fas fa-arrow-left"></i> <?= $lang === 'da' ? 'Tilbage til login' : 'Back to login' ?>
+                    <i class="fas fa-arrow-left"></i> <?= t('back_to_login') ?>
                 </a>
             </p>
         </div>

@@ -26,14 +26,10 @@ if ($token) {
         $inviteValid = true;
         $inviteEmail = $invite['email'];
     } else {
-        $error = $lang === 'da' 
-            ? 'Ugyldigt eller udløbet invitation. Kontakt administrator for en ny invitation.' 
-            : 'Invalid or expired invite. Contact administrator for a new invitation.';
+        $error = t('invalid_invite');
     }
 } else {
-    $error = $lang === 'da' 
-        ? 'Du skal have en invitation for at registrere dig. Kontakt administrator.' 
-        : 'You need an invitation to register. Contact administrator.';
+    $error = t('invite_required');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $inviteValid) {
@@ -45,9 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $inviteValid) {
     
     // Email skal matche invite email
     if ($email !== $inviteEmail) {
-        $error = $lang === 'da' 
-            ? 'Email skal matche invitationens email: ' . escape($inviteEmail) 
-            : 'Email must match the invitation email: ' . escape($inviteEmail);
+        $error = sprintf(t('email_must_match_invite'), escape($inviteEmail));
     } elseif ($email && $password && strlen($password) >= 6) {
         $db = getDB();
         
@@ -77,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $inviteValid) {
             exit;
         }
     } else {
-        $error = $lang === 'da' ? 'Adgangskode skal være mindst 6 tegn' : 'Password must be at least 6 characters';
+        $error = t('password_min_length');
     }
 }
 
@@ -92,7 +86,7 @@ include __DIR__ . '/includes/header.php';
             </div>
             <h2><?= t('register') ?></h2>
             <?php if ($inviteValid): ?>
-                <p class="text-muted"><?= $lang === 'da' ? 'Du er inviteret!' : 'You are invited!' ?></p>
+                <p class="text-muted"><?= t('you_are_invited') ?></p>
             <?php endif; ?>
         </div>
         <div class="card-body">
@@ -111,7 +105,7 @@ include __DIR__ . '/includes/header.php';
                     <div class="form-group">
                         <label class="form-label"><?= t('email') ?></label>
                         <input type="email" name="email" class="form-input" required value="<?= escape($inviteEmail) ?>" readonly style="background: var(--bg-secondary); cursor: not-allowed;">
-                        <small class="text-muted"><?= $lang === 'da' ? 'Email er sat af invitation' : 'Email is set by invitation' ?></small>
+                        <small class="text-muted"><?= t('email_set_by_invite') ?></small>
                     </div>
                     <div class="form-group">
                         <label class="form-label"><?= t('password') ?></label>
@@ -122,7 +116,7 @@ include __DIR__ . '/includes/header.php';
             <?php endif; ?>
             
             <p class="text-center mt-2 text-muted">
-                <?= $lang === 'da' ? 'Har du allerede en konto?' : 'Already have an account?' ?> 
+                <?= t('already_have_account') ?>
                 <a href="login.php" class="text-accent"><?= t('login') ?></a>
             </p>
         </div>

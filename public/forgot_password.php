@@ -45,23 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = sendPasswordResetEmail($user['email'], $user['display_name'], $resetLink, $lang);
             
             if ($result['success']) {
-                $success = $lang === 'da' 
-                    ? 'En email med nulstillingslink er sendt til din email.' 
-                    : 'An email with reset link has been sent to your email.';
+                $success = t('reset_link_sent');
             } else {
                 // If mail fails, show error (or link for testing)
-                $success = $lang === 'da' 
-                    ? 'Email kunne ikke sendes. Kontakt administrator.' 
-                    : 'Email could not be sent. Contact administrator.';
+                $success = t('reset_link_failed');
             }
         } else {
             // Don't reveal if email exists or not (security)
-            $success = $lang === 'da' 
-                ? 'Hvis emailen findes i systemet, vil du modtage et nulstillingslink.' 
-                : 'If the email exists in our system, you will receive a reset link.';
+            $success = t('reset_link_check_email');
         }
     } else {
-        $error = $lang === 'da' ? 'Indtast en gyldig email' : 'Enter a valid email';
+        $error = t('enter_valid_email');
     }
 }
 
@@ -74,8 +68,8 @@ include __DIR__ . '/includes/header.php';
             <div style="width: 64px; height: 64px; background: var(--f1-red); border-radius: 16px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
                 <i class="fas fa-key" style="font-size: 2rem; color: white;"></i>
             </div>
-            <h2><?= $lang === 'da' ? 'Glemt adgangskode' : 'Forgot Password' ?></h2>
-            <p class="text-muted"><?= $lang === 'da' ? 'Indtast din email for at modtage et nulstillingslink' : 'Enter your email to receive a reset link' ?></p>
+            <h2><?= t('forgot_password_title') ?></h2>
+            <p class="text-muted"><?= t('forgot_password_desc') ?></p>
         </div>
         <div class="card-body">
             <?php if ($error): ?>
@@ -91,13 +85,13 @@ include __DIR__ . '/includes/header.php';
                         <input type="email" name="email" class="form-input" required placeholder="din@email.dk">
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <?= $lang === 'da' ? 'Send nulstillingslink' : 'Send reset link' ?>
+                        <?= t('send_reset_link') ?>
                     </button>
                 </form>
             <?php endif; ?>
             
             <p class="text-center mt-2 text-muted">
-                <a href="login.php" class="text-accent"><?= $lang === 'da' ? 'Tilbage til login' : 'Back to login' ?></a>
+                <a href="login.php" class="text-accent"><?= t('back_to_login') ?></a>
             </p>
         </div>
     </div>
