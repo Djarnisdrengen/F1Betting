@@ -42,8 +42,8 @@ include __DIR__ . '/includes/header.php';
 <?php if (isset($_GET['error'])): ?>
     <?php 
     $errorMessages = [
-        'already_bet' => $lang === 'da' ? 'Du har allerede placed et bet på dette løb.' : 'You have already placed a bet on this race.',
-        'not_in_competition' => $lang === 'da' ? 'Du er ikke medlem af konkurrencen. Kontakt administrator.' : 'You are not a member of the competition. Contact administrator.',
+        'already_bet' => t('already_bet_long'),
+        'not_in_competition' => t('not_in_competition'),
     ];
     $errorMsg = $errorMessages[$_GET['error']] ?? 'An error occurred.';
     ?>
@@ -80,12 +80,12 @@ include __DIR__ . '/includes/header.php';
                         <?= escape($race['name']) ?>
                         <?php if ($hasBet): ?>
                             <span class="badge" style="background: #059669; color: white; margin-left: 0.5rem;">
-                                <i class="fas fa-check"></i> <?= $lang === 'da' ? 'Bet placeret' : 'Bet placed' ?>
+                                <i class="fas fa-check"></i> <?= t('bet_placed_label') ?>
                             </span>
                         <?php endif; ?>
                         <?php if ($bettingpool_won): ?>
                             <span class="badge status-pool-won">
-                                <i class="fas fa-check"></i> <?= $lang === 'da' ? 'Puljen vundet' : 'Bettingpool won' ?>
+                                <i class="fas fa-check"></i> <?= t('pool_won') ?>
                             </span>
                         <?php endif; ?>
                     </h3>
@@ -98,13 +98,13 @@ include __DIR__ . '/includes/header.php';
                         <?php if ($status['status'] === 'pending'): ?>
                             <div class="countdown-timer" data-opens="<?= $bettingOpens->format('c') ?>">
                                 <i class="fas fa-hourglass-half"></i>
-                                <?= $lang === 'da' ? 'Betting åbner om' : 'Betting opens in' ?>:
+                                <?= t('betting_opens_in') ?>:
                                 <span class="countdown-value">--</span>
                             </div>
                         <?php elseif ($status['status'] === 'open'): ?>
                             <div class="countdown-timer betting-open" data-closes="<?= $raceDateTime->format('c') ?>">
                                 <i class="fas fa-stopwatch"></i>
-                                <?= $lang === 'da' ? 'Betting lukker om' : 'Betting closes in' ?>:
+                                <?= t('betting_closes_in') ?>:
                                 <span class="countdown-value">--</span>
                             </div>
                         <?php endif; ?>
@@ -113,7 +113,7 @@ include __DIR__ . '/includes/header.php';
                     <?php if ($race['bettingpool_size']): ?>
                         <div class="countdown-timer bettingpool_size">
                             <i class="fas fa-dollar-sign bettingpool_size"></i>
-                            <?= $lang === 'da' ? 'Puljestørrelse: ' : 'Pool size: ' ?>
+                            <?= t('pool_size') ?>
                             <span class="bettingpool_size">
                                 <?= $race['bettingpool_size'] ?>
                             </span>
@@ -189,7 +189,7 @@ include __DIR__ . '/includes/header.php';
                                 <div>
                                     <strong class="flex items-center gap-1">
                                         <?= escape($bet['display_name'] ?: $bet['email']) ?>
-                                        <?php if ($isMyBet): ?><span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= $lang === 'da' ? 'DIG' : 'YOU' ?></span><?php endif; ?>
+                                        <?php if ($isMyBet): ?><span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= t('you_badge') ?></span><?php endif; ?>
                                         <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
                                     </strong>
                                     <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>

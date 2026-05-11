@@ -5,7 +5,7 @@
     
     <footer class="footer">
         <div class="container">
-            <p>&copy; 1996-<?= date("Y") ?> - <?= $lang === 'da' ? 'Kontakt:' : 'Contact:' ?> info@<?= SITE_DOMAIN ?></p>
+            <p>&copy; 1996-<?= date("Y") ?> - <?= t('contact') ?> info@<?= SITE_DOMAIN ?></p>
         </div>
 
     </footer>
@@ -97,7 +97,7 @@
             if (!countdownEl) return;
             
             if (diff <= 0) {
-                countdownEl.textContent = '<?= $lang === 'da' ? 'Nu!' : 'Now!' ?>';
+                countdownEl.textContent = '<?= t('countdown_now') ?>';
                 return;
             }
             

@@ -112,7 +112,7 @@ include __DIR__ . '/includes/header.php';
         <?php if (empty($upcomingRaces)): ?>
             <div class="card">
                 <div class="card-body text-center text-muted">
-                    <?= $lang === 'da' ? 'Ingen kommende løb' : 'No upcoming races' ?>
+                    <?= t('no_upcoming_races') ?>
                 </div>
             </div>
         <?php else: ?>
@@ -150,13 +150,13 @@ include __DIR__ . '/includes/header.php';
                                 <?php if ($status['status'] === 'pending'): ?>
                                     <div class="countdown-timer" data-opens="<?= $bettingOpens->format('c') ?>">
                                         <i class="fas fa-hourglass-half"></i>
-                                        <?= $lang === 'da' ? 'Betting åbner om' : 'Betting opens in' ?>:
+                                        <?= t('betting_opens_in') ?>:
                                         <span class="countdown-value" id="countdown-<?= $race['id'] ?>">--</span>
                                     </div>
                                 <?php elseif ($status['status'] === 'open'): ?>
                                     <div class="countdown-timer betting-open" data-closes="<?= $raceDateTime->format('c') ?>">
                                         <i class="fas fa-stopwatch"></i>
-                                        <?= $lang === 'da' ? 'Betting lukker om' : 'Betting closes in' ?>:
+                                        <?= t('betting_closes_in') ?>:
                                         <span class="countdown-value" id="countdown-<?= $race['id'] ?>">--</span>
                                     </div>
                                 <?php endif; ?>
@@ -167,7 +167,7 @@ include __DIR__ . '/includes/header.php';
                         <?php if ($race['bettingpool_size']): ?>
                             <div class="countdown-timer bettingpool_size">
                                 <i class="fas fa-dollar-sign bettingpool_size"></i>
-                                <?= $lang === 'da' ? 'Puljestørrelse: ' : 'Pool size: ' ?>
+                                <?= t('pool_size') ?>
                                 <span class="bettingpool_size">
                                     <?= $race['bettingpool_size'] ?>
                                 </span>
@@ -240,7 +240,7 @@ include __DIR__ . '/includes/header.php';
                                             <div>
                                                 <strong class="flex items-center gap-1">
                                                     <?= escape($bet['display_name'] ?: $bet['email']) ?>
-                                                    <?php if ($isMyBet): ?><span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= $lang === 'da' ? 'DIG' : 'YOU' ?></span><?php endif; ?>
+                                                    <?php if ($isMyBet): ?><span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= t('you_badge') ?></span><?php endif; ?>
                                                     <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
                                                     <?php if ($bet['points'] > 0): ?>
                                                         <!-- <span class="badge" style="background: var(--f1-red); color: white;"><?= $bet['points'] ?> pts</span> -->

@@ -113,7 +113,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     </a>
                     <?php if ($currentUser): ?>
                     <a href="rules.php" class="nav-link <?= $currentPage === 'rules' ? 'active' : '' ?>">
-                        <i class="fas fa-book"></i> <span><?= $lang === 'da' ? 'Regler' : 'Rules' ?></span>
+                        <i class="fas fa-book"></i> <span><?= t('rules') ?></span>
                     </a>
                     <?php endif; ?>
                     <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
@@ -139,11 +139,11 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         <div class="mobile-controls">
                             <a href="?toggle_theme=1" class="btn btn-ghost btn-icon">
                                 <i class="fas fa-<?= $theme === 'dark' ? 'sun' : 'moon' ?>"></i>
-                                <span><?= $lang === 'da' ? 'Skift tema' : 'Toggle theme' ?></span>
+                                <span><?= t('toggle_theme') ?></span>
                             </a>
                             <a href="?toggle_lang=1" class="btn btn-ghost btn-icon">
                                 <i class="fas fa-globe"></i>
-                                <span><?= $lang === 'da' ? 'English' : 'Dansk' ?></span>
+                                <span><?= t('lang_switch_label') ?></span>
                             </a>
                         </div>
                     </div>
@@ -151,12 +151,12 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                 
                 <div class="controls desktop-only">
                     <!-- Theme Toggle -->
-                    <a href="?toggle_theme=1" class="btn btn-ghost btn-icon" title="<?= $lang === 'da' ? 'Skift tema' : 'Toggle theme' ?>">
+                    <a href="?toggle_theme=1" class="btn btn-ghost btn-icon" title="<?= t('toggle_theme') ?>">
                         <i class="fas fa-<?= $theme === 'dark' ? 'sun' : 'moon' ?>"></i>
                     </a>
-                    
+
                     <!-- Language Toggle -->
-                    <a href="?toggle_lang=1" class="btn btn-ghost btn-icon" title="<?= $lang === 'da' ? 'Skift sprog' : 'Change language' ?>">
+                    <a href="?toggle_lang=1" class="btn btn-ghost btn-icon" title="<?= t('change_language') ?>">
                         <i class="fas fa-globe"></i>
                     </a>
                     
