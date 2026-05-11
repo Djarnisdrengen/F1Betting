@@ -56,15 +56,15 @@
             </p>
             <div class="grid grid-4 mb-2">
                 <div class="form-group">
-                    <label class="form-label flex items-center gap-1"><span class="position-badge position-1">P1</span> <?= t('points_label') ?></label>
+                    <label class="form-label flex items-center gap-1"><span class="position-badge position-1">P1</span> <?= t('points_label_heading') ?></label>
                     <input type="number" name="points_p1" class="form-input" value="<?= intval($settings['points_p1'] ?? 25) ?>" min="0" max="100">
                 </div>
                 <div class="form-group">
-                    <label class="form-label flex items-center gap-1"><span class="position-badge position-2">P2</span> <?= t('points_label') ?></label>
+                    <label class="form-label flex items-center gap-1"><span class="position-badge position-2">P2</span> <?= t('points_label_heading') ?></label>
                     <input type="number" name="points_p2" class="form-input" value="<?= intval($settings['points_p2'] ?? 18) ?>" min="0" max="100">
                 </div>
                 <div class="form-group">
-                    <label class="form-label flex items-center gap-1"><span class="position-badge position-3">P3</span> <?= t('points_label') ?></label>
+                    <label class="form-label flex items-center gap-1"><span class="position-badge position-3">P3</span> <?= t('points_label_heading') ?></label>
                     <input type="number" name="points_p3" class="form-input" value="<?= intval($settings['points_p3'] ?? 15) ?>" min="0" max="100">
                 </div>
                 <div class="form-group">

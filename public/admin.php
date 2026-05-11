@@ -307,7 +307,8 @@ if (isset($_POST['delete_bet'])) {
             $expiry     = t('email_contact_admin', $lang);
             
             $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
-            $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', "Best regards,<br>$appName", $appName);
+            $regards     = sprintf(t('email_regards', $lang), $appName);
+            $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', $regards, $appName);
             sendEmail($bet['email'], $subject, $htmlContent);
             
             $message = t('bet_deleted_notified');
