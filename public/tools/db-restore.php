@@ -74,6 +74,10 @@ try {
         $db->rollBack();
     }
     http_response_code(500);
-    error_log('db-restore: failed: ' . $e->getMessage());
+    if (defined('APP_LOG_FILE')) {
+        logToFile(APP_LOG_FILE, '[ERROR] db-restore failed: ' . $e->getMessage());
+    } else {
+        error_log('db-restore: failed: ' . $e->getMessage());
+    }
     echo json_encode(['ok' => false, 'error' => 'Restore failed — check server logs']);
 }

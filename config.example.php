@@ -37,8 +37,13 @@ define('SMTP_FROM_NAME',  'F1 Betting');
 //ff1k.bob.ross@mailsac.com / vFxOG09FD2kkNr0LQ3c8Q
 
 // ── CRON ──────────────────────────────────────────────────────────────
-define('CRON_SECRET',   'change-me');
-define('CRON_LOG_FILE', __DIR__ . '/cron_import_log.txt');
+define('CRON_SECRET',                 'change-me');
+
+// ── LOGGING ───────────────────────────────────────────────────────────
+define('APP_LOG_FILE',                __DIR__ . '/public/logs/app.log');
+define('MAIL_LOG_FILE',               __DIR__ . '/public/logs/mail.log');
+define('CRON_NOTIFICATIONS_LOG_FILE', __DIR__ . '/public/logs/cron_notifications.log');
+define('CRON_QUALIFYING_LOG_FILE',    __DIR__ . '/public/logs/cron_qualifying.log');
 
 // ── F1 API ────────────────────────────────────────────────────────────
 define('F1_API_BASE',    'https://api.jolpi.ca/ergast/f1'); // Jolpica (Ergast successor)
@@ -46,6 +51,9 @@ define('F1_API_TIMEOUT', 30);
 
 // ── BOOTSTRAP ─────────────────────────────────────────────────────────
 date_default_timezone_set('Europe/Copenhagen');
+ini_set('display_errors', 0);
+ini_set('log_errors',     1);
+ini_set('error_log',      APP_LOG_FILE);
 ini_set('session.cookie_secure',   1);
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_samesite', 'Lax');

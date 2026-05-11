@@ -286,7 +286,8 @@ class SMTPMailer {
         $headers .= "From: info@hpovlsen.dk\r\n";
         $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
 
-        if (@mail('thomas@helvegpovlsen.dk', 'SMTP mail send failure', 'Mail send via SMTP er fejlet paa formula-1.dk', $headers)) {
+        $adminEmail = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : '';
+        if ($adminEmail && @mail($adminEmail, 'SMTP mail send failure', 'Mail send via SMTP failed', $headers)) {
             return true;
         }
         $this->lastError = "PHP mail() function failed";
@@ -326,10 +327,17 @@ function sendEmail($to, $subject, $htmlContent, $textContent = null) {
     );
 
     if ($mailer->send($to, $subject, $htmlContent, $textContent)) {
+        if (defined('MAIL_LOG_FILE')) {
+            logToFile(MAIL_LOG_FILE, '[SUCCESS] to=' . $to . ' subject="' . $subject . '"');
+        }
         return ['success' => true, 'message' => 'Email sent successfully via SMTP'];
     }
 
-    return ['success' => false, 'message' => $mailer->getLastError(), 'debug' => $mailer->getDebugLog()];
+    $error = $mailer->getLastError();
+    if (defined('MAIL_LOG_FILE')) {
+        logToFile(MAIL_LOG_FILE, '[FAIL] to=' . $to . ' subject="' . $subject . '" error="' . $error . '"');
+    }
+    return ['success' => false, 'message' => $error, 'debug' => $mailer->getDebugLog()];
 }
 
 /**

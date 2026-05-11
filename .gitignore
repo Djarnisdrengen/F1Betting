@@ -12,6 +12,8 @@
 config.php
 config.test.php
 config.live.php
+public/logs/*.log
+public/logs/*.bak
 public/cron/cron_import_log.txt
 
 # git-ftp metadata

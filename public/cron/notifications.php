@@ -17,14 +17,12 @@ require_once __DIR__ . '/../includes/functions.php';
 //***************************************** */
 // Log file setup
 //***************************************** */
-$logFile = __DIR__ . '/cron_import_log.txt';
+$logFile = defined('CRON_NOTIFICATIONS_LOG_FILE') ? CRON_NOTIFICATIONS_LOG_FILE : __DIR__ . '/cron_notifications.log';
 
 function logMessage($message) {
     global $logFile;
-    $timestamp = date('Y-m-d H:i:s');
-    $line = "[$timestamp] $message\n";
-    echo $line;
-    file_put_contents($logFile, $line, FILE_APPEND);
+    echo '[' . date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL;
+    logToFile($logFile, $message);
 }
 
 //***************************************** */

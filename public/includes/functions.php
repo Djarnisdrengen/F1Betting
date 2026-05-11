@@ -50,6 +50,16 @@ function generateUUID() {
 }
 
 // ============================================
+// LOGGING
+// ============================================
+function logToFile($file, $message) {
+    if (file_exists($file) && filesize($file) > 200 * 1024) {
+        rename($file, $file . '.bak');
+    }
+    file_put_contents($file, '[' . date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL, FILE_APPEND | LOCK_EX);
+}
+
+// ============================================
 // SPROG FUNKTIONER
 // ============================================
 function getLang() {
@@ -180,7 +190,10 @@ function getDB() {
                 ]
             );
         } catch (PDOException $e) {
-            die("Database forbindelse fejlede: " . $e->getMessage());
+            if (defined('APP_LOG_FILE')) {
+                logToFile(APP_LOG_FILE, '[ERROR] DB connection failed: ' . $e->getMessage());
+            }
+            die("Database connection failed");
         }
     }
     return $pdo;

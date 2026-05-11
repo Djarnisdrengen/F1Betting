@@ -27,7 +27,11 @@ try {
     );
 } catch (PDOException $e) {
     http_response_code(500);
-    error_log('sync-from-live: live DB connection failed: ' . $e->getMessage());
+    if (defined('APP_LOG_FILE')) {
+        logToFile(APP_LOG_FILE, '[ERROR] sync-from-live: DB connection failed: ' . $e->getMessage());
+    } else {
+        error_log('sync-from-live: live DB connection failed: ' . $e->getMessage());
+    }
     echo json_encode(['ok' => false, 'error' => 'Live DB connection failed — check server logs']);
     exit;
 }
@@ -91,6 +95,10 @@ try {
         $db->rollBack();
     }
     http_response_code(500);
-    error_log('sync-from-live: operation failed: ' . $e->getMessage());
+    if (defined('APP_LOG_FILE')) {
+        logToFile(APP_LOG_FILE, '[ERROR] sync-from-live: operation failed: ' . $e->getMessage());
+    } else {
+        error_log('sync-from-live: operation failed: ' . $e->getMessage());
+    }
     echo json_encode(['ok' => false, 'error' => 'Sync failed — check server logs']);
 }

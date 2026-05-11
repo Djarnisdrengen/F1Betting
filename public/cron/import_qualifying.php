@@ -9,10 +9,10 @@ require_once __DIR__ . '/../includes/functions.php';
 //***************************************** */
 // Log file setup from config.php
 //***************************************** */
-if (!defined('CRON_LOG_FILE')) {
-    die("CRON_LOG_FILE is not defined in config.php");
+if (!defined('CRON_QUALIFYING_LOG_FILE')) {
+    die("CRON_QUALIFYING_LOG_FILE is not defined in config.php");
 }
-$logFile = CRON_LOG_FILE;
+$logFile = CRON_QUALIFYING_LOG_FILE;
 
 //***************************************** */
 // Logging function
@@ -20,20 +20,15 @@ $logFile = CRON_LOG_FILE;
 function logMessage($message) {
     global $logFile;
 
-    $timestamp = date('Y-m-d H:i:s');
-    $line = "[$timestamp] $message";
+    $line = '[' . date('Y-m-d H:i:s') . '] ' . $message;
 
-    // Detect if running in CLI or browser
     if (php_sapi_name() === 'cli') {
-        // CLI: use newline
         echo $line . PHP_EOL;
     } else {
-        // Browser: use HTML line break
         echo nl2br($line . "\n");
     }
 
-    // Always write to log file with newline
-    file_put_contents($logFile, $line . PHP_EOL, FILE_APPEND);
+    logToFile($logFile, $message);
 }
 
 //***************************************** */
