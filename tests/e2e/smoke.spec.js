@@ -35,6 +35,27 @@ test.describe("Public pages", () => {
     });
 });
 
+// ─── Translations ─────────────────────────────────────────────────────────────
+
+test.describe("Translations", () => {
+    test("login page renders in default language (DA)", async ({ page }) => {
+        await page.goto("/login.php");
+        await expect(page.locator('button[type="submit"]')).toContainText("Log ind");
+        await expect(page.locator(".form-label").filter({ hasText: "Adgangskode" })).toBeVisible();
+    });
+
+    test("language toggle switches DA ↔ EN", async ({ page }) => {
+        await page.goto("/login.php");
+        await expect(page.locator('button[type="submit"]')).toContainText("Log ind");
+
+        await page.goto("/login.php?toggle_lang=1");
+        await expect(page.locator('button[type="submit"]')).toContainText("Login");
+
+        // restore DA so this test does not bleed into others
+        await page.goto("/login.php?toggle_lang=1");
+    });
+});
+
 // ─── Protected pages ──────────────────────────────────────────────────────────
 
 test.describe("Protected pages", () => {

@@ -6,6 +6,10 @@ const CHECKS = [
     { path: "/login.php",        contains: 'name="email"' },
     { path: "/leaderboard.php",  contains: "leaderboard" },
     { path: "/races.php",        contains: "<html" },
+
+    // Translations — verify lang files load and t() returns real strings (not raw key names)
+    { path: "/login.php",        contains: "Log ind" },     // t('login') in DA
+    { path: "/login.php",        contains: "Adgangskode" }, // t('password') in DA
 ];
 
 async function runSmoke(baseUrl) {
