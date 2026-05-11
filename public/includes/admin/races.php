@@ -1,6 +1,6 @@
 <div class="card mb-2" id="add-race-form">
     <div class="card-header collapsible-header toggleForm" data-link="race-form-body" id="race-form-header">
-        <h3><i class="fas fa-plus-circle text-accent"></i> <?= $lang === 'da' ? 'Tilføj Løb' : 'Add Race' ?></h3>
+        <h3><i class="fas fa-plus-circle text-accent"></i> <?= t('add_race') ?></h3>
         <i class="fas fa-chevron-down toggle-icon"></i>
     </div>
     <div id="race-form-body" class="collapsible-form">
@@ -76,7 +76,7 @@
                     <?= csrfField() ?>
                     <input type="hidden" name="race_id" value="<?= escape($race['id']) ?>">
                     <button type="submit" name="reset_race_result" class="btn btn-danger btn-sm btn-reset-result" data-name="<?= escape($race['name']) ?>" style="margin-top: 0.5rem;">
-                        <i class="fas fa-undo"></i> <?= $lang === 'da' ? 'Nulstil Resultat' : 'Reset Result' ?>
+                        <i class="fas fa-undo"></i> <?= t('reset_result') ?>
                     </button>
                 </form>
             <?php endif; ?>

@@ -22,7 +22,7 @@ $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
             <h3><?= escape($raceName) ?></h3>
             <div class="flex items-center gap-2">
                 <?php if ($canDeleteBets): ?>
-                    <span class="badge status-open"><?= $lang === 'da' ? 'Betting åben' : 'Betting open' ?></span>
+                    <span class="badge status-open"><?= t('betting_open_label') ?></span>
                 <?php endif; ?>
                 <span class="badge" style="background: var(--bg-secondary);"><?= count($raceBets) ?> bets</span>
             </div>
@@ -55,7 +55,7 @@ $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
                             <form method="POST" style="display:inline">
                                 <?= csrfField() ?>
                                 <input type="hidden" name="bet_id" value="<?= escape($bet['id']) ?>">
-                                <button type="submit" name="delete_bet" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($bet['display_name'] ?: $bet['email']) ?>" title="<?= $lang === 'da' ? 'Slet og notificer bruger' : 'Delete and notify user' ?>">
+                                <button type="submit" name="delete_bet" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($bet['display_name'] ?: $bet['email']) ?>" title="<?= t('delete_notify_user') ?>">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

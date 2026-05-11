@@ -6,7 +6,7 @@
                 <div>
                     <strong><?= escape($user['display_name'] ?: $user['email']) ?></strong>
                     <br><small class="text-muted"><?= escape($user['email']) ?></small>
-                    <br><small class="text-muted"><?= $lang === 'da' ? 'Sidst set: ' : 'Last seen: ' ?><?= $user['last_login'] ? date('d M Y, H:i', strtotime($user['last_login'])) : ($lang === 'da' ? 'Aldrig' : 'Never') ?></small>
+                    <br><small class="text-muted"><?= t('last_seen') ?><?= $user['last_login'] ? date('d M Y, H:i', strtotime($user['last_login'])) : t('never') ?></small>
                 </div>
                 <span class="badge" style="background: <?= $user['role'] === 'admin' ? 'var(--f1-red)' : 'var(--bg-secondary)' ?>; color: <?= $user['role'] === 'admin' ? 'white' : 'var(--text-primary)' ?>;">
                     <?= escape($user['role']) ?>
@@ -21,7 +21,7 @@
                     <?= csrfField() ?>
                     <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
                     <button type="submit" name="toggle_competition" class="btn btn-sm" style="background: <?= $user['in_competition'] ? 'var(--f1-red)' : 'var(--bg-secondary)' ?>; color: <?= $user['in_competition'] ? 'white' : 'var(--text-primary)' ?>; border: none;">
-                        <i class="fas fa-<?= $user['in_competition'] ? 'check-circle' : 'times-circle' ?>"></i> <?= $user['in_competition'] ? ($lang === 'da' ? 'I Konkurrence' : 'In Competition') : ($lang === 'da' ? 'Ikke I Konkurrence' : 'Not In Competition') ?>
+                        <i class="fas fa-<?= $user['in_competition'] ? 'check-circle' : 'times-circle' ?>"></i> <?= $user['in_competition'] ? t('in_competition_label') : t('not_in_competition_label') ?>
                     </button>
                 </form>
                 <?php if ($user['id'] !== $currentUser['id']): ?>
@@ -29,7 +29,7 @@
                         <?= csrfField() ?>
                         <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
                         <button type="submit" name="toggle_role" class="btn btn-secondary btn-sm">
-                            <?= $user['role'] === 'admin' ? ($lang === 'da' ? 'Gør Bruger' : 'Make User') : ($lang === 'da' ? 'Gør Admin' : 'Make Admin') ?>
+                            <?= $user['role'] === 'admin' ? t('make_user') : t('make_admin') ?>
                         </button>
                     </form>
                     <button type="button" class="btn btn-secondary btn-sm btn-reset-pwd" data-link="<?= escape($user['id']) ?>">
@@ -53,11 +53,11 @@
                     <input type="hidden" name="user_email" value="<?= escape($user['email']) ?>">
                     <input type="hidden" name="user_name" value="<?= escape($user['display_name']) ?>">
                     <div class="form-group" style="margin:0; flex:1;">
-                        <label class="form-label"><?= $lang === 'da' ? 'Ny adgangskode' : 'New password' ?></label>
+                        <label class="form-label"><?= t('new_password') ?></label>
                         <input type="password" name="new_password" class="form-input" required minlength="6" placeholder="••••••••">
                     </div>
                     <button type="submit" name="reset_user_password" class="btn btn-primary btn-sm">
-                        <?= $lang === 'da' ? 'Nulstil' : 'Reset' ?>
+                        <?= t('reset') ?>
                     </button>
                 </form>
             </div>

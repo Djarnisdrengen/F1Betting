@@ -1,6 +1,6 @@
 <div class="card mb-2" id="add-driver-form">
     <div class="card-header collapsible-header toggleForm" data-link="driver-form-body" id="driver-form-header">
-        <h3><i class="fas fa-plus-circle text-accent"></i> <?= $lang === 'da' ? 'Tilføj Kører' : 'Add Driver' ?></h3>
+        <h3><i class="fas fa-plus-circle text-accent"></i> <?= t('add_driver') ?></h3>
         <i class="fas fa-chevron-down toggle-icon"></i>
     </div>
     <div id="driver-form-body" class="collapsible-form">

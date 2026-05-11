@@ -9,7 +9,7 @@
                     <input type="text" name="app_title" class="form-input" value="<?= escape($settings['app_title']) ?>">
                 </div>
                 <div class="form-group">
-                    <label class="form-label"><?= $lang === 'da' ? 'År' : 'Year' ?></label>
+                    <label class="form-label"><?= t('year') ?></label>
                     <input type="text" name="app_year" class="form-input" value="<?= escape($settings['app_year']) ?>">
                 </div>
             </div>
@@ -34,59 +34,55 @@
                 </div>
             </div>
 
-            <h4 class="mb-1 mt-2"><i class="fas fa-clock text-accent"></i> <?= $lang === 'da' ? 'Betting Vindue' : 'Betting Window' ?></h4>
+            <h4 class="mb-1 mt-2"><i class="fas fa-clock text-accent"></i> <?= t('betting_window_section') ?></h4>
             <p class="text-muted mb-2" style="font-size: 0.875rem;">
-                <?= $lang === 'da' ? 'Konfigurer hvornår betting åbner før løbsstart.' : 'Configure when betting opens before race start.' ?>
+                <?= t('betting_window_config') ?>
             </p>
             <div class="grid grid-2 mb-2">
                 <div class="form-group">
-                    <label class="form-label"><?= $lang === 'da' ? 'Timer før løb' : 'Hours before race' ?></label>
+                    <label class="form-label"><?= t('hours_before_race') ?></label>
                     <input type="number" name="betting_window_hours" class="form-input" value="<?= intval($settings['betting_window_hours'] ?? 48) ?>" min="1" max="168">
                 </div>
                 <div class="form-group" style="display: flex; align-items: flex-end;">
                     <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
-                        <?= $lang === 'da'
-                            ? 'Betting åbner ' . intval($settings['betting_window_hours'] ?? 48) . ' timer før løbsstart og lukker ved løbsstart.'
-                            : 'Betting opens ' . intval($settings['betting_window_hours'] ?? 48) . ' hours before race start and closes at race start.' ?>
+                        <?= sprintf(t('betting_window_summary'), intval($settings['betting_window_hours'] ?? 48)) ?>
                     </p>
                 </div>
             </div>
 
-            <h4 class="mb-1 mt-2"><i class="fas fa-star text-accent"></i> <?= $lang === 'da' ? 'Point System' : 'Points System' ?></h4>
+            <h4 class="mb-1 mt-2"><i class="fas fa-star text-accent"></i> <?= t('points_system_section') ?></h4>
             <p class="text-muted mb-2" style="font-size: 0.875rem;">
-                <?= $lang === 'da' ? 'Konfigurer hvor mange point der gives for korrekte forudsigelser.' : 'Configure how many points are awarded for correct predictions.' ?>
+                <?= t('points_config') ?>
             </p>
             <div class="grid grid-4 mb-2">
                 <div class="form-group">
-                    <label class="form-label flex items-center gap-1"><span class="position-badge position-1">P1</span> <?= $lang === 'da' ? 'Point' : 'Points' ?></label>
+                    <label class="form-label flex items-center gap-1"><span class="position-badge position-1">P1</span> <?= t('points_label') ?></label>
                     <input type="number" name="points_p1" class="form-input" value="<?= intval($settings['points_p1'] ?? 25) ?>" min="0" max="100">
                 </div>
                 <div class="form-group">
-                    <label class="form-label flex items-center gap-1"><span class="position-badge position-2">P2</span> <?= $lang === 'da' ? 'Point' : 'Points' ?></label>
+                    <label class="form-label flex items-center gap-1"><span class="position-badge position-2">P2</span> <?= t('points_label') ?></label>
                     <input type="number" name="points_p2" class="form-input" value="<?= intval($settings['points_p2'] ?? 18) ?>" min="0" max="100">
                 </div>
                 <div class="form-group">
-                    <label class="form-label flex items-center gap-1"><span class="position-badge position-3">P3</span> <?= $lang === 'da' ? 'Point' : 'Points' ?></label>
+                    <label class="form-label flex items-center gap-1"><span class="position-badge position-3">P3</span> <?= t('points_label') ?></label>
                     <input type="number" name="points_p3" class="form-input" value="<?= intval($settings['points_p3'] ?? 15) ?>" min="0" max="100">
                 </div>
                 <div class="form-group">
-                    <label class="form-label"><?= $lang === 'da' ? 'Forkert position' : 'Wrong position' ?></label>
+                    <label class="form-label"><?= t('wrong_position') ?></label>
                     <input type="number" name="points_wrong_pos" class="form-input" value="<?= intval($settings['points_wrong_pos'] ?? 5) ?>" min="0" max="100">
                 </div>
             </div>
             <p class="text-muted mb-2" style="font-size: 0.75rem;">
                 <i class="fas fa-info-circle"></i>
-                <?= $lang === 'da'
-                    ? '"Forkert position" point gives når en kører er i top 3, men på forkert position.'
-                    : '"Wrong position" points are awarded when a driver is in top 3 but in wrong position.' ?>
+                <?= t('wrong_pos_desc') ?>
             </p>
 
-            <h4 class="mb-1 mt-3"><i class="fas fa-money-bill-wave text-accent"></i> <?= $lang === 'da' ? 'Betting Størrelse' : 'Bet Size' ?></h4>
+            <h4 class="mb-1 mt-3"><i class="fas fa-money-bill-wave text-accent"></i> <?= t('bet_size_section') ?></h4>
             <p class="text-muted mb-2" style="font-size: 0.875rem;">
-                <?= $lang === 'da' ? 'Standardstørrelse for hver indsats.' : 'Default size for each bet.' ?>
+                <?= t('bet_size_desc') ?>
             </p>
             <div class="form-group mb-2" style="max-width: 200px;">
-                <label class="form-label"><?= $lang === 'da' ? 'Indsatsstørrelse' : 'Bet Size' ?></label>
+                <label class="form-label"><?= t('bet_size_label') ?></label>
                 <input type="number" name="bet_size" class="form-input" value="<?= intval($settings['bet_size'] ?? 10) ?>" min="1" max="1000">
             </div>
 
