@@ -59,7 +59,8 @@
       "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting add tests/smoke.js)",
       "Bash(grep -E \"\\\\.php$\")",
       "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting diff --stat)",
-      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting add .gitignore config.example.php public/cron/import_qualifying.php public/cron/notifications.php public/includes/functions.php public/includes/smtp.php public/tools/db-restore.php public/tools/sync-from-live.php public/logs/.htaccess public/logs/.gitkeep)"
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting add .gitignore config.example.php public/cron/import_qualifying.php public/cron/notifications.php public/includes/functions.php public/includes/smtp.php public/tools/db-restore.php public/tools/sync-from-live.php public/logs/.htaccess public/logs/.gitkeep)",
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting add public/includes/smtp.php)"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",
