@@ -29,7 +29,7 @@ include __DIR__ . '/includes/header.php';
     <!-- Profile Form -->
     <div class="card mb-3">
         <div class="card-header">
-            <h3><?= getLang() === 'da' ? 'Rediger Profil' : 'Edit Profile' ?></h3>
+            <h3><?= t('edit_profile') ?></h3>
         </div>
         <div class="card-body">
             <?php if ($success): ?>

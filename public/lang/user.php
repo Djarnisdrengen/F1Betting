@@ -24,6 +24,7 @@ return [
         'save'                  => 'Gem',
         'delete'                => 'Slet',
         'edit'                  => 'Rediger',
+        'edit_profile'          => 'Rediger Profil',
         'add'                   => 'Tilføj',
         'cancel'                => 'Annuller',
 
@@ -183,6 +184,7 @@ return [
         'save'                  => 'Save',
         'delete'                => 'Delete',
         'edit'                  => 'Edit',
+        'edit_profile'          => 'Edit Profile',
         'add'                   => 'Add',
         'cancel'                => 'Cancel',
 
