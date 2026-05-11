@@ -233,21 +233,12 @@ if (isset($_POST['reset_user_password'])) {
         require_once __DIR__ . '/includes/smtp.php';
         $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
         
-        if ($lang === 'da') {
-            $subject = "Dit kodeord er nulstillet! - $appName";
-            $greeting = "Hej " . $userName . ",";
-            $intro = "Dit kodeord er blevet nulstillet af " . $currentUser['display_name'] . ". Den nye kode er: '" . $newPassword . "'";
-            $buttonText = "Gå til appen";
-            $expiry = "Kontakt administrator hvis du har spørgsmål.";
-            $regards = "Venlig hilsen,<br>$appName";
-        } else {
-            $subject = "Your password has been reset! - $appName";
-            $greeting = "Hi " . $userName . ",";
-            $intro = "Your password has been reset by " . $currentUser['display_name'] . "). The new password is: '" . $newPassword . "'";
-            $buttonText = "Go to app";
-            $expiry = "Contact administrator if you have questions.";
-            $regards = "Regards,<br>$appName";
-        }
+        $subject    = sprintf(t('email_admin_reset_subject', $lang), $appName);
+        $greeting   = sprintf(t('email_admin_reset_greeting', $lang), $userName);
+        $intro      = sprintf(t('email_admin_reset_intro', $lang), $currentUser['display_name'], $newPassword);
+        $buttonText = t('email_admin_reset_button', $lang);
+        $expiry     = t('email_admin_contact', $lang);
+        $regards    = sprintf(t('email_regards', $lang), $appName);
         
         $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
         $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', $regards, $appName);
@@ -308,19 +299,12 @@ if (isset($_POST['delete_bet'])) {
             require_once __DIR__ . '/includes/smtp.php';
             $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
             
-            if ($lang === 'da') {
-                $subject = "Dit bet er blevet slettet - $appName";
-                $greeting = "Hej " . ($bet['display_name'] ?: $bet['email']) . ",";
-                $intro = "Dit bet på <strong>" . htmlspecialchars($bet['race_name']) . "</strong> er blevet slettet af en administrator.";
-                $buttonText = "Gå til appen";
-                $expiry = "Kontakt administrator hvis du har spørgsmål.";
-            } else {
-                $subject = "Your bet has been deleted - $appName";
-                $greeting = "Hi " . ($bet['display_name'] ?: $bet['email']) . ",";
-                $intro = "Your bet on <strong>" . htmlspecialchars($bet['race_name']) . "</strong> has been deleted by an administrator.";
-                $buttonText = "Go to app";
-                $expiry = "Contact administrator if you have questions.";
-            }
+            $userName   = $bet['display_name'] ?: $bet['email'];
+            $subject    = sprintf(t('email_bet_deleted_subject', $lang), $appName);
+            $greeting   = sprintf(t('email_bet_deleted_greeting', $lang), $userName);
+            $intro      = sprintf(t('email_bet_deleted_intro', $lang), htmlspecialchars($bet['race_name']));
+            $buttonText = t('email_go_to_app', $lang);
+            $expiry     = t('email_contact_admin', $lang);
             
             $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
             $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', "Best regards,<br>$appName", $appName);

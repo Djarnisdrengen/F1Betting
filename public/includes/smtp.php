@@ -342,23 +342,13 @@ function sendPasswordResetEmail($email, $displayName, $resetLink, $lang = 'da') 
     // Convert link to use EMAIL_BASE_URL
     $resetLink = convertToEmailUrl($resetLink);
     
-    if ($lang === 'da') {
-        $subject = "Nulstil din adgangskode - $appName";
-        $greeting = "Hej $name,";
-        $intro = "Du har anmodet om at nulstille din adgangskode til $appName.";
-        $buttonText = "Nulstil adgangskode";
-        $expiry = "Dette link udløber om 1 time.";
-        $ignore = "Hvis du ikke har anmodet om dette, kan du ignorere denne email.";
-        $footer = "Med venlig hilsen,<br>$appName";
-    } else {
-        $subject = "Reset your password - $appName";
-        $greeting = "Hi $name,";
-        $intro = "You requested to reset your password for $appName.";
-        $buttonText = "Reset Password";
-        $expiry = "This link expires in 1 hour.";
-        $ignore = "If you didn't request this, you can ignore this email.";
-        $footer = "Best regards,<br>$appName";
-    }
+    $subject    = sprintf(t('email_reset_subject', $lang), $appName);
+    $greeting   = sprintf(t('email_reset_greeting', $lang), $name);
+    $intro      = sprintf(t('email_reset_intro', $lang), $appName);
+    $buttonText = t('email_reset_button', $lang);
+    $expiry     = t('email_reset_expiry', $lang);
+    $ignore     = t('email_reset_ignore', $lang);
+    $footer     = sprintf(t('email_footer', $lang), $appName);
     
     $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $resetLink, $expiry, $ignore, $footer, $appName);
     $textContent = "$greeting\n\n$intro\n\n$buttonText: $resetLink\n\n$expiry\n\n$ignore";
@@ -375,23 +365,13 @@ function sendInviteEmail($email, $inviteLink, $inviterName, $lang = 'da') {
     // Convert link to use EMAIL_BASE_URL
     $inviteLink = convertToEmailUrl($inviteLink);
     
-    if ($lang === 'da') {
-        $subject = "Du er inviteret til $appName!";
-        $greeting = "Hej!";
-        $intro = "$inviterName har inviteret dig til at deltage i $appName.";
-        $desc = "Forudsig top 3 for hvert F1 Grand Prix og konkurrér mod andre om point og stjerner!";
-        $buttonText = "Opret din konto";
-        $expiry = "Denne invitation udløber om 7 dage.";
-        $footer = "Med venlig hilsen,<br>$appName";
-    } else {
-        $subject = "You're invited to $appName!";
-        $greeting = "Hi!";
-        $intro = "$inviterName has invited you to join $appName.";
-        $desc = "Predict the top 3 for each F1 Grand Prix and compete against others for points and stars!";
-        $buttonText = "Create your account";
-        $expiry = "This invitation expires in 7 days.";
-        $footer = "Best regards,<br>$appName";
-    }
+    $subject    = sprintf(t('email_invite_subject', $lang), $appName);
+    $greeting   = t('email_invite_greeting', $lang);
+    $intro      = sprintf(t('email_invite_intro', $lang), $inviterName, $appName);
+    $desc       = t('email_invite_desc', $lang);
+    $buttonText = t('email_invite_button', $lang);
+    $expiry     = t('email_invite_expiry', $lang);
+    $footer     = sprintf(t('email_footer', $lang), $appName);
     
     $htmlContent = getEmailTemplate($greeting, "$intro<br><br>$desc", $buttonText, $inviteLink, $expiry, '', $footer, $appName);
     $textContent = "$greeting\n\n$intro\n\n$desc\n\n$buttonText: $inviteLink\n\n$expiry";
