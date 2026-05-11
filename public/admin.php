@@ -28,9 +28,9 @@ if (isset($_POST['add_driver'])) {
         $id = generateUUID();
         $stmt = $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)");
         $stmt->execute([$id, $name, $team, $number]);
-        $message = $lang === 'da' ? 'Kører tilføjet!' : 'Driver added!';
+        $message = t('driver_added');
     } else {
-        $error = $lang === 'da' ? 'Udfyld alle felter korrekt (nummer skal være 1–99)' : 'Fill in all fields correctly (number must be 1–99)';
+        $error = t('driver_fields_error');
     }
 }
 
@@ -43,9 +43,9 @@ if (isset($_POST['update_driver'])) {
     if ($id && $name && $team && $number) {
         $stmt = $db->prepare("UPDATE drivers SET name = ?, team = ?, number = ? WHERE id = ?");
         $stmt->execute([$name, $team, $number, $id]);
-        $message = $lang === 'da' ? 'Kører opdateret!' : 'Driver updated!';
+        $message = t('driver_updated');
     } else {
-        $error = $lang === 'da' ? 'Udfyld alle felter korrekt (nummer skal være 1–99)' : 'Fill in all fields correctly (number must be 1–99)';
+        $error = t('driver_fields_error');
     }
 }
 
@@ -76,12 +76,12 @@ if (isset($_POST['add_race'])) {
             $id = generateUUID();
             $stmt = $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, quali_p1, quali_p2, quali_p3) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$id, $name, $location, $date, $time, $quali_p1, $quali_p2, $quali_p3]);
-            $message = $lang === 'da' ? 'Løb tilføjet!' : 'Race added!';
+            $message = t('race_added');
         } else {
-            $error = $lang === 'da' ? 'Ugyldig dato eller tid' : 'Invalid date or time';
+            $error = t('invalid_date_time');
         }
     } else {
-        $error = $lang === 'da' ? 'Udfyld alle felter' : 'Fill in all fields';
+        $error = t('fill_all_fields');
     }
 }
 
@@ -107,9 +107,9 @@ if (isset($_POST['update_race'])) {
             calculateRacePoints($id, $result_p1, $result_p2, $result_p3);
         }
 
-        $message = $lang === 'da' ? 'Løb opdateret!' : 'Race updated!';
+        $message = t('race_updated');
     } else {
-        $error = $lang === 'da' ? 'Navn er påkrævet' : 'Name is required';
+        $error = t('name_required');
     }
 }
 
@@ -164,11 +164,11 @@ if (isset($_POST['reset_race_result'])) {
         $db->prepare("UPDATE races SET result_p1 = NULL, result_p2 = NULL, result_p3 = NULL, bettingpool_won = NULL WHERE id = ?")
            ->execute([$id]);
 
-        $resetMsg = $lang === 'da' ? 'Resultat nulstillet! Indtast det korrekte resultat nedenfor.' : 'Result reset! Enter the correct result below.';
+        $resetMsg = t('result_reset');
         header("Location: admin.php?tab=races&edit=" . urlencode($id) . "&msg=" . urlencode($resetMsg));
         exit;
     } else {
-        $error = $lang === 'da' ? 'Kan kun nulstille det seneste løb med resultat' : 'Can only reset the most recently completed race';
+        $error = t('reset_most_recent_only');
     }
 }
 
@@ -196,9 +196,7 @@ if (isset($_POST['toggle_competition'])) {
         $newStatus = $user['in_competition'] ? 0 : 1;
         $stmt = $db->prepare("UPDATE users SET in_competition = ? WHERE id = ?");
         $stmt->execute([$newStatus, $userId]);
-        $message = $lang === 'da' 
-            ? ($newStatus ? 'Bruger tilføjet til konkurrence' : 'Bruger fjernet fra konkurrence')
-            : ($newStatus ? 'User added to competition' : 'User removed from competition');
+        $message = $newStatus ? t('user_added_to_competition') : t('user_removed_from_competition');
     }
     header("Location: admin.php?tab=users&msg=" . urlencode($message));
     exit;
@@ -229,7 +227,7 @@ if (isset($_POST['reset_user_password'])) {
         $hashedPassword = hashPassword($newPassword);
         $stmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
         $stmt->execute([$hashedPassword, $userId]);
-        $message = $lang === 'da' ? 'Adgangskode nulstillet!' : 'Password reset!';
+        $message = t('password_reset_success');
 
         // Send email til bruger
         require_once __DIR__ . '/includes/smtp.php';
@@ -256,7 +254,7 @@ if (isset($_POST['reset_user_password'])) {
         sendEmail($userEmail, $subject, $htmlContent);
 
     } else {
-        $error = $lang === 'da' ? 'Adgangskoden skal være mindst 6 tegn' : 'Password must be at least 6 characters';
+        $error = t('password_min_6_admin');
     }
 
 
@@ -328,9 +326,9 @@ if (isset($_POST['delete_bet'])) {
             $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', "Best regards,<br>$appName", $appName);
             sendEmail($bet['email'], $subject, $htmlContent);
             
-            $message = $lang === 'da' ? 'Bet slettet og bruger notificeret!' : 'Bet deleted and user notified!';
+            $message = t('bet_deleted_notified');
         } else {
-            $message = $lang === 'da' ? 'Kan kun slette bets hvor betting vindue er åbent' : 'Can only delete bets where betting window is open';
+            $message = t('bet_delete_open_only');
         }
     }
     
@@ -347,13 +345,13 @@ if (isset($_POST['create_invite'])) {
         $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$inviteEmail]);
         if ($stmt->fetch()) {
-            $error = $lang === 'da' ? 'Email er allerede registreret som bruger' : 'Email is already registered as user';
+            $error = t('email_already_user');
         } else {
             // Tjek om der allerede er en aktiv invite
             $stmt = $db->prepare("SELECT id FROM invites WHERE email = ? AND used = 0 AND expires_at > NOW()");
             $stmt->execute([$inviteEmail]);
             if ($stmt->fetch()) {
-                $error = $lang === 'da' ? 'Der er allerede en aktiv invitation til denne email' : 'There is already an active invite for this email';
+                $error = t('active_invite_exists');
             } else {
                 // Opret invite
                 $token = bin2hex(random_bytes(32));
@@ -370,7 +368,7 @@ if (isset($_POST['create_invite'])) {
                 $result = sendInviteEmail($inviteEmail, $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
                 
                 if ($result['success']) {
-                    $message = $lang === 'da' ? 'Invitation sendt til ' . $inviteEmail : 'Invitation sent to ' . $inviteEmail;
+                    $message = sprintf(t('invite_sent_to'), $inviteEmail);
                 } else {
                     $message = $lang === 'da' 
                         ? 'Invitation oprettet! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
@@ -379,7 +377,7 @@ if (isset($_POST['create_invite'])) {
             }
         }
     } else {
-        $error = $lang === 'da' ? 'Ugyldig email' : 'Invalid email';
+        $error = t('invalid_email');
     }
 }
 
@@ -410,7 +408,7 @@ if (isset($_POST['resend_invite'])) {
         $result = sendInviteEmail($invite['email'], $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
         
         if ($result['success']) {
-            $message = $lang === 'da' ? 'Invitation gensendt!' : 'Invitation resent!';
+            $message = t('invite_resent');
         } else {
             $message = $lang === 'da' 
                 ? 'Invitation forlænget! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
@@ -438,7 +436,7 @@ if (isset($_POST['update_settings'])) {
     
     $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ? WHERE id = 1");
     $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize]);
-    $message = $lang === 'da' ? 'Indstillinger gemt!' : 'Settings saved!';
+    $message = t('settings_saved');
 }
 
 $currentTab = $_GET['tab'] ?? 'races';
@@ -505,7 +503,7 @@ include __DIR__ . '/includes/header.php';
             <i class="fas fa-users"></i> <?= t('users') ?> <span class="tab-count">(<?= $tabCounts['users'] ?>)</span>
         </a>
         <a href="?tab=invites" class="tab <?= $currentTab === 'invites' ? 'active' : '' ?>">
-            <i class="fas fa-envelope"></i> <?= $lang === 'da' ? 'Invitationer' : 'Invites' ?> <span class="tab-count">(<?= $tabCounts['invites'] ?>)</span>
+            <i class="fas fa-envelope"></i> <?= t('invites') ?> <span class="tab-count">(<?= $tabCounts['invites'] ?>)</span>
         </a>
         <a href="?tab=bets" class="tab <?= $currentTab === 'bets' ? 'active' : '' ?>">
             <i class="fas fa-trophy"></i> <?= t('bets') ?> <span class="tab-count">(<?= $tabCounts['bets'] ?>)</span>
