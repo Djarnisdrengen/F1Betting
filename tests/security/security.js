@@ -635,8 +635,21 @@ async function checkDnsSecurity() {
             warn('J', 'CAA record', 'No CAA records found', null,
                 `Add CAA record: 0 issue "letsencrypt.org" — restricts which CAs may issue certs for ${apex}`);
         } else {
-            const hasLE = answers.some(r => (r.data || '').includes('letsencrypt.org'));
-            const summary = answers.map(r => r.data).join(' | ');
+            // Cloudflare DoH sometimes returns CAA in RFC 3597 hex wire format:
+            // "\# <len> <hex-bytes>" — decode it so we can read the tag/value.
+            const decodeCaa = (raw) => {
+                const m = (raw || '').match(/^\\#\s+\d+\s+([0-9a-f\s]+)$/i);
+                if (!m) return raw;
+                const buf = Buffer.from(m[1].replace(/\s+/g, ''), 'hex');
+                if (buf.length < 2) return raw;
+                const tagLen = buf[1];
+                const tag    = buf.slice(2, 2 + tagLen).toString('ascii');
+                const value  = buf.slice(2 + tagLen).toString('ascii');
+                return `${buf[0]} ${tag} "${value}"`;
+            };
+            const decoded = answers.map(r => decodeCaa(r.data || ''));
+            const hasLE   = decoded.some(s => s.includes('letsencrypt.org'));
+            const summary = decoded.join(' | ');
             if (hasLE) {
                 pass('J', 'CAA record', summary.length > 80 ? summary.slice(0, 80) + '…' : summary);
             } else {
