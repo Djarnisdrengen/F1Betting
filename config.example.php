@@ -67,4 +67,13 @@ ini_set('session.use_strict_mode', 1);
 ini_set('session.use_only_cookies', 1);
 session_start();
 
+// Security headers on every PHP response (including redirects).
+// mod_headers in .htaccess is Apache-only and silently ignored on nginx/OpenResty.
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()');
+header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+// CSP is set in header.php where the per-request nonce is available.
+
 require_once __DIR__ . '/public/includes/functions.php';
