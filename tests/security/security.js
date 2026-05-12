@@ -136,11 +136,14 @@ const SECTION_NAMES = {
     H: 'Outdated Components (OWASP A06)',
     I: 'Account Enumeration (OWASP A07)',
     J: 'DNS Security',
+    L: 'CWE Top 25 (Web)',
     K: 'Application Hardening',
     G: 'SSL Labs',
 };
 
-const SECTION_ORDER = ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'J', 'K', 'G'];
+// L runs before K so that a successful login in the privilege-escalation test
+// clears the login_attempts table and the rate-limiting test (K) starts fresh.
+const SECTION_ORDER = ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'J', 'L', 'K', 'G'];
 
 const SUGGESTIONS = [];
 
@@ -721,6 +724,166 @@ async function checkDnsSecurity() {
     }
 }
 
+// ─── Section L: CWE Top 25 (Web Application) ─────────────────────────────────
+// Covers the web-relevant subset of the 2024 CWE Top 25.
+// Already-covered entries: CWE-352 CSRF (E), CWE-862/306 Missing Auth (D).
+
+async function checkCweTop25() {
+    const getCsrf = async () => {
+        const res = await request(`${BASE_URL}/login.php`);
+        return { csrf: extractCsrfToken(res.body), cookies: parseCookies(res.headers['set-cookie']) };
+    };
+
+    // ── CWE-89: SQL Injection — login form ────────────────────────────────────
+    try {
+        const { csrf, cookies } = await getCsrf();
+        const payloads = ["' OR '1'='1", "' OR 1=1--", "admin'--", "1' OR '1'='1'/*"];
+        let vulnerable = false;
+        for (const payload of payloads) {
+            const res = await postForm(`${BASE_URL}/login.php`,
+                { email: payload, password: payload, csrf_token: csrf },
+                { headers: { Cookie: cookies } });
+            const loc      = res.headers.location || '';
+            const bypassed = res.status >= 301 && res.status <= 308 && loc.includes('index');
+            const dbError  = /sql syntax|you have an error in your sql|mysql_fetch|ORA-\d+|sqlite_/i.test(res.body);
+            if (bypassed || dbError) {
+                fail('L', 'SQL Injection: login (CWE-89)',
+                    bypassed ? 'Login bypassed with SQLi payload' : 'DB error leaked in response',
+                    'CWE-89', 'Use PDO prepared statements for all queries. Never interpolate user input into SQL.');
+                vulnerable = true;
+                break;
+            }
+        }
+        if (!vulnerable) pass('L', 'SQL Injection: login (CWE-89)', 'Login resistant to common SQLi payloads');
+    } catch (e) { info('L', 'SQL Injection: login (CWE-89)', `Test skipped: ${e.message}`); }
+
+    // ── CWE-79: Reflected XSS ─────────────────────────────────────────────────
+    try {
+        const xssPayload = `<script>alert('xss-scan-F1')</script>`;
+        const enc = encodeURIComponent(xssPayload);
+        // Test common URL params that apps sometimes reflect without escaping
+        const urlsToProbe = [
+            `${BASE_URL}/index.php?q=${enc}`,
+            `${BASE_URL}/login.php?error=${enc}`,
+            `${BASE_URL}/index.php?msg=${enc}`,
+        ];
+        let found = false;
+        for (const url of urlsToProbe) {
+            const res = await request(url);
+            if (res.body.includes("<script>alert(")) {
+                fail('L', 'Reflected XSS (CWE-79)', `Payload unescaped at ${url}`, 'CWE-79',
+                    "Escape all output: htmlspecialchars(\$val, ENT_QUOTES, 'UTF-8'). Never echo raw query params.");
+                found = true;
+                break;
+            }
+        }
+        // Also test POST reflection (email field in login form)
+        if (!found) {
+            const { csrf, cookies } = await getCsrf();
+            const res = await postForm(`${BASE_URL}/login.php`,
+                { email: xssPayload, password: 'test', csrf_token: csrf },
+                { headers: { Cookie: cookies } });
+            if (res.body.includes("<script>alert(")) {
+                fail('L', 'Reflected XSS: login form (CWE-79)', 'XSS payload unescaped in response', 'CWE-79',
+                    "Escape all output: htmlspecialchars(\$val, ENT_QUOTES, 'UTF-8').");
+                found = true;
+            }
+        }
+        if (!found) pass('L', 'Reflected XSS (CWE-79)', 'No reflected XSS on tested URL params and login form');
+    } catch (e) { info('L', 'Reflected XSS (CWE-79)', `Test skipped: ${e.message}`); }
+
+    // ── CWE-22: Path Traversal ────────────────────────────────────────────────
+    try {
+        const enc = encodeURIComponent('../../../etc/passwd');
+        const urls = [
+            `${BASE_URL}/index.php?lang=${enc}`,
+            `${BASE_URL}/index.php?page=${enc}`,
+            `${BASE_URL}/index.php?file=${enc}`,
+            `${BASE_URL}/index.php?theme=${enc}`,
+        ];
+        let found = false;
+        for (const url of urls) {
+            const res = await request(url);
+            if (/root:x:0|\/bin\/(?:bash|sh)\b|www-data/i.test(res.body)) {
+                fail('L', 'Path Traversal (CWE-22)', `File content exposed: ${url}`, 'CWE-22',
+                    'Allowlist valid param values. Never build file paths from user input.');
+                found = true;
+                break;
+            }
+        }
+        if (!found) pass('L', 'Path Traversal (CWE-22)', 'No path traversal on common parameter names');
+    } catch (e) { info('L', 'Path Traversal (CWE-22)', `Test skipped: ${e.message}`); }
+
+    // ── CWE-287: Improper Authentication — empty credentials ─────────────────
+    try {
+        const { csrf, cookies } = await getCsrf();
+        const res = await postForm(`${BASE_URL}/login.php`,
+            { email: '', password: '', csrf_token: csrf },
+            { headers: { Cookie: cookies } });
+        const loc = res.headers.location || '';
+        if (res.status >= 301 && res.status <= 308 && loc.includes('index')) {
+            fail('L', 'Auth bypass: empty credentials (CWE-287)', 'Login succeeded with empty credentials', 'CWE-287',
+                'Validate that email and password are non-empty before the credential lookup.');
+        } else {
+            pass('L', 'Auth bypass: empty credentials (CWE-287)', 'Empty credentials correctly rejected');
+        }
+    } catch (e) { info('L', 'Auth bypass: empty credentials (CWE-287)', `Test skipped: ${e.message}`); }
+
+    // ── CWE-269: Privilege Escalation — regular user → admin ─────────────────
+    // Note: TEST_USER must be a non-admin account for this test to be meaningful.
+    const email    = process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`]    || process.env.TEST_USER_EMAIL;
+    const password = process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`] || process.env.TEST_USER_PASSWORD;
+    if (!email || !password) {
+        info('L', 'Privilege escalation (CWE-269)', 'TEST_USER credentials not set — skipping');
+    } else {
+        try {
+            const loginPageRes = await request(`${BASE_URL}/login.php`);
+            const preCookies   = parseCookies(loginPageRes.headers['set-cookie']);
+            const csrf         = extractCsrfToken(loginPageRes.body);
+            const loginRes     = await postForm(`${BASE_URL}/login.php`,
+                { email, password, csrf_token: csrf },
+                { headers: { Cookie: preCookies } });
+
+            if (loginRes.status >= 301 && loginRes.status < 400) {
+                const authedCookies = parseCookies(loginRes.headers['set-cookie']) || preCookies;
+                const adminRes = await request(`${BASE_URL}/admin.php`, { headers: { Cookie: authedCookies } });
+                const loc      = adminRes.headers.location || '';
+                const blocked  = (adminRes.status >= 301 && adminRes.status < 400 && loc.includes('login')) ||
+                                  adminRes.status === 403 ||
+                                 (adminRes.status === 200 &&
+                                  (adminRes.body.includes('name="email"') || adminRes.body.includes('login.php')));
+                if (adminRes.status === 200 && !blocked) {
+                    fail('L', 'Privilege escalation (CWE-269)', 'Regular user can access admin.php', 'CWE-269',
+                        'Call requireAdmin() at the top of every admin page and action handler.');
+                } else if (blocked) {
+                    pass('L', 'Privilege escalation (CWE-269)', 'Admin page correctly restricted to admin role');
+                } else {
+                    info('L', 'Privilege escalation (CWE-269)', `HTTP ${adminRes.status} — manual review needed`);
+                }
+                // Logout so the successful login clears login_attempts for the rate-limit test (K)
+                await request(`${BASE_URL}/logout.php`, { headers: { Cookie: authedCookies } });
+            } else {
+                info('L', 'Privilege escalation (CWE-269)', `Login returned ${loginRes.status} — skipping`);
+            }
+        } catch (e) { info('L', 'Privilege escalation (CWE-269)', `Test skipped: ${e.message}`); }
+    }
+
+    // ── CWE-434: Unrestricted File Upload — detect upload inputs ──────────────
+    try {
+        const pagesToCheck = [BASE_URL, `${BASE_URL}/profile.php`];
+        let found = false;
+        for (const url of pagesToCheck) {
+            const res = await request(url);
+            if (/<input[^>]+type=["']file["']/i.test(res.body)) {
+                warn('L', 'File upload present (CWE-434)', `Upload input found on ${url} — verify server-side validation`, 'CWE-434',
+                    'Validate MIME type server-side (not extension). Store outside webroot. Rename on save. Never execute uploads.');
+                found = true;
+            }
+        }
+        if (!found) pass('L', 'File upload (CWE-434)', 'No file upload inputs found on checked pages');
+    } catch (e) { info('L', 'File upload (CWE-434)', `Test skipped: ${e.message}`); }
+}
+
 // ─── Section K: Application Hardening ────────────────────────────────────────
 
 async function checkApplicationHardening() {
@@ -1052,6 +1215,7 @@ async function main() {
     await checkOutdatedComponents();
     await checkAccountEnumeration();
     await checkDnsSecurity();
+    await checkCweTop25();
     await checkApplicationHardening();
     await checkSslLabs();
     printReport();
