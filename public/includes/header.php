@@ -19,7 +19,8 @@ $csp_policy =
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
     "img-src 'self' data: https://www.google-analytics.com; " .
     "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; " .
-    "font-src 'self' https://fonts.gstatic.com;";
+    "font-src 'self' https://fonts.gstatic.com; " .
+    "report-uri /csp-report.php";
 
 
 // 3. Send the CSP header to the browser
