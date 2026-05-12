@@ -174,7 +174,11 @@ function requireLogin() {
 
 function requireAdmin() {
     $user = getCurrentUser();
-    if (!$user || $user['role'] !== 'admin') {
+    if (!$user) {
+        header("Location: login.php");
+        exit;
+    }
+    if ($user['role'] !== 'admin') {
         header("Location: index.php");
         exit;
     }
@@ -216,6 +220,28 @@ function hashPassword($password) {
 
 function verifyPassword($password, $hash) {
     return password_verify($password . PASSWORD_PEPPER, $hash);
+}
+
+// ── Rate limiting ──────────────────────────────────────────────────────────────
+// 3 failed attempts per IP within a 15-minute sliding window triggers a block.
+
+function isRateLimited(PDO $db, string $ip): bool {
+    $stmt = $db->prepare(
+        "SELECT COUNT(*) FROM login_attempts
+         WHERE ip = ? AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)"
+    );
+    $stmt->execute([$ip]);
+    return (int)$stmt->fetchColumn() >= 3;
+}
+
+function recordLoginAttempt(PDO $db, string $ip): void {
+    $db->prepare("INSERT INTO login_attempts (ip) VALUES (?)")->execute([$ip]);
+    // Purge records older than 1 hour to keep the table lean
+    $db->prepare("DELETE FROM login_attempts WHERE attempted_at < DATE_SUB(NOW(), INTERVAL 1 HOUR)")->execute();
+}
+
+function clearLoginAttempts(PDO $db, string $ip): void {
+    $db->prepare("DELETE FROM login_attempts WHERE ip = ?")->execute([$ip]);
 }
 
 // ============================================

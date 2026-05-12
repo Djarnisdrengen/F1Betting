@@ -11,23 +11,36 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
-    
-    $email = sanitizeEmail($_POST['email'] ?? '');
+
+    $db       = getDB();
+    $ip       = $_SERVER['REMOTE_ADDR'] ?? '';
+    $email    = sanitizeEmail($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    
-    if ($email && $password) {
-        $db = getDB();
+
+    try {
+        $rateLimited = isRateLimited($db, $ip);
+    } catch (Exception $e) {
+        $rateLimited = false;
+    }
+
+    if ($rateLimited) {
+        http_response_code(429);
+        header('Retry-After: 900');
+        exit(htmlspecialchars(t('rate_limited'), ENT_QUOTES, 'UTF-8'));
+    } elseif ($email && $password) {
         $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
-        
+
         if ($user && verifyPassword($password, $user['password'])) {
+            try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
             $_SESSION['user_id'] = $user['id'];
             session_regenerate_id(true);
             $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
             header("Location: index.php");
             exit;
         } else {
+            try { recordLoginAttempt($db, $ip); } catch (Exception $e) {}
             $error = t('invalid_credentials');
         }
     }

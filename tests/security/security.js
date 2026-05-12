@@ -62,7 +62,7 @@ function getTlsCert(host, port = 443) {
     });
 }
 
-function postForm(targetUrl, fields) {
+function postForm(targetUrl, fields, options = {}) {
     return new Promise((resolve, reject) => {
         const parsed = new URL(targetUrl);
         const mod = parsed.protocol === 'https:' ? https : http;
@@ -80,6 +80,7 @@ function postForm(targetUrl, fields) {
                 'Content-Length': Buffer.byteLength(body),
                 'Accept': 'text/html,application/xhtml+xml',
                 'Accept-Language': 'en-US,en;q=0.5',
+                ...(options.headers || {}),
             },
         };
         const req = mod.request(opts, (res) => {
@@ -100,6 +101,12 @@ function extractCsrfToken(html) {
     m = html.match(/<input[^>]+value=["']([^"']+)["'][^>]*name=["']csrf_token["']/i);
     if (m) return m[1];
     return '';
+}
+
+function parseCookies(setCookieHeaders) {
+    if (!setCookieHeaders) return '';
+    const arr = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
+    return arr.map(c => c.split(';')[0]).join('; ');
 }
 
 // ─── Result accumulator ───────────────────────────────────────────────────────
@@ -128,20 +135,14 @@ const SECTION_NAMES = {
     F: 'Information Disclosure (OWASP A05)',
     H: 'Outdated Components (OWASP A06)',
     I: 'Account Enumeration (OWASP A07)',
+    J: 'DNS Security',
+    K: 'Application Hardening',
     G: 'SSL Labs',
 };
 
-const SECTION_ORDER = ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'G'];
+const SECTION_ORDER = ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'J', 'K', 'G'];
 
-const SUGGESTIONS = [
-    { item: 'DNSSEC',                detail: 'Enable DNSSEC to prevent DNS spoofing. Check: https://dnssec-analyzer.verisignlabs.com/' },
-    { item: 'CAA DNS record',        detail: 'Add CAA record "0 issue \\"letsencrypt.org\\"" — restricts which CAs may issue certs for your domain.' },
-    { item: 'SPF / DKIM / DMARC',   detail: 'Add email authentication DNS records to prevent domain spoofing in outbound mail.' },
-    { item: 'Rate limiting',         detail: 'Rate-limit login.php to slow brute-force attacks (e.g. fail2ban, mod_evasive, or DB-level counter). See CWE-307.' },
-    { item: 'Session invalidation',  detail: 'On logout: call session_destroy(), delete session cookie, regenerate session ID on login (CWE-613).' },
-    { item: 'Subresource Integrity', detail: 'If CDN scripts or styles are added in future, include integrity= and crossorigin= attributes (CWE-829).' },
-    { item: 'CSP report-uri',        detail: 'Add a report-uri or report-to directive to CSP to collect violation reports from browsers in production.' },
-];
+const SUGGESTIONS = [];
 
 // ─── Section A: Transport Security ────────────────────────────────────────────
 
@@ -295,6 +296,16 @@ async function checkSecurityHeaders() {
             "Remove 'unsafe-eval' from CSP. Audit scripts for dynamic code evaluation patterns and refactor them.");
     } else if (csp) {
         pass('B', "CSP: no unsafe-eval");
+    }
+
+    // CSP report-uri / report-to
+    if (csp) {
+        if (csp.includes('report-uri') || csp.includes('report-to')) {
+            pass('B', 'CSP report-uri', 'Violation reporting directive present');
+        } else {
+            warn('B', 'CSP report-uri', 'CSP has no report-uri or report-to directive', null,
+                'Add report-uri or report-to to CSP so browsers send violation reports to a collection endpoint.');
+        }
     }
 
     // X-Powered-By absent
@@ -585,6 +596,224 @@ async function checkAccountEnumeration() {
     }
 }
 
+// ─── Section J: DNS Security ──────────────────────────────────────────────────
+
+async function checkDnsSecurity() {
+    // SPF / DKIM / DMARC / CAA records live on the apex domain, not www
+    const apex = hostname.replace(/^www\./, '');
+
+    async function dnsQuery(name, type) {
+        const url = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${encodeURIComponent(type)}`;
+        const res = await request(url, { headers: { 'Accept': 'application/dns-json' } });
+        return JSON.parse(res.body);
+    }
+
+    // DNSSEC — AD flag set means Cloudflare validated the full chain of trust
+    try {
+        const data = await dnsQuery(apex, 'DNSKEY');
+        if (data.AD === true) {
+            pass('J', 'DNSSEC', 'AD flag set — chain of trust validated by Cloudflare resolver');
+        } else {
+            const hasKeys = Array.isArray(data.Answer) && data.Answer.some(r => r.type === 48);
+            if (hasKeys) {
+                warn('J', 'DNSSEC', 'DNSKEY records present but AD flag not set — chain of trust incomplete', null,
+                    'Verify DS record is registered at the parent zone (.dk registry). Check: https://dnssec-analyzer.verisignlabs.com/');
+            } else {
+                warn('J', 'DNSSEC', 'No DNSKEY records found — DNSSEC not enabled', null,
+                    'Enable DNSSEC in your DNS provider dashboard. Check: https://dnssec-analyzer.verisignlabs.com/');
+            }
+        }
+    } catch (e) {
+        info('J', 'DNSSEC', `DNS query failed: ${e.message}`);
+    }
+
+    // CAA
+    try {
+        const data = await dnsQuery(apex, 'CAA');
+        const answers = (data.Answer || []).filter(r => r.type === 257);
+        if (!answers.length) {
+            warn('J', 'CAA record', 'No CAA records found', null,
+                `Add CAA record: 0 issue "letsencrypt.org" — restricts which CAs may issue certs for ${apex}`);
+        } else {
+            const hasLE = answers.some(r => (r.data || '').includes('letsencrypt.org'));
+            const summary = answers.map(r => r.data).join(' | ');
+            if (hasLE) {
+                pass('J', 'CAA record', summary.length > 80 ? summary.slice(0, 80) + '…' : summary);
+            } else {
+                warn('J', 'CAA record', `letsencrypt.org not listed — found: ${summary}`, null,
+                    "Add CAA record: 0 issue \"letsencrypt.org\" since your cert is from Let's Encrypt.");
+            }
+        }
+    } catch (e) {
+        info('J', 'CAA record', `DNS query failed: ${e.message}`);
+    }
+
+    // SPF
+    try {
+        const data = await dnsQuery(apex, 'TXT');
+        const txts = (data.Answer || []).filter(r => r.type === 16).map(r => (r.data || '').replace(/^"|"$/g, ''));
+        const spf = txts.find(t => t.startsWith('v=spf1'));
+        const spfInclude = hostname.includes('hpovlsen') ? 'simplelogin.co' : '_spf.protonmail.ch';
+        if (spf) {
+            pass('J', 'SPF record', spf.length > 80 ? spf.slice(0, 80) + '…' : spf);
+        } else {
+            warn('J', 'SPF record', 'No SPF TXT record found', null,
+                `Add SPF TXT record to ${apex}, e.g. "v=spf1 include:${spfInclude} ~all"`);
+        }
+    } catch (e) {
+        info('J', 'SPF record', `DNS query failed: ${e.message}`);
+    }
+
+    // DMARC
+    try {
+        const data = await dnsQuery(`_dmarc.${apex}`, 'TXT');
+        const txts = (data.Answer || []).filter(r => r.type === 16).map(r => (r.data || '').replace(/^"|"$/g, ''));
+        const dmarc = txts.find(t => t.startsWith('v=DMARC1'));
+        if (dmarc) {
+            const policy = (dmarc.match(/p=(\w+)/) || [])[1] || 'none';
+            if (policy === 'reject' || policy === 'quarantine') {
+                pass('J', 'DMARC record', dmarc.length > 80 ? dmarc.slice(0, 80) + '…' : dmarc);
+            } else {
+                warn('J', 'DMARC record', `Policy p=${policy} — consider p=quarantine or p=reject`, null,
+                    'Tighten DMARC policy once legitimate mail flows are verified.');
+            }
+        } else {
+            warn('J', 'DMARC record', `No DMARC record at _dmarc.${apex}`, null,
+                `Add TXT record at _dmarc.${apex}: "v=DMARC1; p=quarantine; rua=mailto:dmarc@${apex}"`);
+        }
+    } catch (e) {
+        info('J', 'DMARC record', `DNS query failed: ${e.message}`);
+    }
+
+    // DKIM — probe common selectors; warn if none found (selector may just be non-standard)
+    const dkimSelectors = hostname.includes('hpovlsen')
+        ? ['dkim', 'dkim2', 'dkim3', 'default', 'mail', 'k1', 's1', 's2']
+        : ['protonmail', 'protonmail2', 'protonmail3', 'default', 'mail', 'k1', 's1', 's2'];
+    let dkimFound = false;
+    for (const sel of dkimSelectors) {
+        try {
+            const data = await dnsQuery(`${sel}._domainkey.${apex}`, 'TXT');
+            const txts = (data.Answer || []).filter(r => r.type === 16).map(r => r.data || '');
+            if (txts.some(t => t.includes('p='))) {
+                pass('J', 'DKIM record', `Selector "${sel}._domainkey.${apex}" found`);
+                dkimFound = true;
+                break;
+            }
+        } catch (_) { /* try next */ }
+    }
+    if (!dkimFound) {
+        warn('J', 'DKIM record', `No DKIM record found (tried: ${dkimSelectors.join(', ')})`, null,
+            `Configure DKIM with your mail provider and publish the public key at <selector>._domainkey.${apex}. ` +
+            'If your selector is non-standard, verify with: dig TXT <selector>._domainkey.' + apex);
+    }
+}
+
+// ─── Section K: Application Hardening ────────────────────────────────────────
+
+async function checkApplicationHardening() {
+    // Rate limiting — 6 rapid login attempts; look for 429 or rate-limit headers
+    try {
+        const fakeEmail = 'ratelimit-scan@example-scan.invalid';
+        const wrongPwd  = 'WrongPwd_RateLimitTest_XYZ!';
+        let rateLimited = false;
+        let rateLimitStatus = 0;
+        for (let i = 0; i < 6; i++) {
+            const pageRes = await request(`${BASE_URL}/login.php`);
+            const csrf    = extractCsrfToken(pageRes.body);
+            const cookies = parseCookies(pageRes.headers['set-cookie']);
+            const res = await postForm(
+                `${BASE_URL}/login.php`,
+                { email: fakeEmail, password: wrongPwd, csrf_token: csrf },
+                { headers: { Cookie: cookies } }
+            );
+            // 429 = PHP-level block; 400/503 = web-server-level block (LiteSpeed/Apache)
+            if (res.status === 429 || res.status === 400 || res.status === 503 ||
+                res.headers['retry-after'] || res.headers['x-ratelimit-limit']) {
+                rateLimited = true;
+                rateLimitStatus = res.status;
+                break;
+            }
+        }
+        if (rateLimited) {
+            pass('K', 'Rate limiting: login', `HTTP ${rateLimitStatus} after rapid attempts — server is rate limiting`);
+        } else {
+            warn('K', 'Rate limiting: login', '6 rapid login attempts — no rate-limiting response observed', 'CWE-307',
+                'Add rate limiting to login.php: DB-level counter per IP/email, fail2ban, or mod_evasive in .htaccess.');
+        }
+    } catch (e) {
+        info('K', 'Rate limiting: login', `Test failed: ${e.message}`);
+    }
+
+    // Session invalidation — login, logout, verify old session is rejected
+    const email    = process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`]    || process.env.TEST_USER_EMAIL;
+    const password = process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`] || process.env.TEST_USER_PASSWORD;
+    if (!email || !password) {
+        info('K', 'Session invalidation', 'TEST_USER credentials not set — skipping');
+    } else {
+        try {
+            const loginPageRes = await request(`${BASE_URL}/login.php`);
+            const preCookies   = parseCookies(loginPageRes.headers['set-cookie']);
+            const csrf         = extractCsrfToken(loginPageRes.body);
+
+            const loginRes = await postForm(
+                `${BASE_URL}/login.php`,
+                { email, password, csrf_token: csrf },
+                { headers: { Cookie: preCookies } }
+            );
+
+            if (loginRes.status < 300 || loginRes.status >= 400) {
+                info('K', 'Session invalidation', `Login returned HTTP ${loginRes.status} — skipping`);
+            } else {
+                const authedCookies = parseCookies(loginRes.headers['set-cookie']) || preCookies;
+
+                await request(`${BASE_URL}/logout.php`, { headers: { Cookie: authedCookies } });
+
+                const afterLogoutRes = await request(`${BASE_URL}/admin.php`, { headers: { Cookie: authedCookies } });
+                const loc = afterLogoutRes.headers.location || '';
+                if (afterLogoutRes.status >= 301 && afterLogoutRes.status <= 308 && loc.includes('login')) {
+                    pass('K', 'Session invalidation', 'Session correctly rejected after logout');
+                } else if (afterLogoutRes.status === 200) {
+                    fail('K', 'Session invalidation', 'Session still valid after logout — admin page accessible', 'CWE-613',
+                        'Call session_destroy() on logout, unset $_SESSION, and delete the session cookie.');
+                } else {
+                    info('K', 'Session invalidation', `After logout: HTTP ${afterLogoutRes.status}`);
+                }
+            }
+        } catch (e) {
+            fail('K', 'Session invalidation', `Test failed: ${e.message}`, 'CWE-613');
+        }
+    }
+
+    // Subresource Integrity — flag external scripts/styles missing integrity=
+    try {
+        const res  = await request(BASE_URL);
+        const html = res.body;
+        const externals = [];
+        for (const m of html.matchAll(/<(script|link)([^>]*?)(?:\/>|>)/gi)) {
+            const attrs    = m[2];
+            const srcMatch = attrs.match(/(?:src|href)=["']([^"']+)["']/i);
+            if (!srcMatch) continue;
+            const url = srcMatch[1];
+            if (!url.startsWith('http') || url.includes(hostname)) continue;
+            externals.push({ url, hasIntegrity: /integrity=["'][^"']+["']/.test(attrs) });
+        }
+        if (!externals.length) {
+            pass('K', 'Subresource Integrity', 'No external scripts or stylesheets on home page');
+        } else {
+            const missing = externals.filter(e => !e.hasIntegrity);
+            if (missing.length) {
+                warn('K', 'Subresource Integrity',
+                    `${missing.length}/${externals.length} external resource(s) missing integrity= attribute`, 'CWE-829',
+                    'Add integrity= and crossorigin= to CDN-hosted scripts/styles. Generate hashes at https://www.srihash.org/');
+            } else {
+                pass('K', 'Subresource Integrity', `All ${externals.length} external resource(s) have integrity= attribute`);
+            }
+        }
+    } catch (e) {
+        info('K', 'Subresource Integrity', `Check failed: ${e.message}`);
+    }
+}
+
 // ─── Section G: SSL Labs (optional) ───────────────────────────────────────────
 
 async function checkSslLabs() {
@@ -687,11 +916,13 @@ function printReport() {
     console.log(`  ${G}✔ ${totals.PASS} passed${R}  ${RED}✘ ${totals.FAIL} failed${R}  ${Y}⚠ ${totals.WARN} warnings${R}  ${C}ℹ ${totals.INFO} info${R}`);
     console.log(`${B}───────────────────────────────────────────────────────────${R}\n`);
 
-    console.log(`${B}Suggestions for further hardening:${R}`);
-    for (const s of SUGGESTIONS) {
-        console.log(`  ${C}›${R} ${B}${s.item}:${R} ${D}${s.detail}${R}`);
+    if (SUGGESTIONS.length) {
+        console.log(`${B}Suggestions for further hardening:${R}`);
+        for (const s of SUGGESTIONS) {
+            console.log(`  ${C}›${R} ${B}${s.item}:${R} ${D}${s.detail}${R}`);
+        }
+        console.log('');
     }
-    console.log('');
 }
 
 function generateMarkdown() {
@@ -746,9 +977,11 @@ function generateMarkdown() {
         }
     }
 
-    md += `---\n\n## Suggestions for Further Hardening\n\n`;
-    for (const s of SUGGESTIONS) {
-        md += `- **${s.item}:** ${s.detail}\n`;
+    if (SUGGESTIONS.length) {
+        md += `---\n\n## Suggestions for Further Hardening\n\n`;
+        for (const s of SUGGESTIONS) {
+            md += `- **${s.item}:** ${s.detail}\n`;
+        }
     }
 
     return md;
@@ -802,6 +1035,8 @@ async function main() {
     await checkInfoDisclosure();
     await checkOutdatedComponents();
     await checkAccountEnumeration();
+    await checkDnsSecurity();
+    await checkApplicationHardening();
     await checkSslLabs();
     printReport();
     saveReport();
