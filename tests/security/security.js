@@ -111,20 +111,60 @@ function parseCookies(setCookieHeaders) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// ─── Progress spinner ──────────────────────────────────────────────────────────
+
+const FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+let _spinIdx      = 0;
+let _spinInterval = null;
+let _spinLabel    = '';
+let _spinChecks   = 0;
+let _spinTotal    = 0;   // sections completed
+const TOTAL_SECTIONS = 12; // matches SECTION_ORDER.length
+
+function _renderSpinner() {
+    _spinIdx = (_spinIdx + 1) % FRAMES.length;
+    const counts = _spinTotal > 0
+        ? `section ${_spinTotal}/${TOTAL_SECTIONS} · `
+        : '';
+    const line = `  ${FRAMES[_spinIdx]} ${counts}${_spinLabel} … ${_spinChecks} check${_spinChecks === 1 ? '' : 's'}`;
+    process.stdout.write(`\r${line.padEnd(78)}`);
+}
+
+function startSection(sec, label) {
+    _spinLabel  = `${sec}: ${label}`;
+    _spinChecks = 0;
+    _spinTotal++;
+    if (!_spinInterval) {
+        _spinInterval = setInterval(_renderSpinner, 80);
+    }
+}
+
+function stopSpinner() {
+    if (_spinInterval) {
+        clearInterval(_spinInterval);
+        _spinInterval = null;
+        process.stdout.write('\r' + ' '.repeat(80) + '\r');
+    }
+}
+
 // ─── Result accumulator ───────────────────────────────────────────────────────
 
 const results = [];
 
 function pass(section, check, detail = '') {
+    _spinChecks++;
     results.push({ status: 'PASS', section, check, detail, cwe: null, remediation: '' });
 }
 function fail(section, check, detail = '', cwe = null, remediation = '') {
+    _spinChecks++;
     results.push({ status: 'FAIL', section, check, detail, cwe, remediation });
 }
 function warn(section, check, detail = '', cwe = null, remediation = '') {
+    _spinChecks++;
     results.push({ status: 'WARN', section, check, detail, cwe, remediation });
 }
 function info(section, check, detail = '') {
+    _spinChecks++;
     results.push({ status: 'INFO', section, check, detail, cwe: null, remediation: '' });
 }
 
@@ -1246,28 +1286,29 @@ async function main() {
 
     // 2-second pause between sections prevents triggering LiteSpeed's flood protection
     // (Simply.com shared hosting blocks an IP after a burst of rapid requests).
-    await checkTransport();
+    startSection('A', SECTION_NAMES.A); await checkTransport();
     await sleep(2000);
-    await checkSecurityHeaders();
+    startSection('B', SECTION_NAMES.B); await checkSecurityHeaders();
     await sleep(2000);
-    await checkCookies();
+    startSection('C', SECTION_NAMES.C); await checkCookies();
     await sleep(2000);
-    await checkAccessControl();
+    startSection('D', SECTION_NAMES.D); await checkAccessControl();
     await sleep(2000);
-    await checkCsrf();
+    startSection('E', SECTION_NAMES.E); await checkCsrf();
     await sleep(2000);
-    await checkInfoDisclosure();
+    startSection('F', SECTION_NAMES.F); await checkInfoDisclosure();
     await sleep(2000);
-    await checkOutdatedComponents();
+    startSection('H', SECTION_NAMES.H); await checkOutdatedComponents();
     await sleep(2000);
-    await checkAccountEnumeration();
+    startSection('I', SECTION_NAMES.I); await checkAccountEnumeration();
     await sleep(2000);
-    await checkDnsSecurity();
+    startSection('J', SECTION_NAMES.J); await checkDnsSecurity();
     await sleep(2000);
-    await checkCweTop25();
+    startSection('L', SECTION_NAMES.L); await checkCweTop25();
     await sleep(2000);
-    await checkApplicationHardening();
-    await checkSslLabs();
+    startSection('K', SECTION_NAMES.K); await checkApplicationHardening();
+    startSection('G', SECTION_NAMES.G); await checkSslLabs();
+    stopSpinner();
     printReport();
     saveReport();
     const failures = results.filter(r => r.status === 'FAIL').length;
