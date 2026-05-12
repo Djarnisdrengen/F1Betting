@@ -12,6 +12,7 @@ return [
         'logout'                => 'Log ud',
         'rules'                 => 'Regler',
         'toggle_theme'          => 'Skift tema',
+        'toggle_palette'        => 'Skift palette',
         'lang_switch_label'     => 'English',
         'change_language'       => 'Skift sprog',
 
@@ -191,6 +192,7 @@ return [
         'logout'                => 'Logout',
         'rules'                 => 'Rules',
         'toggle_theme'          => 'Toggle theme',
+        'toggle_palette'        => 'Toggle palette',
         'lang_switch_label'     => 'Dansk',
         'change_language'       => 'Change language',
 

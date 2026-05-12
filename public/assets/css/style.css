@@ -30,30 +30,85 @@ a {
 
 /* Dark Theme */
 body.dark {
-    --bg-primary: #0a0a0b;
-    --bg-secondary: #141416;
-    --bg-card: #1a1a1d;
-    --bg-hover: #242428;
-    --text-primary: #f5f5f7;
-    --text-secondary: #b0b0b5;
-    --text-muted: #8a8a90;
-    --border-color: #2a2a2e;
+    --bg-primary:    #131316;
+    --bg-secondary:  #1c1c20;
+    --bg-card:       #232328;
+    --bg-hover:      #2d2d33;
+    --text-primary:  #f5f5f7;
+    --text-secondary:#b8b8be;
+    --text-muted:    #8e8e95;
+    --border-color:  #34343a;
     background-color: var(--bg-primary);
     color: var(--text-primary);
 }
 
 /* Light Theme */
 body.light {
-    --bg-primary: #f0f0f2;
-    --bg-secondary: #e5e5e8;
-    --bg-card: #f8f8fa;
-    --bg-hover: #dcdce0;
-    --text-primary: #1a1a1d;
-    --text-secondary: #4a4a50;
-    --text-muted: #6a6a70;
-    --border-color: #c8c8cc;
+    --bg-primary:    #e3e3e7;
+    --bg-secondary:  #d6d6db;
+    --bg-card:       #ececf0;
+    --bg-hover:      #cacace;
+    --text-primary:  #18181b;
+    --text-secondary:#454549;
+    --text-muted:    #66666b;
+    --border-color:  #b3b3b8;
     background-color: var(--bg-primary);
     color: var(--text-primary);
+}
+
+/* ============================================================
+   Clubhouse palette (opt-in)
+   <body class="dark clubhouse"> or <body class="light clubhouse">
+   ============================================================ */
+body.clubhouse {
+    --c-cream:        #f3ecdc;
+    --c-cream-deep:   #e8dfc8;
+    --c-paper:        #fbf6ea;
+    --c-paddock:      #1f1a14;
+    --c-paddock-2:    #2a241b;
+    --c-paddock-3:    #36302a;
+    --c-oxblood:      #8a1f1a;
+    --c-oxblood-light:#a8302a;
+    --c-oxblood-dark: #6a1612;
+    --c-racing-green: #1d3a2a;
+    --c-brass:        #b8893f;
+    --c-brass-deep:   #8e6829;
+    --c-ink:          #2a2520;
+    --c-ink-2:        #5a4f44;
+
+    --f1-red:        var(--c-oxblood);
+    --f1-red-light:  var(--c-oxblood-light);
+    --f1-red-dark:   var(--c-oxblood-dark);
+}
+body.clubhouse.dark {
+    --bg-primary:    var(--c-paddock);
+    --bg-secondary:  var(--c-paddock-2);
+    --bg-card:       var(--c-paddock-2);
+    --bg-hover:      var(--c-paddock-3);
+    --text-primary:  var(--c-cream);
+    --text-secondary:#c8bba0;
+    --text-muted:    #b8a987;
+    --border-color:  #4a423a;
+}
+body.clubhouse.light {
+    --bg-primary:    var(--c-cream);
+    --bg-secondary:  var(--c-cream-deep);
+    --bg-card:       var(--c-paper);
+    --bg-hover:      #e1d6b8;
+    --text-primary:  var(--c-ink);
+    --text-secondary:#4a4036;
+    --text-muted:    #666057;
+    --border-color:  #d4c6a8;
+}
+
+/* Retint hard-coded red rgba() shadows for clubhouse mode */
+body.clubhouse .card:hover          { box-shadow: 0 8px 24px rgba(138, 31, 26, 0.18); }
+body.clubhouse .btn-primary:hover   { box-shadow: 0 4px 12px rgba(138, 31, 26, 0.32); }
+body.clubhouse .form-select:focus,
+body.clubhouse input:focus,
+body.clubhouse textarea:focus       { box-shadow: 0 0 0 3px rgba(138, 31, 26, 0.22); }
+body.clubhouse .bet-item.my-bet {
+    background: linear-gradient(90deg, rgba(138, 31, 26, 0.18), var(--bg-secondary));
 }
 
 /* Container */

@@ -60,7 +60,11 @@
       "Bash(grep -E \"\\\\.php$\")",
       "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting diff --stat)",
       "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting add .gitignore config.example.php public/cron/import_qualifying.php public/cron/notifications.php public/includes/functions.php public/includes/smtp.php public/tools/db-restore.php public/tools/sync-from-live.php public/logs/.htaccess public/logs/.gitkeep)",
-      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting add public/includes/smtp.php)"
+      "Bash(git -C /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting add public/includes/smtp.php)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(gunzip -c webfetch-1778604611105-2rcwzz.bin)",
+      "Bash(mkdir -p /tmp/f1design)",
+      "Bash(tar -xf \"/home/thomas-helveg-povlsen/.claude/projects/-home-thomas-helveg-povlsen-Documents-Websites-github-F1Betting/e3e36382-633f-4cba-9aa9-8fd85bd0a036/tool-results/webfetch-1778604611105-2rcwzz.bin\")"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",

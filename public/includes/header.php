@@ -31,6 +31,7 @@ header("Content-Security-Policy: $csp_policy");
 // Handle toggle requests BEFORE any output
 $theme = getTheme();
 $lang = getLang();
+$palette = getPalette();
 
 if (isset($_GET['toggle_theme'])) {
     setTheme($theme === 'dark' ? 'light' : 'dark');
@@ -50,10 +51,19 @@ if (isset($_GET['toggle_lang'])) {
     header("Location: " . $currentUrl);
     exit;
 }
+if (isset($_GET['toggle_palette'])) {
+    setPalette($palette === 'broadcast' ? 'clubhouse' : 'broadcast');
+    $currentUrl = $_SERVER['REQUEST_URI'];
+    $currentUrl = preg_replace('/([&?])toggle_palette=1(&|$)/', '$1', $currentUrl);
+    $currentUrl = rtrim($currentUrl, '?&');
+    header("Location: " . $currentUrl);
+    exit;
+}
 
-// Refresh theme/lang after potential toggle
+// Refresh theme/lang/palette after potential toggle
 $theme = getTheme();
 $lang = getLang();
+$palette = getPalette();
 
 $currentUser = getCurrentUser();
 $settings = getSettings();
@@ -85,7 +95,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             </script>
     <?php endif; ?>
 </head>
-<body class="<?= $theme ?>">
+<body class="<?= $theme ?><?= $palette === 'clubhouse' ? ' clubhouse' : '' ?>">
     <header class="header">
         <div class="container">
             <div class="header-content">
@@ -137,6 +147,10 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                             </a>
                         <?php endif; ?>
                         <div class="mobile-controls">
+                            <a href="?toggle_palette=1" class="btn btn-ghost btn-icon">
+                                <i class="fas fa-<?= $palette === 'clubhouse' ? 'tv' : 'mug-hot' ?>"></i>
+                                <span><?= t('toggle_palette') ?></span>
+                            </a>
                             <a href="?toggle_theme=1" class="btn btn-ghost btn-icon">
                                 <i class="fas fa-<?= $theme === 'dark' ? 'sun' : 'moon' ?>"></i>
                                 <span><?= t('toggle_theme') ?></span>
@@ -150,6 +164,11 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                 </nav>
                 
                 <div class="controls desktop-only">
+                    <!-- Palette Toggle -->
+                    <a href="?toggle_palette=1" class="btn btn-ghost btn-icon" title="<?= t('toggle_palette') ?>">
+                        <i class="fas fa-<?= $palette === 'clubhouse' ? 'tv' : 'mug-hot' ?>"></i>
+                    </a>
+
                     <!-- Theme Toggle -->
                     <a href="?toggle_theme=1" class="btn btn-ghost btn-icon" title="<?= t('toggle_theme') ?>">
                         <i class="fas fa-<?= $theme === 'dark' ? 'sun' : 'moon' ?>"></i>

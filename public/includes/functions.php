@@ -100,6 +100,14 @@ function setTheme($theme) {
     $_SESSION['theme'] = in_array($theme, ['dark', 'light']) ? $theme : 'dark';
 }
 
+function getPalette() {
+    return $_SESSION['palette'] ?? 'broadcast';
+}
+
+function setPalette($palette) {
+    $_SESSION['palette'] = in_array($palette, ['broadcast', 'clubhouse']) ? $palette : 'broadcast';
+}
+
 // ============================================
 // HJÆLPEFUNKTIONER - BETTING & SETTINGS
 // ============================================
