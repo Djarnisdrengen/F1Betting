@@ -208,9 +208,14 @@ async function checkTransport() {
             'Verify TLS is configured correctly on the server.');
     }
 
-    // A4: HSTS
+    // A4: HSTS — checked on login.php (a guaranteed PHP response; the bare root URL
+    //     may return a proxy-level redirect that carries no PHP-set headers).
     try {
-        const res = await request(BASE_URL);
+        const rootRes = await request(BASE_URL);
+        if (rootRes.status >= 301 && rootRes.status < 400) {
+            info('A', 'Homepage redirect', `${BASE_URL} → HTTP ${rootRes.status} ${rootRes.headers.location || ''} — security headers checked on /login.php instead`);
+        }
+        const res = await request(`${BASE_URL}/login.php`);
         const hsts = res.headers['strict-transport-security'];
         if (!hsts) {
             fail('A', 'HSTS header present', 'Strict-Transport-Security header missing', 'CWE-319',
@@ -241,7 +246,9 @@ async function checkTransport() {
 async function checkSecurityHeaders() {
     let headers;
     try {
-        const res = await request(BASE_URL);
+        // Use login.php — a guaranteed PHP response. The bare root URL may return
+        // a proxy-level redirect before PHP runs, carrying no PHP-set headers.
+        const res = await request(`${BASE_URL}/login.php`);
         headers = res.headers;
     } catch (e) {
         fail('B', 'Security headers', `Request failed: ${e.message}`); return;
@@ -501,7 +508,7 @@ async function checkInfoDisclosure() {
 async function checkOutdatedComponents() {
     let headers;
     try {
-        const res = await request(BASE_URL);
+        const res = await request(`${BASE_URL}/login.php`);
         headers = res.headers;
     } catch (e) {
         fail('H', 'Component version check', `Request failed: ${e.message}`); return;
