@@ -109,6 +109,8 @@ function parseCookies(setCookieHeaders) {
     return arr.map(c => c.split(';')[0]).join('; ');
 }
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
 // ─── Result accumulator ───────────────────────────────────────────────────────
 
 const results = [];
@@ -208,14 +210,14 @@ async function checkTransport() {
             'Verify TLS is configured correctly on the server.');
     }
 
-    // A4: HSTS — checked on login.php (a guaranteed PHP response; the bare root URL
+    // A4: HSTS — checked on index.php (a guaranteed PHP response; the bare root URL
     //     may return a proxy-level redirect that carries no PHP-set headers).
     try {
         const rootRes = await request(BASE_URL);
         if (rootRes.status >= 301 && rootRes.status < 400) {
-            info('A', 'Homepage redirect', `${BASE_URL} → HTTP ${rootRes.status} ${rootRes.headers.location || ''} — security headers checked on /login.php instead`);
+            info('A', 'Homepage redirect', `${BASE_URL} → HTTP ${rootRes.status} ${rootRes.headers.location || ''} — security headers checked on /index.php instead`);
         }
-        const res = await request(`${BASE_URL}/login.php`);
+        const res = await request(`${BASE_URL}/index.php`);
         const hsts = res.headers['strict-transport-security'];
         if (!hsts) {
             fail('A', 'HSTS header present', 'Strict-Transport-Security header missing', 'CWE-319',
@@ -246,9 +248,9 @@ async function checkTransport() {
 async function checkSecurityHeaders() {
     let headers;
     try {
-        // Use login.php — a guaranteed PHP response. The bare root URL may return
+        // Use index.php — a guaranteed PHP response. The bare root URL may return
         // a proxy-level redirect before PHP runs, carrying no PHP-set headers.
-        const res = await request(`${BASE_URL}/login.php`);
+        const res = await request(`${BASE_URL}/index.php`);
         headers = res.headers;
     } catch (e) {
         fail('B', 'Security headers', `Request failed: ${e.message}`); return;
@@ -391,6 +393,7 @@ async function checkAccessControl() {
     const authRequired = ['/admin.php', '/profile.php', '/bet.php'];
 
     for (const p of authRequired) {
+        await sleep(300);
         try {
             const res = await request(`${BASE_URL}${p}`);
             const loc = res.headers.location || '';
@@ -431,6 +434,7 @@ async function checkAccessControl() {
         '/tools/sync-from-live.php',
     ];
     for (const f of sensitiveFiles) {
+        await sleep(300);
         try {
             const res = await request(`${BASE_URL}${f}`);
             if (res.status === 403) {
@@ -508,7 +512,7 @@ async function checkInfoDisclosure() {
 async function checkOutdatedComponents() {
     let headers;
     try {
-        const res = await request(`${BASE_URL}/login.php`);
+        const res = await request(`${BASE_URL}/index.php`);
         headers = res.headers;
     } catch (e) {
         fail('H', 'Component version check', `Request failed: ${e.message}`); return;
@@ -765,6 +769,7 @@ async function checkCweTop25() {
     } catch (e) { info('L', 'SQL Injection: login (CWE-89)', `Test skipped: ${e.message}`); }
 
     // ── CWE-79: Reflected XSS ─────────────────────────────────────────────────
+    await sleep(500);
     try {
         const xssPayload = `<script>alert('xss-scan-F1')</script>`;
         const enc = encodeURIComponent(xssPayload);
@@ -800,6 +805,7 @@ async function checkCweTop25() {
     } catch (e) { info('L', 'Reflected XSS (CWE-79)', `Test skipped: ${e.message}`); }
 
     // ── CWE-22: Path Traversal ────────────────────────────────────────────────
+    await sleep(500);
     try {
         const enc = encodeURIComponent('../../../etc/passwd');
         const urls = [
@@ -822,6 +828,7 @@ async function checkCweTop25() {
     } catch (e) { info('L', 'Path Traversal (CWE-22)', `Test skipped: ${e.message}`); }
 
     // ── CWE-287: Improper Authentication — empty credentials ─────────────────
+    await sleep(500);
     try {
         const { csrf, cookies } = await getCsrf();
         const res = await postForm(`${BASE_URL}/login.php`,
@@ -837,6 +844,7 @@ async function checkCweTop25() {
     } catch (e) { info('L', 'Auth bypass: empty credentials (CWE-287)', `Test skipped: ${e.message}`); }
 
     // ── CWE-269: Privilege Escalation — regular user → admin ─────────────────
+    await sleep(500);
     // Uses TEST_REGULAR_USER_EMAIL/PASSWORD (not TEST_USER, which may be an admin account).
     const email    = process.env[`TEST_REGULAR_USER_EMAIL_${env.toUpperCase()}`]    || process.env.TEST_REGULAR_USER_EMAIL;
     const password = process.env[`TEST_REGULAR_USER_PASSWORD_${env.toUpperCase()}`] || process.env.TEST_REGULAR_USER_PASSWORD;
@@ -877,6 +885,7 @@ async function checkCweTop25() {
     }
 
     // ── CWE-434: Unrestricted File Upload — detect upload inputs ──────────────
+    await sleep(500);
     try {
         const pagesToCheck = [BASE_URL, `${BASE_URL}/profile.php`];
         let found = false;
@@ -1214,16 +1223,41 @@ function saveReport() {
 
 async function main() {
     console.log(`\nRunning security checks against ${BASE_URL}...`);
+
+    // Preflight: detect if the scanner IP is already blanket-blocked by the CDN/server.
+    // A 429 on the very first request means PHP hasn't run at all — results will be unreliable.
+    try {
+        const preRes = await request(BASE_URL);
+        if (preRes.status === 429) {
+            console.warn('\n\x1b[33m⚠  WARNING: First request to BASE_URL returned HTTP 429.\x1b[0m');
+            console.warn('   The web server (LiteSpeed / CDN) may have blanket-blocked this IP.');
+            console.warn('   Security header checks and other PHP-dependent tests will appear as FAIL even if they pass.');
+            console.warn('   Wait a few minutes and try again, or run from a different IP address.\n');
+        }
+    } catch (_) { /* ignore — connection errors are surfaced per-check */ }
+
+    // 2-second pause between sections prevents triggering LiteSpeed's flood protection
+    // (Simply.com shared hosting blocks an IP after a burst of rapid requests).
     await checkTransport();
+    await sleep(2000);
     await checkSecurityHeaders();
+    await sleep(2000);
     await checkCookies();
+    await sleep(2000);
     await checkAccessControl();
+    await sleep(2000);
     await checkCsrf();
+    await sleep(2000);
     await checkInfoDisclosure();
+    await sleep(2000);
     await checkOutdatedComponents();
+    await sleep(2000);
     await checkAccountEnumeration();
+    await sleep(2000);
     await checkDnsSecurity();
+    await sleep(2000);
     await checkCweTop25();
+    await sleep(2000);
     await checkApplicationHardening();
     await checkSslLabs();
     printReport();
