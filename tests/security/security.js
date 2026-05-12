@@ -830,11 +830,11 @@ async function checkCweTop25() {
     } catch (e) { info('L', 'Auth bypass: empty credentials (CWE-287)', `Test skipped: ${e.message}`); }
 
     // ── CWE-269: Privilege Escalation — regular user → admin ─────────────────
-    // Note: TEST_USER must be a non-admin account for this test to be meaningful.
-    const email    = process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`]    || process.env.TEST_USER_EMAIL;
-    const password = process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`] || process.env.TEST_USER_PASSWORD;
+    // Uses TEST_REGULAR_USER_EMAIL/PASSWORD (not TEST_USER, which may be an admin account).
+    const email    = process.env[`TEST_REGULAR_USER_EMAIL_${env.toUpperCase()}`]    || process.env.TEST_REGULAR_USER_EMAIL;
+    const password = process.env[`TEST_REGULAR_USER_PASSWORD_${env.toUpperCase()}`] || process.env.TEST_REGULAR_USER_PASSWORD;
     if (!email || !password) {
-        info('L', 'Privilege escalation (CWE-269)', 'TEST_USER credentials not set — skipping');
+        info('L', 'Privilege escalation (CWE-269)', 'TEST_REGULAR_USER credentials not set in .env — skipping');
     } else {
         try {
             const loginPageRes = await request(`${BASE_URL}/login.php`);
