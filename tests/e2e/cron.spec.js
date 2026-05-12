@@ -18,14 +18,6 @@ test.describe("Cron jobs", () => {
             await page.close();
         });
 
-        test.afterAll(async ({ browser }) => {
-            const page = await browser.newPage();
-            await page.goto(
-                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=cleanup_cron_qualifying`
-            );
-            await page.close();
-        });
-
         test("unauthorized without token or test mode", async ({ page }) => {
             await page.goto("/cron/import_qualifying.php");
             const text = await page.textContent("body");

@@ -6,6 +6,12 @@
 // ── APP ───────────────────────────────────────────────────────────────
 define('APP_ENV', 'test');                          // 'test' | 'live'
 
+// ── ADMIN USER ──────────────────────────────────────────────────────────────
+// Always preserved
+// Not in competition, but needed for admin tasks and testing. Must be same in build-deploy/.env.
+define('F1_ADMIN_EMAIL',    'f1_admin@helvegpovlsen.dk');
+define('F1_ADMIN_PASSWORD', 'change-me-32-randomhex-chars');
+
 // ── DATABASE ──────────────────────────────────────────────────────────
 define('DB_HOST', 'myhost');
 define('DB_NAME', 'mydb');

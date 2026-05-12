@@ -51,6 +51,11 @@ try {
         $db->query("SET foreign_key_checks = 1");
     }
 
+    // Preserve f1_admin service account so it survives the sync wipe
+    $adminStmt = $db->prepare("SELECT * FROM users WHERE email = ?");
+    $adminStmt->execute([F1_ADMIN_EMAIL]);
+    $adminRow = $adminStmt->fetch() ?: null;
+
     $db->beginTransaction();
 
     // Delete in FK-safe order (dependents first)
@@ -79,11 +84,38 @@ try {
             if ($table === 'races' && isset($row['name']) && strpos($row['name'], 'test: ') !== 0) {
                 $row['name'] = 'test: ' . $row['name'];
             }
+            if ($table === 'users' && isset($row['email'])) {
+                $at = strpos($row['email'], '@');
+                if ($at !== false && substr($row['email'], $at + 1) !== 'helvegpovlsen.dk') {
+                    $row['email'] = substr($row['email'], 0, $at + 1) . 'helvegpovlsen.dk';
+                }
+            }
             $stmt->execute(array_values($row));
         }
     }
 
+    // Restore f1_admin — ensures the service account exists even if absent from live
+    if ($adminRow) {
+        $cols = array_keys($adminRow);
+        $colList = implode(', ', array_map(fn($c) => "`$c`", $cols));
+        $placeholders = implode(', ', array_fill(0, count($cols), '?'));
+        $updates = implode(', ', array_map(fn($c) => "`$c` = VALUES(`$c`)", $cols));
+        $db->prepare("INSERT INTO users ($colList) VALUES ($placeholders) ON DUPLICATE KEY UPDATE $updates")
+           ->execute(array_values($adminRow));
+    }
+
     $db->commit();
+
+    // Clean up test-only rows in tables the sync intentionally skips.
+    // invites are not synced (session-scoped), but e2e tests may leave
+    // stale rows if a run fails before its own teardown.
+    $testEmails = [
+        'e2e_testing_invite_f1@helvegpovlsen.dk',
+        'e2e_testing_testuser_f1@helvegpovlsen.dk',
+        'e2e_reset_race_f1@helvegpovlsen.dk',
+    ];
+    $placeholders = implode(', ', array_fill(0, count($testEmails), '?'));
+    $db->prepare("DELETE FROM invites WHERE email IN ($placeholders)")->execute($testEmails);
 
     echo json_encode([
         'ok' => true,

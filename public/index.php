@@ -215,7 +215,7 @@ include __DIR__ . '/includes/header.php';
                             <span class="text-muted"><i class="fas fa-users"></i> <?= count($raceBets) ?> bets</span>
                             <div class="flex gap-1">
                                 <?php if ($status['status'] === 'open' && $currentUser && !$userBet && $currentUser['in_competition']): ?>                                    
-                                    <a href="bet.php?race=<?= $race['id'] ?>" class="btn btn-primary btn-sm"><?= t('place_bet') ?></a>
+                                    <a href="bet.php?race=<?= $race['id'] ?>&return=index" class="btn btn-primary btn-sm"><?= t('place_bet') ?></a>
                                 <?php elseif ($status['status'] === 'open' && $currentUser && $userBet && $currentUser['in_competition']): ?>
                                     <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> <?= t('edit') ?></a>
                                 <?php endif; ?>

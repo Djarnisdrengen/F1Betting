@@ -145,11 +145,11 @@ include __DIR__ . '/includes/header.php';
                 <table class="rules-table">
                     <tr>
                         <td><strong>1.</strong></td>
-                        <td><?= t('leaderboard_sort_points') ?></td>
+                        <td><?= t('leaderboard_sort_stars') ?></td>
                     </tr>
                     <tr>
                         <td><strong>2.</strong></td>
-                        <td><?= t('leaderboard_sort_stars') ?></td>
+                        <td><?= t('leaderboard_sort_points') ?></td>
                     </tr>
                 </table>
             </div>

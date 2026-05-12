@@ -133,14 +133,6 @@ test.describe("Admin panel", () => {
             await page.close();
         });
 
-        test.afterAll(async ({ browser }) => {
-            const page = await browser.newPage();
-            await page.goto(
-                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=cleanup_reset_result`
-            );
-            await page.close();
-        });
-
         test("reset button visible on last completed race", async ({ page }) => {
             await loginAsAdmin(page);
             await page.goto("/admin.php?tab=races");

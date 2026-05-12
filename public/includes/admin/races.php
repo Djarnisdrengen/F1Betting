@@ -25,19 +25,6 @@
                         <input type="time" name="race_time" class="form-input" required>
                     </div>
                 </div>
-                <div class="grid grid-3 mb-2">
-                    <?php foreach (['quali_p1', 'quali_p2', 'quali_p3'] as $i => $key): ?>
-                        <div class="form-group" style="margin:0;">
-                            <label class="form-label">Quali P<?= $i + 1 ?></label>
-                            <select name="<?= $key ?>" class="form-select">
-                                <option value=""><?= t('select_driver') ?></option>
-                                <?php foreach ($drivers as $d): ?>
-                                    <option value="<?= $d['id'] ?>"><?= driverLabel($d) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
                 <button type="submit" name="add_race" class="btn btn-primary"><i class="fas fa-plus"></i> <?= t('add') ?></button>
             </form>
         </div>

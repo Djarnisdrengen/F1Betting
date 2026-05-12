@@ -7,9 +7,11 @@ $currentUser = getCurrentUser();
 $db = getDB();
 $settings = getSettings();
 
-$raceId = sanitizeString($_GET['race'] ?? '');
+$raceId    = sanitizeString($_GET['race'] ?? '');
+$returnTo  = ($_GET['return'] ?? '') === 'index' ? 'index.php' : 'races.php';
+
 if (!$raceId) {
-    header("Location: races.php");
+    header("Location: " . $returnTo);
     exit;
 }
 
@@ -19,20 +21,20 @@ $stmt->execute([$raceId]);
 $race = $stmt->fetch();
 
 if (!$race) {
-    header("Location: races.php");
+    header("Location: " . $returnTo);
     exit;
 }
 
 // Tjek betting status
 $status = getBettingStatus($race, $settings);
 if ($status['status'] !== 'open') {
-    header("Location: races.php");
+    header("Location: " . $returnTo);
     exit;
 }
 
 // Tjek om bruger er med i konkurrence
 if (!$currentUser['in_competition']) {
-    header("Location: races.php?error=not_in_competition");
+    header("Location: " . $returnTo . "?error=not_in_competition");
     exit;
 }
 
@@ -40,7 +42,7 @@ if (!$currentUser['in_competition']) {
 $stmt = $db->prepare("SELECT id FROM bets WHERE user_id = ? AND race_id = ?");
 $stmt->execute([$currentUser['id'], $raceId]);
 if ($stmt->fetch()) {
-    header("Location: races.php?error=already_bet");
+    header("Location: " . $returnTo . "?error=already_bet");
     exit;
 }
 
@@ -170,7 +172,7 @@ include __DIR__ . '/includes/header.php';
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     <?= t('place_bet') ?>
                 </button>
-                <a href="races.php" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;">
+                <a href="<?= $returnTo ?>" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;">
                     <?= t('cancel') ?>
                 </a>
             </form>

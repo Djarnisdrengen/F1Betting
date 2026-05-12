@@ -167,8 +167,8 @@ return [
 
         // Leaderboard sorting rules
         'rules_leaderboard_sort'  => 'Rangliste Sortering',
-        'leaderboard_sort_points' => 'Point (højeste først)',
-        'leaderboard_sort_stars'  => 'Ved lige point: Stjerner (flest først)',
+        'leaderboard_sort_points' => 'Ved lige antal stjerner: Point (højeste først)',
+        'leaderboard_sort_stars'  => 'Stjerner (flest først)',
 
         // Example section
         'rules_example'           => 'Eksempel',
@@ -347,8 +347,8 @@ return [
 
         // Leaderboard sorting rules
         'rules_leaderboard_sort'  => 'Leaderboard Sorting',
-        'leaderboard_sort_points' => 'Points (highest first)',
-        'leaderboard_sort_stars'  => 'If tied: Stars (most first)',
+        'leaderboard_sort_points' => 'If tied: Points (highest first)',
+        'leaderboard_sort_stars'  => 'Stars (most first)',
 
         // Example section
         'rules_example'           => 'Example',

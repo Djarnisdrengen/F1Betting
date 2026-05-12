@@ -1,6 +1,6 @@
 const { defineConfig, devices } = require("@playwright/test");
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../build-deploy/.env") });
+require("dotenv").config({ path: path.join(__dirname, "../build-deploy/.env"), override: true });
 
 const env = process.env.DEPLOY_ENV || "test";
 process.env.BASE_URL = process.env[`BASE_URL_${env.toUpperCase()}`] || process.env.BASE_URL;

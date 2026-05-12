@@ -156,6 +156,12 @@ if (($_GET['action'] ?? '') === 'cleanup_reset_result') {
 // Reset to known state — settings table is preserved
 $db->query("UPDATE settings SET bet_size = 10");
 $db->query("DELETE FROM bets");
+
+// Preserve f1_admin service account across the wipe
+$adminStmt = $db->prepare("SELECT * FROM users WHERE email = ?");
+$adminStmt->execute([F1_ADMIN_EMAIL]);
+$adminRow = $adminStmt->fetch() ?: null;
+
 $db->query("DELETE FROM users");
 $db->query("DELETE FROM drivers");
 $db->query("DELETE FROM races");
@@ -183,6 +189,16 @@ foreach ([
     $uids[$name] = $id;
     $db->prepare("INSERT INTO users (id, email, password, display_name, in_competition, points, stars) VALUES (?, ?, ?, ?, 1, 0, 0)")
        ->execute([$id, $email, $hash, $name]);
+}
+
+// Restore f1_admin service account (in_competition=0, so never affects leaderboard or pool)
+if ($adminRow) {
+    $cols = array_keys($adminRow);
+    $colList = implode(', ', array_map(fn($c) => "`$c`", $cols));
+    $placeholders = implode(', ', array_fill(0, count($cols), '?'));
+    $updates = implode(', ', array_map(fn($c) => "`$c` = VALUES(`$c`)", $cols));
+    $db->prepare("INSERT INTO users ($colList) VALUES ($placeholders) ON DUPLICATE KEY UPDATE $updates")
+       ->execute(array_values($adminRow));
 }
 
 // Drivers — $d[number] = UUID

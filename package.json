@@ -8,6 +8,10 @@
     "test:e2e:live": "DEPLOY_ENV=live npx playwright test --config tests/playwright.config.js",
     "test:e2e:test": "DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js",
     "test:integration": "npx playwright test --config tests/playwright.integration.config.js",
+    "test:security": "node tests/security/security.js",
+    "test:security:ssllabs": "node tests/security/security.js --ssllabs",
+    "test:security:live": "DEPLOY_ENV=live node tests/security/security.js",
+    "test:security:live:ssllabs": "DEPLOY_ENV=live node tests/security/security.js --ssllabs",
     "test:all": "npm run test:smoke && npm run test:e2e",
     "sync:live": "node build-deploy/sync.js",
     "restore:db": "node build-deploy/restore-db.js"
