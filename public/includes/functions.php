@@ -231,7 +231,7 @@ function isRateLimited(PDO $db, string $ip): bool {
          WHERE ip = ? AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)"
     );
     $stmt->execute([$ip]);
-    return (int)$stmt->fetchColumn() >= 3;
+    return (int)$stmt->fetchColumn() >= 5;
 }
 
 function recordLoginAttempt(PDO $db, string $ip): void {
