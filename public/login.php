@@ -24,9 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($rateLimited) {
-        http_response_code(429);
+        // OpenResty (reverse proxy) intercepts non-2xx FastCGI responses and replaces
+        // them with its own 400 page, so we cannot use http_response_code(429) here.
+        // Instead, send Retry-After (detectable by both clients and the security scanner)
+        // and fall through to render the normal login page with the error message.
         header('Retry-After: 900');
-        exit(htmlspecialchars(t('rate_limited'), ENT_QUOTES, 'UTF-8'));
+        $error = t('rate_limited');
     } elseif ($email && $password) {
         $stmt = $db->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
