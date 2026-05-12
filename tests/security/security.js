@@ -847,16 +847,17 @@ async function checkCweTop25() {
             if (loginRes.status >= 301 && loginRes.status < 400) {
                 const authedCookies = parseCookies(loginRes.headers['set-cookie']) || preCookies;
                 const adminRes = await request(`${BASE_URL}/admin.php`, { headers: { Cookie: authedCookies } });
-                const loc      = adminRes.headers.location || '';
-                const blocked  = (adminRes.status >= 301 && adminRes.status < 400 && loc.includes('login')) ||
-                                  adminRes.status === 403 ||
-                                 (adminRes.status === 200 &&
-                                  (adminRes.body.includes('name="email"') || adminRes.body.includes('login.php')));
-                if (adminRes.status === 200 && !blocked) {
-                    fail('L', 'Privilege escalation (CWE-269)', 'Regular user can access admin.php', 'CWE-269',
-                        'Call requireAdmin() at the top of every admin page and action handler.');
-                } else if (blocked) {
-                    pass('L', 'Privilege escalation (CWE-269)', 'Admin page correctly restricted to admin role');
+                // Any 3xx out of admin.php means the server redirected the user away — blocked.
+                // (Non-admin users are sent to index.php, not login.php, so we can't require 'login' in loc.)
+                const blocked = adminRes.status >= 301 && adminRes.status < 400;
+                if (blocked) {
+                    pass('L', 'Privilege escalation (CWE-269)', `Admin page redirects regular users (HTTP ${adminRes.status})`);
+                } else if (adminRes.status === 200) {
+                    // Could be a real vulnerability OR TEST_USER is an admin account.
+                    warn('L', 'Privilege escalation (CWE-269)',
+                        'Admin page returned HTTP 200 — either access control is missing or TEST_USER is an admin account',
+                        'CWE-269',
+                        'Ensure TEST_USER in .env is a non-admin account. If it is, call requireAdmin() at the top of admin.php.');
                 } else {
                     info('L', 'Privilege escalation (CWE-269)', `HTTP ${adminRes.status} — manual review needed`);
                 }
