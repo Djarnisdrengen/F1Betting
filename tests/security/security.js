@@ -718,6 +718,9 @@ async function checkApplicationHardening() {
         let rateLimited = false;
         let rateLimitStatus = 0;
         for (let i = 0; i < 6; i++) {
+            // 500 ms gap keeps us below LiteSpeed's flood-protection threshold so we
+            // test our PHP rate-limiting code, not the web server's connection limiter.
+            if (i > 0) await new Promise(r => setTimeout(r, 500));
             const pageRes = await request(`${BASE_URL}/login.php`);
             const csrf    = extractCsrfToken(pageRes.body);
             const cookies = parseCookies(pageRes.headers['set-cookie']);
@@ -726,9 +729,9 @@ async function checkApplicationHardening() {
                 { email: fakeEmail, password: wrongPwd, csrf_token: csrf },
                 { headers: { Cookie: cookies } }
             );
-            // 429 = PHP-level block; 400/503 = web-server-level block (LiteSpeed/Apache)
-            if (res.status === 429 || res.status === 400 || res.status === 503 ||
-                res.headers['retry-after'] || res.headers['x-ratelimit-limit']) {
+            // Only 429 (+ standard rate-limit headers) count as PHP-level blocking.
+            // 400/503 come from LiteSpeed's own flood limiter and are not our code.
+            if (res.status === 429 || res.headers['retry-after'] || res.headers['x-ratelimit-limit']) {
                 rateLimited = true;
                 rateLimitStatus = res.status;
                 break;
