@@ -465,6 +465,10 @@ async function checkAccessControl() {
 async function checkCsrf() {
     try {
         const res = await request(`${BASE_URL}/login.php`);
+        if (res.status !== 200) {
+            info('E', 'CSRF token in login form', `HTTP ${res.status} — page not returned by PHP, check skipped`);
+            return;
+        }
         const hasToken =
             /<input[^>]+type=["']hidden["'][^>]*name=["'](csrf_token|_token|token)["']/i.test(res.body) ||
             /<input[^>]+name=["'](csrf_token|_token|token)["'][^>]*type=["']hidden["']/i.test(res.body);
@@ -553,6 +557,10 @@ async function checkAccountEnumeration() {
 
     try {
         const page1 = await request(`${BASE_URL}/login.php`);
+        if (page1.status !== 200) {
+            info('I', 'Account enumeration', `HTTP ${page1.status} on /login.php — page not returned by PHP, check skipped`);
+            return;
+        }
         const fakeRes = await postForm(`${BASE_URL}/login.php`, {
             email: fakeEmail,
             password: wrongPassword,
