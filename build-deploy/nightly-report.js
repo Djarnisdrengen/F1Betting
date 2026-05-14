@@ -85,16 +85,18 @@ function readLatestSecurityReport() {
 // ─── Email builder ───────────────────────────────────────────────────────────
 
 function stripAnsi(str) {
-    return str.replace(/\x1b\[[0-9;]*m/g, '').replace(/\r/g, '');
+    str = str.replace(/\x1b\[[0-9;]*m/g, '');
+    // Simulate terminal \r: keep only content after the last \r on each line
+    return str.split('\n').map(line => line.split('\r').pop()).join('\n');
 }
 
 function htmlEscape(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function buildEmail(e2e, sec, report) {
-    const date    = new Date().toISOString().slice(0, 10);
-    const ts      = new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
+function buildEmail(e2e, sec, report, startedAt) {
+    const date = startedAt.toISOString().slice(0, 10);
+    const ts   = startedAt.toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
     const e2eOk   = e2e.exitCode === 0;
     const secSummary = report?.summary ?? null;
     const secFail    = secSummary ? secSummary.fail > 0 : false;
@@ -155,7 +157,7 @@ function buildEmail(e2e, sec, report) {
     const cleanSec = stripAnsi(sec.output || '');
     const secLines = cleanSec
         .split('\n')
-        .filter(l => l.trim())
+        .filter(l => l.trim() && !/^[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏⠟]/.test(l.trim()))
         .slice(0, 120)
         .map(l => {
             const col = l.includes('❌') || l.includes('FAIL') ? '#e10600'
@@ -283,22 +285,19 @@ async function sendEmail(subject, html) {
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 async function main() {
-    console.log(`[nightly] Started at ${new Date().toISOString()}`);
+    const startedAt = new Date();
+    console.log(`[nightly] Started at ${startedAt.toISOString()}`);
 
     const [e2e, sec] = await Promise.all([runE2E(), runSecurity()]);
-    console.log('[nightly] e2e.output.length:', e2e.output.length);
-    console.log('[nightly] sec.output.length:', sec.output.length);
-    console.log('[nightly] e2e.output tail:', JSON.stringify(e2e.output.slice(-200)));
     const report = readLatestSecurityReport();
 
     const e2eOk   = e2e.exitCode === 0;
     const secFail = report ? report.summary.fail > 0 : false;
     const overall = e2eOk && !secFail ? 'ALL OK' : 'ISSUES FOUND';
-    const date    = new Date().toISOString().slice(0, 10);
+    const date    = startedAt.toISOString().slice(0, 10);
 
     const subject = `[F1Betting] Nightly — ${overall} — ${date}`;
-    const html    = buildEmail(e2e, sec, report);
-    console.log('[nightly] html.length:', html.length, '| has security section:', html.includes('Security Scan Output'));
+    const html    = buildEmail(e2e, sec, report, startedAt);
 
     await sendEmail(subject, html);
     console.log(`[nightly] Finished at ${new Date().toISOString()}`);
