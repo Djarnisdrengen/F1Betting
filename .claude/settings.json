@@ -80,7 +80,11 @@
       "Bash(python3 -c 'import bcrypt; print\\(bcrypt.hashpw\\(b'\\\\''UKT@Qhs!fbUH@UX0pnjLpv@yt$GHfwTyCzF3Jl1GuwS#yjIQtJaaJ6V9icV8xU2R'\\\\'', bcrypt.gensalt\\(\\)\\).decode\\(\\)\\)')",
       "Bash(python3 -c \"import subprocess; result = subprocess.run\\(['python3', '-m', 'pip', 'install', 'bcrypt', '-q'], capture_output=True\\); import bcrypt; print\\(bcrypt.hashpw\\(b'test', bcrypt.gensalt\\(\\)\\)\\)\")",
       "Bash(node -e ' *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(pandoc --version)",
+      "Bash(python3 -c \"import reportlab\")",
+      "Bash(node -e \"require\\('playwright'\\)\")",
+      "Bash(node -e \"require\\('@playwright/test'\\)\")"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",
