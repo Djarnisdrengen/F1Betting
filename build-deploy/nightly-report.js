@@ -118,21 +118,21 @@ function e2eRowsToHtml(rows) {
     return rows.map(row => {
         if (row.kind === 'header') {
             if (row.indent <= 0) {
-                return `<div style="padding:8px 0 4px;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #2a2a2a;">${htmlEscape(row.name)}</div>`;
+                return `<div style="padding:8px 0 4px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #2a2a2a;">${htmlEscape(row.name)}</div>`;
             }
-            return `<div style="padding:10px 0 3px;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.6px;">${htmlEscape(row.name)}</div>`;
+            return `<div style="padding:10px 0 3px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;">${htmlEscape(row.name)}</div>`;
         }
         const col = row.kind === 'pass' ? '#27ae60' : '#e10600';
         const ico = row.kind === 'pass' ? '&#x2705;' : '&#x274C;';
         const msg = row.msg
-            ? `<div style="padding:1px 0 4px 22px;font-size:11px;color:#666;">&#x21B3; ${htmlEscape(row.msg)}</div>`
+            ? `<div style="padding:1px 0 4px 22px;font-size:11px;color:#aaa;">&#x21B3; ${htmlEscape(row.msg)}</div>`
             : '';
         return `<div style="padding:3px 0;font-size:13px;color:${col};">${ico} ${htmlEscape(row.name)}</div>${msg}`;
     }).join('');
 }
 
 function secChecksToHtml(checks) {
-    if (!checks?.length) return '<p style="color:#666;font-size:13px;padding:8px 0;">No security data available.</p>';
+    if (!checks?.length) return '<p style="color:#aaa;font-size:13px;padding:8px 0;">No security data available.</p>';
 
     const grouped = {};
     for (const c of checks) {
@@ -154,13 +154,13 @@ function secChecksToHtml(checks) {
         ].filter(Boolean).join('&nbsp;');
 
         const checkRows = items.map(c => {
-            const cc  = c.status === 'FAIL' ? '#e10600' : c.status === 'WARN' ? '#f39c12' : '#4a9960';
+            const cc  = c.status === 'FAIL' ? '#e10600' : c.status === 'WARN' ? '#f39c12' : '#4db87a';
             const ico = c.status === 'FAIL' ? '&#x274C;' : c.status === 'WARN' ? '&#x26A0;&#xFE0F;' : '&#x2705;';
             const det = c.detail
-                ? `<div style="padding:1px 0 2px 22px;font-size:11px;color:#666;">&#x21B3; ${htmlEscape(c.detail)}</div>`
+                ? `<div style="padding:1px 0 2px 22px;font-size:11px;color:#aaa;">&#x21B3; ${htmlEscape(c.detail)}</div>`
                 : '';
             const rem = c.remediation
-                ? `<div style="padding:1px 0 4px 22px;font-size:11px;color:#555;">&#x2699;&#xFE0F; ${htmlEscape(c.remediation)}</div>`
+                ? `<div style="padding:1px 0 4px 22px;font-size:11px;color:#999;">&#x2699;&#xFE0F; ${htmlEscape(c.remediation)}</div>`
                 : '';
             return `<div style="padding:3px 0;font-size:13px;color:${cc};">${ico} ${htmlEscape(c.check)}</div>${det}${rem}`;
         }).join('');
@@ -169,7 +169,7 @@ function secChecksToHtml(checks) {
 <details class="sec-section"${hasIssue ? ' open' : ''}>
   <summary style="padding:10px 0 10px 12px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #2a2a2a;">
     <span style="font-size:13px;font-weight:600;color:${col};">[${letter}] ${htmlEscape(name)}</span>
-    <span style="font-size:11px;color:#666;">${badge}</span>
+    <span style="font-size:11px;color:#aaa;">${badge}</span>
   </summary>
   <div style="padding:0 0 8px 28px;">${checkRows}</div>
 </details>`;
@@ -193,7 +193,7 @@ function buildEmail(e2e, _sec, report, startedAt) {
     const e2ePass   = e2eRows.filter(r => r.kind === 'pass').length;
     const e2eFail   = e2eRows.filter(r => r.kind === 'fail').length;
     const e2eTotal  = e2ePass + e2eFail;
-    const e2eHtml   = e2eRowsToHtml(e2eRows) || '<p style="color:#666;font-size:13px;">No output captured.</p>';
+    const e2eHtml   = e2eRowsToHtml(e2eRows) || '<p style="color:#aaa;font-size:13px;">No output captured.</p>';
 
     // Security — structured from JSON report
     const allChecks = report?.checks ?? [];
@@ -218,10 +218,10 @@ function buildEmail(e2e, _sec, report, startedAt) {
   .scores td{width:33%;text-align:center;padding:16px 10px;background:#1a1a1a;border-radius:10px;vertical-align:middle;}
   details>summary{padding:15px 28px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;}
   details>summary::-webkit-details-marker{display:none;}
-  details>summary::before{content:'▸';margin-right:10px;color:#555;transition:transform .15s;display:inline-block;}
+  details>summary::before{content:'▸';margin-right:10px;color:#777;transition:transform .15s;display:inline-block;}
   details[open]>summary::before{transform:rotate(90deg);}
   .sec-section>summary{padding:10px 0 10px 12px;}
-  .sec-section>summary::before{color:#444;}
+  .sec-section>summary::before{color:#666;}
   @media(max-width:540px){
     .scores td{display:block;width:auto!important;margin-bottom:6px;}
     details>summary{padding:14px 16px;}
@@ -236,8 +236,8 @@ function buildEmail(e2e, _sec, report, startedAt) {
 <!-- Header -->
 <div style="padding:28px 28px 20px;text-align:center;background:#141414;border-bottom:3px solid #e10600;">
   <h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;letter-spacing:.5px;">&#127937; F1Betting &mdash; Nightly Report</h1>
-  <p style="margin:8px 0 0;color:#666;font-size:13px;">${ts}</p>
-  <p style="margin:3px 0 0;font-size:12px;color:#3a3a3a;">${htmlEscape(BASE_URL)}</p>
+  <p style="margin:8px 0 0;color:#aaa;font-size:13px;">${ts}</p>
+  <p style="margin:3px 0 0;font-size:12px;color:#777;">${htmlEscape(BASE_URL)}</p>
 </div>
 
 <!-- Status -->
@@ -250,17 +250,17 @@ function buildEmail(e2e, _sec, report, startedAt) {
   <table class="scores">
   <tr>
     <td>
-      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">E2E Tests</div>
+      <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">E2E Tests</div>
       <div style="font-size:24px;">${e2eOk ? '&#x2705;' : '&#x274C;'}</div>
-      <div style="font-size:13px;color:#aaa;margin-top:4px;">${e2ePass}/${e2eTotal} passed</div>
+      <div style="font-size:13px;color:#ccc;margin-top:4px;">${e2ePass}/${e2eTotal} passed</div>
     </td>
     <td>
-      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Security</div>
+      <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Security</div>
       <div style="font-size:24px;">${secSummary ? (secSummary.fail === 0 ? '&#x2705;' : '&#x274C;') : '&#x2753;'}</div>
-      <div style="font-size:12px;color:#aaa;margin-top:4px;">${secSummary ? `${secSummary.pass}&#x2705;&nbsp;${secSummary.fail}&#x274C;&nbsp;${secSummary.warn}&#x26A0;&#xFE0F;` : 'N/A'}</div>
+      <div style="font-size:12px;color:#ccc;margin-top:4px;">${secSummary ? `${secSummary.pass}&#x2705;&nbsp;${secSummary.fail}&#x274C;&nbsp;${secSummary.warn}&#x26A0;&#xFE0F;` : 'N/A'}</div>
     </td>
     <td>
-      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">SSL Labs</div>
+      <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">SSL Labs</div>
       <div style="font-size:20px;font-weight:700;color:${sslColor};margin:6px 0;">${htmlEscape(sslText)}</div>
     </td>
   </tr>
@@ -271,7 +271,7 @@ function buildEmail(e2e, _sec, report, startedAt) {
 <details open>
   <summary>
     <span style="font-size:14px;font-weight:600;color:#fff;">E2E Tests</span>
-    <span style="font-size:12px;color:#666;">${e2ePass}/${e2eTotal} passed</span>
+    <span style="font-size:12px;color:#aaa;">${e2ePass}/${e2eTotal} passed</span>
   </summary>
   <div class="body-pad" style="padding:0 28px 16px;">
     ${e2eHtml}
@@ -282,7 +282,7 @@ function buildEmail(e2e, _sec, report, startedAt) {
 <details${secFail ? ' open' : ''}>
   <summary>
     <span style="font-size:14px;font-weight:600;color:#fff;">Security Checks</span>
-    <span style="font-size:12px;color:#666;">${secSummary ? `${secSummary.pass}&#x2705;&nbsp;${secSummary.fail}&#x274C;&nbsp;${secSummary.warn}&#x26A0;&#xFE0F;` : 'N/A'}</span>
+    <span style="font-size:12px;color:#aaa;">${secSummary ? `${secSummary.pass}&#x2705;&nbsp;${secSummary.fail}&#x274C;&nbsp;${secSummary.warn}&#x26A0;&#xFE0F;` : 'N/A'}</span>
   </summary>
   <div class="body-pad" style="padding:0 28px 16px;">
     ${secHtml}
@@ -291,7 +291,7 @@ function buildEmail(e2e, _sec, report, startedAt) {
 
 <!-- Footer -->
 <div style="padding:14px 28px;text-align:center;border-top:1px solid #1a1a1a;">
-  <p style="margin:0;color:#333;font-size:11px;">F1Betting Nightly &middot; ${date}</p>
+  <p style="margin:0;color:#777;font-size:11px;">F1Betting Nightly &middot; ${date}</p>
 </div>
 
 </div>
