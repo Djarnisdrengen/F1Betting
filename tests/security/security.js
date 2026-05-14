@@ -1079,7 +1079,7 @@ async function checkSslLabs() {
 
     try {
         const startRes = await request(
-            `https://api.ssllabs.com/api/v3/analyze?host=${hostname}&startNew=on&all=done`,
+            `https://api.ssllabs.com/api/v3/analyze?host=${hostname}&fromCache=on&maxAge=24&all=done`,
             { headers: { 'Accept': 'application/json' } }
         );
         let data = JSON.parse(startRes.body);

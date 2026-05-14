@@ -9,7 +9,7 @@
  *   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, REPORT_TO
  */
 
-const { spawnSync } = require('child_process');
+const { spawn } = require('child_process');
 const fs   = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -34,37 +34,35 @@ const SECTION_NAMES = {
 
 // ─── Runners ────────────────────────────────────────────────────────────────
 
+function runProcess(label, cmd, args, env) {
+    return new Promise(resolve => {
+        console.log(`[nightly] ${label}…`);
+        const proc = spawn(cmd, args, { cwd: ROOT, env: { ...process.env, ...env } });
+        let stdout = '', stderr = '';
+        proc.stdout?.on('data', d => { stdout += d; });
+        proc.stderr?.on('data', d => { stderr += d; });
+        proc.on('error', err => resolve({ exitCode: 1, output: err.message }));
+        proc.on('close', code => {
+            console.log(`[nightly] ${label} exit code: ${code}`);
+            resolve({ exitCode: code ?? 1, output: stdout + (stderr ? '\n' + stderr : '') });
+        });
+    });
+}
+
 function runE2E() {
-    console.log('[nightly] E2E tests (live)…');
-    const r = spawnSync(
-        'npx',
-        ['playwright', 'test', '--config', 'tests/playwright.config.js'],
-        {
-            cwd: ROOT,
-            env: { ...process.env, DEPLOY_ENV: 'live' },
-            encoding: 'utf8',
-            timeout: 180_000,
-        }
+    return runProcess(
+        'E2E tests (live)',
+        'npx', ['playwright', 'test', '--config', 'tests/playwright.config.js'],
+        { DEPLOY_ENV: 'live' }
     );
-    const out = (r.stdout || '') + (r.stderr ? '\n' + r.stderr : '');
-    console.log('[nightly] E2E exit code:', r.status);
-    return { exitCode: r.status ?? 1, output: out };
 }
 
 function runSecurity() {
-    console.log('[nightly] Security scan (live, --ssllabs --ratelimit)…');
-    const r = spawnSync(
-        'node',
-        ['tests/security/security.js', '--ssllabs', '--ratelimit'],
-        {
-            cwd: ROOT,
-            env: { ...process.env, DEPLOY_ENV: 'live' },
-            encoding: 'utf8',
-            timeout: 360_000,
-        }
+    return runProcess(
+        'Security scan (live, --ssllabs --ratelimit)',
+        'node', ['tests/security/security.js', '--ssllabs', '--ratelimit'],
+        { DEPLOY_ENV: 'live' }
     );
-    console.log('[nightly] Security exit code:', r.status);
-    return { exitCode: r.status ?? 1, output: (r.stdout || '') + (r.stderr || '') };
 }
 
 function readLatestSecurityReport() {
@@ -89,7 +87,7 @@ function htmlEscape(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function buildEmail(e2e, report) {
+function buildEmail(e2e, sec, report) {
     const date    = new Date().toISOString().slice(0, 10);
     const ts      = new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
     const e2eOk   = e2e.exitCode === 0;
@@ -144,6 +142,22 @@ function buildEmail(e2e, report) {
         .map(l => {
             const col = l.includes('❌') ? '#e10600'
                 : l.includes('✅') ? '#27ae60'
+                : '#888';
+            return `<div style="color:${col};font-family:monospace;font-size:12px;white-space:pre-wrap;margin:1px 0;">${htmlEscape(l)}</div>`;
+        })
+        .join('');
+
+    // ── Security output block ──────────────────────────────────────────
+    const cleanSec = stripAnsi(sec.output || '');
+    const secLines = cleanSec
+        .split('\n')
+        .filter(l => l.trim())
+        .slice(0, 120)
+        .map(l => {
+            const col = l.includes('❌') || l.includes('FAIL') ? '#e10600'
+                : l.includes('✅') || l.includes('PASS') ? '#27ae60'
+                : l.includes('⚠') || l.includes('WARN') ? '#f39c12'
+                : l.startsWith('[') ? '#7a8fa6'
                 : '#888';
             return `<div style="color:${col};font-family:monospace;font-size:12px;white-space:pre-wrap;margin:1px 0;">${htmlEscape(l)}</div>`;
         })
@@ -218,6 +232,14 @@ ${findings.length ? `
   </div>
 </td></tr>
 
+<!-- Security output -->
+<tr><td style="padding:20px 36px;border-bottom:1px solid #2a2a2a;">
+  <h3 style="margin:0 0 12px;color:#fff;font-size:15px;">Security Scan Output</h3>
+  <div style="background:#111;border-radius:8px;padding:14px;overflow:auto;">
+    ${secLines || '<div style="color:#555;font-size:12px;">No output captured.</div>'}
+  </div>
+</td></tr>
+
 <!-- Footer -->
 <tr><td style="padding:16px 36px;text-align:center;">
   <p style="margin:0;color:#333;font-size:11px;">F1Betting Nightly · ${date}</p>
@@ -259,8 +281,7 @@ async function sendEmail(subject, html) {
 async function main() {
     console.log(`[nightly] Started at ${new Date().toISOString()}`);
 
-    const e2e    = runE2E();
-    const sec    = runSecurity();
+    const [e2e, sec] = await Promise.all([runE2E(), runSecurity()]);
     const report = readLatestSecurityReport();
 
     const e2eOk   = e2e.exitCode === 0;
@@ -269,7 +290,7 @@ async function main() {
     const date    = new Date().toISOString().slice(0, 10);
 
     const subject = `[F1Betting] Nightly — ${overall} — ${date}`;
-    const html    = buildEmail(e2e, report);
+    const html    = buildEmail(e2e, sec, report);
 
     await sendEmail(subject, html);
     console.log(`[nightly] Finished at ${new Date().toISOString()}`);
