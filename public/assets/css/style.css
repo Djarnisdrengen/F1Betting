@@ -710,10 +710,10 @@ body.clubhouse .bet-item.my-bet {
 /* Tabs */
 .tabs {
     display: flex;
-    gap: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.25rem;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 1.5rem;
-    overflow-x: auto;
 }
 
 .tab {
@@ -791,19 +791,6 @@ body.clubhouse .bet-item.my-bet {
 @media (max-width: 768px) {
     .hero h1 {
         font-size: 1.75rem;
-    }
-    
-    .header-content {
-        flex-wrap: wrap;
-    }
-    
-    .nav {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border-color);
-        margin-top: 1rem;
     }
     
     .bet-item {
@@ -1146,125 +1133,6 @@ body.light .logo-light { display: block; }
 
 /* Mobile breakpoint */
 @media (max-width: 768px) {
-    /* Show mobile menu button */
-    .mobile-menu-btn {
-        display: block;
-    }
-    
-    /* Hide desktop controls */
-    .desktop-only {
-        display: none !important;
-    }
-    
-    /* Mobile navigation - opens from right */
-    .nav {
-        position: fixed;
-        top: 0;
-        right: -100%;
-        left: auto;
-        width: 280px;
-        height: 100vh;
-        background: var(--bg-card);
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0;
-        padding: 5rem 0 2rem 0;
-        transition: right 0.3s ease;
-        z-index: 100;
-        box-shadow: -2px 0 20px rgba(0,0,0,0.3);
-        overflow-y: auto;
-    }
-    
-    .nav.active {
-        right: 0;
-    }
-    
-    .nav-link {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    
-    .nav-link i {
-        width: 20px;
-        text-align: center;
-    }
-    
-    .nav-link.active::after {
-        display: none;
-    }
-    
-    .nav-link.active {
-        background: var(--bg-hover);
-        border-right: 3px solid var(--f1-red);
-    }
-    
-    /* Mobile nav extras */
-    .mobile-nav-extras {
-        display: block;
-        margin-top: 1rem;
-        border-top: 2px solid var(--border-color);
-        padding-top: 1rem;
-    }
-    
-    .mobile-nav-extras .nav-link {
-        color: var(--text-secondary);
-    }
-    
-    .mobile-controls {
-        padding: 1rem 1.5rem;
-        display: flex;
-        gap: 1rem;
-    }
-    
-    .mobile-controls .btn {
-        flex: 1;
-        justify-content: flex-start;
-        padding: 0.75rem 1rem;
-    }
-    
-    .mobile-controls .btn span {
-        margin-left: 0.5rem;
-    }
-    
-    /* Mobile overlay */
-    .nav-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 99;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
-    }
-    
-    .nav-overlay.active {
-        opacity: 1;
-        visibility: visible;
-    }
-    
-    /* Header adjustments */
-    .header-content {
-        padding: 0;
-    }
-    
-    .logo {
-        flex: 1;
-    }
-    
-    .logo-text {
-        font-size: 1rem;
-    }
-    
-    .logo-year {
-        display: none;
-    }
-    
     /* Hero section */
     .hero {
         padding: 2rem 0 !important;
@@ -1396,25 +1264,6 @@ body.light .logo-light { display: block; }
         white-space: nowrap;
     }
     
-    /* Admin tabs */
-    .tabs {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        gap: 0;
-        padding-bottom: 0.5rem;
-    }
-    
-    .tab {
-        padding: 0.75rem 1rem;
-        font-size: 0.8rem;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-    
-    .tab-count {
-        display: none;
-    }
-    
     /* Forms */
     .form-group {
         margin-bottom: 1rem;
@@ -1508,3 +1357,160 @@ body.light .logo-light { display: block; }
     }
 }
 
+/* ============================================================
+   Responsive header — container-query based
+   Replaces the old @media (max-width: 768px) nav/header rules.
+   ============================================================ */
+.header {
+    container-type: inline-size;
+    container-name: header-vp;
+}
+.header-content {
+    min-width: 0;
+}
+.logo {
+    min-width: 0;
+    flex: 0 1 auto;
+}
+.logo-text {
+    font-size: clamp(0.95rem, 1.5cqi + 0.6rem, 1.25rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+.nav {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
+}
+.btn-primary { white-space: nowrap; }
+
+/* Stage B+C: icon-only nav, year hidden, user name hidden */
+@container header-vp (max-width: 1024px) {
+    .logo-year { display: none; }
+    .nav-link span { display: none; }
+    .nav-link {
+        padding: 0.5rem;
+        width: 40px; height: 40px;
+        justify-content: center;
+    }
+    .nav-link i { font-size: 16px; width: auto; }
+    .user-name { display: none; }
+}
+
+/* Stage D: hamburger drawer */
+@container header-vp (max-width: 560px) {
+    .mobile-menu-btn { display: inline-flex; }
+    .header-content { position: relative; }
+    .nav {
+        position: absolute;
+        top: 100%; right: 0; left: auto;
+        flex-direction: column;
+        align-items: stretch;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.5rem;
+        min-width: 240px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+        z-index: 50;
+        display: none;
+        margin-top: 0.5rem;
+        height: auto;
+        width: auto;
+        transition: none;
+    }
+    .nav.active { display: flex; right: 0; }
+    .nav-link span { display: inline; }
+    .nav-link {
+        width: 100%; height: auto;
+        justify-content: flex-start;
+        padding: 0.65rem 0.75rem;
+    }
+    .nav-link.active::after { display: none; }
+    .nav-link.active { border-left: 3px solid var(--f1-red); background: var(--bg-hover); }
+
+    /* v1.1.0: hide desktop controls cluster — contents move into drawer */
+    .controls.desktop-only { display: none !important; }
+
+    /* v1.1.0: drawer footer holding palette/theme/lang toggles */
+    .mobile-nav-extras { display: flex; flex-direction: column; gap: 2px; }
+    .mobile-nav-extras .nav-divider {
+        height: 1px; background: var(--border-color);
+        margin: 6px 4px;
+    }
+    .mobile-nav-extras .nav-link {
+        color: var(--text-secondary);
+    }
+    .mobile-nav-extras .nav-link .meta {
+        margin-left: auto;
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+}
+
+/* ============================================================
+   Admin menu — tabs on desktop, dropdown on mobile
+   ============================================================ */
+.admin-shell {
+    container-type: inline-size;
+    container-name: admin-vp;
+}
+
+/* Mobile dropdown — hidden on desktop, shown below 720px */
+.admin-dropdown { display: none; }
+.admin-dropdown summary {
+    list-style: none;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Chivo', sans-serif;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+.admin-dropdown summary::-webkit-details-marker { display: none; }
+.admin-dropdown summary .label { display: flex; align-items: center; gap: 0.6rem; }
+.admin-dropdown summary .label > i:first-child { color: var(--f1-red); }
+.admin-dropdown summary .chev { transition: transform 0.2s; color: var(--text-muted); }
+.admin-dropdown[open] summary .chev { transform: rotate(180deg); }
+.admin-dropdown .menu {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 16px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+.admin-dropdown .menu a {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 0.85rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-family: 'Chivo', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 6px;
+}
+.admin-dropdown .menu a .l { display: flex; align-items: center; gap: 0.65rem; }
+.admin-dropdown .menu a:hover { background: var(--bg-hover); color: var(--text-primary); }
+.admin-dropdown .menu a.active { background: var(--bg-hover); color: var(--f1-red); }
+
+@container admin-vp (max-width: 720px) {
+    .tabs { display: none; }
+    .admin-dropdown { display: block; }
+}
+
+/* Viewport-media-query fallback — fires even if the page hasn't been
+   wrapped in .admin-shell yet. Container query above wins where it applies. */
+@media (max-width: 720px) {
+    .tabs { display: none; }
+    .admin-dropdown { display: block; }
+}

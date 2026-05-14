@@ -9,7 +9,8 @@ require('dotenv').config({ path: path.join(__dirname, '../../build-deploy/.env')
 
 const env = process.env.DEPLOY_ENV || 'test';
 const BASE_URL = process.env[`BASE_URL_${env.toUpperCase()}`] || process.env.BASE_URL;
-const USE_SSLLABS = process.argv.includes('--ssllabs');
+const USE_SSLLABS   = process.argv.includes('--ssllabs');
+const USE_RATELIMIT = process.argv.includes('--ratelimit');
 
 const UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
@@ -119,6 +120,7 @@ let _spinInterval = null;
 let _spinLabel    = '';
 let _spinChecks   = 0;
 let _spinTotal    = 0;   // sections completed
+let _totalChecks  = 0;   // cumulative checks across all sections
 const TOTAL_SECTIONS = 12; // matches SECTION_ORDER.length
 
 function _renderSpinner() {
@@ -126,7 +128,7 @@ function _renderSpinner() {
     const counts = _spinTotal > 0
         ? `section ${_spinTotal}/${TOTAL_SECTIONS} · `
         : '';
-    const line = `  ${FRAMES[_spinIdx]} ${counts}${_spinLabel} … ${_spinChecks} check${_spinChecks === 1 ? '' : 's'}`;
+    const line = `  ${FRAMES[_spinIdx]} ${counts}${_spinLabel} … ${_spinChecks} checks (${_totalChecks} total)`;
     process.stdout.write(`\r${line.padEnd(78)}`);
 }
 
@@ -152,19 +154,19 @@ function stopSpinner() {
 const results = [];
 
 function pass(section, check, detail = '') {
-    _spinChecks++;
+    _spinChecks++; _totalChecks++;
     results.push({ status: 'PASS', section, check, detail, cwe: null, remediation: '' });
 }
 function fail(section, check, detail = '', cwe = null, remediation = '') {
-    _spinChecks++;
+    _spinChecks++; _totalChecks++;
     results.push({ status: 'FAIL', section, check, detail, cwe, remediation });
 }
 function warn(section, check, detail = '', cwe = null, remediation = '') {
-    _spinChecks++;
+    _spinChecks++; _totalChecks++;
     results.push({ status: 'WARN', section, check, detail, cwe, remediation });
 }
 function info(section, check, detail = '') {
-    _spinChecks++;
+    _spinChecks++; _totalChecks++;
     results.push({ status: 'INFO', section, check, detail, cwe: null, remediation: '' });
 }
 
@@ -953,7 +955,9 @@ async function checkCweTop25() {
 
 async function checkApplicationHardening() {
     // Rate limiting — 6 rapid login attempts; look for 429 or rate-limit headers
-    try {
+    if (!USE_RATELIMIT) {
+        info('K', 'Rate limiting: login', 'Skipped (run with --ratelimit to enable)');
+    } else try {
         const fakeEmail = 'ratelimit-scan@example-scan.invalid';
         const wrongPwd  = 'WrongPwd_RateLimitTest_XYZ!';
         let rateLimited = false;

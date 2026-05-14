@@ -20,11 +20,22 @@ if ($report === null) {
 
 $entry = $report['csp-report'] ?? $report;
 
+$loc = $entry['source-file'] ?? '';
+if ($loc && (isset($entry['line-number']) || isset($entry['column-number']))) {
+    $loc .= ':' . ($entry['line-number'] ?? '?') . ':' . ($entry['column-number'] ?? '?');
+}
+
 $line = implode(' | ', array_filter([
-    'blocked-uri:'    . ($entry['blocked-uri']    ?? ''),
-    'violated:'       . ($entry['violated-directive'] ?? $entry['effective-directive'] ?? ''),
-    'document-uri:'   . ($entry['document-uri']   ?? ''),
-    'source-file:'    . ($entry['source-file']     ?? ''),
+    'blocked-uri:'      . ($entry['blocked-uri']          ?? ''),
+    'document-uri:'     . ($entry['document-uri']         ?? ''),
+    'violated:'         . ($entry['violated-directive']   ?? ''),
+    'effective:'        . ($entry['effective-directive']  ?? ''),
+    'disposition:'      . ($entry['disposition']          ?? ''),
+    'referrer:'         . ($entry['referrer']             ?? ''),
+    'source-file:'      . $loc,
+    'status-code:'      . ($entry['status-code'] !== null && $entry['status-code'] !== '' ? $entry['status-code'] : ''),
+    'script-sample:'    . ($entry['script-sample']        ?? ''),
+    'original-policy:'  . ($entry['original-policy']      ?? ''),
 ]));
 
 logToFile(APP_LOG_FILE, '[CSP] ' . $line);

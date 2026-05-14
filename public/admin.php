@@ -63,9 +63,9 @@ if (isset($_POST['add_race'])) {
     $location = trim($_POST['race_location'] ?? '');
     $date = $_POST['race_date'] ?? '';
     $time = $_POST['race_time'] ?? '';
-    $quali_p1 = $_POST['quali_p1'] ?: null;
-    $quali_p2 = $_POST['quali_p2'] ?: null;
-    $quali_p3 = $_POST['quali_p3'] ?: null;
+    $quali_p1 = $_POST['quali_p1'] ?? null;
+    $quali_p2 = $_POST['quali_p2'] ?? null;
+    $quali_p3 = $_POST['quali_p3'] ?? null;
     
     if ($name && $location && $date && $time) {
         // Validate date format
@@ -91,9 +91,9 @@ if (isset($_POST['update_race'])) {
     $location = trim($_POST['race_location'] ?? '');
     $date = $_POST['race_date'] ?? '';
     $time = $_POST['race_time'] ?? '';
-    $quali_p1 = $_POST['quali_p1'] ?: null;
-    $quali_p2 = $_POST['quali_p2'] ?: null;
-    $quali_p3 = $_POST['quali_p3'] ?: null;
+    $quali_p1 = $_POST['quali_p1'] ?? null;
+    $quali_p2 = $_POST['quali_p2'] ?? null;
+    $quali_p3 = $_POST['quali_p3'] ?? null;
     $result_p1 = $_POST['result_p1'] ?: null;
     $result_p2 = $_POST['result_p2'] ?: null;
     $result_p3 = $_POST['result_p3'] ?: null;
@@ -426,6 +426,15 @@ if (isset($_POST['update_settings'])) {
 
 $currentTab = $_GET['tab'] ?? 'races';
 
+$tabIcons = [
+    'races'   => 'flag',
+    'drivers' => 'car',
+    'users'   => 'users',
+    'invites' => 'envelope',
+    'bets'    => 'trophy',
+    'settings'=> 'cog',
+];
+
 // Tab count badges — lightweight COUNT queries for all tabs
 $tabCounts = [
     'races'   => $db->query("SELECT COUNT(*) FROM races")->fetchColumn(),
@@ -476,26 +485,41 @@ include __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <!-- Tabs -->
-<div class="tabs-container">
+<div class="admin-shell">
+
+    <!-- Mobile dropdown -->
+    <details class="admin-dropdown">
+        <summary>
+            <span class="label">
+                <i class="fas fa-<?= $tabIcons[$currentTab] ?>"></i>
+                <?= t($currentTab) ?>
+            </span>
+            <i class="fas fa-chevron-down chev"></i>
+        </summary>
+        <div class="menu">
+            <?php foreach ($tabIcons as $key => $icon): ?>
+                <a href="?tab=<?= $key ?>" class="<?= $currentTab === $key ? 'active' : '' ?>">
+                    <span class="l">
+                        <i class="fas fa-<?= $icon ?>"></i> <?= t($key) ?>
+                    </span>
+                    <?php if (!empty($tabCounts[$key])): ?>
+                        <span class="tab-count">(<?= $tabCounts[$key] ?>)</span>
+                    <?php endif; ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </details>
+
+    <!-- Desktop tabs -->
     <div class="tabs">
-        <a href="?tab=races" class="tab <?= $currentTab === 'races' ? 'active' : '' ?>">
-            <i class="fas fa-flag"></i> <?= t('races') ?> <span class="tab-count">(<?= $tabCounts['races'] ?>)</span>
-        </a>
-        <a href="?tab=drivers" class="tab <?= $currentTab === 'drivers' ? 'active' : '' ?>">
-            <i class="fas fa-car"></i> <?= t('drivers') ?> <span class="tab-count">(<?= $tabCounts['drivers'] ?>)</span>
-        </a>
-        <a href="?tab=users" class="tab <?= $currentTab === 'users' ? 'active' : '' ?>">
-            <i class="fas fa-users"></i> <?= t('users') ?> <span class="tab-count">(<?= $tabCounts['users'] ?>)</span>
-        </a>
-        <a href="?tab=invites" class="tab <?= $currentTab === 'invites' ? 'active' : '' ?>">
-            <i class="fas fa-envelope"></i> <?= t('invites') ?> <span class="tab-count">(<?= $tabCounts['invites'] ?>)</span>
-        </a>
-        <a href="?tab=bets" class="tab <?= $currentTab === 'bets' ? 'active' : '' ?>">
-            <i class="fas fa-trophy"></i> <?= t('bets') ?> <span class="tab-count">(<?= $tabCounts['bets'] ?>)</span>
-        </a>
-        <a href="?tab=settings" class="tab <?= $currentTab === 'settings' ? 'active' : '' ?>">
-            <i class="fas fa-cog"></i> <?= t('settings') ?>
-        </a>
+        <?php foreach ($tabIcons as $key => $icon): ?>
+            <a href="?tab=<?= $key ?>" class="tab <?= $currentTab === $key ? 'active' : '' ?>">
+                <i class="fas fa-<?= $icon ?>"></i> <?= t($key) ?>
+                <?php if (!empty($tabCounts[$key])): ?>
+                    <span class="tab-count">(<?= $tabCounts[$key] ?>)</span>
+                <?php endif; ?>
+            </a>
+        <?php endforeach; ?>
     </div>
     
     
