@@ -126,7 +126,7 @@ CREATE TABLE invites (
 -- Service admin account — same credentials in test and live (set F1_ADMIN_EMAIL + F1_ADMIN_PASSWORD in config.php)
 -- Password: UKT@Qhs!fbUH@UX0pnjLpv@yt$GHfwTyCzF3Jl1GuwS#yjIQtJaaJ6V9icV8xU2R
 INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES
-(UUID(), 'f1_admin@helvegpovlsen.dk', '$2y$10$QA9lPk1i3HtVk5HbdowB8OPP4Tr3ET0hRn4iqnwbFSAvXKOxnY91e', 'F1 Admin', 'admin', 0, 0, 0);
+(UUID(), 'f1_admin@helvegpovlsen.dk', 'change-me-to-a-real-password', 'F1 Admin', 'admin', 0, 0, 0);
 
 -- Indsæt F1 kørere 2025
 INSERT INTO drivers (id, name, team, number) VALUES
