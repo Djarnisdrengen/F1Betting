@@ -770,9 +770,12 @@ async function checkDnsSecurity() {
     for (const sel of dkimSelectors) {
         try {
             const data = await dnsQuery(`${sel}._domainkey.${apex}`, 'TXT');
-            const txts = (data.Answer || []).filter(r => r.type === 16).map(r => r.data || '');
-            if (txts.some(t => t.includes('p='))) {
-                pass('J', 'DKIM record', `Selector "${sel}._domainkey.${apex}" found`);
+            const answers = data.Answer || [];
+            const txts = answers.filter(r => r.type === 16).map(r => r.data || '');
+            const hasCname = answers.some(r => r.type === 5); // CNAME delegation (e.g. Proton Mail)
+            if (txts.some(t => t.includes('p=')) || hasCname) {
+                const via = hasCname && !txts.some(t => t.includes('p=')) ? ' (CNAME delegation)' : '';
+                pass('J', 'DKIM record', `Selector "${sel}._domainkey.${apex}" found${via}`);
                 dkimFound = true;
                 break;
             }
