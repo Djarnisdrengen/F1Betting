@@ -9,7 +9,9 @@
  *   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, REPORT_TO
  */
 
-const { spawn } = require('child_process');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
+const execFileAsync = promisify(execFile);
 const fs   = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -34,35 +36,38 @@ const SECTION_NAMES = {
 
 // ─── Runners ────────────────────────────────────────────────────────────────
 
-function runProcess(label, cmd, args, env) {
-    return new Promise(resolve => {
-        console.log(`[nightly] ${label}…`);
-        const proc = spawn(cmd, args, { cwd: ROOT, env: { ...process.env, ...env } });
-        let stdout = '', stderr = '';
-        proc.stdout?.on('data', d => { stdout += d; });
-        proc.stderr?.on('data', d => { stderr += d; });
-        proc.on('error', err => resolve({ exitCode: 1, output: err.message }));
-        proc.on('close', code => {
-            console.log(`[nightly] ${label} exit code: ${code}`);
-            resolve({ exitCode: code ?? 1, output: stdout + (stderr ? '\n' + stderr : '') });
-        });
-    });
+async function runE2E() {
+    console.log('[nightly] E2E tests (live)…');
+    try {
+        const { stdout, stderr } = await execFileAsync(
+            'npx', ['playwright', 'test', '--config', 'tests/playwright.config.js'],
+            { cwd: ROOT, env: { ...process.env, DEPLOY_ENV: 'live' }, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024, timeout: 180_000 }
+        );
+        const output = stdout + (stderr ? '\n' + stderr : '');
+        console.log('[nightly] E2E exit code: 0 | output length:', output.length);
+        return { exitCode: 0, output };
+    } catch (err) {
+        const output = (err.stdout || '') + (err.stderr ? '\n' + err.stderr : '');
+        console.log('[nightly] E2E exit code:', err.code ?? 1, '| output length:', output.length);
+        return { exitCode: err.code ?? 1, output };
+    }
 }
 
-function runE2E() {
-    return runProcess(
-        'E2E tests (live)',
-        'npx', ['playwright', 'test', '--config', 'tests/playwright.config.js'],
-        { DEPLOY_ENV: 'live' }
-    );
-}
-
-function runSecurity() {
-    return runProcess(
-        'Security scan (live, --ssllabs --ratelimit)',
-        'node', ['tests/security/security.js', '--ssllabs', '--ratelimit'],
-        { DEPLOY_ENV: 'live' }
-    );
+async function runSecurity() {
+    console.log('[nightly] Security scan (live)…');
+    try {
+        const { stdout, stderr } = await execFileAsync(
+            'node', ['tests/security/security.js', '--ssllabs', '--ratelimit'],
+            { cwd: ROOT, env: { ...process.env, DEPLOY_ENV: 'live' }, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024, timeout: 360_000 }
+        );
+        const output = stdout + (stderr ? '\n' + stderr : '');
+        console.log('[nightly] Security exit code: 0 | output length:', output.length);
+        return { exitCode: 0, output };
+    } catch (err) {
+        const output = (err.stdout || '') + (err.stderr ? '\n' + err.stderr : '');
+        console.log('[nightly] Security exit code:', err.code ?? 1, '| output length:', output.length);
+        return { exitCode: err.code ?? 1, output };
+    }
 }
 
 function readLatestSecurityReport() {
@@ -99,6 +104,7 @@ function buildEmail(e2e, sec, report) {
     // ── E2E counts ─────────────────────────────────────────────────────
     // Reporter format: "✅ E2E tests passed (10/10)" or "❌ E2E tests failed (3/10 failed)"
     const cleanE2e = stripAnsi(e2e.output);
+    console.log('[nightly] E2E last 200 chars:', JSON.stringify(cleanE2e.slice(-200)));
     const summaryM = cleanE2e.match(/E2E tests (?:passed|failed) \((\d+)\/(\d+)/);
     const failedM  = cleanE2e.match(/E2E tests failed \((\d+)\/(\d+)/);
     const e2eTotal = summaryM ? +summaryM[2] : 0;
