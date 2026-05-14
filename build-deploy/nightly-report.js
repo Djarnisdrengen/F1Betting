@@ -100,14 +100,14 @@ function parseE2ERows(cleanText) {
         if (!line.trim() || line.includes('E2E tests ')) continue;
         const indent = line.search(/\S/);
         const t = line.trim();
-        if (t.includes('⏳') && t.includes('✅')) {
-            rows.push({ kind: 'pass', name: t.replace(/^.*✅\s*/, '').trim(), indent });
-        } else if (t.includes('⏳') && t.includes('❌')) {
-            const raw  = t.replace(/^.*❌\s*/, '').trim();
+        if (t.startsWith('✅')) {
+            rows.push({ kind: 'pass', name: t.replace(/^✅\s*/, '').trim(), indent });
+        } else if (t.startsWith('❌')) {
+            const raw  = t.replace(/^❌\s*/, '').trim();
             const name = raw.replace(/\s*→.*$/, '').trim();
             const msg  = raw.includes('→') ? raw.split(/\s*→\s*/).slice(1).join(' → ') : '';
             rows.push({ kind: 'fail', name, msg, indent });
-        } else if (!t.includes('⏳')) {
+        } else {
             rows.push({ kind: 'header', name: t, indent });
         }
     }
