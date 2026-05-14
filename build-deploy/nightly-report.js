@@ -91,8 +91,8 @@ function buildEmail(e2e, sec, report) {
     const date    = new Date().toISOString().slice(0, 10);
     const ts      = new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
     const e2eOk   = e2e.exitCode === 0;
-    const sec     = report?.summary ?? null;
-    const secFail = sec ? sec.fail > 0 : false;
+    const secSummary = report?.summary ?? null;
+    const secFail    = secSummary ? secSummary.fail > 0 : false;
     const overall = e2eOk && !secFail ? 'ALL OK' : 'ISSUES FOUND';
     const ovColor = overall === 'ALL OK' ? '#27ae60' : '#e10600';
 
@@ -195,9 +195,9 @@ function buildEmail(e2e, sec, report) {
     </td>
     <td style="text-align:center;padding:16px 10px;background:#1a1a1a;border-radius:10px;">
       <div style="color:#555;font-size:11px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Security</div>
-      <div style="font-size:26px;">${sec ? (sec.fail === 0 ? '&#x2705;' : '&#x274C;') : '&#x2753;'}</div>
+      <div style="font-size:26px;">${secSummary ? (secSummary.fail === 0 ? '&#x2705;' : '&#x274C;') : '&#x2753;'}</div>
       <div style="color:#aaa;font-size:13px;margin-top:4px;">
-        ${sec ? `${sec.pass}&#x2705; ${sec.fail}&#x274C; ${sec.warn}&#x26A0;&#xFE0F;` : 'N/A'}
+        ${secSummary ? `${secSummary.pass}&#x2705; ${secSummary.fail}&#x274C; ${secSummary.warn}&#x26A0;&#xFE0F;` : 'N/A'}
       </div>
     </td>
     <td style="text-align:center;padding:16px 10px;background:#1a1a1a;border-radius:10px;">
