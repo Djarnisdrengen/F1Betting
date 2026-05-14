@@ -97,12 +97,13 @@ function buildEmail(e2e, sec, report) {
     const ovColor = overall === 'ALL OK' ? '#27ae60' : '#e10600';
 
     // ── E2E counts ─────────────────────────────────────────────────────
+    // Reporter format: "✅ E2E tests passed (10/10)" or "❌ E2E tests failed (3/10 failed)"
     const cleanE2e = stripAnsi(e2e.output);
-    const passedM  = cleanE2e.match(/(\d+)\s+passed/);
-    const failedM  = cleanE2e.match(/(\d+)\s+failed/);
-    const e2ePass  = passedM ? +passedM[1] : 0;
-    const e2eFail  = failedM ? +failedM[1] : 0;
-    const e2eTotal = e2ePass + e2eFail;
+    const summaryM = cleanE2e.match(/E2E tests (?:passed|failed) \((\d+)\/(\d+)/);
+    const failedM  = cleanE2e.match(/E2E tests failed \((\d+)\/(\d+)/);
+    const e2eTotal = summaryM ? +summaryM[2] : 0;
+    const e2eFail  = failedM  ? +failedM[1]  : 0;
+    const e2ePass  = e2eTotal - e2eFail;
 
     // ── Security findings ──────────────────────────────────────────────
     const findings = report
