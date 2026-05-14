@@ -4,10 +4,10 @@
     "deploy:live": "node build-deploy/deploy.js live",
     "setup:deploy": "node build-deploy/setup-deployment.js",
     "test:smoke": "node tests/smoke.js",
-    "test:e2e": "npx playwright test --config tests/playwright.config.js",
-    "test:e2e:live": "DEPLOY_ENV=live npx playwright test --config tests/playwright.config.js",
-    "test:e2e:test": "DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js",
-    "test:integration": "npx playwright test --config tests/playwright.integration.config.js",
+    "test:e2e": "PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 npx playwright test --config tests/playwright.config.js",
+    "test:e2e:live": "PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=live npx playwright test --config tests/playwright.config.js",
+    "test:e2e:test": "PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js",
+    "test:integration": "PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 npx playwright test --config tests/playwright.integration.config.js",
     "test:security": "node tests/security/security.js",
     "test:security:ssllabs": "node tests/security/security.js --ssllabs",
     "test:security:live": "DEPLOY_ENV=live node tests/security/security.js",
@@ -22,6 +22,6 @@
     "dotenv": "^16.4.5"
   },
   "devDependencies": {
-    "@playwright/test": "^1.59.1"
+    "@playwright/test": "^1.60.0"
   }
 }
