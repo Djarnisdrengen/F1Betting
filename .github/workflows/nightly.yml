@@ -55,3 +55,11 @@ jobs:
           REPORT_TO: ${{ secrets.REPORT_TO }}
 
         run: node build-deploy/nightly-report.js
+
+      - name: Upload nightly report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-report-${{ github.run_id }}
+          path: build-deploy/nightly-reports/
+          retention-days: 30

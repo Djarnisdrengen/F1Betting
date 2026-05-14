@@ -104,3 +104,4 @@ frontend/node_modules/.cache/default-development/0.pack
 build-deploy/backups/
 build-deploy/screenshots/
 build-deploy/security-reports/
+build-deploy/nightly-reports/
