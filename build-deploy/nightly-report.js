@@ -102,14 +102,11 @@ function buildEmail(e2e, sec, report) {
     const ovColor = overall === 'ALL OK' ? '#27ae60' : '#e10600';
 
     // ── E2E counts ─────────────────────────────────────────────────────
-    // Reporter format: "✅ E2E tests passed (10/10)" or "❌ E2E tests failed (3/10 failed)"
+    // Each test merges into one line: "⏳ name  ✅ name" or "⏳ name  ❌ name"
     const cleanE2e = stripAnsi(e2e.output);
-    console.log('[nightly] E2E last 200 chars:', JSON.stringify(cleanE2e.slice(-200)));
-    const summaryM = cleanE2e.match(/E2E tests (?:passed|failed) \((\d+)\/(\d+)/);
-    const failedM  = cleanE2e.match(/E2E tests failed \((\d+)\/(\d+)/);
-    const e2eTotal = summaryM ? +summaryM[2] : 0;
-    const e2eFail  = failedM  ? +failedM[1]  : 0;
-    const e2ePass  = e2eTotal - e2eFail;
+    const e2ePass  = (cleanE2e.match(/⏳.*?✅/g)  || []).length;
+    const e2eFail  = (cleanE2e.match(/⏳.*?❌/g)  || []).length;
+    const e2eTotal = e2ePass + e2eFail;
 
     // ── Security findings ──────────────────────────────────────────────
     const findings = report
@@ -289,6 +286,9 @@ async function main() {
     console.log(`[nightly] Started at ${new Date().toISOString()}`);
 
     const [e2e, sec] = await Promise.all([runE2E(), runSecurity()]);
+    console.log('[nightly] e2e.output.length:', e2e.output.length);
+    console.log('[nightly] sec.output.length:', sec.output.length);
+    console.log('[nightly] e2e.output tail:', JSON.stringify(e2e.output.slice(-200)));
     const report = readLatestSecurityReport();
 
     const e2eOk   = e2e.exitCode === 0;
@@ -298,6 +298,7 @@ async function main() {
 
     const subject = `[F1Betting] Nightly — ${overall} — ${date}`;
     const html    = buildEmail(e2e, sec, report);
+    console.log('[nightly] html.length:', html.length, '| has security section:', html.includes('Security Scan Output'));
 
     await sendEmail(subject, html);
     console.log(`[nightly] Finished at ${new Date().toISOString()}`);
