@@ -177,8 +177,10 @@ function secChecksToHtml(checks) {
 }
 
 function buildEmail(e2e, _sec, report, startedAt) {
-    const date       = startedAt.toISOString().slice(0, 10);
-    const ts         = startedAt.toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
+    const dkFmt  = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Copenhagen', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    const dkStr  = dkFmt.format(startedAt);   // "2026-05-15 23:50:53"
+    const date   = dkStr.slice(0, 10);
+    const ts     = dkStr + ' (dansk tid)';
     const e2eOk      = e2e.exitCode === 0;
     const secSummary = report?.summary ?? null;
     const secFail    = secSummary ? secSummary.fail > 0 : false;
