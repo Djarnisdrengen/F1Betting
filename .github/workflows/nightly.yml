@@ -1,0 +1,48 @@
+name: Nightly Tests & Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 02:00 UTC every night
+  workflow_dispatch:       # allow manual trigger from GitHub UI
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (Chromium)
+        run: npx playwright install chromium --with-deps
+
+      - name: Run nightly report
+        env:
+          # ── Site ──────────────────────────────────────────────────────
+          DEPLOY_ENV: live
+          BASE_URL_LIVE: https://www.formula-1.dk
+
+          # ── Test credentials (add as repo secrets) ────────────────────
+          TEST_USER_EMAIL_LIVE: f1_admin@helvegpovlsen.dk
+          TEST_USER_PASSWORD_LIVE: ${{ secrets.TEST_USER_PASSWORD_LIVE }}
+          # Optional: non-admin account for privilege-escalation check
+          TEST_REGULAR_USER_EMAIL_LIVE: ${{ secrets.TEST_REGULAR_USER_EMAIL_LIVE }}
+          TEST_REGULAR_USER_PASSWORD_LIVE: ${{ secrets.TEST_REGULAR_USER_PASSWORD_LIVE }}
+
+          # ── SMTP (add as repo secrets) ────────────────────────────────
+          # Proton Mail: smtp.protonmail.ch:587 + app password
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+
+        run: node build-deploy/nightly-report.js

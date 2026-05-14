@@ -14,12 +14,14 @@
     "test:security:live:ssllabs": "DEPLOY_ENV=live node tests/security/security.js --ssllabs",
     "test:all": "npm run test:smoke && npm run test:e2e",
     "sync:live": "node build-deploy/sync.js",
-    "restore:db": "node build-deploy/restore-db.js"
+    "restore:db": "node build-deploy/restore-db.js",
+    "nightly": "node build-deploy/nightly-report.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",
     "basic-ftp": "^5.0.5",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "nodemailer": "^6.10.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0"
