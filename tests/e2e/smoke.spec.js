@@ -80,4 +80,12 @@ test.describe("Protected pages", () => {
         const res = await page.goto("/bet.php");
         expect(res.status()).toBe(200);
     });
+
+    test("logout clears session and shows login button", async ({ page }) => {
+        await login(page);
+        await page.click('.desktop-only a[href="logout.php"]');
+        // logout.php redirects to index.php; as a guest the header shows a Login button
+        await page.waitForURL(/index\.php/);
+        await expect(page.locator('.desktop-only a[href="login.php"]')).toBeVisible();
+    });
 });

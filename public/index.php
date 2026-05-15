@@ -40,7 +40,24 @@ $upcomingRaces = array_filter($races, function($r) use ($now) {
 $firstUpcomingRaceId = !empty($upcomingRaces) ? array_values($upcomingRaces)[0]['id'] : null;
 
 include __DIR__ . '/includes/header.php';
+
+$successMessages = [
+    'bet_placed' => t('bet_placed'),
+    'bet_updated' => t('bet_updated'),
+];
+$errorMessages = [
+    'already_bet'       => t('already_bet_long'),
+    'not_in_competition' => t('not_in_competition'),
+];
+$flashSuccess = $successMessages[$_GET['success'] ?? ''] ?? null;
+$flashError   = $errorMessages[$_GET['error']   ?? ''] ?? null;
 ?>
+
+<?php if ($flashSuccess): ?>
+    <div class="alert alert-success"><i class="fas fa-check-circle"></i> <?= escape($flashSuccess) ?></div>
+<?php elseif ($flashError): ?>
+    <div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> <?= escape($flashError) ?></div>
+<?php endif; ?>
 
 <!-- Hero Section -->
 <section class="hero">

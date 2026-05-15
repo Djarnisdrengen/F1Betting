@@ -28,7 +28,7 @@ if (($_GET['action'] ?? '') === 'create_e2e_user') {
         mt_rand(0,0xffff), mt_rand(0,0xffff), mt_rand(0,0xffff),
         mt_rand(0,0x0fff)|0x4000, mt_rand(0,0x3fff)|0x8000,
         mt_rand(0,0xffff), mt_rand(0,0xffff), mt_rand(0,0xffff));
-    $hash = password_hash('E2ETestPassword2026!', PASSWORD_BCRYPT);
+    $hash = hashPassword('E2ETestPassword2026!');
     $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Test User', 'user', 0, 0, 0)")
        ->execute([$id, $e2eUserEmail, $hash]);
     echo json_encode(['ok' => true]);
@@ -39,6 +39,127 @@ if (($_GET['action'] ?? '') === 'create_e2e_user') {
 if (($_GET['action'] ?? '') === 'cleanup_e2e_invite') {
     $db->prepare("DELETE FROM invites WHERE email = ?")
        ->execute([$e2eInviteEmail]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: cleanup_e2e_user — removes the e2e test user, used by profile spec afterAll
+if (($_GET['action'] ?? '') === 'cleanup_e2e_user') {
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")
+       ->execute([$e2eUserEmail]);
+    $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")
+       ->execute([$e2eUserEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")
+       ->execute([$e2eUserEmail]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: seed_betting_race — in-competition user + open race (race_date 2h from now)
+// Returns: { ok, raceId, email, password, drivers: [{id, name}] }
+if (($_GET['action'] ?? '') === 'seed_betting_race') {
+    $e2eBetEmail = 'e2e_bet_user_f1@helvegpovlsen.dk';
+
+    // Idempotent cleanup
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eBetEmail]);
+    $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eBetEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eBetEmail]);
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Open Race')");
+    $db->query("DELETE FROM races WHERE name = 'E2E Open Race'");
+
+    // Ensure 3 known drivers exist
+    $driverDefs = [
+        [44, 'Lewis Hamilton',  'Mercedes'],
+        [1,  'Max Verstappen',  'Red Bull'],
+        [16, 'Charles Leclerc', 'Ferrari'],
+    ];
+    $driverIds = [];
+    foreach ($driverDefs as [$num, $fullName, $team]) {
+        $parts    = explode(' ', $fullName);
+        $lastName = end($parts);
+        $stmt = $db->prepare("SELECT id FROM drivers WHERE LOWER(name) LIKE LOWER(?)");
+        $stmt->execute(['%' . $lastName . '%']);
+        $row = $stmt->fetch();
+        if ($row) {
+            $driverIds[] = ['id' => $row['id'], 'name' => $fullName];
+        } else {
+            $newId = seed_uuid();
+            $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")
+               ->execute([$newId, $fullName, $team, $num]);
+            $driverIds[] = ['id' => $newId, 'name' => $fullName];
+        }
+    }
+
+    // User with in_competition = 1
+    $userId = seed_uuid();
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Bet User', 'user', 1, 0, 0)")
+       ->execute([$userId, $e2eBetEmail, hashPassword('E2EBetPassword2026!')]);
+
+    // Guarantee the betting window is open: reset to 48h so a race 2h away is always within it
+    $db->query("UPDATE settings SET betting_window_hours = 48 WHERE id = 1");
+
+    // Race 2 hours from now — open under a 48h window
+    $raceDate = (new DateTime('+2 hours'))->format('Y-m-d');
+    $raceTime = (new DateTime('+2 hours'))->format('H:i:s');
+    $raceId   = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Open Race', 'Test Circuit', ?, ?, 0)")
+       ->execute([$raceId, $raceDate, $raceTime]);
+
+    echo json_encode([
+        'ok'      => true,
+        'raceId'  => $raceId,
+        'email'   => $e2eBetEmail,
+        'password' => 'E2EBetPassword2026!',
+        'drivers' => $driverIds,
+    ]);
+    exit;
+}
+
+// Action: cleanup_betting_race
+if (($_GET['action'] ?? '') === 'cleanup_betting_race') {
+    $e2eBetEmail = 'e2e_bet_user_f1@helvegpovlsen.dk';
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eBetEmail]);
+    $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eBetEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eBetEmail]);
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Open Race')");
+    $db->query("DELETE FROM races WHERE name = 'E2E Open Race'");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: seed_register_invite — creates invite for registration flow test
+// Returns: { ok, token, email }
+if (($_GET['action'] ?? '') === 'seed_register_invite') {
+    $e2eRegEmail = 'e2e_register_f1@helvegpovlsen.dk';
+
+    // Idempotent cleanup
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eRegEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eRegEmail]);
+    $db->prepare("DELETE FROM invites WHERE email = ?")->execute([$e2eRegEmail]);
+
+    $adminRow = $db->prepare("SELECT id FROM users WHERE email = ?");
+    $adminRow->execute([F1_ADMIN_EMAIL]);
+    $admin = $adminRow->fetch();
+    if (!$admin) {
+        echo json_encode(['ok' => false, 'error' => 'Admin user not found']);
+        exit;
+    }
+
+    $token     = bin2hex(random_bytes(16));
+    $expiresAt = (new DateTime('+48 hours'))->format('Y-m-d H:i:s');
+    $db->prepare("INSERT INTO invites (email, token, created_by, expires_at) VALUES (?, ?, ?, ?)")
+       ->execute([$e2eRegEmail, $token, $admin['id'], $expiresAt]);
+
+    echo json_encode(['ok' => true, 'token' => $token, 'email' => $e2eRegEmail]);
+    exit;
+}
+
+// Action: cleanup_register — removes registered test user and any remaining invite
+if (($_GET['action'] ?? '') === 'cleanup_register') {
+    $e2eRegEmail = 'e2e_register_f1@helvegpovlsen.dk';
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eRegEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eRegEmail]);
+    $db->prepare("DELETE FROM invites WHERE email = ?")->execute([$e2eRegEmail]);
     echo json_encode(['ok' => true]);
     exit;
 }
@@ -112,7 +233,7 @@ if (($_GET['action'] ?? '') === 'seed_reset_result') {
 
     // Test user (in competition so pool calc includes them)
     $userId = seed_uuid();
-    $hash = password_hash('E2ETestPassword2026!', PASSWORD_BCRYPT);
+    $hash = hashPassword('E2ETestPassword2026!');
     $db->prepare("INSERT INTO users (id, email, password, display_name, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Reset User', 1, 0, 0)")
        ->execute([$userId, $e2eResetUser, $hash]);
 
@@ -178,7 +299,7 @@ function seed_uuid() {
 }
 
 // Users — shared test password, all in competition
-$hash = password_hash('Integration2026!', PASSWORD_BCRYPT);
+$hash = hashPassword('Integration2026!');
 $uids = [];
 foreach ([
     ['Alice',   'alice@test.local'],
