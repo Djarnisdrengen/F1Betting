@@ -1046,6 +1046,84 @@ async function checkApplicationHardening() {
         }
     }
 
+    // ── Change password: unauthenticated POST blocked ─────────────────────────
+    // profile.php must call requireLogin() before processing any POST action.
+    await sleep(500);
+    try {
+        const res = await postForm(`${BASE_URL}/profile.php`, {
+            action:           'change_password',
+            current_password: 'anything',
+            new_password:     'newpass123',
+            confirm_password: 'newpass123',
+            csrf_token:       'fake',
+        });
+        const loc = res.headers.location || '';
+        if (res.status >= 301 && res.status <= 308 && loc.includes('login')) {
+            pass('K', 'Change password: requires auth',
+                `Unauthenticated POST redirected to login (HTTP ${res.status})`);
+        } else if (res.status >= 301 && res.status <= 308) {
+            warn('K', 'Change password: requires auth',
+                `Redirects to "${loc}" but not login — auth guard may be missing`, 'CWE-306',
+                'Ensure requireLogin() is called at the top of profile.php before processing any POST.');
+        } else {
+            fail('K', 'Change password: requires auth',
+                `HTTP ${res.status} — endpoint reachable without a session`, 'CWE-306',
+                'Add requireLogin() at the top of profile.php.');
+        }
+    } catch (e) { info('K', 'Change password: requires auth', `Test skipped: ${e.message}`); }
+
+    // ── Change password: wrong current password rejected (CWE-620) ────────────
+    // Log in, POST with an incorrect current_password; must NOT redirect to index.
+    await sleep(500);
+    if (!email || !password) {
+        info('K', 'Change password: wrong password rejected', 'TEST_USER credentials not set — skipping');
+    } else {
+        try {
+            const loginPageRes2 = await request(`${BASE_URL}/login.php`);
+            const preCookies2   = parseCookies(loginPageRes2.headers['set-cookie']);
+            const loginCsrf2    = extractCsrfToken(loginPageRes2.body);
+            const loginRes2     = await postForm(`${BASE_URL}/login.php`,
+                { email, password, csrf_token: loginCsrf2 },
+                { headers: { Cookie: preCookies2 } });
+
+            if (loginRes2.status >= 301 && loginRes2.status < 400) {
+                const authedCookies2 = parseCookies(loginRes2.headers['set-cookie']) || preCookies2;
+                const profilePage    = await request(`${BASE_URL}/profile.php`,
+                    { headers: { Cookie: authedCookies2 } });
+                const profileCsrf    = extractCsrfToken(profilePage.body);
+
+                const changeRes = await postForm(`${BASE_URL}/profile.php`, {
+                    action:           'change_password',
+                    current_password: 'WrongPassword_SecurityScan_XYZ_99999!',
+                    new_password:     'newsecurepass1',
+                    confirm_password: 'newsecurepass1',
+                    csrf_token:       profileCsrf,
+                }, { headers: { Cookie: authedCookies2 } });
+
+                const succeededUnexpectedly =
+                    changeRes.status >= 301 && changeRes.status < 400 &&
+                    (changeRes.headers.location || '').includes('index');
+
+                if (succeededUnexpectedly) {
+                    const cwe620 = 'CWE-620';
+                    fail('K', 'Change password: wrong password rejected',
+                        'Change succeeded despite an incorrect current credential — verify before update',
+                        cwe620,
+                        'Verify the current password with verifyPassword() before updating the hash.');
+                } else {
+                    pass('K', 'Change password: wrong password rejected',
+                        `HTTP ${changeRes.status} — wrong current password correctly rejected`);
+                }
+                await request(`${BASE_URL}/logout.php`, { headers: { Cookie: authedCookies2 } });
+            } else {
+                info('K', 'Change password: wrong password rejected',
+                    `Login returned ${loginRes2.status} — skipping`);
+            }
+        } catch (e) {
+            info('K', 'Change password: wrong password rejected', `Test skipped: ${e.message}`);
+        }
+    }
+
     // Subresource Integrity — flag external scripts/styles missing integrity=
     try {
         const res  = await request(BASE_URL);
