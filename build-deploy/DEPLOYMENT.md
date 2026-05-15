@@ -28,6 +28,23 @@
 | `npm run test:integration` | Runs the Playwright integration test suite against **hpovlsen.dk** only. Before asserting, calls `test-seed.php` to reset the test database and seed 5 races of deterministic data (3 users, 10 drivers, 15 bets). Asserts correct points totals, leaderboard order, star counts, and betting pool sizes. **Never run this against the live site — it seeds fake data.** Run manually after deploying to test. |
 | `npm run test:all` | Runs `test:smoke` then `test:e2e`. Equivalent to what `deploy:live` runs automatically after upload. |
 
+### Security
+
+Runs OWASP-mapped security checks against the deployed site. By default targets **hpovlsen.dk** (test); use the `:live` variants for **formula-1.dk**.
+
+| Command | What it does |
+|---|---|
+| `npm run test:security` | Runs all security checks (transport, headers, cookies, access control, CSRF, info disclosure, DNS, CWE Top 25, session hardening). Rate-limit and SSL Labs checks are skipped. |
+| `npm run test:security:ratelimit` | Same as above, plus tests login rate-limiting (sends 6 rapid failed attempts and expects a 429 response). Only enable when you know the scan IP is not already blocked. |
+| `npm run test:security:ssllabs` | Same as base, plus queries the SSL Labs API for a full TLS grade. Takes 60–90 seconds. |
+| `npm run test:security:full` | All checks enabled — rate-limit test + SSL Labs. |
+| `npm run test:security:live` | Base checks against **formula-1.dk**. |
+| `npm run test:security:live:ratelimit` | Rate-limit check against **formula-1.dk**. |
+| `npm run test:security:live:ssllabs` | SSL Labs check against **formula-1.dk**. |
+| `npm run test:security:live:full` | All checks against **formula-1.dk**. |
+
+Reports are saved to `build-deploy/security-reports/` as `.md` and `.json` (two most recent per environment kept).
+
 ---
 
 ## Overview
