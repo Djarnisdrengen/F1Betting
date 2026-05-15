@@ -1418,6 +1418,8 @@ body.light .logo-light { display: block; }
         display: none;
         margin-top: 0.5rem;
         height: auto;
+        max-height: calc(100dvh - 80px);
+        overflow-y: auto;
         width: auto;
         transition: none;
     }
