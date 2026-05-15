@@ -140,21 +140,15 @@ if (isset($_POST['reset_race_result'])) {
         $stmtRace->execute([$id]);
         $race = $stmtRace->fetch();
 
-        $stmtBets = $db->prepare("SELECT * FROM bets WHERE race_id = ?");
-        $stmtBets->execute([$id]);
-        foreach ($stmtBets->fetchAll() as $bet) {
-            $stmtUser = $db->prepare("SELECT points, stars FROM users WHERE id = ?");
-            $stmtUser->execute([$bet['user_id']]);
-            $user = $stmtUser->fetch();
-            $db->prepare("UPDATE users SET points = ?, stars = ? WHERE id = ?")
-               ->execute([
-                   max(0, $user['points'] - $bet['points']),
-                   max(0, $user['stars'] - ($bet['is_perfect'] ? 1 : 0)),
-                   $bet['user_id'],
-               ]);
-            $db->prepare("UPDATE bets SET points = 0, is_perfect = 0 WHERE id = ?")
-               ->execute([$bet['id']]);
-        }
+        $db->prepare("
+            UPDATE users u
+            JOIN bets b ON u.id = b.user_id
+            SET u.points = GREATEST(0, u.points - b.points),
+                u.stars  = GREATEST(0, u.stars  - b.is_perfect)
+            WHERE b.race_id = ?
+        ")->execute([$id]);
+        $db->prepare("UPDATE bets SET points = 0, is_perfect = 0 WHERE race_id = ?")
+           ->execute([$id]);
 
         // Undo pool rollover to next race if no one won
         if (!$race['bettingpool_won']) {
@@ -182,12 +176,8 @@ if (isset($_POST['reset_race_result'])) {
 if (isset($_POST['toggle_role'])) {
     $userId = $_POST['user_id'];
     if ($userId !== $currentUser['id']) {
-        $stmt = $db->prepare("SELECT role FROM users WHERE id = ?");
-        $stmt->execute([$userId]);
-        $user = $stmt->fetch();
-        $newRole = $user['role'] === 'admin' ? 'user' : 'admin';
-        $stmt = $db->prepare("UPDATE users SET role = ? WHERE id = ?");
-        $stmt->execute([$newRole, $userId]);
+        $db->prepare("UPDATE users SET role = IF(role = 'admin', 'user', 'admin') WHERE id = ?")
+           ->execute([$userId]);
     }
     header("Location: admin.php?tab=users");
     exit;
@@ -286,15 +276,8 @@ if (isset($_POST['delete_bet'])) {
         if ($canDelete) {
             // Hvis bet har point, skal vi trække dem fra brugeren
             if ($bet['points'] > 0 || $bet['is_perfect']) {
-                $stmt2 = $db->prepare("SELECT points, stars FROM users WHERE id = ?");
-                $stmt2->execute([$bet['bet_user_id']]);
-                $user = $stmt2->fetch();
-                
-                $newPoints = max(0, $user['points'] - $bet['points']);
-                $newStars = max(0, $user['stars'] - ($bet['is_perfect'] ? 1 : 0));
-                
-                $stmt3 = $db->prepare("UPDATE users SET points = ?, stars = ? WHERE id = ?");
-                $stmt3->execute([$newPoints, $newStars, $bet['bet_user_id']]);
+                $db->prepare("UPDATE users SET points = GREATEST(0, points - ?), stars = GREATEST(0, stars - ?) WHERE id = ?")
+                   ->execute([$bet['points'], $bet['is_perfect'] ? 1 : 0, $bet['bet_user_id']]);
             }
             
             // Slet bet

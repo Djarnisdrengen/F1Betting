@@ -53,6 +53,18 @@ $users = $db->query("SELECT * FROM users")->fetchAll();
 // Get upcoming races
 $races = $db->query("SELECT * FROM races WHERE result_p1 IS NULL ORDER BY race_date ASC")->fetchAll();
 
+// Batch-fetch all existing bets for upcoming races (avoids N+1 in the loops below)
+$existingBets = [];
+if ($races) {
+    $raceIds = array_column($races, 'id');
+    $ph = implode(',', array_fill(0, count($raceIds), '?'));
+    $betsStmt = $db->prepare("SELECT user_id, race_id FROM bets WHERE race_id IN ($ph)");
+    $betsStmt->execute($raceIds);
+    foreach ($betsStmt->fetchAll() as $row) {
+        $existingBets[$row['user_id']][$row['race_id']] = true;
+    }
+}
+
 $now = time();
 $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
 
@@ -60,36 +72,28 @@ foreach ($races as $race) {
     $raceDateTime = strtotime($race['race_date'] . ' ' . $race['race_time']);
     $bettingOpens = $raceDateTime - ($bettingWindowHours * 60 * 60);
     $bettingClosesWarning = $raceDateTime - (2 * 60 * 60); // 2 hours before
-    
+
     // Check if betting just opened (within last hour)
     $hourAgo = $now - 3600;
     if ($bettingOpens > $hourAgo && $bettingOpens <= $now) {
         // Betting window just opened - notify all users
         echo "Betting opened for: {$race['name']}\n";
-        
+
         foreach ($users as $user) {
-            // Check if user already has a bet for this race
-            $stmt = $db->prepare("SELECT id FROM bets WHERE user_id = ? AND race_id = ?");
-            $stmt->execute([$user['id'], $race['id']]);
-            if ($stmt->fetch()) continue; // Already has bet, skip
-            
+            if (isset($existingBets[$user['id']][$race['id']])) continue;
             sendBettingOpenEmail($user, $race, $bettingWindowHours);
         }
     }
-    
+
     // Check if betting closes soon (within 2-3 hours)
     $threeHours = $now + (3 * 60 * 60);
     $twoHours = $now + (2 * 60 * 60);
     if ($raceDateTime > $twoHours && $raceDateTime <= $threeHours) {
         // Betting closes soon - notify users without bets
         echo "Betting closing soon for: {$race['name']}\n";
-        
+
         foreach ($users as $user) {
-            // Check if user already has a bet for this race
-            $stmt = $db->prepare("SELECT id FROM bets WHERE user_id = ? AND race_id = ?");
-            $stmt->execute([$user['id'], $race['id']]);
-            if ($stmt->fetch()) continue; // Already has bet, skip
-            
+            if (isset($existingBets[$user['id']][$race['id']])) continue;
             sendBettingClosingEmail($user, $race);
         }
     }

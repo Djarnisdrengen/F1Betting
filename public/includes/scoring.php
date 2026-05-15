@@ -27,11 +27,10 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
     $upcomingRace = $stmtNext->fetch(PDO::FETCH_ASSOC);
 
     $anyPerfect = false;
+    $betChanges = [];
 
     foreach ($bets as $bet) {
-        $oldPoints    = $bet['points'];
-        $oldIsPerfect = $bet['is_perfect'];
-        $predictions  = [$bet['p1'], $bet['p2'], $bet['p3']];
+        $predictions = [$bet['p1'], $bet['p2'], $bet['p3']];
 
         $points = 0;
         if ($bet['p1'] === $p1) $points += $pointsP1;
@@ -44,24 +43,46 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
         }
 
         $isPerfect = ($bet['p1'] === $p1 && $bet['p2'] === $p2 && $bet['p3'] === $p3) ? 1 : 0;
+        if ($isPerfect) $anyPerfect = true;
 
-        if ($isPerfect) {
-            $anyPerfect = true;
-            $db->prepare("UPDATE races SET bettingpool_won = 1 WHERE id = ?")->execute([$raceId]);
+        $betChanges[] = [
+            'id'         => $bet['id'],
+            'user_id'    => $bet['user_id'],
+            'points'     => $points,
+            'is_perfect' => $isPerfect,
+            'pointDelta' => $points - $bet['points'],
+            'starDelta'  => $isPerfect - ($bet['is_perfect'] ? 1 : 0),
+        ];
+    }
+
+    // Batch-update bets (prepare once, execute N times)
+    $stmtBet = $db->prepare("UPDATE bets SET points = ?, is_perfect = ? WHERE id = ?");
+    foreach ($betChanges as $c) {
+        $stmtBet->execute([$c['points'], $c['is_perfect'], $c['id']]);
+    }
+
+    if ($anyPerfect) {
+        $db->prepare("UPDATE races SET bettingpool_won = 1 WHERE id = ?")->execute([$raceId]);
+    }
+
+    // Batch-fetch all affected users, then batch-update their scores
+    if ($betChanges) {
+        $userIds   = array_column($betChanges, 'user_id');
+        $ph        = implode(',', array_fill(0, count($userIds), '?'));
+        $stmtUsers = $db->prepare("SELECT id, points, stars FROM users WHERE id IN ($ph)");
+        $stmtUsers->execute($userIds);
+        $usersById    = array_column($stmtUsers->fetchAll(), null, 'id');
+        $deltasByUser = array_column($betChanges, null, 'user_id');
+
+        $stmtUser = $db->prepare("UPDATE users SET points = ?, stars = ? WHERE id = ?");
+        foreach ($usersById as $uid => $user) {
+            $d = $deltasByUser[$uid];
+            $stmtUser->execute([
+                max(0, $user['points'] + $d['pointDelta']),
+                max(0, $user['stars']  + $d['starDelta']),
+                $uid,
+            ]);
         }
-
-        $db->prepare("UPDATE bets SET points = ?, is_perfect = ? WHERE id = ?")
-           ->execute([$points, $isPerfect, $bet['id']]);
-
-        $stmtUser = $db->prepare("SELECT points, stars FROM users WHERE id = ?");
-        $stmtUser->execute([$bet['user_id']]);
-        $user = $stmtUser->fetch();
-
-        $newPoints = $user['points'] - $oldPoints + $points;
-        $newStars  = $user['stars']  - ($oldIsPerfect ? 1 : 0) + $isPerfect;
-
-        $db->prepare("UPDATE users SET points = ?, stars = ? WHERE id = ?")
-           ->execute([max(0, $newPoints), max(0, $newStars), $bet['user_id']]);
     }
 
     // Update next race pool once, after all bets are scored
