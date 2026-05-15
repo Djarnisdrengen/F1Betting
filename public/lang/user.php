@@ -116,7 +116,13 @@ return [
         'email_must_match_invite' => 'Email skal matche invitationens email: %s',
 
         // Profile
-        'profile_updated'       => 'Profil opdateret!',
+        'profile_updated'           => 'Profil opdateret!',
+        'change_password_title'     => 'Skift Adgangskode',
+        'current_password'          => 'Nuværende adgangskode',
+        'password_changed'          => 'Adgangskode ændret!',
+        'current_password_wrong'    => 'Nuværende adgangskode er forkert',
+        'betting_history'           => 'Din Betting Historik',
+        'no_bets_yet'               => 'Du har ikke placeret nogen bets endnu.',
 
         // Forgot / reset password
         'forgot_password_title' => 'Glemt adgangskode',
@@ -297,7 +303,13 @@ return [
         'email_must_match_invite' => 'Email must match the invitation email: %s',
 
         // Profile
-        'profile_updated'       => 'Profile updated!',
+        'profile_updated'           => 'Profile updated!',
+        'change_password_title'     => 'Change Password',
+        'current_password'          => 'Current password',
+        'password_changed'          => 'Password changed!',
+        'current_password_wrong'    => 'Current password is incorrect',
+        'betting_history'           => 'Your Betting History',
+        'no_bets_yet'               => 'You have not placed any bets yet.',
 
         // Forgot / reset password
         'forgot_password_title' => 'Forgot Password',

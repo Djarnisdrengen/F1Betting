@@ -4,6 +4,7 @@ require_once __DIR__ . '/includes/functions.php';
 
 $db = getDB();
 $lang = getLang();
+$settings = getSettings();
 
 // Hent data
 $races = getRaces($db);
@@ -38,7 +39,7 @@ include __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <?php foreach ($races as $race): 
-    $status = getBettingStatus($race);
+    $status = getBettingStatus($race, $settings);
     $bettingpool_won = $race['bettingpool_won'];
     $raceBets = $betsByRace[$race['id']] ?? [];
     $hasBet = in_array($race['id'], $myBets);
@@ -53,9 +54,10 @@ include __DIR__ . '/includes/header.php';
     }
     
     // Beregn countdown
+    $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
     $raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
     $bettingOpens = clone $raceDateTime;
-    $bettingOpens->modify('-48 hours');
+    $bettingOpens->modify("-{$bettingWindowHours} hours");
 ?>
     <div class="card mb-2">
         <div class="race-card">
