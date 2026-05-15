@@ -34,25 +34,24 @@ jobs:
 
       - name: Run nightly report
         env:
-          # ── Site ──────────────────────────────────────────────────────
+          # Site
           DEPLOY_ENV: live
           BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
 
-          # ── Test credentials (add as repo secrets) ────────────────────
+          # Test credentials (repo Secrets)
           TEST_USER_EMAIL_LIVE: f1_admin@helvegpovlsen.dk
           TEST_USER_PASSWORD_LIVE: ${{ secrets.TEST_USER_PASSWORD_LIVE }}
           # Optional: non-admin account for privilege-escalation check
           TEST_REGULAR_USER_EMAIL_LIVE: ${{ secrets.TEST_REGULAR_USER_EMAIL_LIVE }}
           TEST_REGULAR_USER_PASSWORD_LIVE: ${{ secrets.TEST_REGULAR_USER_PASSWORD_LIVE }}
 
-          # ── SMTP (add as repo secrets) ────────────────────────────────
-          # Proton Mail: smtp.protonmail.ch:587 + app password
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          # SMTP — non-sensitive config as repo Variables, credentials as repo Secrets
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          SMTP_FROM: ${{ secrets.SMTP_FROM }}
-          REPORT_TO: ${{ secrets.REPORT_TO }}
+          SMTP_FROM: ${{ vars.SMTP_FROM }}
+          REPORT_TO: ${{ vars.REPORT_TO }}
 
         run: node build-deploy/nightly-report.js
 
