@@ -17,6 +17,13 @@
 | `npm run sync:live` | Copies all data from the live database (formula-1.dk) into the test database (hpovlsen.dk), overwriting everything except the `settings` table. Drops any `old_` prefixed legacy tables. Useful for testing against real data. Requires `LIVE_DB_NAME` to be defined in the test server's `config.php`. |
 | `npm run restore:db` | Lists all available DB backups (from `build-deploy/backups/live/`). Run with a timestamp and target to restore: `npm run restore:db -- <timestamp> [test\|live]`. Reads `db-backup.json` from the chosen backup folder and re-imports all tables into the target database. Restoring to **live** has a 5-second abort window before it proceeds. `db-restore.php` must be present on the target server — it is deployed to test automatically but **excluded from live** by default (remove it from `.deployignore.live` temporarily if you need a live restore). |
 
+### Backup & Rollback
+
+| Command | What it does |
+|---|---|
+| `node build-deploy/backup.js` | Manually back up the live server: downloads all files from live via FTP and exports the database as `db-backup.json`. Saves to `build-deploy/backups/live/<ISO-timestamp>/`. A backup is also created automatically before every `deploy:live`. Only the 2 most recent backups are kept. |
+| `node build-deploy/rollback.js` | Interactively lists available backups and re-uploads the chosen one to the live server over FTP. Rollback also runs automatically if `deploy:live` tests fail. |
+
 ### Test
 
 | Command | What it does |
@@ -134,16 +141,16 @@ Go to **Settings → Secrets and variables → Actions**:
 | Variable | Example value |
 |---|---|
 | `BASE_URL_LIVE` | `https://www.formula-1.dk` |
+| `SMTP_HOST` | `smtp.protonmail.com` |
+| `SMTP_PORT` | `587` |
+| `SMTP_FROM` | `noreply@formula-1.dk` |
 
 ### Secrets tab
 
 | Secret | Description |
 |---|---|
-| `SMTP_HOST` | Outbound mail server hostname |
-| `SMTP_PORT` | SMTP port (e.g. `587`) |
-| `SMTP_USER` | SMTP username |
+| `SMTP_USER` | SMTP login username |
 | `SMTP_PASS` | SMTP password |
-| `SMTP_FROM` | Sender address for nightly report |
 | `REPORT_TO` | Recipient address for nightly report |
 | `TEST_USER_PASSWORD_LIVE` | Admin password for E2E login on live |
 

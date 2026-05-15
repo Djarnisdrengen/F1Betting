@@ -1,0 +1,106 @@
+# Command Reference
+
+All terminal commands for the F1 Betting project.
+
+---
+
+## Setup (run once)
+
+| Command | What it does |
+|---|---|
+| `git clone https://github.com/<org>/F1Betting.git` | Clone the repository |
+| `npm install` | Install Node.js dependencies |
+| `cp config.example.php config.test.php` | Create test environment config |
+| `cp config.example.php config.live.php` | Create live environment config |
+| `npm run setup:deploy` | Interactive FTP setup — writes `build-deploy/.env` |
+| `openssl rand -hex 32` | Generate a 32-hex secret (for JWT_SECRET, PASSWORD_PEPPER) |
+
+---
+
+## Deploy
+
+| Command | What it does |
+|---|---|
+| `npm run deploy:test` | Upload to test server + run smoke tests |
+| `npm run deploy:live` | Upload to live server (requires typing `YES`) + run smoke + E2E |
+
+---
+
+## Test
+
+| Command | What it does |
+|---|---|
+| `npm run test:smoke` | HTTP checks — key pages return 200 (test env) |
+| `npm run test:e2e:test` | Playwright browser tests against hpovlsen.dk |
+| `npm run test:e2e:live` | Playwright browser tests against formula-1.dk |
+| `npm run test:integration` | Seeded integration tests — **test env only, destroys DB** |
+| `npm run test:all` | Smoke + E2E (same as what `deploy:live` runs) |
+
+### Security tests
+
+| Command | What it does |
+|---|---|
+| `npm run test:security` | OWASP scan against test |
+| `npm run test:security:ratelimit` | + rate-limit check against test |
+| `npm run test:security:ssllabs` | + SSL Labs TLS grade against test (60–90 s) |
+| `npm run test:security:full` | All security checks against test |
+| `npm run test:security:live` | OWASP scan against live |
+| `npm run test:security:live:ratelimit` | + rate-limit check against live |
+| `npm run test:security:live:ssllabs` | + SSL Labs TLS grade against live (60–90 s) |
+| `npm run test:security:live:full` | All security checks against live |
+
+---
+
+## Database
+
+| Command | What it does |
+|---|---|
+| `npm run sync:live` | Copy live DB into test DB (overwrites all test data) |
+| `npm run restore:db` | Interactive — list backups, pick one, restore to test or live |
+
+---
+
+## Backup & Rollback
+
+| Command | What it does |
+|---|---|
+| `node build-deploy/backup.js` | Manual backup of live files + DB |
+| `node build-deploy/rollback.js` | Interactive rollback — pick a backup and re-upload to live |
+
+---
+
+## Cron (manual trigger)
+
+| Command | What it does |
+|---|---|
+| `php public/cron/import_qualifying.php <CRON_SECRET>` | Import qualifying results from F1 API (CLI) |
+| `php public/cron/notifications.php <CRON_SECRET>` | Send betting window email notifications (CLI) |
+
+Or via HTTP:
+
+| URL | What it does |
+|---|---|
+| `/cron/import_qualifying.php?token=<CRON_SECRET>` | Same as above, via browser/curl |
+| `/cron/import_qualifying.php?token=<CRON_SECRET>&test=true` | Dry run — no DB writes |
+| `/cron/notifications.php?token=<CRON_SECRET>` | Same as above, via browser/curl |
+
+---
+
+## Git
+
+| Command | What it does |
+|---|---|
+| `git status` | Show changed files |
+| `git add <file>` | Stage a file |
+| `git commit -m "message"` | Commit staged changes |
+| `git push` | Push to GitHub |
+
+---
+
+## Utilities
+
+| Command | What it does |
+|---|---|
+| `which php` | Find PHP binary path (Linux/Mac) |
+| `where php` | Find PHP binary path (Windows) |
+| `chmod 755 public/logs` | Fix log directory permissions on server |
