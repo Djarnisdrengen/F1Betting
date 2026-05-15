@@ -315,8 +315,8 @@ function saveReport(html, startedAt) {
 
 async function sendEmail(subject, html) {
     if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-        console.error('[nightly] SMTP not configured — set SMTP_HOST, SMTP_USER, SMTP_PASS in build-deploy/.env');
-        process.exit(1);
+        console.log('[nightly] SMTP not configured — email skipped (report artifact is still uploaded)');
+        return;
     }
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
