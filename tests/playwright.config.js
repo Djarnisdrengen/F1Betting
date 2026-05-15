@@ -3,9 +3,23 @@ const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../build-deploy/.env"), override: true });
 
 const env = process.env.DEPLOY_ENV || "test";
-process.env.BASE_URL = process.env[`BASE_URL_${env.toUpperCase()}`] || process.env.BASE_URL;
-process.env.TEST_USER_EMAIL = process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`] || process.env.TEST_USER_EMAIL;
-process.env.TEST_USER_PASSWORD = process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`] || process.env.TEST_USER_PASSWORD;
+
+// Prefer values from the PHP config file (single source of truth).
+// Falls back to process.env so GitHub Actions (which injects its own vars) works unchanged.
+try {
+    const { readPhpConfig } = require("../build-deploy/php-config");
+    const cfg = readPhpConfig(env);
+    process.env.BASE_URL              = process.env.BASE_URL              || cfg.siteUrl;
+    process.env.TEST_USER_EMAIL       = process.env.TEST_USER_EMAIL       || cfg.adminEmail;
+    process.env.TEST_USER_PASSWORD    = process.env.TEST_USER_PASSWORD    || cfg.adminPassword;
+    process.env.INTEGRATION_SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN || cfg.integrationSeedToken;
+    process.env.CRON_SECRET           = process.env.CRON_SECRET           || cfg.cronSecret;
+} catch {
+    // PHP config not available — rely on pre-set environment variables (e.g. GitHub Actions).
+    process.env.BASE_URL           = process.env[`BASE_URL_${env.toUpperCase()}`]           || process.env.BASE_URL;
+    process.env.TEST_USER_EMAIL    = process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`]    || process.env.TEST_USER_EMAIL;
+    process.env.TEST_USER_PASSWORD = process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`] || process.env.TEST_USER_PASSWORD;
+}
 
 const isLive = env === "live";
 

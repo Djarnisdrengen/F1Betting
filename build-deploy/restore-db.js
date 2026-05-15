@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
+const { readPhpConfig } = require("./php-config");
 
 function ask(rl, question) {
     return new Promise(resolve => rl.question(question, resolve));
@@ -43,13 +44,18 @@ async function main() {
     const env = envInput.trim() === "live" ? "live" : "test";
     const timestamp = available[index];
 
-    const baseUrl = env === "live"
-        ? process.env.BASE_URL_LIVE
-        : process.env.BASE_URL_TEST;
-    const token = process.env.INTEGRATION_SEED_TOKEN;
+    let baseUrl, token;
+    try {
+        const cfg = readPhpConfig(env);
+        baseUrl = cfg.siteUrl;
+        token   = cfg.integrationSeedToken;
+    } catch (e) {
+        console.error("❌", e.message);
+        process.exit(1);
+    }
 
     if (!baseUrl || !token) {
-        console.error("❌ BASE_URL and INTEGRATION_SEED_TOKEN must be set in build-deploy/.env");
+        console.error(`❌ SITE_URL or INTEGRATION_SEED_TOKEN missing in config.${env}.php`);
         process.exit(1);
     }
 

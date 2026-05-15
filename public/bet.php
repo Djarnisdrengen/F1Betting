@@ -47,11 +47,7 @@ if ($stmt->fetch()) {
 }
 
 // Hent kørere
-$drivers = $db->query("SELECT * FROM drivers ORDER BY SUBSTRING_INDEX(name, ' ', -1)")->fetchAll();
-$driversById = [];
-foreach ($drivers as $d) {
-    $driversById[$d['id']] = $d;
-}
+[$drivers, $driversById] = fetchDrivers($db);
 
 // Hent eksisterende bets for dette løb
 $stmt = $db->prepare("SELECT p1, p2, p3 FROM bets WHERE race_id = ?");
@@ -119,22 +115,7 @@ include __DIR__ . '/includes/header.php';
             </div>
             
             <!-- Qualifying -->
-            <?php if ($race['quali_p1']): ?>
-                <div style="background: var(--bg-secondary); padding: 0.75rem; border-radius: 8px; margin-top: 1rem;">
-                    <small class="text-muted"><?= t('qualifying') ?></small>
-                    <div class="quali-row">
-                        <?php foreach (['quali_p1', 'quali_p2', 'quali_p3'] as $i => $key): 
-                            $driver = $driversById[$race[$key]] ?? null;
-                            if ($driver):
-                        ?>
-                            <div class="quali-item">
-                                <span class="position-badge position-<?= $i + 1 ?>">P<?= $i + 1 ?></span>
-                                <?= escape($driver['name']) ?>
-                            </div>
-                        <?php endif; endforeach; ?>
-                    </div>
-                </div>
-            <?php endif; ?>
+            <?php $_qd_data = $race; $_qd_keys = ['quali_p1', 'quali_p2', 'quali_p3']; $_qd_label = t('qualifying'); include __DIR__ . '/includes/qualifying-display.php'; ?>
         </div>
         
         <div class="card-body">

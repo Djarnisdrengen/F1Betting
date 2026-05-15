@@ -8,6 +8,17 @@ const { URL } = require('url');
 require('dotenv').config({ path: path.join(__dirname, '../../build-deploy/.env') });
 
 const env = process.env.DEPLOY_ENV || 'test';
+
+// Populate env vars from the PHP config file (single source of truth).
+// Falls back gracefully if the file is unavailable (e.g. CI without local config).
+try {
+    const { readPhpConfig } = require('../../build-deploy/php-config');
+    const cfg = readPhpConfig(env);
+    if (!process.env[`BASE_URL_${env.toUpperCase()}`])          process.env[`BASE_URL_${env.toUpperCase()}`]          = cfg.siteUrl;
+    if (!process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`])   process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`]   = cfg.adminEmail;
+    if (!process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`]) process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`] = cfg.adminPassword;
+} catch { /* config file absent — rely on environment variables */ }
+
 const BASE_URL = process.env[`BASE_URL_${env.toUpperCase()}`] || process.env.BASE_URL;
 const USE_SSLLABS   = process.argv.includes('--ssllabs');
 const USE_RATELIMIT = process.argv.includes('--ratelimit');

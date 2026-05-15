@@ -2,13 +2,21 @@ const ftp = require("basic-ftp");
 const fs = require("fs");
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
+const { readPhpConfig } = require("./php-config");
 
 async function backupDb(backupDir) {
-    const baseUrl = process.env.BASE_URL_LIVE;
-    const token = process.env.INTEGRATION_SEED_TOKEN;
+    let baseUrl, token;
+    try {
+        const cfg = readPhpConfig("live");
+        baseUrl = cfg.siteUrl;
+        token   = cfg.integrationSeedToken;
+    } catch (e) {
+        console.log("⚠️  Skipping DB backup —", e.message);
+        return;
+    }
 
     if (!baseUrl || !token) {
-        console.log("⚠️  Skipping DB backup — INTEGRATION_SEED_TOKEN not set in .env");
+        console.log("⚠️  Skipping DB backup — SITE_URL or INTEGRATION_SEED_TOKEN missing in config.live.php");
         return;
     }
 

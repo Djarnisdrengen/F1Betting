@@ -1,12 +1,20 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
+const { readPhpConfig } = require("./php-config");
 
 async function sync() {
-    const baseUrl = process.env.BASE_URL_TEST;
-    const token = process.env.INTEGRATION_SEED_TOKEN;
+    let baseUrl, token;
+    try {
+        const cfg = readPhpConfig("test");
+        baseUrl = cfg.siteUrl;
+        token   = cfg.integrationSeedToken;
+    } catch (e) {
+        console.error("❌", e.message);
+        process.exit(1);
+    }
 
     if (!baseUrl || !token) {
-        console.error("❌ BASE_URL_TEST and INTEGRATION_SEED_TOKEN must be set in build-deploy/.env");
+        console.error("❌ SITE_URL or INTEGRATION_SEED_TOKEN missing in config.test.php");
         process.exit(1);
     }
 

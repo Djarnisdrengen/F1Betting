@@ -36,7 +36,7 @@ jobs:
         env:
           # ── Site ──────────────────────────────────────────────────────
           DEPLOY_ENV: live
-          BASE_URL_LIVE: https://www.formula-1.dk
+          BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
 
           # ── Test credentials (add as repo secrets) ────────────────────
           TEST_USER_EMAIL_LIVE: f1_admin@helvegpovlsen.dk

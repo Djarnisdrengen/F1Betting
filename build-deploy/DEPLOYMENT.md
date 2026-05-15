@@ -8,7 +8,7 @@
 |---|---|
 | `npm run deploy:test` | Uploads all files from `public/` to **hpovlsen.dk** via FTP, respecting `.deployignore`. After upload, runs HTTP smoke tests. Test-only files (`test-seed.php`, `sync-from-live.php`) **are** uploaded here — they live only on the test server. |
 | `npm run deploy:live` | Uploads all files from `public/` to **formula-1.dk** via FTP. Requires typing `YES` at the confirmation prompt. Before uploading, creates a timestamped backup of the current live site. After upload, runs smoke tests + Playwright E2E tests. If either fails, automatically rolls back to the backup. Test-only files are excluded via `.deployignore.live`. |
-| `npm run setup:deploy` | One-time interactive setup that writes FTP credentials and URLs into `build-deploy/.env`. Run this when setting up the project on a new machine. |
+| `npm run setup:deploy` | One-time interactive setup that writes FTP credentials into `build-deploy/.env`. Run this when setting up the project on a new machine. |
 
 ### Sync & Restore
 
@@ -21,10 +21,10 @@
 
 | Command | What it does |
 |---|---|
-| `npm run test:smoke` | Fires HTTP requests against the deployed site and checks that key pages return 200. Fast, no browser. Runs automatically as part of every deploy. Requires `BASE_URL` to be set. |
-| `npm run test:e2e` | Runs the Playwright E2E browser tests (`smoke.spec.js`) against whichever `BASE_URL` is set. Reads credentials from `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`. Used internally by `deploy:live`. |
-| `npm run test:e2e:live` | Manually runs E2E tests against **formula-1.dk**. Reads `BASE_URL_LIVE`, `TEST_USER_EMAIL_LIVE`, and `TEST_USER_PASSWORD_LIVE` from `build-deploy/.env` automatically. |
-| `npm run test:e2e:test` | Manually runs E2E tests against **hpovlsen.dk**. Reads `BASE_URL_TEST`, `TEST_USER_EMAIL_TEST`, and `TEST_USER_PASSWORD_TEST` from `build-deploy/.env` automatically. |
+| `npm run test:smoke` | Fires HTTP requests against the deployed site and checks that key pages return 200. Fast, no browser. Runs automatically as part of every deploy. Target URL is read from `config.test.php` or `config.live.php`. |
+| `npm run test:e2e` | Runs the Playwright E2E browser tests (`smoke.spec.js`) against whichever `DEPLOY_ENV` is set. URL and credentials are read automatically from the matching `config.*.php` file. Used internally by `deploy:live`. |
+| `npm run test:e2e:live` | Manually runs E2E tests against **formula-1.dk**. URL and credentials are read from `config.live.php`. |
+| `npm run test:e2e:test` | Manually runs E2E tests against **hpovlsen.dk**. URL and credentials are read from `config.test.php`. |
 | `npm run test:integration` | Runs the Playwright integration test suite against **hpovlsen.dk** only. Before asserting, calls `test-seed.php` to reset the test database and seed 5 races of deterministic data (3 users, 10 drivers, 15 bets). Asserts correct points totals, leaderboard order, star counts, and betting pool sizes. **Never run this against the live site — it seeds fake data.** Run manually after deploying to test. |
 | `npm run test:all` | Runs `test:smoke` then `test:e2e`. Equivalent to what `deploy:live` runs automatically after upload. |
 
@@ -96,43 +96,19 @@ node build-deploy/deploy.js live
 
 ## Preventing Accidental Live Deploys
 
-The deploy script has a confirmation prompt for live deploys.
-When you run `node build-deploy/deploy.js live`, you must type `YES` exactly to proceed — pressing enter or any other input cancels it.
-
-To add this guard to the deploy script, update `build-deploy/deploy.js`:
-
-1. Add `const readline = require("readline");` at the top.
-2. Replace the final `deploy();` line with:
-
-```js
-async function main() {
-    const env = process.argv[2] || "test";
-    if (env === "live") {
-        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-        await new Promise(resolve => rl.question("⚠️  Deploy to LIVE (formula-1.dk)? Type YES to confirm: ", answer => {
-            rl.close();
-            if (answer !== "YES") {
-                console.log("Aborted.");
-                process.exit(0);
-            }
-            resolve();
-        }));
-    }
-    deploy();
-}
-main();
-```
+`deploy:live` requires typing `YES` exactly at the confirmation prompt — pressing Enter or any other input cancels it.
 
 ---
 
 ## What Gets Deployed
 
 - Everything in the `public/` folder
+- `config.shared.php` (from repo root) — deployed alongside `config.php` on each target server
 - Respects exclusions listed in `build-deploy/.deployignore`
 
 ## Environment Variables
 
-Stored in `build-deploy/.env` (never committed to git):
+`build-deploy/.env` holds **FTP credentials only** (never committed to git):
 
 ```env
 FTP_HOST=your-ftp-server.com
@@ -142,6 +118,34 @@ FTP_ROOT_TEST=/path/to/test/root
 FTP_ROOT_LIVE=/path/to/live/root
 DRY_RUN=false
 ```
+
+All other configuration (site URLs, admin credentials, seed tokens, cron secrets) lives in `config.test.php` and `config.live.php`. The build and test scripts read these files directly — no need to duplicate values in `.env`.
+
+---
+
+## GitHub Actions Setup
+
+The nightly CI workflow (`nightly.yml`) runs against the live site. It cannot read `config.live.php` (that file is local only), so required values must be configured in the GitHub repo settings.
+
+Go to **Settings → Secrets and variables → Actions**:
+
+### Variables tab (not secrets)
+
+| Variable | Example value |
+|---|---|
+| `BASE_URL_LIVE` | `https://www.formula-1.dk` |
+
+### Secrets tab
+
+| Secret | Description |
+|---|---|
+| `SMTP_HOST` | Outbound mail server hostname |
+| `SMTP_PORT` | SMTP port (e.g. `587`) |
+| `SMTP_USER` | SMTP username |
+| `SMTP_PASS` | SMTP password |
+| `SMTP_FROM` | Sender address for nightly report |
+| `REPORT_TO` | Recipient address for nightly report |
+| `TEST_USER_PASSWORD_LIVE` | Admin password for E2E login on live |
 
 ---
 

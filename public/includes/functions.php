@@ -185,6 +185,41 @@ function requireAdmin() {
 }
 
 // ============================================
+// DATABASE HELPERS
+// ============================================
+
+// Returns [$drivers, $driversById].
+// $order = 'name' sorts by last name (use for dropdowns / driver selection).
+// $order = 'number' sorts by car number (use for race result display).
+function fetchDrivers(PDO $db, string $order = 'name'): array {
+    $sql = $order === 'number'
+        ? "SELECT * FROM drivers ORDER BY number"
+        : "SELECT * FROM drivers ORDER BY SUBSTRING_INDEX(name, ' ', -1)";
+    $drivers = $db->query($sql)->fetchAll();
+    return [$drivers, array_column($drivers, null, 'id')];
+}
+
+// Returns all races ordered by date ascending.
+function getRaces(PDO $db): array {
+    return $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
+}
+
+// Returns all bets (with display_name + email) grouped by race_id.
+function getBetsByRace(PDO $db): array {
+    $bets = $db->query("
+        SELECT b.*, u.display_name, u.email
+        FROM bets b
+        JOIN users u ON b.user_id = u.id
+        ORDER BY b.placed_at DESC
+    ")->fetchAll();
+    $grouped = [];
+    foreach ($bets as $bet) {
+        $grouped[$bet['race_id']][] = $bet;
+    }
+    return $grouped;
+}
+
+// ============================================
 // DATABASE
 // ============================================
 function getDB() {

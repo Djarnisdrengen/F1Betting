@@ -8,6 +8,7 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 const { backup, pruneBackups } = require("./backup");
 const { rollback } = require("./rollback");
 const { runSmoke } = require("../tests/smoke");
+const { readPhpConfig } = require("./php-config");
 
 function loadIgnores(isLive) {
     const parse = file => fs.existsSync(file)
@@ -49,12 +50,13 @@ async function runTests(baseUrl, env) {
         return smokeOk;
     }
 
+    const cfg = readPhpConfig(env);
     const testEnv = {
         ...process.env,
         DEPLOY_ENV: env,
         BASE_URL: baseUrl,
-        TEST_USER_EMAIL: process.env[`TEST_USER_EMAIL_${env.toUpperCase()}`],
-        TEST_USER_PASSWORD: process.env[`TEST_USER_PASSWORD_${env.toUpperCase()}`],
+        TEST_USER_EMAIL: cfg.adminEmail,
+        TEST_USER_PASSWORD: cfg.adminPassword,
     };
 
     console.log(`🎭 Running Playwright E2E tests against ${baseUrl}...`);
@@ -76,7 +78,8 @@ async function deploy() {
     const env = process.argv[2] || "test";
     const isLive = env === "live";
     const remoteDir = isLive ? process.env.FTP_ROOT_LIVE : process.env.FTP_ROOT_TEST;
-    const baseUrl = isLive ? process.env.BASE_URL_LIVE : process.env.BASE_URL_TEST;
+    const phpCfg = readPhpConfig(env);
+    const baseUrl = phpCfg.siteUrl;
     const publicDir = path.join(__dirname, "../public");
     const ignores = loadIgnores(isLive);
 
@@ -107,6 +110,11 @@ async function deploy() {
             await client.uploadFrom(configSrc, `${remoteDir}/config.php`);
         } else {
             console.warn(`⚠️  config.${env}.php not found — skipping config upload`);
+        }
+        const sharedSrc = path.join(__dirname, `../config.shared.php`);
+        if (fs.existsSync(sharedSrc)) {
+            process.stdout.write(`  ↑ config.shared.php\n`);
+            await client.uploadFrom(sharedSrc, `${remoteDir}/config.shared.php`);
         }
         console.log(`✅ Done! Uploaded to ${remoteDir}`);
     } catch (err) {

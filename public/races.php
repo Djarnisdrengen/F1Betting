@@ -6,25 +6,10 @@ $db = getDB();
 $lang = getLang();
 
 // Hent data
-$races = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
-$drivers = $db->query("SELECT * FROM drivers ORDER BY number")->fetchAll();
-$driversById = [];
-foreach ($drivers as $d) {
-    $driversById[$d['id']] = $d;
-}
+$races = getRaces($db);
+[$drivers, $driversById] = fetchDrivers($db, 'number');
 
-// Hent alle bets
-$bets = $db->query("
-    SELECT b.*, u.display_name, u.email 
-    FROM bets b 
-    JOIN users u ON b.user_id = u.id 
-    ORDER BY b.placed_at DESC
-")->fetchAll();
-
-$betsByRace = [];
-foreach ($bets as $bet) {
-    $betsByRace[$bet['race_id']][] = $bet;
-}
+$betsByRace = getBetsByRace($db);
 
 $currentUser = getCurrentUser();
 $myBets = [];
@@ -124,40 +109,10 @@ include __DIR__ . '/includes/header.php';
             </div>
             
             <!-- Qualifying -->
-            <?php if ($race['quali_p1']): ?>
-                <div style="margin-top: 1rem;">
-                    <small class="text-muted"><?= t('qualifying') ?>:</small>
-                    <div class="quali-row">
-                        <?php foreach (['quali_p1', 'quali_p2', 'quali_p3'] as $i => $key): 
-                            $driver = $driversById[$race[$key]] ?? null;
-                            if ($driver):
-                        ?>
-                            <div class="quali-item">
-                                <span class="position-badge position-<?= $i + 1 ?>">P<?= $i + 1 ?></span>
-                                <?= escape($driver['name']) ?>
-                            </div>
-                        <?php endif; endforeach; ?>
-                    </div>
-                </div>
-            <?php endif; ?>
-            
+            <?php $_qd_data = $race; $_qd_keys = ['quali_p1', 'quali_p2', 'quali_p3']; $_qd_label = t('qualifying'); $_qd_style = 'margin-top: 1rem;'; include __DIR__ . '/includes/qualifying-display.php'; ?>
+
             <!-- Result -->
-            <?php if ($race['result_p1']): ?>
-                <div style="margin-top: 1rem;">
-                    <small class="text-muted"><?= t('result') ?>:</small>
-                    <div class="quali-row">
-                        <?php foreach (['result_p1', 'result_p2', 'result_p3'] as $i => $key): 
-                            $driver = $driversById[$race[$key]] ?? null;
-                            if ($driver):
-                        ?>
-                            <div class="quali-item">
-                                <span class="position-badge position-<?= $i + 1 ?>">P<?= $i + 1 ?></span>
-                                <?= escape($driver['name']) ?>
-                            </div>
-                        <?php endif; endforeach; ?>
-                    </div>
-                </div>
-            <?php endif; ?>
+            <?php $_qd_data = $race; $_qd_keys = ['result_p1', 'result_p2', 'result_p3']; $_qd_label = t('result'); $_qd_style = 'margin-top: 1rem;'; include __DIR__ . '/includes/qualifying-display.php'; ?>
             
             <!-- Actions and Bets -->
             <div class="flex items-center justify-between mt-2">

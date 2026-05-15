@@ -13,6 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
 }
 
+// Sanitization convention:
+//   sanitizeString() — for values echoed directly back to the page without further escaping
+//   trim()           — for values stored in the DB and escaped on output via escape()
+//   sanitizeEmail()  — for email inputs (trim + format validation)
+//   sanitizeInt()    — for numeric inputs
+
 // Handle actions
 $message = '';
 $error = '';
@@ -323,9 +329,9 @@ if (isset($_POST['delete_bet'])) {
 
 // ============ INVITES ============
 if (isset($_POST['create_invite'])) {
-    $inviteEmail = trim($_POST['invite_email'] ?? '');
-    
-    if ($inviteEmail && filter_var($inviteEmail, FILTER_VALIDATE_EMAIL)) {
+    $inviteEmail = sanitizeEmail($_POST['invite_email'] ?? '');
+
+    if ($inviteEmail) {
         // Tjek om email allerede findes som bruger
         $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$inviteEmail]);
@@ -445,8 +451,7 @@ $tabCounts = [
 ];
 
 // $drivers always needed: races add/edit dropdowns and bets display
-$drivers    = $db->query("SELECT * FROM drivers ORDER BY SUBSTRING_INDEX(name, ' ', -1)")->fetchAll();
-$driversById = array_column($drivers, null, 'id');
+[$drivers, $driversById] = fetchDrivers($db);
 
 switch ($currentTab) {
     case 'races':
