@@ -26,7 +26,8 @@ $settings = getSettings();
 
 // E2E test mode: skip SMTP and collect markers for Playwright assertions.
 // Gated by INTEGRATION_SEED_TOKEN so it only activates in the test environment.
-$testMode = defined('INTEGRATION_SEED_TOKEN') && !empty($_GET['e2e_token']) && $_GET['e2e_token'] === INTEGRATION_SEED_TOKEN;
+$_e2eRawToken = $_GET['e2e_token'] ?? $_POST['e2e_token'] ?? '';
+$testMode = defined('INTEGRATION_SEED_TOKEN') && !empty($_e2eRawToken) && $_e2eRawToken === INTEGRATION_SEED_TOKEN;
 $emailTestOutput = [];
 // Markers passed through a redirect are base64-encoded in e2e_markers.
 if ($testMode && !empty($_GET['e2e_markers'])) {

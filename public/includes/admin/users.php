@@ -47,8 +47,11 @@
         </div>
         <?php if ($user['id'] !== $currentUser['id']): ?>
             <div id="reset-pw-<?= escape($user['id']) ?>" class="hidden" style="padding: 1rem; border-top: 1px solid var(--border-color);">
-                <form method="POST" action="admin.php?tab=users<?= !empty($_GET['e2e_token']) ? '&e2e_token=' . urlencode($_GET['e2e_token']) : '' ?>" class="flex gap-1 items-end">
+                <form method="POST" action="admin.php?tab=users" class="flex gap-1 items-end">
                     <?= csrfField() ?>
+                    <?php if (!empty($_GET['e2e_token'])): ?>
+                        <input type="hidden" name="e2e_token" value="<?= escape($_GET['e2e_token']) ?>">
+                    <?php endif; ?>
                     <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
                     <input type="hidden" name="user_email" value="<?= escape($user['email']) ?>">
                     <input type="hidden" name="user_name" value="<?= escape($user['display_name']) ?>">

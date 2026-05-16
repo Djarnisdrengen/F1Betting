@@ -92,4 +92,32 @@ test.describe.serial("Profile", () => {
         await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
         await ctx.close();
     });
+
+    test("language — switch to English updates the UI immediately", async () => {
+        await sharedPage.goto("/profile.php");
+        const profileForm = sharedPage.locator('form').filter({ has: sharedPage.locator('select[name="language"]') });
+        await profileForm.locator('select[name="language"]').selectOption('en');
+        await profileForm.locator('button[type="submit"]').click();
+        await expect(sharedPage.locator(".alert-success")).toBeVisible();
+        await expect(sharedPage.locator("h3").filter({ hasText: "Edit Profile" })).toBeVisible();
+    });
+
+    test("language — preference survives re-login", async () => {
+        await sharedPage.goto("/logout.php");
+        await sharedPage.goto("/login.php");
+        await sharedPage.fill('input[name="email"]',    E2E_USER_EMAIL);
+        await sharedPage.fill('input[name="password"]', NEW_PW);
+        await sharedPage.click('button[type="submit"]');
+        await sharedPage.waitForURL(/index\.php/, { timeout: 5000 });
+        await sharedPage.goto("/profile.php");
+        await expect(sharedPage.locator("h3").filter({ hasText: "Edit Profile" })).toBeVisible();
+    });
+
+    test("language — switch back to Danish", async () => {
+        const profileForm = sharedPage.locator('form').filter({ has: sharedPage.locator('select[name="language"]') });
+        await profileForm.locator('select[name="language"]').selectOption('da');
+        await profileForm.locator('button[type="submit"]').click();
+        await expect(sharedPage.locator(".alert-success")).toBeVisible();
+        await expect(sharedPage.locator("h3").filter({ hasText: "Rediger Profil" })).toBeVisible();
+    });
 });

@@ -1,0 +1,16 @@
+
+> test:e2e:test
+> PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js --grep language
+
+[setup] Admin session saved → /home/thomas-helveg-povlsen/github/F1Betting/.auth/admin.json
+chromium
+  Profile
+    ⏳ language — switch to English updates the UI immediately    ❌ language — switch to English updates the UI immediately → Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+    ⏳ language — preference survives re-login    ❌ language — preference survives re-login → failed
+    ⏳ language — switch back to Danish    ❌ language — switch back to Danish → failed
+  Translations
+    ⏳ login page renders in default language (DA)    ✅ login page renders in default language (DA)
+    ⏳ language toggle switches DA ↔ EN    ✅ language toggle switches DA ↔ EN
+
+❌ E2E tests failed (3/5 failed) — screenshots saved to build-deploy/screenshots/
+

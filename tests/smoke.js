@@ -31,8 +31,8 @@ const CHECKS = [
 // Require a logged-in session; skipped when credentials are unavailable.
 
 const AUTHED_CHECKS = [
-    { path: "/profile.php", contains: "Din Betting Historik" }, // t('betting_history') DA
-    { path: "/profile.php", contains: "Skift Adgangskode" },    // t('change_password_title') DA
+    { path: "/profile.php", containsAny: ["Din Betting Historik", "Betting History"] },
+    { path: "/profile.php", containsAny: ["Skift Adgangskode", "Change Password"] },
 ];
 
 // ─── Minimal cookie-aware HTTP helpers ───────────────────────────────────────
