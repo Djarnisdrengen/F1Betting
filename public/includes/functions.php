@@ -185,6 +185,29 @@ function requireAdmin() {
 }
 
 // ============================================
+// DISPLAY HELPERS
+// ============================================
+
+function displayUserName(array $user): string {
+    return escape($user['display_name'] ?: $user['email']);
+}
+
+function userInitial(array $user): string {
+    return escape(strtoupper(substr($user['display_name'] ?: $user['email'], 0, 1)));
+}
+
+// Returns the driver's last name, HTML-escaped.
+function driverLastName(array $driver): string {
+    $parts = explode(' ', $driver['name'] ?? '');
+    return escape(array_pop($parts));
+}
+
+// Formats race date + time as "d M Y - HH:MM CET".
+function formatRaceDateTime(string $date, string $time): string {
+    return date('d M Y', strtotime($date)) . ' - ' . substr($time, 0, 5) . ' CET';
+}
+
+// ============================================
 // DATABASE HELPERS
 // ============================================
 
@@ -202,6 +225,22 @@ function fetchDrivers(PDO $db, string $order = 'name'): array {
 // Returns all races ordered by date ascending.
 function getRaces(PDO $db): array {
     return $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
+}
+
+// Returns leaderboard rows ordered by stars desc, points desc. Pass a limit to cap results.
+function getLeaderboard(PDO $db, ?int $limit = null): array {
+    $sql = "
+        SELECT u.*, COUNT(b.id) AS bets_count
+        FROM users u
+        LEFT JOIN bets b ON u.id = b.user_id
+        WHERE u.in_competition = 1
+        GROUP BY u.id
+        ORDER BY u.stars DESC, u.points DESC
+    ";
+    if ($limit !== null) {
+        $sql .= ' LIMIT ' . $limit;
+    }
+    return $db->query($sql)->fetchAll();
 }
 
 // Returns all bets (with display_name + email) grouped by race_id.
@@ -277,6 +316,30 @@ function recordLoginAttempt(PDO $db, string $ip): void {
 
 function clearLoginAttempts(PDO $db, string $ip): void {
     $db->prepare("DELETE FROM login_attempts WHERE ip = ?")->execute([$ip]);
+}
+
+// ============================================
+// BET VALIDATION
+// ============================================
+
+// Validates a P1/P2/P3 combination. Returns a translated error string, or '' on success.
+// $context must contain quali_p1/p2/p3 keys (from a race or bet row).
+function validateBetCombination(string $p1, string $p2, string $p3, array $context, array $existingBets): string {
+    if (!$p1 || !$p2 || !$p3) {
+        return t('select_all_positions');
+    }
+    if ($p1 === $p2 || $p1 === $p3 || $p2 === $p3) {
+        return t('no_same_driver');
+    }
+    if ($context['quali_p1'] && $p1 === $context['quali_p1'] && $p2 === $context['quali_p2'] && $p3 === $context['quali_p3']) {
+        return t('quali_match_error');
+    }
+    foreach ($existingBets as $eb) {
+        if ($eb['p1'] === $p1 && $eb['p2'] === $p2 && $eb['p3'] === $p3) {
+            return t('combo_taken');
+        }
+    }
+    return '';
 }
 
 // ============================================

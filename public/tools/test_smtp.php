@@ -57,7 +57,7 @@ if (isset($_POST['test_smtp'])) {
     </style>
 </head>
 <body>
-    <h1SMTP Test</h1>
+    <h1>SMTP Test</h1>
     
     <div class="card">
         <h3>Current SMTP Configuration</h3>
@@ -65,9 +65,10 @@ if (isset($_POST['test_smtp'])) {
             <tr><td>SMTP_HOST</td><td><?= defined('SMTP_HOST') ? SMTP_HOST : '<em>Not defined</em>' ?></td></tr>
             <tr><td>SMTP_PORT</td><td><?= defined('SMTP_PORT') ? SMTP_PORT : '<em>Not defined</em>' ?></td></tr>
             <tr><td>SMTP_USER</td><td><?= defined('SMTP_USER') ? SMTP_USER : '<em>Not defined</em>' ?></td></tr>
-            <tr><td>SMTP_PASS</td><td><?= defined('SMTP_PASS') ? '••••••••' : '<em>Not defined</em>' ?></td></tr>
+            <tr><td>SMTP_PASS</td><td><?= defined('SMTP_PASS') ? '********' : '<em>Not defined</em>' ?></td></tr>
             <tr><td>SMTP_FROM_EMAIL</td><td><?= defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : '<em>Not defined</em>' ?></td></tr>
             <tr><td>SMTP_FROM_NAME</td><td><?= defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : '<em>Not defined</em>' ?></td></tr>
+            <tr><td>RESEND_API_KEY</td><td><?= defined('RESEND_API_KEY') && !empty(RESEND_API_KEY) ? '********' : '<em style="color:#e10600">Not defined &mdash; no fallback</em>' ?></td></tr>
         </table>
     </div>
     

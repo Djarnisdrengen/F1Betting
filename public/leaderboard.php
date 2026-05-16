@@ -4,14 +4,7 @@ require_once __DIR__ . '/includes/functions.php';
 
 $db = getDB();
 
-$leaderboard = $db->query("
-    SELECT u.id, u.email, u.display_name, u.points, u.stars, COUNT(b.id) as bets_count 
-    FROM users u 
-    LEFT JOIN bets b ON u.id = b.user_id 
-    WHERE u.in_competition = 1
-    GROUP BY u.id 
-    ORDER BY u.stars DESC, u.points DESC
-")->fetchAll();
+$leaderboard = getLeaderboard($db);
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -34,7 +27,7 @@ include __DIR__ . '/includes/header.php';
         $entry = $leaderboard[$pos];
     ?>
         <div class="text-center">
-            <p style="font-weight: bold;"><?= escape($entry['display_name'] ?: $entry['email']) ?></p>
+            <p style="font-weight: bold;"><?= displayUserName($entry) ?></p>
             <p class="text-accent" style="font-size: 1.5rem; font-weight: bold;"><?= $entry['points'] ?> pts</p>
             <?php if ($entry['stars'] > 0): ?>
                 <p class="star"><?= str_repeat('★', $entry['stars']) ?></p>
@@ -70,9 +63,9 @@ include __DIR__ . '/includes/header.php';
                     <td>
                         <div class="flex items-center gap-2">
                             <div class="user-avatar" style="<?= $i >= 3 ? 'background: var(--bg-secondary); color: var(--text-primary);' : '' ?>">
-                                <?= escape(strtoupper(substr($entry['display_name'] ?: $entry['email'], 0, 1))) ?>
+                                <?= userInitial($entry) ?>
                             </div>
-                            <?= escape($entry['display_name'] ?: $entry['email']) ?>
+                            <?= displayUserName($entry) ?>
                         </div>
                     </td>
                     <td class="text-center text-muted podium-section"><?= $entry['bets_count'] ?></td>

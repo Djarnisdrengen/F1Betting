@@ -16,14 +16,17 @@ const fs   = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-const ROOT       = path.join(__dirname, '..');
-const SMTP_HOST  = process.env.SMTP_HOST;
-const SMTP_PORT  = parseInt(process.env.SMTP_PORT || '587', 10);
-const SMTP_USER  = process.env.SMTP_USER;
-const SMTP_PASS  = process.env.SMTP_PASS;
-const SMTP_FROM  = process.env.SMTP_FROM || SMTP_USER;
-const REPORT_TO  = process.env.REPORT_TO || 'thomas@helvegpovlsen.dk';
-const BASE_URL   = process.env.BASE_URL_LIVE || 'https://www.formula-1.dk';
+const { sendEmail, makeSmtpSender, makeResendSender } = require('./mailer');
+
+const ROOT            = path.join(__dirname, '..');
+const SMTP_HOST       = process.env.SMTP_HOST;
+const SMTP_PORT       = parseInt(process.env.SMTP_PORT || '587', 10);
+const SMTP_USER       = process.env.SMTP_USER;
+const SMTP_PASS       = process.env.SMTP_PASS;
+const SMTP_FROM       = process.env.SMTP_FROM || SMTP_USER;
+const REPORT_TO       = process.env.REPORT_TO || 'thomas@helvegpovlsen.dk';
+const RESEND_API_KEY  = process.env.RESEND_API_KEY;
+const BASE_URL        = process.env.BASE_URL_LIVE || 'https://www.formula-1.dk';
 
 const SECTION_NAMES = {
     A: 'Transport Security',  B: 'Security Headers',
@@ -313,25 +316,23 @@ function saveReport(html, startedAt) {
 
 // ─── Email sender ────────────────────────────────────────────────────────────
 
-async function sendEmail(subject, html) {
+async function sendReport(subject, html) {
     if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
         console.log('[nightly] SMTP not configured — email skipped (report artifact is still uploaded)');
         return;
     }
-    const nodemailer = require('nodemailer');
-    const transporter = nodemailer.createTransport({
-        host: SMTP_HOST,
-        port: SMTP_PORT,
-        secure: SMTP_PORT === 465,
-        auth: { user: SMTP_USER, pass: SMTP_PASS },
-    });
-    await transporter.sendMail({
+    const primary  = makeSmtpSender({ host: SMTP_HOST, port: SMTP_PORT, user: SMTP_USER, pass: SMTP_PASS });
+    const fallback = RESEND_API_KEY ? makeResendSender({ apiKey: RESEND_API_KEY }) : null;
+    if (!fallback) console.warn('[nightly] RESEND_API_KEY not set — no fallback transport available');
+
+    const envelope = {
         from: SMTP_FROM,
-        to: REPORT_TO,
+        to:   REPORT_TO,
         subject,
         html,
         text: `F1Betting Nightly Report — view as HTML.\n\nTarget: ${BASE_URL}`,
-    });
+    };
+    await sendEmail(primary, fallback, envelope);
     console.log(`[nightly] Report sent → ${REPORT_TO}`);
 }
 
@@ -353,7 +354,7 @@ async function main() {
     const html    = buildEmail(e2e, sec, report, startedAt);
 
     saveReport(html, startedAt);
-    await sendEmail(subject, html);
+    await sendReport(subject, html);
     console.log(`[nightly] Finished at ${new Date().toISOString()}`);
 }
 

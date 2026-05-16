@@ -33,9 +33,7 @@ include __DIR__ . '/includes/header.php';
     ];
     $errorMsg = $errorMessages[$_GET['error']] ?? 'An error occurred.';
     ?>
-    <div class="alert" style="background: #fee; color: #c33; border: 1px solid #fcc; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-        <i class="fas fa-exclamation-circle"></i> <?= $errorMsg ?>
-    </div>
+    <div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> <?= escape($errorMsg) ?></div>
 <?php endif; ?>
 
 <?php foreach ($races as $race): 
@@ -78,7 +76,7 @@ include __DIR__ . '/includes/header.php';
                     </h3>
                     <div class="race-meta">
                         <span><i class="fas fa-map-marker-alt"></i> <?= escape($race['location']) ?></span>
-                        <span><i class="fas fa-clock"></i> <?= date('d M Y', strtotime($race['race_date'])) ?> - <?= substr($race['race_time'], 0, 5) ?> CET</span>
+                        <span><i class="fas fa-clock"></i> <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></span>
                     </div>
                     <!-- Countdown Timer for upcoming races -->
                     <?php if (!$race['result_p1']): ?>
@@ -137,34 +135,8 @@ include __DIR__ . '/includes/header.php';
             <?php if (count($raceBets) > 0): ?>
                 <div id="race-bets-<?= $race['id'] ?>" class="bets-section hidden">
                     <h4 class="mb-1"><?= t('all_bets') ?> (<?= count($raceBets) ?>)</h4>
-                    <?php foreach ($raceBets as $bet): 
-                        $isMyBet = $currentUser && $bet['user_id'] === $currentUser['id'];
-                    ?>
-                        <div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?> <?= $isMyBet ? 'my-bet' : '' ?>">
-                            <div class="bet-user">
-                                <div class="bet-avatar"><?= escape(strtoupper(substr($bet['display_name'] ?: $bet['email'], 0, 1))) ?></div>
-                                <div>
-                                    <strong class="flex items-center gap-1">
-                                        <?= escape($bet['display_name'] ?: $bet['email']) ?>
-                                        <?php if ($isMyBet): ?><span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= t('you_badge') ?></span><?php endif; ?>
-                                        <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
-                                    </strong>
-                                    <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <div class="bet-predictions">
-                                    <?php foreach (['p1', 'p2', 'p3'] as $i => $key): 
-                                        $driver = $driversById[$bet[$key]] ?? null;
-                                    ?>
-                                        <span class="bet-pred"><b>P<?= $i + 1 ?>:</b> <?= $driver ? explode(' ', $driver['name'])[count(explode(' ', $driver['name']))-1] : '?' ?></span>
-                                    <?php endforeach; ?>
-                                </div>
-                                <?php if ($bet['points'] > 0): ?>
-                                    <span class="badge" style="background: var(--f1-red); color: white;"><?= $bet['points'] ?> pts</span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+                    <?php foreach ($raceBets as $bet): ?>
+                        <?php include __DIR__ . '/includes/bet-item.php'; ?>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>

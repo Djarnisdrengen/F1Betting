@@ -13,16 +13,7 @@ $races = getRaces($db);
 
 $betsByRace = getBetsByRace($db);
 
-// Hent leaderboard
-$leaderboard = $db->query("
-    SELECT u.*, COUNT(b.id) as bets_count 
-    FROM users u 
-    LEFT JOIN bets b ON u.id = b.user_id
-    WHERE u.in_competition = 1
-    GROUP BY u.id 
-    ORDER BY  u.stars DESC, u.points DESC
-    LIMIT 10
-")->fetchAll();
+$leaderboard = getLeaderboard($db, 10);
 
 // Hero tekst
 $heroTitle = $lang === 'da' ? $settings['hero_title_da'] : $settings['hero_title_en'];
@@ -88,7 +79,7 @@ $flashError   = $errorMessages[$_GET['error']   ?? ''] ?? null;
                             <div class="flex items-center gap-2">
                                 <span class="position-badge position-<?= $i + 1 ?>"><?= $i + 1 ?></span>
                                 <div>
-                                    <strong><?= escape($entry['display_name'] ?: $entry['email']) ?></strong>
+                                    <strong><?= displayUserName($entry) ?></strong>
                                     <br><small class="text-muted"><?= $entry['bets_count'] ?> bets</small>
                                 </div>
                             </div>
@@ -145,7 +136,7 @@ $flashError   = $errorMessages[$_GET['error']   ?? ''] ?? null;
                                 <h3 class="race-title"><?= escape($race['name']) ?></h3>
                                 <div class="race-meta">
                                     <span><i class="fas fa-map-marker-alt"></i> <?= escape($race['location']) ?></span>
-                                    <span><i class="fas fa-clock"></i> <?= date('d M Y', strtotime($race['race_date'])) ?> - <?= substr($race['race_time'], 0, 5) ?> CET</span>
+                                    <span><i class="fas fa-clock"></i> <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></span>
                                 </div>
                                 <!-- Countdown Timer -->
                                 <?php if ($status['status'] === 'pending'): ?>
@@ -202,37 +193,8 @@ $flashError   = $errorMessages[$_GET['error']   ?? ''] ?? null;
                         <?php if (count($raceBets) > 0): ?>
                             <div id="bets-<?= $race['id'] ?>" class="bets-section hidden">
                                 <h4 class="mb-1"><?= t('all_bets') ?> (<?= count($raceBets) ?>)</h4>
-                                <?php foreach ($raceBets as $bet): 
-                                    $isMyBet = $currentUser && $bet['user_id'] === $currentUser['id'];
-                                ?>
-                                    <div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?> <?= $isMyBet ? 'my-bet' : '' ?>">
-                                        <div class="bet-user">
-                                            <div class="bet-avatar"><?= escape(strtoupper(substr($bet['display_name'] ?: $bet['email'], 0, 1))) ?></div>
-                                            <div>
-                                                <strong class="flex items-center gap-1">
-                                                    <?= escape($bet['display_name'] ?: $bet['email']) ?>
-                                                    <?php if ($isMyBet): ?><span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= t('you_badge') ?></span><?php endif; ?>
-                                                    <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
-                                                    <?php if ($bet['points'] > 0): ?>
-                                                        <!-- <span class="badge" style="background: var(--f1-red); color: white;"><?= $bet['points'] ?> pts</span> -->
-                                                         <span class="badge position-1"> <?= $bet['points'] ?> pts</span>
-                                                    <?php endif; ?>
-
-                                                </strong>
-                                                <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-1">
-                                            <div class="bet-predictions">
-                                                <?php foreach (['p1', 'p2', 'p3'] as $i => $key): 
-                                                    $driver = $driversById[$bet[$key]] ?? null;
-                                                    $isP3 = ($key === 'p3'); // Check if this is the third position                                                   
-                                                ?>
-                                                    <span class="bet-pred"><b>P<?= $i + 1 ?>:</b> <?= $driver ? explode(' ', $driver['name'])[count(explode(' ', $driver['name']))-1] : '?' ?></span>          
-                                                <?php endforeach; ?>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <?php foreach ($raceBets as $bet): ?>
+                                    <?php include __DIR__ . '/includes/bet-item.php'; ?>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>

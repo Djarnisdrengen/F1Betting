@@ -1,0 +1,33 @@
+<?php
+// Renders a single bet row inside a bets-section list.
+// Caller must have in scope: $bet, $driversById, $currentUser.
+$_bi_mine = $currentUser && $bet['user_id'] === $currentUser['id'];
+?>
+<div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?> <?= $_bi_mine ? 'my-bet' : '' ?>">
+    <div class="bet-user">
+        <div class="bet-avatar"><?= userInitial($bet) ?></div>
+        <div>
+            <strong class="flex items-center gap-1">
+                <?= displayUserName($bet) ?>
+                <?php if ($_bi_mine): ?>
+                    <span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= t('you_badge') ?></span>
+                <?php endif; ?>
+                <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
+            </strong>
+            <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>
+        </div>
+    </div>
+    <div class="flex items-center gap-1">
+        <div class="bet-predictions">
+            <?php foreach (['p1', 'p2', 'p3'] as $_bi_i => $_bi_key):
+                $_bi_driver = $driversById[$bet[$_bi_key]] ?? null;
+            ?>
+                <span class="bet-pred"><b>P<?= $_bi_i + 1 ?>:</b> <?= $_bi_driver ? driverLastName($_bi_driver) : '?' ?></span>
+            <?php endforeach; ?>
+        </div>
+        <?php if ($bet['points'] > 0): ?>
+            <span class="badge position-1"><?= $bet['points'] ?> pts</span>
+        <?php endif; ?>
+    </div>
+</div>
+<?php unset($_bi_mine, $_bi_i, $_bi_key, $_bi_driver); ?>

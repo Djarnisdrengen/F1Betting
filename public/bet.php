@@ -59,39 +59,18 @@ $lang = getLang();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
-    
+
     $p1 = sanitizeString($_POST['p1'] ?? '');
     $p2 = sanitizeString($_POST['p2'] ?? '');
     $p3 = sanitizeString($_POST['p3'] ?? '');
-    
-    // Validering
-    if (!$p1 || !$p2 || !$p3) {
-        $error = t('select_all_positions');
-    } elseif ($p1 === $p2 || $p1 === $p3 || $p2 === $p3) {
-        $error = t('no_same_driver');
-    } elseif ($race['quali_p1'] && $p1 === $race['quali_p1'] && $p2 === $race['quali_p2'] && $p3 === $race['quali_p3']) {
-        $error = t('quali_match_error');
-    } else {
-        // Tjek om kombinationen allerede er taget
-        $isTaken = false;
-        foreach ($existingBets as $eb) {
-            if ($eb['p1'] === $p1 && $eb['p2'] === $p2 && $eb['p3'] === $p3) {
-                $isTaken = true;
-                break;
-            }
-        }
 
-        if ($isTaken) {
-            $error = t('combo_taken');
-        } else {
-            // Opret bet
-            $betId = generateUUID();
-            $stmt = $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$betId, $currentUser['id'], $raceId, $p1, $p2, $p3]);
-            
-            header("Location: index.php?success=bet_placed");
-            exit;
-        }
+    $error = validateBetCombination($p1, $p2, $p3, $race, $existingBets);
+    if (!$error) {
+        $betId = generateUUID();
+        $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3) VALUES (?, ?, ?, ?, ?, ?)")
+           ->execute([$betId, $currentUser['id'], $raceId, $p1, $p2, $p3]);
+        header("Location: index.php?success=bet_placed");
+        exit;
     }
 }
 
@@ -109,7 +88,7 @@ include __DIR__ . '/includes/header.php';
                     <h2 style="margin: 0;"><?= escape($race['name']) ?></h2>
                     <p class="text-muted" style="margin: 0;">
                         <i class="fas fa-map-marker-alt"></i> <?= escape($race['location']) ?> · 
-                        <i class="fas fa-clock"></i> <?= date('d M Y', strtotime($race['race_date'])) ?> - <?= substr($race['race_time'], 0, 5) ?> CET
+                        <i class="fas fa-clock"></i> <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
                     </p>
                 </div>
             </div>

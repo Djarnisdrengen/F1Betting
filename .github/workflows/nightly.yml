@@ -52,6 +52,7 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           SMTP_FROM: ${{ vars.SMTP_FROM }}
           REPORT_TO: ${{ vars.REPORT_TO }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
         run: node build-deploy/nightly-report.js
 

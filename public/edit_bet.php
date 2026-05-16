@@ -56,38 +56,17 @@ $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
-    
+
     $p1 = sanitizeString($_POST['p1'] ?? '');
     $p2 = sanitizeString($_POST['p2'] ?? '');
     $p3 = sanitizeString($_POST['p3'] ?? '');
-    
-    // Validering
-    if (!$p1 || !$p2 || !$p3) {
-        $error = t('select_all_positions');
-    } elseif ($p1 === $p2 || $p1 === $p3 || $p2 === $p3) {
-        $error = t('no_same_driver');
-    } elseif ($bet['quali_p1'] && $p1 === $bet['quali_p1'] && $p2 === $bet['quali_p2'] && $p3 === $bet['quali_p3']) {
-        $error = t('quali_match_error');
-    } else {
-        // Tjek om kombinationen allerede er taget
-        $isTaken = false;
-        foreach ($existingBets as $eb) {
-            if ($eb['p1'] === $p1 && $eb['p2'] === $p2 && $eb['p3'] === $p3) {
-                $isTaken = true;
-                break;
-            }
-        }
 
-        if ($isTaken) {
-            $error = t('combo_taken');
-        } else {
-            // Opdater bet
-            $stmt = $db->prepare("UPDATE bets SET p1 = ?, p2 = ?, p3 = ?, placed_at = NOW() WHERE id = ?");
-            $stmt->execute([$p1, $p2, $p3, $betId]);
-            
-            header("Location: index.php?success=bet_updated");
-            exit;
-        }
+    $error = validateBetCombination($p1, $p2, $p3, $bet, $existingBets);
+    if (!$error) {
+        $db->prepare("UPDATE bets SET p1 = ?, p2 = ?, p3 = ?, placed_at = NOW() WHERE id = ?")
+           ->execute([$p1, $p2, $p3, $betId]);
+        header("Location: index.php?success=bet_updated");
+        exit;
     }
 }
 
@@ -110,7 +89,7 @@ include __DIR__ . '/includes/header.php';
             </div>
             
             <p class="text-muted" style="margin-top: 0.5rem;">
-                <i class="fas fa-clock"></i> <?= date('d M Y', strtotime($bet['race_date'])) ?> - <?= substr($bet['race_time'], 0, 5) ?> CET
+                <i class="fas fa-clock"></i> <?= formatRaceDateTime($bet['race_date'], $bet['race_time']) ?>
             </p>
             
             <!-- Qualifying -->

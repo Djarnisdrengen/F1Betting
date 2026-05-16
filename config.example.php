@@ -29,13 +29,18 @@ define('JWT_SECRET',             'change-me-32-random-hex-chars');
 define('PASSWORD_PEPPER',        'change-me-32-random-hex-chars');
 define('INTEGRATION_SEED_TOKEN', 'change-me');
 
-// ── SMTP (Simply.com) ─────────────────────────────────────────────────
-define('SMTP_HOST',       'smtp.example.dk');    
+// ── SMTP (Proton Mail — primary) ──────────────────────────────────────
+define('SMTP_HOST',       'smtp.example.dk');
 define('SMTP_PORT',       587);                     // 587=TLS, 465=SSL
 define('SMTP_USER',       'noreply@example.dk');
 define('SMTP_PASS',       'email-password');
 define('SMTP_FROM_EMAIL', 'noreply@example.dk');
 define('SMTP_FROM_NAME',  'F1 Betting');
+
+// ── RESEND (fallback if SMTP fails) ───────────────────────────────────
+// Get an API key at resend.com (free tier is sufficient).
+// If unset, a failed SMTP send is not retried.
+define('RESEND_API_KEY',  're_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 
 // ── CRON ──────────────────────────────────────────────────────────────
 define('CRON_SECRET',                 'change-me');

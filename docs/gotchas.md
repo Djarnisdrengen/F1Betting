@@ -121,6 +121,16 @@ Run `npm run setup:deploy` to create a clean `.env` without stale keys.
 
 ---
 
+## 15. Nightly report emails appear twice when `SMTP_FROM` and `REPORT_TO` share the same Proton account
+
+`SMTP_FROM` is `info@formula-1.dk` and `REPORT_TO` is `f1_admin@helvegpovlsen.dk` — both resolve to addresses on the same Proton Mail account. Proton treats this as a self-send and creates two copies: one stored as a sent item under `info@formula-1.dk` and one delivered to `thomas@helvegpovlsen.dk`. Any Proton filter that matches on subject will catch both copies and move them to the same folder, making it look like the email was sent twice.
+
+There is no incoming-only condition available in Proton's simple filter builder, so the duplicate cannot be eliminated by a filter alone. The fix is to either change `SMTP_FROM` to an address outside this Proton account, or change `REPORT_TO` to an external address (e.g. Gmail).
+
+**Note:** Simply.com's mail servers also appear to act as an SMTP relay/fallback for the domain. Bounce messages from Simply.com (`localsmtp.web.simply.com`) after mail routing changes indicate that Simply.com may relay mail for `formula-1.dk` independently of the Proton MX records — for example via a mail alias or forwarding rule set up in the Simply.com control panel. Check Simply.com → Email → Forwarders when debugging unexpected mail routing.
+
+---
+
 ## 14. `quali_p1/p2/p3` must match exact bet validation
 
 When qualifying results are entered, the bet form shows an error if the user's selected P1/P2/P3 exactly matches the qualifying order (the qualy-match rule). This validation compares driver IDs, not names. If you add qualifying results to a race in the admin panel, the P1/P2/P3 fields must be driver IDs from the `drivers` table — not display names.

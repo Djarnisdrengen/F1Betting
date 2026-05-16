@@ -1,15 +1,8 @@
 <?php
 /**
- * SMTP Email Class for F1 Betting
- * Works with simply.com and other SMTP providers
- * 
- * Konfiguration i config.php:
- *   define('SMTP_HOST', 'websmtp.simply.com');  // eller 'asmtp.unoeuro.com'
- *   define('SMTP_PORT', 587);
- *   define('SMTP_USER', 'din@email.dk');
- *   define('SMTP_PASS', 'dit_password');
- *   define('SMTP_FROM_EMAIL', 'noreply@dit-domæne.dk');
- *   define('SMTP_FROM_NAME', 'F1 Betting');
+ * SMTP mailer with Resend fallback.
+ * Config constants: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS,
+ *                   SMTP_FROM_EMAIL, SMTP_FROM_NAME, RESEND_API_KEY.
  */
 
 class SMTPMailer {
@@ -23,6 +16,8 @@ class SMTPMailer {
     private $debug = false;
     private $lastError = '';
     private $debugLog = [];
+    private $lastHtmlBody = '';
+    private $lastTextBody = '';
 
     public function __construct($host, $port, $user, $pass, $fromEmail, $fromName) {
         $this->host = $host;
@@ -48,6 +43,8 @@ class SMTPMailer {
     public function send($to, $subject, $htmlBody, $textBody = null) {
         $this->lastError = '';
         $this->debugLog = [];
+        $this->lastHtmlBody = $htmlBody;
+        $this->lastTextBody = $textBody ?: strip_tags($htmlBody);
         
         // Create message with proper headers
         $boundary = md5(uniqid(time()));
@@ -77,10 +74,9 @@ class SMTPMailer {
         }
 
         $this->log("SMTP failed: {$this->lastError}");
-        $this->log("Falling back to PHP mail()");
-        
-        // Fallback to PHP mail()
-       return $this->sendViaMail($to, $subject, $message, $headers);
+        $this->log("Falling back to Resend API");
+
+        return $this->sendViaResend($to, $subject);
     }
 
     private function sendViaSMTP($to, $subject, $message, $headers) {
@@ -278,19 +274,51 @@ class SMTPMailer {
         return $response;
     }
 
-    private function sendViaMail($to, $subject, $message, $headers) {
-        $boundary = md5(uniqid(time()));
+    private function sendViaResend($to, $subject) {
+        if (!defined('RESEND_API_KEY') || empty(RESEND_API_KEY)) {
+            $this->lastError = 'Resend fallback not configured — RESEND_API_KEY is missing';
+            $this->log($this->lastError);
+            return false;
+        }
 
-        $fromEmail = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : '';
-        $headers = "MIME-Version: 1.0\r\n";
-        $headers .= "From: {$fromEmail}\r\n";
-        $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
+        $payload = json_encode([
+            'from'    => "{$this->fromName} <{$this->fromEmail}>",
+            'to'      => [$to],
+            'subject' => $subject,
+            'html'    => $this->lastHtmlBody,
+            'text'    => $this->lastTextBody,
+        ]);
 
-        $adminEmail = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : '';
-        if ($adminEmail && @mail($adminEmail, 'SMTP mail send failure', 'Mail send via SMTP failed', $headers)) {
+        $ch = curl_init('https://api.resend.com/emails');
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => [
+                'Authorization: Bearer ' . RESEND_API_KEY,
+                'Content-Type: application/json',
+            ],
+            CURLOPT_TIMEOUT => 15,
+        ]);
+
+        $response  = curl_exec($ch);
+        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($curlError) {
+            $this->lastError = "Resend curl error: {$curlError}";
+            $this->log($this->lastError);
+            return false;
+        }
+
+        if ($httpCode === 200 || $httpCode === 201) {
+            $this->log("Resend fallback successful (HTTP {$httpCode})");
             return true;
         }
-        $this->lastError = "PHP mail() function failed";
+
+        $this->lastError = "Resend API error HTTP {$httpCode}: {$response}";
+        $this->log($this->lastError);
         return false;
     }
 }

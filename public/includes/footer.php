@@ -16,28 +16,13 @@
     <!--  INLINE SCRIPT TO ENSURE EARLY LOAD -->
     <script nonce="<?php echo $nonce; ?>">
 
-    // Mobile menu toggle
     document.addEventListener('DOMContentLoaded', function() {
-        // Select all div with the specific class
-        const buttons = document.querySelectorAll('.mobile-menu-btn');            
-        buttons.forEach(button => {
-            button.addEventListener('click', function() {                        
-                toggleMobileMenu(); // Your existing function
-            });
+        document.querySelectorAll('.mobile-menu-btn').forEach(btn => {
+            btn.addEventListener('click', toggleMobileMenu);
         });
-    });
-
-
-    //Mobile leaderboard toggle
-    document.addEventListener('DOMContentLoaded', function() {
-        // Select all div with the specific class
-        const divs = document.querySelectorAll('.leaderboard-section');            
-        divs.forEach(div => {
-            div.addEventListener('click', function() {                        
-                toggleLeaderboard(); 
-            });
+        document.querySelectorAll('.leaderboard-section').forEach(div => {
+            div.addEventListener('click', toggleLeaderboard);
         });
-
     });
 
     function toggleMobileMenu() {

@@ -44,8 +44,9 @@ Secrets are encrypted and hidden in logs.
 
 | Secret | Description |
 |---|---|
-| `SMTP_USER` | SMTP login username |
-| `SMTP_PASS` | SMTP password |
+| `SMTP_USER` | SMTP login username (Proton Mail — primary transport) |
+| `SMTP_PASS` | SMTP password (Proton Mail) |
+| `RESEND_API_KEY` | Resend API key — fallback transport if Proton SMTP fails. Get one at resend.com (free tier is sufficient). If unset, a warning is logged and there is no fallback. |
 | `REPORT_TO` | Recipient address for the nightly report email |
 | `TEST_USER_PASSWORD_LIVE` | Admin account password on the live site (used for E2E login) |
 
