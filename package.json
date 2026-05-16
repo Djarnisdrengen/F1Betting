@@ -16,7 +16,8 @@
     "test:security:live:ratelimit": "DEPLOY_ENV=live node tests/security/security.js --ratelimit",
     "test:security:live:ssllabs": "DEPLOY_ENV=live node tests/security/security.js --ssllabs",
     "test:security:live:full": "DEPLOY_ENV=live node tests/security/security.js --ssllabs --ratelimit",
-    "test:all": "npm run test:smoke && npm run test:e2e",
+    "test:unit": "node --test tests/unit/mailer.test.js",
+    "test:all": "npm run test:smoke && npm run test:unit && npm run test:e2e",
     "sync:live": "node build-deploy/sync.js",
     "restore:db": "node build-deploy/restore-db.js",
     "nightly": "node build-deploy/nightly-report.js"

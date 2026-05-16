@@ -191,6 +191,125 @@ if (($_GET['action'] ?? '') === 'seed_cron_qualifying') {
     exit;
 }
 
+// Action: seed_notification_open — race 47h30m from now so betting window just opened.
+// Creates one in-competition user (should be notified) and one non-competing user (must be skipped).
+// Returns: { ok, raceId, emailCompeting, emailNonCompeting }
+if (($_GET['action'] ?? '') === 'seed_notification_open') {
+    $e2eEmailIn  = 'e2e_notify_open_in_f1@helvegpovlsen.dk';
+    $e2eEmailOut = 'e2e_notify_open_out_f1@helvegpovlsen.dk';
+
+    foreach ([$e2eEmailIn, $e2eEmailOut] as $em) {
+        $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
+        $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
+    }
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Notify Open Race')");
+    $db->query("DELETE FROM races WHERE name = 'E2E Notify Open Race'");
+
+    $db->query("UPDATE settings SET betting_window_hours = 48 WHERE id = 1");
+
+    // In-competition user — should receive the open notification
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Notify Open In', 'user', 1, 0, 0)")
+       ->execute([seed_uuid(), $e2eEmailIn, hashPassword('E2ENotifyOpen2026!')]);
+
+    // Non-competing user — must be skipped by the cron
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Notify Open Out', 'user', 0, 0, 0)")
+       ->execute([seed_uuid(), $e2eEmailOut, hashPassword('E2ENotifyOpen2026!')]);
+
+    // 47h30m from now → bettingOpens = raceDateTime - 48h = now - 30min, inside the 1-hour window
+    $raceAt = new DateTime('+47 hours +30 minutes');
+    $raceId = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Notify Open Race', 'Test Circuit', ?, ?, 0)")
+       ->execute([$raceId, $raceAt->format('Y-m-d'), $raceAt->format('H:i:s')]);
+
+    echo json_encode(['ok' => true, 'raceId' => $raceId, 'emailCompeting' => $e2eEmailIn, 'emailNonCompeting' => $e2eEmailOut]);
+    exit;
+}
+
+// Action: cleanup_notification_open
+if (($_GET['action'] ?? '') === 'cleanup_notification_open') {
+    $e2eEmailIn  = 'e2e_notify_open_in_f1@helvegpovlsen.dk';
+    $e2eEmailOut = 'e2e_notify_open_out_f1@helvegpovlsen.dk';
+    foreach ([$e2eEmailIn, $e2eEmailOut] as $em) {
+        $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
+        $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
+    }
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Notify Open Race')");
+    $db->query("DELETE FROM races WHERE name = 'E2E Notify Open Race'");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: seed_notification_close — race 2h30m from now (inside the 2-3h closing window).
+// Creates user A (no bet, should receive notification) and user B (has bet, should be skipped).
+// Returns: { ok, raceId, emailUnbetted, emailBetted }
+if (($_GET['action'] ?? '') === 'seed_notification_close') {
+    $e2eEmailA = 'e2e_notify_close_a_f1@helvegpovlsen.dk';
+    $e2eEmailB = 'e2e_notify_close_b_f1@helvegpovlsen.dk';
+
+    foreach ([$e2eEmailA, $e2eEmailB] as $em) {
+        $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
+        $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
+    }
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Notify Close Race')");
+    $db->query("DELETE FROM races WHERE name = 'E2E Notify Close Race'");
+
+    // Ensure 3 drivers exist for user B's bet
+    $driverIds = [];
+    foreach ([
+        [44, 'Lewis Hamilton',  'Mercedes'],
+        [1,  'Max Verstappen',  'Red Bull'],
+        [16, 'Charles Leclerc', 'Ferrari'],
+    ] as [$num, $fullName, $team]) {
+        $parts = explode(' ', $fullName);
+        $stmt = $db->prepare("SELECT id FROM drivers WHERE LOWER(name) LIKE LOWER(?)");
+        $stmt->execute(['%' . end($parts) . '%']);
+        $row = $stmt->fetch();
+        if ($row) {
+            $driverIds[] = $row['id'];
+        } else {
+            $newId = seed_uuid();
+            $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")
+               ->execute([$newId, $fullName, $team, $num]);
+            $driverIds[] = $newId;
+        }
+    }
+
+    $userAId = seed_uuid();
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Notify Close A', 'user', 1, 0, 0)")
+       ->execute([$userAId, $e2eEmailA, hashPassword('E2ENotifyCloseA2026!')]);
+
+    $userBId = seed_uuid();
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Notify Close B', 'user', 1, 0, 0)")
+       ->execute([$userBId, $e2eEmailB, hashPassword('E2ENotifyCloseB2026!')]);
+
+    // 2h30m from now → inside the cron's $raceDateTime > $twoHours && $raceDateTime <= $threeHours window
+    $raceAt = new DateTime('+2 hours +30 minutes');
+    $raceId = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Notify Close Race', 'Test Circuit', ?, ?, 0)")
+       ->execute([$raceId, $raceAt->format('Y-m-d'), $raceAt->format('H:i:s')]);
+
+    // User B has already placed a bet — should be skipped by the cron
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userBId, $raceId, $driverIds[0], $driverIds[1], $driverIds[2]]);
+
+    echo json_encode(['ok' => true, 'raceId' => $raceId, 'emailUnbetted' => $e2eEmailA, 'emailBetted' => $e2eEmailB]);
+    exit;
+}
+
+// Action: cleanup_notification_close
+if (($_GET['action'] ?? '') === 'cleanup_notification_close') {
+    $e2eEmailA = 'e2e_notify_close_a_f1@helvegpovlsen.dk';
+    $e2eEmailB = 'e2e_notify_close_b_f1@helvegpovlsen.dk';
+    foreach ([$e2eEmailA, $e2eEmailB] as $em) {
+        $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
+        $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
+    }
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Notify Close Race')");
+    $db->query("DELETE FROM races WHERE name = 'E2E Notify Close Race'");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Action: cleanup_cron_qualifying — removes race created by seed_cron_qualifying
 if (($_GET['action'] ?? '') === 'cleanup_cron_qualifying') {
     $db->prepare("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = ? AND race_date = ?)")

@@ -33,6 +33,7 @@ node_modules/
 
 # Testing
 /coverage
+.auth/
 
 # Next.js
 /.next/

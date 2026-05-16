@@ -1,30 +1,30 @@
 const { test, expect } = require('@playwright/test');
+const path = require('path');
 
-async function loginAsAdmin(page) {
-    await page.goto('/login.php');
-    await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL);
-    await page.fill('input[name="password"]', process.env.TEST_USER_PASSWORD);
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/index\.php/, { timeout: 5000 });
-}
+const ADMIN_AUTH = path.join(__dirname, '../../.auth/admin.json');
 
 // ─── SMTP / Resend config (test_smtp.php) ─────────────────────────────────────
 
-test.describe('SMTP / Resend config (test_smtp.php)', () => {
+// Unauthenticated check runs first in its own isolated context.
+test.describe('SMTP / Resend config — access control', () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
     test('denies access to unauthenticated users', async ({ page }) => {
         await page.goto('/tools/test_smtp.php');
         await expect(page.locator('body')).toContainText('Access denied');
     });
+});
+
+test.describe('SMTP / Resend config (test_smtp.php)', () => {
+    test.use({ storageState: ADMIN_AUTH });
 
     test('admin can access the page', async ({ page }) => {
-        await loginAsAdmin(page);
         const res = await page.goto('/tools/test_smtp.php');
         expect(res.status()).toBe(200);
         await expect(page.locator('body')).toContainText('Current SMTP Configuration');
     });
 
     test('config table shows all required keys', async ({ page }) => {
-        await loginAsAdmin(page);
         await page.goto('/tools/test_smtp.php');
         for (const key of ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_FROM_EMAIL', 'RESEND_API_KEY']) {
             await expect(page.locator('td').filter({ hasText: key }).first()).toBeVisible();
@@ -32,7 +32,6 @@ test.describe('SMTP / Resend config (test_smtp.php)', () => {
     });
 
     test('RESEND_API_KEY is configured', async ({ page }) => {
-        await loginAsAdmin(page);
         await page.goto('/tools/test_smtp.php');
         const resendRow = page.locator('tr').filter({ has: page.locator('td', { hasText: 'RESEND_API_KEY' }) });
         await expect(resendRow).toContainText('********');
@@ -53,8 +52,6 @@ test.describe('Password reset email', () => {
         await page.goto('/forgot_password.php');
         await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL);
         await page.click('button[type="submit"]');
-        // Either success or graceful failure message — both appear in .alert-success
-        // (forgot_password.php never reveals whether the address exists)
         await expect(page.locator('.alert-success')).toBeVisible();
         await expect(page.locator('input[name="email"]')).not.toBeVisible();
     });

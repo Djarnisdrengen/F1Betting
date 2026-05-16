@@ -43,6 +43,12 @@ if ($status['status'] !== 'open') {
     exit;
 }
 
+// Tjek om bruger er med i konkurrence
+if (!$currentUser['in_competition']) {
+    header("Location: index.php?error=not_in_competition");
+    exit;
+}
+
 // Hent kørere
 [$drivers, $driversById] = fetchDrivers($db);
 

@@ -1,12 +1,7 @@
 const { test, expect } = require("@playwright/test");
+const path = require("path");
 
-async function login(page) {
-    await page.goto("/login.php");
-    await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL);
-    await page.fill('input[name="password"]', process.env.TEST_USER_PASSWORD);
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/index\.php/, { timeout: 5000 });
-}
+const ADMIN_AUTH = path.join(__dirname, "../../.auth/admin.json");
 
 // ─── Public pages ─────────────────────────────────────────────────────────────
 
@@ -59,32 +54,31 @@ test.describe("Translations", () => {
 // ─── Protected pages ──────────────────────────────────────────────────────────
 
 test.describe("Protected pages", () => {
-    test("login succeeds", async ({ page }) => {
-        await login(page);
+    test.use({ storageState: ADMIN_AUTH });
+
+    test("admin session is active", async ({ page }) => {
+        await page.goto("/");
+        await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
     });
 
     test("authenticated index visible", async ({ page }) => {
-        await login(page);
         await page.goto("/");
         await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
     });
 
     test("rules page accessible", async ({ page }) => {
-        await login(page);
         const res = await page.goto("/rules.php");
         expect(res.status()).toBe(200);
     });
 
     test("bet page accessible", async ({ page }) => {
-        await login(page);
         const res = await page.goto("/bet.php");
         expect(res.status()).toBe(200);
     });
 
     test("logout clears session and shows login button", async ({ page }) => {
-        await login(page);
+        await page.goto("/");
         await page.click('.desktop-only a[href="logout.php"]');
-        // logout.php redirects to index.php; as a guest the header shows a Login button
         await page.waitForURL(/index\.php/);
         await expect(page.locator('.desktop-only a[href="login.php"]')).toBeVisible();
     });
