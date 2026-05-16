@@ -41,11 +41,16 @@ Run twice during qualifying weekend: once around qualifying time and once a few 
 ## 2. Email Notifications
 
 **File:** `public/cron/notifications.php`  
-**Purpose:** Sends email to users with `in_competition = 1` at two moments:
-- When the betting window opens (configurable hours before each race)
-- When the betting window is about to close (2 hours before the race)
+**Purpose:** Sends email notifications at two moments per race:
 
-Users who have already placed a bet for a race are skipped for that race.
+| Moment | Recipients | Email |
+|---|---|---|
+| Betting window opens | Users with `in_competition = 1` who have not yet bet | Betting-opened notification with bet link |
+| Betting window opens | Users with `in_competition = 0` (role = user) | Pool-reminder — current jackpot size + leaderboard link |
+| Betting window opens | Pending invites (not yet registered) | Pool-reminder — current jackpot size + personal registration link |
+| 2 hours before race | Users with `in_competition = 1` who have not yet bet | Closing-soon reminder with bet link |
+
+Users who have already placed a bet for a race are skipped for that race's notifications.
 
 ### Authentication
 

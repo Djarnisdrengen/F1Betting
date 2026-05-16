@@ -26,6 +26,7 @@ return [
         'delete'                => 'Slet',
         'edit'                  => 'Rediger',
         'edit_profile'          => 'Rediger Profil',
+        'language_label'        => 'Sprog',
         'add'                   => 'Tilføj',
         'cancel'                => 'Annuller',
 
@@ -213,6 +214,7 @@ return [
         'delete'                => 'Delete',
         'edit'                  => 'Edit',
         'edit_profile'          => 'Edit Profile',
+        'language_label'        => 'Language',
         'add'                   => 'Add',
         'cancel'                => 'Cancel',
 

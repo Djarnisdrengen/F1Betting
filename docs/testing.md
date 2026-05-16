@@ -154,11 +154,11 @@ Test env only.
 | Unauthorized without token | Response body contains "Unauthorized access" |
 | Authorized with cron secret | Response contains "Notification check complete" |
 
-**Notifications — betting just opened** (serial, seeded — race 47 h 30 min away, 48 h window)
+**Notifications — betting just opened** (serial, seeded — race 47 h 30 min away, 48 h window, pool 150 kr)
 
 | Test | Asserts |
 |---|---|
-| In-competition user notified, non-competing user skipped | "Betting opened for: E2E Notify Open Race" present; competing user's email present; non-competing user's email absent |
+| In-competition user notified; non-competing user and pending invite get pool reminder | "Betting opened for: E2E Notify Open Race" present; competing user gets open notification; non-competing user gets pool reminder (not open notification); pending invite gets pool reminder; test mode echoes `[pool] 150` and `[cta] …`; non-competing CTA contains `leaderboard.php`; invite CTA contains `register.php?token=…` |
 
 **Notifications — betting closing soon** (serial, seeded — race 2 h 30 min away)
 

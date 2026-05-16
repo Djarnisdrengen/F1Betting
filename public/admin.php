@@ -24,6 +24,17 @@ $message = '';
 $error = '';
 $settings = getSettings();
 
+// E2E test mode: skip SMTP and collect markers for Playwright assertions.
+// Gated by INTEGRATION_SEED_TOKEN so it only activates in the test environment.
+$testMode = defined('INTEGRATION_SEED_TOKEN') && !empty($_GET['e2e_token']) && $_GET['e2e_token'] === INTEGRATION_SEED_TOKEN;
+$emailTestOutput = [];
+// Markers passed through a redirect are base64-encoded in e2e_markers.
+if ($testMode && !empty($_GET['e2e_markers'])) {
+    foreach (explode("\n", base64_decode($_GET['e2e_markers'])) as $m) {
+        if (trim($m) !== '') $emailTestOutput[] = trim($m);
+    }
+}
+
 // ============ DRIVERS ============
 if (isset($_POST['add_driver'])) {
     $name = sanitizeString($_POST['driver_name'] ?? '');
@@ -238,7 +249,13 @@ if (isset($_POST['reset_user_password'])) {
         
         $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
         $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', $regards, $appName);
-        sendEmail($userEmail, $subject, $htmlContent);
+        if ($testMode) {
+            $emailTestOutput[] = "[admin-reset-to] {$userEmail}";
+            $emailTestOutput[] = "[admin-reset-subject] {$subject}";
+            $emailTestOutput[] = "[admin-reset-new-password] {$newPassword}";
+        } else {
+            sendEmail($userEmail, $subject, $htmlContent);
+        }
 
     } else {
         $error = t('password_min_6_admin');
@@ -298,15 +315,22 @@ if (isset($_POST['delete_bet'])) {
             $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
             $regards     = sprintf(t('email_regards', $lang), $appName);
             $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', $regards, $appName);
-            sendEmail($bet['email'], $subject, $htmlContent);
-            
+            if ($testMode) {
+                $betMarkers = "[bet-deleted-to] {$bet['email']}\n[bet-deleted-race] {$bet['race_name']}";
+            } else {
+                sendEmail($bet['email'], $subject, $htmlContent);
+            }
+
             $message = t('bet_deleted_notified');
         } else {
             $message = t('bet_delete_open_only');
         }
     }
-    
-    header("Location: admin.php?tab=bets&msg=" . urlencode($message));
+
+    $redirectExtra = ($testMode && !empty($betMarkers ?? ''))
+        ? '&e2e_token=' . urlencode($_GET['e2e_token']) . '&e2e_markers=' . urlencode(base64_encode($betMarkers))
+        : '';
+    header("Location: admin.php?tab=bets&msg=" . urlencode($message) . $redirectExtra);
     exit;
 }
 
@@ -339,14 +363,19 @@ if (isset($_POST['create_invite'])) {
                 
                 // Send email via SMTP
                 require_once __DIR__ . '/includes/smtp.php';
-                $result = sendInviteEmail($inviteEmail, $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
-                
-                if ($result['success']) {
+                if ($testMode) {
+                    $emailTestOutput[] = "[invite-to] {$inviteEmail}";
+                    $emailTestOutput[] = "[invite-link] {$inviteLink}";
                     $message = sprintf(t('invite_sent_to'), $inviteEmail);
                 } else {
-                    $message = $lang === 'da' 
-                        ? 'Invitation oprettet! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
-                        : 'Invitation created! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>';
+                    $result = sendInviteEmail($inviteEmail, $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
+                    if ($result['success']) {
+                        $message = sprintf(t('invite_sent_to'), $inviteEmail);
+                    } else {
+                        $message = $lang === 'da'
+                            ? 'Invitation oprettet! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
+                            : 'Invitation created! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>';
+                    }
                 }
             }
         }
@@ -535,5 +564,9 @@ function toggleForm(formId) {
     header.classList.toggle('expanded');
 }
 </script>
+
+<?php if ($testMode && !empty($emailTestOutput)): ?>
+<pre id="e2e-email-output" style="display:none"><?= implode("\n", array_map('escape', $emailTestOutput)) ?></pre>
+<?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

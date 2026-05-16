@@ -12,43 +12,46 @@ $error = '';
 $success = '';
 $lang = getLang();
 
+$rawToken = $_GET['e2e_token'] ?? $_POST['e2e_token'] ?? '';
+$testMode = defined('INTEGRATION_SEED_TOKEN') && !empty($rawToken) && $rawToken === INTEGRATION_SEED_TOKEN;
+$pwdResetTestOutput = [];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
-    
+
     $email = sanitizeEmail($_POST['email'] ?? '');
-    
+
     if ($email) {
         $db = getDB();
-        
+
         // Find user by email
         $stmt = $db->prepare("SELECT id, email, display_name FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
-        
+
         if ($user) {
             // Generate token
             $token = bin2hex(random_bytes(32));
             $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
-            
+
             // Delete old tokens for this user
             $stmt = $db->prepare("DELETE FROM password_resets WHERE user_id = ?");
             $stmt->execute([$user['id']]);
-            
+
             // Insert new token
             $stmt = $db->prepare("INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)");
             $stmt->execute([$user['id'], $token, $expiresAt]);
-            
+
             // Create reset link
             $resetLink = SITE_URL . "/reset_password.php?token=" . $token;
-            
-            // Send email via SMTP
-            $result = sendPasswordResetEmail($user['email'], $user['display_name'], $resetLink, $lang);
-            
-            if ($result['success']) {
+
+            if ($testMode) {
+                $pwdResetTestOutput[] = "[forgot-pwd-to] {$user['email']}";
+                $pwdResetTestOutput[] = "[forgot-pwd-link] {$resetLink}";
                 $success = t('reset_link_sent');
             } else {
-                // If mail fails, show error (or link for testing)
-                $success = t('reset_link_failed');
+                $result = sendPasswordResetEmail($user['email'], $user['display_name'], $resetLink, $lang);
+                $success = $result['success'] ? t('reset_link_sent') : t('reset_link_failed');
             }
         } else {
             // Don't reveal if email exists or not (security)
@@ -78,7 +81,7 @@ include __DIR__ . '/includes/header.php';
             <?php if ($success): ?>
                 <div class="alert alert-success"><?= escape($success) ?></div>
             <?php else: ?>
-                <form method="POST">
+                <form method="POST"<?= !empty($_GET['e2e_token']) ? ' action="forgot_password.php?e2e_token=' . urlencode($_GET['e2e_token']) . '"' : '' ?>>
                     <?= csrfField() ?>
                     <div class="form-group">
                         <label class="form-label"><?= t('email') ?></label>
@@ -96,5 +99,9 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 </div>
+
+<?php if ($testMode && !empty($pwdResetTestOutput)): ?>
+<pre id="e2e-pwd-reset-output" style="display:none"><?= implode("\n", array_map('escape', $pwdResetTestOutput)) ?></pre>
+<?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

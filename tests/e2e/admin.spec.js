@@ -84,10 +84,19 @@ test.describe("Admin panel", () => {
         });
 
         test("invite a user and delete the invitation", async ({ page }) => {
-            await page.goto("/admin.php?tab=invites");
+            await page.goto(`/admin.php?tab=invites&e2e_token=${SEED_TOKEN}`);
 
             await page.fill('input[name="invite_email"]', E2E_INVITE_EMAIL);
             await page.locator('button[name="create_invite"]').evaluate(el => el.click());
+
+            // Invite creation sends an email via the API — wait for the response page.
+            await expect(page.locator(".alert-success")).toBeVisible({ timeout: 15000 });
+
+            // Verify email markers emitted in test mode
+            const body = await page.textContent("body");
+            expect(body).toContain(`[invite-to] ${E2E_INVITE_EMAIL}`);
+            expect(body).toContain("[invite-link] ");
+            expect(body).toContain("/register.php?token=");
 
             const card = page.locator(".card").filter({ hasText: E2E_INVITE_EMAIL });
             await expect(card).toBeVisible();
@@ -157,6 +166,56 @@ test.describe("Admin panel", () => {
         });
     });
 
+    // ─── Bet deleted notification ──────────────────────────────────────────────
+    // Seeds an in-competition user with a bet on an open race (12 h away, 48 h window)
+    // so the admin can delete it and we can verify the notification email markers.
+
+    test.describe.serial("bet deleted notification", () => {
+        let seedData;
+
+        test.beforeAll(async ({ browser }) => {
+            const cleanup = await browser.newPage();
+            await cleanup.goto(
+                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=cleanup_bet_deleted`
+            );
+            await cleanup.close();
+
+            const page = await browser.newPage();
+            const res = await page.goto(
+                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=seed_bet_deleted`
+            );
+            expect(res.status()).toBe(200);
+            seedData = JSON.parse(await page.textContent("body"));
+            expect(seedData.ok, JSON.stringify(seedData)).toBe(true);
+            await page.close();
+        });
+
+        test.afterAll(async ({ browser }) => {
+            const page = await browser.newPage();
+            await page.goto(
+                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=cleanup_bet_deleted`
+            );
+            await page.close();
+        });
+
+        test("admin deletes bet and notification email markers are emitted", async ({ page }) => {
+            await page.goto(`/admin.php?tab=bets&e2e_token=${SEED_TOKEN}`);
+
+            // Find the bet-delete button inside the race card for our seeded race
+            const raceCard = page.locator(".card").filter({ hasText: "E2E Bet Delete Race" });
+            await expect(raceCard).toBeVisible();
+            await raceCard.locator('button[name="delete_bet"]').click();
+            await confirmDeleteModal(page);
+
+            await page.waitForURL(/tab=bets/);
+
+            // Verify email markers passed through the redirect
+            const body = await page.textContent("body");
+            expect(body, `Admin bets page body:\n${body}`).toContain(`[bet-deleted-to] ${seedData.email}`);
+            expect(body).toContain(`[bet-deleted-race] ${seedData.raceName}`);
+        });
+    });
+
     test.describe("test user management", () => {
         test.describe.configure({ mode: "serial" });
 
@@ -200,7 +259,7 @@ test.describe("Admin panel", () => {
         });
 
         test("Set password on test user", async ({ page }) => {
-            await page.goto("/admin.php?tab=users");
+            await page.goto(`/admin.php?tab=users&e2e_token=${SEED_TOKEN}`);
 
             await userCard(page).locator(".btn-reset-pwd").click();
             const pwInput = userCard(page).locator('input[name="new_password"]');
@@ -209,6 +268,11 @@ test.describe("Admin panel", () => {
             await userCard(page).locator('button[name="reset_user_password"]').click();
 
             await expect(page.locator(".alert-success")).toBeVisible();
+
+            // Verify email markers emitted in test mode
+            const body = await page.textContent("body");
+            expect(body).toContain(`[admin-reset-to] ${E2E_USER_EMAIL}`);
+            expect(body).toContain(`[admin-reset-new-password] ${E2E_USER_NEW_PW}`);
         });
 
         // Needs a fresh context: login.php redirects already-authenticated users.

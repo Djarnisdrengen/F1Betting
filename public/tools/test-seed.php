@@ -192,47 +192,81 @@ if (($_GET['action'] ?? '') === 'seed_cron_qualifying') {
 }
 
 // Action: seed_notification_open — race 47h30m from now so betting window just opened.
-// Creates one in-competition user (should be notified) and one non-competing user (must be skipped).
-// Returns: { ok, raceId, emailCompeting, emailNonCompeting }
+// Creates:
+//   - in-competition user     → receives betting-opened notification
+//   - non-competing user      → receives pool-reminder (skipped for betting notification)
+//   - pending invite email    → receives pool-reminder with registration link
+// Returns: { ok, raceId, emailCompeting, emailNonCompeting, emailInvited }
 if (($_GET['action'] ?? '') === 'seed_notification_open') {
-    $e2eEmailIn  = 'e2e_notify_open_in_f1@helvegpovlsen.dk';
-    $e2eEmailOut = 'e2e_notify_open_out_f1@helvegpovlsen.dk';
+    $e2eEmailIn     = 'e2e_notify_open_in_f1@helvegpovlsen.dk';
+    $e2eEmailOut    = 'e2e_notify_open_out_f1@helvegpovlsen.dk';
+    $e2eEmailInvite = 'e2e_notify_open_invite_f1@helvegpovlsen.dk';
 
     foreach ([$e2eEmailIn, $e2eEmailOut] as $em) {
         $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
         $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
     }
+    $db->prepare("DELETE FROM invites WHERE email = ?")->execute([$e2eEmailInvite]);
     $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Notify Open Race')");
     $db->query("DELETE FROM races WHERE name = 'E2E Notify Open Race'");
 
     $db->query("UPDATE settings SET betting_window_hours = 48 WHERE id = 1");
 
-    // In-competition user — should receive the open notification
+    // In-competition user — should receive the betting-opened notification
     $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Notify Open In', 'user', 1, 0, 0)")
        ->execute([seed_uuid(), $e2eEmailIn, hashPassword('E2ENotifyOpen2026!')]);
 
-    // Non-competing user — must be skipped by the cron
+    // Non-competing registered user — must receive pool reminder, not betting notification
     $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Notify Open Out', 'user', 0, 0, 0)")
        ->execute([seed_uuid(), $e2eEmailOut, hashPassword('E2ENotifyOpen2026!')]);
 
+    // Pending invite — must receive pool reminder with registration link
+    $adminStmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+    $adminStmt->execute([F1_ADMIN_EMAIL]);
+    $adminUser = $adminStmt->fetch();
+    if (!$adminUser) {
+        echo json_encode(['ok' => false, 'error' => 'Admin user not found — cannot create invite']);
+        exit;
+    }
+    $db->prepare("INSERT INTO invites (email, token, created_by, expires_at) VALUES (?, ?, ?, ?)")
+       ->execute([$e2eEmailInvite, 'e2e-notify-open-token', $adminUser['id'], (new DateTime('+48 hours'))->format('Y-m-d H:i:s')]);
+
     // 47h30m from now → bettingOpens = raceDateTime - 48h = now - 30min, inside the 1-hour window
+    // Pool size 150 kr simulates a carried-over pool from a previous race
     $raceAt = new DateTime('+47 hours +30 minutes');
     $raceId = seed_uuid();
-    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Notify Open Race', 'Test Circuit', ?, ?, 0)")
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Notify Open Race', 'Test Circuit', ?, ?, 150)")
        ->execute([$raceId, $raceAt->format('Y-m-d'), $raceAt->format('H:i:s')]);
 
-    echo json_encode(['ok' => true, 'raceId' => $raceId, 'emailCompeting' => $e2eEmailIn, 'emailNonCompeting' => $e2eEmailOut]);
+    // Read back the actual betting_window_hours so the test can verify the setting took effect
+    $settingsRow = $db->query("SELECT betting_window_hours FROM settings WHERE id = 1")->fetch();
+    $actualWindow = $settingsRow ? (int)$settingsRow['betting_window_hours'] : 48;
+
+    $bettingOpensAt = $raceAt->getTimestamp() - ($actualWindow * 3600);
+    echo json_encode([
+        'ok'              => true,
+        'raceId'          => $raceId,
+        'emailCompeting'  => $e2eEmailIn,
+        'emailNonCompeting' => $e2eEmailOut,
+        'emailInvited'    => $e2eEmailInvite,
+        'bettingWindowHours' => $actualWindow,
+        'raceAt'          => $raceAt->format('Y-m-d H:i:s'),
+        'bettingOpensAt'  => date('Y-m-d H:i:s', $bettingOpensAt),
+        'nowAt'           => date('Y-m-d H:i:s'),
+    ]);
     exit;
 }
 
 // Action: cleanup_notification_open
 if (($_GET['action'] ?? '') === 'cleanup_notification_open') {
-    $e2eEmailIn  = 'e2e_notify_open_in_f1@helvegpovlsen.dk';
-    $e2eEmailOut = 'e2e_notify_open_out_f1@helvegpovlsen.dk';
+    $e2eEmailIn     = 'e2e_notify_open_in_f1@helvegpovlsen.dk';
+    $e2eEmailOut    = 'e2e_notify_open_out_f1@helvegpovlsen.dk';
+    $e2eEmailInvite = 'e2e_notify_open_invite_f1@helvegpovlsen.dk';
     foreach ([$e2eEmailIn, $e2eEmailOut] as $em) {
         $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
         $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
     }
+    $db->prepare("DELETE FROM invites WHERE email = ?")->execute([$e2eEmailInvite]);
     $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Notify Open Race')");
     $db->query("DELETE FROM races WHERE name = 'E2E Notify Open Race'");
     echo json_encode(['ok' => true]);
@@ -379,6 +413,221 @@ if (($_GET['action'] ?? '') === 'seed_reset_result') {
     $userAfter = $stmt->fetch();
 
     echo json_encode(['ok' => true, 'points' => (int)$userAfter['points'], 'stars' => (int)$userAfter['stars']]);
+    exit;
+}
+
+// Action: seed_bet_deleted — user with a bet on an open race so admin can delete it.
+// Race is 12 h away; with 48 h window, betting opened 36 h ago → canDelete = true.
+// Returns: { ok, email, raceName }
+if (($_GET['action'] ?? '') === 'seed_bet_deleted') {
+    $e2eEmail = 'e2e_bet_delete_f1@helvegpovlsen.dk';
+
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eEmail]);
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Bet Delete Race')");
+    $db->query("DELETE FROM races WHERE name = 'E2E Bet Delete Race'");
+    $db->query("UPDATE settings SET betting_window_hours = 48 WHERE id = 1");
+
+    $driverIds = [];
+    foreach ([
+        [44, 'Lewis Hamilton',  'Mercedes'],
+        [1,  'Max Verstappen',  'Red Bull'],
+        [16, 'Charles Leclerc', 'Ferrari'],
+    ] as [$num, $fullName, $team]) {
+        $parts = explode(' ', $fullName);
+        $stmt = $db->prepare("SELECT id FROM drivers WHERE LOWER(name) LIKE LOWER(?)");
+        $stmt->execute(['%' . end($parts) . '%']);
+        $row = $stmt->fetch();
+        if ($row) {
+            $driverIds[] = $row['id'];
+        } else {
+            $newId = seed_uuid();
+            $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")
+               ->execute([$newId, $fullName, $team, $num]);
+            $driverIds[] = $newId;
+        }
+    }
+
+    $userId = seed_uuid();
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Bet Delete User', 'user', 1, 0, 0)")
+       ->execute([$userId, $e2eEmail, hashPassword('E2EBetDelete2026!')]);
+
+    // Race 12 h from now → betting opened 36 h ago, race not yet started → canDelete = true
+    $raceAt = new DateTime('+12 hours');
+    $raceId = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Bet Delete Race', 'Test Circuit', ?, ?, 30)")
+       ->execute([$raceId, $raceAt->format('Y-m-d'), $raceAt->format('H:i:s')]);
+
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userId, $raceId, $driverIds[0], $driverIds[1], $driverIds[2]]);
+
+    echo json_encode(['ok' => true, 'email' => $e2eEmail, 'raceName' => 'E2E Bet Delete Race']);
+    exit;
+}
+
+// Action: cleanup_bet_deleted
+if (($_GET['action'] ?? '') === 'cleanup_bet_deleted') {
+    $e2eEmail = 'e2e_bet_delete_f1@helvegpovlsen.dk';
+    $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eEmail]);
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Bet Delete Race')");
+    $db->query("DELETE FROM races WHERE name = 'E2E Bet Delete Race'");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: send_email_preview — sends one real email of each type to F1_ADMIN_EMAIL for visual review.
+// No DB side-effects. All dummy data, all sent to F1_ADMIN_EMAIL.
+// Returns: { ok, emails: { "<key>": { sent, to, subject, ...details } } }
+if (($_GET['action'] ?? '') === 'send_email_preview') {
+    require_once __DIR__ . '/../includes/smtp.php';
+
+    $adminEmail   = F1_ADMIN_EMAIL;
+    $appName      = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+    $lang         = 'da';
+    $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
+    $emails       = [];
+
+    $previewRace = [
+        'id'               => 'preview-race-000',
+        'name'             => 'Preview Grand Prix',
+        'location'         => 'Test Circuit',
+        'race_date'        => date('Y-m-d', strtotime('+2 days')),
+        'race_time'        => '14:00:00',
+        'bettingpool_size' => 150,
+    ];
+    $raceDate = date('d M Y', strtotime($previewRace['race_date']));
+    $raceTime = substr($previewRace['race_time'], 0, 5);
+    $betLink  = convertToEmailUrl(SITE_URL . '/bet.php?race=' . $previewRace['id']);
+
+    // 1. Forgot password
+    $resetLink = SITE_URL . '/reset_password.php?token=preview-reset-token-1234';
+    $subject   = sprintf(t('email_reset_subject', $lang), $appName);
+    $r = sendPasswordResetEmail($adminEmail, 'Preview Bruger', $resetLink, $lang);
+    $emails['1_password_reset'] = [
+        'sent'       => $r['success'],
+        'to'         => $adminEmail,
+        'subject'    => $subject,
+        'reset_link' => convertToEmailUrl($resetLink),
+    ];
+
+    // 2. Admin reset password (inline — matches admin.php logic)
+    $subject  = sprintf(t('email_admin_reset_subject', $lang), $appName);
+    $greeting = sprintf(t('email_admin_reset_greeting', $lang), 'Preview Bruger');
+    $intro    = sprintf(t('email_admin_reset_intro', $lang), 'Admin', 'PreviewPw123!');
+    $btnText  = t('email_admin_reset_button', $lang);
+    $expiry   = t('email_admin_contact', $lang);
+    $regards  = sprintf(t('email_regards', $lang), $appName);
+    $html     = getEmailTemplate($greeting, $intro, $btnText, $emailBaseUrl, $expiry, '', $regards, $appName);
+    $r = sendEmail($adminEmail, $subject, $html);
+    $emails['2_admin_reset_password'] = [
+        'sent'         => $r['success'],
+        'to'           => $adminEmail,
+        'subject'      => $subject,
+        'new_password' => 'PreviewPw123!',
+        'reset_by'     => 'Admin',
+    ];
+
+    // 3. Invitation
+    $inviteLink = SITE_URL . '/register.php?token=preview-invite-token-5678';
+    $subject    = sprintf(t('email_invite_subject', $lang), $appName);
+    $r = sendInviteEmail($adminEmail, $inviteLink, 'Admin', $lang);
+    $emails['3_invite'] = [
+        'sent'        => $r['success'],
+        'to'          => $adminEmail,
+        'subject'     => $subject,
+        'invite_link' => convertToEmailUrl($inviteLink),
+        'invited_by'  => 'Admin',
+    ];
+
+    // 4. Betting window open (in-competition user)
+    $poolSize4  = (int)$previewRace['bettingpool_size'];
+    $subject    = sprintf(t('email_betting_open_subject', $lang), $previewRace['name'], $appName);
+    $greeting4  = sprintf(t('email_betting_open_greeting', $lang), 'Preview Bruger');
+    $intro      = sprintf(t('email_betting_open_intro', $lang), $previewRace['name'], $previewRace['location']);
+    $poolLine   = $poolSize4 > 0 ? sprintf(t('email_betting_open_pool', $lang), $poolSize4) : '';
+    $details    = sprintf(t('email_betting_open_details', $lang), $raceDate, $raceTime, 48);
+    $html       = getEmailTemplate($greeting4, "$intro<br><br>{$poolLine}{$details}",
+        t('email_betting_open_button', $lang), $betLink, '', '',
+        sprintf(t('email_betting_open_footer', $lang), $appName), $appName);
+    $r = sendEmail($adminEmail, $subject, $html);
+    $emails['4_betting_open'] = [
+        'sent'                 => $r['success'],
+        'to'                   => $adminEmail,
+        'subject'              => $subject,
+        'race'                 => $previewRace['name'],
+        'race_date'            => "$raceDate kl. $raceTime",
+        'pool_size'            => $poolSize4,
+        'betting_window_hours' => 48,
+        'bet_link'             => $betLink,
+    ];
+
+    // 5. Pool reminder — non-competing registered user (leaderboard CTA)
+    $poolSize = (int)$previewRace['bettingpool_size'];
+    $subject  = "Du går glip af {$poolSize} kr! – $appName";
+    $intro    = "Betting er nu åbent for <strong>{$previewRace['name']}</strong> ({$previewRace['location']}).";
+    $poolBody = "Den aktuelle pulje er <strong>{$poolSize} kr</strong> — og du er ikke med endnu!<br><br>Løbet starter: $raceDate kl. $raceTime";
+    $lbLink   = convertToEmailUrl(SITE_URL . '/leaderboard.php');
+    $html     = getEmailTemplate("Hej Preview Bruger!", "$intro<br><br>$poolBody",
+        "Se hvad du går glip af", $lbLink, '', '', $appName, $appName);
+    $r = sendEmail($adminEmail, $subject, $html);
+    $emails['5_pool_reminder_noncompeting'] = [
+        'sent'      => $r['success'],
+        'to'        => $adminEmail,
+        'subject'   => $subject,
+        'race'      => $previewRace['name'],
+        'pool_size' => $poolSize,
+        'cta_link'  => $lbLink,
+    ];
+
+    // 6. Pool reminder — pending invite (registration CTA)
+    $regLink = convertToEmailUrl(SITE_URL . '/register.php?token=preview-invite-token-5678');
+    $html    = getEmailTemplate("Hej Preview Bruger!", "$intro<br><br>$poolBody",
+        "Se hvad du går glip af", $regLink, '', '', $appName, $appName);
+    $r = sendEmail($adminEmail, $subject, $html);
+    $emails['6_pool_reminder_invite'] = [
+        'sent'      => $r['success'],
+        'to'        => $adminEmail,
+        'subject'   => $subject,
+        'race'      => $previewRace['name'],
+        'pool_size' => $poolSize,
+        'cta_link'  => $regLink,
+    ];
+
+    // 7. Betting closing soon
+    $subject = "⏰ Sidste chance: {$previewRace['name']} - $appName";
+    $intro   = "Betting lukker snart for <strong>{$previewRace['name']}</strong>!";
+    $details = "Du har kun <strong>ca. 2 timer</strong> tilbage til at placere dit bet.<br>Løbet starter: $raceDate kl. $raceTime";
+    $html    = getEmailTemplate("Hej Preview Bruger!", "$intro<br><br>$details",
+        "Placer dit bet NU", $betLink, '', '', "Skynd dig!<br>$appName", $appName);
+    $r = sendEmail($adminEmail, $subject, $html);
+    $emails['7_betting_closing'] = [
+        'sent'      => $r['success'],
+        'to'        => $adminEmail,
+        'subject'   => $subject,
+        'race'      => $previewRace['name'],
+        'race_date' => "$raceDate kl. $raceTime",
+        'bet_link'  => $betLink,
+    ];
+
+    // 8. Bet deleted (inline — matches admin.php logic)
+    $subject  = sprintf(t('email_bet_deleted_subject', $lang), $appName);
+    $greeting = sprintf(t('email_bet_deleted_greeting', $lang), 'Preview Bruger');
+    $intro    = sprintf(t('email_bet_deleted_intro', $lang), htmlspecialchars($previewRace['name']));
+    $btnText  = t('email_go_to_app', $lang);
+    $expiry   = t('email_contact_admin', $lang);
+    $regards  = sprintf(t('email_regards', $lang), $appName);
+    $html     = getEmailTemplate($greeting, $intro, $btnText, $emailBaseUrl, $expiry, '', $regards, $appName);
+    $r = sendEmail($adminEmail, $subject, $html);
+    $emails['8_bet_deleted'] = [
+        'sent'    => $r['success'],
+        'to'      => $adminEmail,
+        'subject' => $subject,
+        'race'    => $previewRace['name'],
+    ];
+
+    $allOk = array_reduce($emails, fn($c, $e) => $c && $e['sent'], true);
+    echo json_encode(['ok' => $allOk, 'emails' => $emails]);
     exit;
 }
 

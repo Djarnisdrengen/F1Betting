@@ -67,7 +67,12 @@ function getLang() {
 }
 
 function setLang($lang) {
-    $_SESSION['lang'] = in_array($lang, ['da', 'en']) ? $lang : 'da';
+    $valid = in_array($lang, ['da', 'en']) ? $lang : 'da';
+    $_SESSION['lang'] = $valid;
+    if (!empty($_SESSION['user_id'])) {
+        getDB()->prepare("UPDATE users SET language = ? WHERE id = ?")
+               ->execute([$valid, $_SESSION['user_id']]);
+    }
 }
 
 function t($key, $lang = null) {

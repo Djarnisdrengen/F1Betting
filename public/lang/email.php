@@ -1,6 +1,35 @@
 <?php
 return [
     'da' => [
+        // Betting window open notification
+        'email_betting_open_subject'       => 'Betting åbent: %s - %s',
+        'email_betting_open_greeting'      => 'Hej %s!',
+        'email_betting_open_intro'         => 'Betting er nu åbent for <strong>%s</strong> (%s)!',
+        'email_betting_open_pool'          => 'Den aktuelle pulje er <strong>%s kr</strong>.<br>',
+        'email_betting_open_details'       => 'Løbet starter: <strong>%s kl. %s</strong><br>Du har %s timer til at placere dit bet.',
+        'email_betting_open_button'        => 'Placer dit bet nu',
+        'email_betting_open_footer'        => 'Held og lykke!<br>%s',
+        'email_betting_open_pool_text'     => 'Pulje: %s kr',
+        'email_betting_open_starts_text'   => 'Løbet starter: %s kl. %s',
+
+        // Pool reminder (non-competing users and pending invites)
+        'email_pool_reminder_subject'      => 'Du går glip af %s kr! – %s',
+        'email_pool_reminder_greeting'     => 'Hej %s!',
+        'email_pool_reminder_intro'        => 'Betting er nu åbent for <strong>%s</strong> (%s).',
+        'email_pool_reminder_body'         => 'Den aktuelle pulje er <strong>%s kr</strong> — og du er ikke med endnu!<br><br>Løbet starter: %s kl. %s',
+        'email_pool_reminder_button'       => 'Se hvad du går glip af',
+        'email_pool_reminder_body_text'    => "Den aktuelle pulje er %s kr\nLøbet starter: %s kl. %s",
+
+        // Betting closing soon notification
+        'email_betting_closing_subject'    => '⏰ Sidste chance: %s - %s',
+        'email_betting_closing_greeting'   => 'Hej %s!',
+        'email_betting_closing_intro'      => 'Betting lukker snart for <strong>%s</strong>!',
+        'email_betting_closing_details'    => 'Du har kun <strong>ca. 2 timer</strong> tilbage til at placere dit bet.<br>Løbet starter: %s kl. %s',
+        'email_betting_closing_button'     => 'Placer dit bet NU',
+        'email_betting_closing_footer'     => 'Skynd dig!<br>%s',
+        'email_betting_closing_time_text'  => 'Du har kun ca. 2 timer tilbage!',
+        'email_betting_closing_starts_text'=> 'Løbet starter: %s kl. %s',
+
         // Password reset email (self-service via forgot_password.php)
         'email_reset_subject'       => 'Nulstil din adgangskode - %s',
         'email_reset_greeting'      => 'Hej %s,',
@@ -34,6 +63,35 @@ return [
         'email_regards'             => 'Venlig hilsen,<br>%s',
     ],
     'en' => [
+        // Betting window open notification
+        'email_betting_open_subject'       => 'Betting open: %s - %s',
+        'email_betting_open_greeting'      => 'Hi %s!',
+        'email_betting_open_intro'         => 'Betting is now open for <strong>%s</strong> (%s)!',
+        'email_betting_open_pool'          => 'The current pool is <strong>%s kr</strong>.<br>',
+        'email_betting_open_details'       => 'Race starts: <strong>%s at %s</strong><br>You have %s hours to place your bet.',
+        'email_betting_open_button'        => 'Place your bet now',
+        'email_betting_open_footer'        => 'Good luck!<br>%s',
+        'email_betting_open_pool_text'     => 'Pool: %s kr',
+        'email_betting_open_starts_text'   => 'Race starts: %s at %s',
+
+        // Pool reminder (non-competing users and pending invites)
+        'email_pool_reminder_subject'      => "You're missing out on %s kr! – %s",
+        'email_pool_reminder_greeting'     => 'Hi %s!',
+        'email_pool_reminder_intro'        => 'Betting is now open for <strong>%s</strong> (%s).',
+        'email_pool_reminder_body'         => "The current pool is <strong>%s kr</strong> — and you're not in it yet!<br><br>Race starts: %s at %s",
+        'email_pool_reminder_button'       => "See what you're missing",
+        'email_pool_reminder_body_text'    => "The current pool is %s kr\nRace starts: %s at %s",
+
+        // Betting closing soon notification
+        'email_betting_closing_subject'    => '⏰ Last chance: %s - %s',
+        'email_betting_closing_greeting'   => 'Hi %s!',
+        'email_betting_closing_intro'      => 'Betting is closing soon for <strong>%s</strong>!',
+        'email_betting_closing_details'    => 'You have only <strong>approx. 2 hours</strong> left to place your bet.<br>Race starts: %s at %s',
+        'email_betting_closing_button'     => 'Place your bet NOW',
+        'email_betting_closing_footer'     => 'Hurry!<br>%s',
+        'email_betting_closing_time_text'  => 'You only have about 2 hours left!',
+        'email_betting_closing_starts_text'=> 'Race starts: %s at %s',
+
         // Password reset email (self-service)
         'email_reset_subject'       => 'Reset your password - %s',
         'email_reset_greeting'      => 'Hi %s,',

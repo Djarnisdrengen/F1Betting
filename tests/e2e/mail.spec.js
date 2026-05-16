@@ -1,7 +1,9 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
-const ADMIN_AUTH = path.join(__dirname, '../../.auth/admin.json');
+const ADMIN_AUTH   = path.join(__dirname, '../../.auth/admin.json');
+const SEED_TOKEN   = process.env.INTEGRATION_SEED_TOKEN;
+const TEST_USER_EMAIL = process.env.TEST_USER_EMAIL;
 
 // ─── SMTP / Resend config (test_smtp.php) ─────────────────────────────────────
 
@@ -49,11 +51,16 @@ test.describe('Password reset email', () => {
     });
 
     test('submitting known email triggers email and hides form', async ({ page }) => {
-        await page.goto('/forgot_password.php');
-        await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL);
+        await page.goto(`/forgot_password.php?e2e_token=${SEED_TOKEN}`);
+        await page.fill('input[name="email"]', TEST_USER_EMAIL);
         await page.click('button[type="submit"]');
-        await expect(page.locator('.alert-success')).toBeVisible();
+        await expect(page.locator('.alert-success')).toBeVisible({ timeout: 15000 });
         await expect(page.locator('input[name="email"]')).not.toBeVisible();
+
+        const body = await page.textContent('body');
+        expect(body).toContain(`[forgot-pwd-to] ${TEST_USER_EMAIL}`);
+        expect(body).toContain('[forgot-pwd-link] ');
+        expect(body).toContain('/reset_password.php?token=');
     });
 
     test('submitting unknown email shows no error (does not reveal user existence)', async ({ page }) => {
@@ -62,16 +69,5 @@ test.describe('Password reset email', () => {
         await page.click('button[type="submit"]');
         await expect(page.locator('.alert-success')).toBeVisible();
         await expect(page.locator('.alert-error')).not.toBeVisible();
-    });
-});
-
-// ─── Betting window notification emails ───────────────────────────────────────
-
-test.describe('Betting window notification emails', () => {
-    test('notifications cron runs without error', async ({ page }) => {
-        await page.goto(`/cron/notifications.php?token=${process.env.CRON_SECRET}`);
-        const text = await page.textContent('body');
-        expect(text).toContain('Notification check complete');
-        expect(text).not.toContain('FAILED to send');
     });
 });

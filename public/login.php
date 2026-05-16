@@ -38,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user && verifyPassword($password, $user['password'])) {
             try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
             $_SESSION['user_id'] = $user['id'];
+            $_SESSION['lang']    = in_array($user['language'] ?? '', ['da', 'en']) ? $user['language'] : 'da';
             session_regenerate_id(true);
             $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
             header("Location: index.php");

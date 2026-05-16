@@ -15,10 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'update_profile') {
         $displayName = sanitizeString($_POST['display_name'] ?? '');
-        $stmt = $db->prepare("UPDATE users SET display_name = ? WHERE id = ?");
-        $stmt->execute([$displayName, $currentUser['id']]);
+        $newLang     = in_array($_POST['language'] ?? '', ['da', 'en']) ? $_POST['language'] : 'da';
+        $stmt = $db->prepare("UPDATE users SET display_name = ?, language = ? WHERE id = ?");
+        $stmt->execute([$displayName, $newLang, $currentUser['id']]);
+        setLang($newLang);
         $success = t('profile_updated');
         $currentUser['display_name'] = $displayName;
+        $currentUser['language']     = $newLang;
 
     } elseif ($action === 'change_password') {
         $currentPw  = $_POST['current_password'] ?? '';
@@ -124,6 +127,13 @@ include __DIR__ . '/includes/header.php';
                 <div class="form-group">
                     <label class="form-label"><?= t('display_name') ?></label>
                     <input type="text" name="display_name" class="form-input" value="<?= escape($currentUser['display_name']) ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><?= t('language_label') ?></label>
+                    <select name="language" class="form-input">
+                        <option value="da" <?= ($currentUser['language'] ?? 'da') === 'da' ? 'selected' : '' ?>>🇩🇰 Dansk</option>
+                        <option value="en" <?= ($currentUser['language'] ?? 'da') === 'en' ? 'selected' : '' ?>>🇬🇧 English</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     <i class="fas fa-save"></i> <?= t('save') ?>
