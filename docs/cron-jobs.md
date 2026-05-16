@@ -41,9 +41,11 @@ Run twice during qualifying weekend: once around qualifying time and once a few 
 ## 2. Email Notifications
 
 **File:** `public/cron/notifications.php`  
-**Purpose:** Sends email to all competition participants at two moments:
+**Purpose:** Sends email to users with `in_competition = 1` at two moments:
 - When the betting window opens (configurable hours before each race)
 - When the betting window is about to close (2 hours before the race)
+
+Users who have already placed a bet for a race are skipped for that race.
 
 ### Authentication
 
@@ -51,6 +53,10 @@ Same pattern as the qualifying importer:
 
 - **HTTP:** `GET /cron/notifications.php?token=<CRON_SECRET>`
 - **CLI:** `php public/cron/notifications.php <CRON_SECRET>`
+
+### Test mode
+
+Pass `?test=true` (HTTP) or `--test` (CLI) together with a valid token to skip actual SMTP sending. The notification logic still runs in full — the same log output is produced, but no emails leave the server. Used by the E2E test suite.
 
 ### Logging
 

@@ -31,10 +31,11 @@ All terminal commands for the F1 Betting project.
 | Command | What it does |
 |---|---|
 | `npm run test:smoke` | HTTP checks — key pages return 200 (test env) |
+| `npm run test:unit` | Node built-in runner — mailer unit tests (no network, no browser) |
 | `npm run test:e2e:test` | Playwright browser tests against hpovlsen.dk |
 | `npm run test:e2e:live` | Playwright browser tests against formula-1.dk |
 | `npm run test:integration` | Seeded integration tests — **test env only, destroys DB** |
-| `npm run test:all` | Smoke + E2E (same as what `deploy:live` runs) |
+| `npm run test:all` | Smoke + unit + E2E (same as what `deploy:live` runs) |
 
 ### Security tests
 
@@ -83,6 +84,7 @@ Or via HTTP:
 | `/cron/import_qualifying.php?token=<CRON_SECRET>` | Same as above, via browser/curl |
 | `/cron/import_qualifying.php?token=<CRON_SECRET>&test=true` | Dry run — no DB writes |
 | `/cron/notifications.php?token=<CRON_SECRET>` | Same as above, via browser/curl |
+| `/cron/notifications.php?token=<CRON_SECRET>&test=true` | Dry run — no emails sent, same log output |
 
 ---
 

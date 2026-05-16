@@ -9,6 +9,7 @@ The project has four test types. They run against the deployed site over HTTP �
 | Command | Type | What it checks | Target |
 |---|---|---|---|
 | `npm run test:smoke` | HTTP | Key pages return 200 and render expected content | test or live |
+| `npm run test:unit` | Node | mailer transport logic (no network) | local |
 | `npm run test:e2e:test` | Playwright | Login, navigation, UI, user flows | test |
 | `npm run test:e2e:live` | Playwright | Public pages + login only | live |
 | `npm run test:integration` | Playwright | Points, leaderboard, pool size | test only |
@@ -146,12 +147,26 @@ Test env only.
 | Unauthorized without token | Response body contains "Unauthorized access" |
 | Test mode imports results | Response contains "[SUCCESS] Updated qualifying results" and "Total races updated: 1" |
 
-**Notifications**
+**Notifications — access control**
 
 | Test | Asserts |
 |---|---|
 | Unauthorized without token | Response body contains "Unauthorized access" |
 | Authorized with cron secret | Response contains "Notification check complete" |
+
+**Notifications — betting just opened** (serial, seeded — race 47 h 30 min away, 48 h window)
+
+| Test | Asserts |
+|---|---|
+| In-competition user notified, non-competing user skipped | "Betting opened for: E2E Notify Open Race" present; competing user's email present; non-competing user's email absent |
+
+**Notifications — betting closing soon** (serial, seeded — race 2 h 30 min away)
+
+| Test | Asserts |
+|---|---|
+| Unbetted user notified, user with existing bet skipped | "Betting closing soon for: E2E Notify Close Race" present; unbetted user's email present; betted user's email absent |
+
+All notification scenario tests use `?test=true` so SMTP is skipped — the logic and output are identical to a live run but no emails are actually sent.
 
 ---
 
@@ -312,7 +327,7 @@ Reports are saved to `build-deploy/security-reports/` as `.md` and `.json`. The 
 ## Running everything
 
 ```bash
-npm run test:all    # smoke + e2e (same as what deploy:live runs automatically)
+npm run test:all    # smoke + unit + e2e (same as what deploy:live runs automatically)
 ```
 
 ---
