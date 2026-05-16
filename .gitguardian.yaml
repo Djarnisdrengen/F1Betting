@@ -1,0 +1,6 @@
+version: 2
+secret:
+  ignored_paths:
+    # Test seed file uses intentional placeholder passwords for E2E test users.
+    # All access is gated behind INTEGRATION_SEED_TOKEN.
+    - "public/tools/test-seed.php"
