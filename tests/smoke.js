@@ -122,15 +122,16 @@ async function runSmoke(baseUrl) {
     let total  = CHECKS.length;
 
     for (const check of CHECKS) {
-        const label = `GET ${check.path} (${check.contains})`.padEnd(44);
+        const needles = check.containsAny ?? [check.contains];
+        const label   = `GET ${check.path} (${needles[0]})`.padEnd(44);
         try {
             const res  = await fetch(`${baseUrl}${check.path}`);
             const body = await res.text();
-            const ok   = res.status === 200 && body.toLowerCase().includes(check.contains.toLowerCase());
+            const ok   = res.status === 200 && needles.some(n => body.toLowerCase().includes(n.toLowerCase()));
             if (ok) {
                 console.log(`  ✅ ${label} → 200`);
             } else {
-                console.log(`  ❌ ${label} → ${res.status} (missing "${check.contains}")`);
+                console.log(`  ❌ ${label} → ${res.status} (missing "${needles.join('" or "')}")`);
                 failed++;
             }
         } catch (err) {
@@ -155,14 +156,15 @@ async function runSmoke(baseUrl) {
         }
         if (authCookie) {
             for (const check of AUTHED_CHECKS) {
-                const label = `GET ${check.path} [authed] (${check.contains})`.padEnd(44);
+                const needles = check.containsAny ?? [check.contains];
+                const label   = `GET ${check.path} [authed] (${needles[0]})`.padEnd(44);
                 try {
                     const res = await httpGet(`${baseUrl}${check.path}`, authCookie);
-                    const ok  = res.status === 200 && res.body.toLowerCase().includes(check.contains.toLowerCase());
+                    const ok  = res.status === 200 && needles.some(n => res.body.toLowerCase().includes(n.toLowerCase()));
                     if (ok) {
                         console.log(`  ✅ ${label} → 200`);
                     } else {
-                        console.log(`  ❌ ${label} → ${res.status} (missing "${check.contains}")`);
+                        console.log(`  ❌ ${label} → ${res.status} (missing "${needles.join('" or "')}")`);
                         failed++;
                     }
                 } catch (err) {

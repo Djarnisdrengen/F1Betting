@@ -240,6 +240,16 @@ FTP_HOST, FTP_USER, FTP_PASS, FTP_ROOT_TEST, FTP_ROOT_LIVE, DRY_RUN
 
 ## Localisation & Theme
 
-Language (`da`/`en`) and theme (`dark`/`light`) and colour palette (`broadcast`/`clubhouse`) are stored in PHP sessions and toggled via query-string redirects (`?toggle_lang=1` etc.) so all query parameters are preserved.
+Language (`da`/`en`) is stored both in the database (`users.language` column) and in the PHP session (`$_SESSION['lang']`). The session is the single source of truth during a request; the database is the persistent store.
 
-Strings are loaded from `public/lang/user.php`, `admin.php`, and `email.php` via `t($key)`.
+**How language is resolved:**
+
+1. On login, `$_SESSION['lang']` is set from the user's `users.language` column.
+2. Any call to `setLang()` updates both `$_SESSION['lang']` and `users.language` (when authenticated).
+3. The profile page exposes a language selector — saving the profile calls `setLang()` so the change persists immediately.
+4. On logout, the language preference is preserved in the anonymous session so public pages stay in the user's chosen language until they manually toggle or start a new session.
+5. Unauthenticated visitors control language via the header toggle (`?toggle_lang=1`), which updates `$_SESSION['lang']` only.
+
+Theme (`dark`/`light`) and colour palette (`broadcast`/`clubhouse`) are session-only — toggled via `?toggle_theme=1` / `?toggle_palette=1`. All toggle redirects preserve existing query parameters.
+
+Strings are loaded from `public/lang/user.php`, `admin.php`, and `email.php` via `t($key)`. Email functions pass the recipient's language explicitly: `t($key, $lang)`.

@@ -39,8 +39,10 @@ Fires HTTP GET requests and asserts pages return 200 and contain expected conten
 
 | Page | Asserts |
 |---|---|
-| `/profile.php` | Danish heading "Din Betting Historik" visible |
-| `/profile.php` | Danish heading "Skift Adgangskode" visible |
+| `/profile.php` | Betting history heading visible (DA: "Din Betting Historik" or EN: "Betting History") |
+| `/profile.php` | Change-password heading visible (DA: "Skift Adgangskode" or EN: "Change Password") |
+
+Both checks accept either language because the admin user's preferred language is stored in the database and may be set to English.
 
 Runs automatically at the end of every `deploy:test` and `deploy:live`.
 
@@ -194,6 +196,9 @@ Test env only. Serial. Seeds a dedicated test user.
 | Mismatched new passwords | Error alert visible |
 | Correct password change | Success alert visible |
 | Login with new password | Logout link visible after logging in with the changed password |
+| Language — switch to English | Select English in profile form, save → success alert; "Edit Profile" heading visible |
+| Language — survives re-login | Log out and back in → profile page still in English (loaded from DB) |
+| Language — switch back to Danish | Select Danish, save → success alert; "Rediger Profil" heading visible |
 
 ---
 

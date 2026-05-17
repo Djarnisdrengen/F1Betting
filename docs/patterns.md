@@ -146,6 +146,35 @@ echo 'Der er ingen kommende løb';
 
 Add new strings to both `public/lang/user.php` (or `admin.php`) under `'da'` and `'en'` keys.
 
+Email functions receive the recipient's language explicitly and must pass it to `t()`:
+
+```php
+// In email functions — always pass $lang, never rely on the session
+$subject = sprintf(t('email_betting_open_subject', $lang), $appName, $raceName);
+```
+
+---
+
+## Preferred Language (authenticated users)
+
+Authenticated users have a `language` column in the `users` table that persists their preferred language across sessions.
+
+**Reading:** `getCurrentUser()` returns `$currentUser['language']`. Use it when rendering user-specific UI (e.g. the profile language selector pre-selection).
+
+**Writing:** Always go through `setLang($lang)` — it updates both `$_SESSION['lang']` and `users.language` in one call.
+
+```php
+// Correct — updates session + DB atomically
+setLang('en');
+
+// Wrong — session only, DB not updated
+$_SESSION['lang'] = 'en';
+```
+
+**On login:** `login.php` loads `$user['language']` from the database and writes it to `$_SESSION['lang']` so the preference takes effect immediately without an extra `setLang()` call.
+
+**On logout:** `logout.php` preserves `$_SESSION['lang']` in the new anonymous session so public pages stay in the user's language after signing out.
+
 ---
 
 ## Helper Functions for Common Queries
