@@ -56,7 +56,7 @@ All terminal commands for the F1 Betting project.
 
 | Command | What it does |
 |---|---|
-| `npm run sync:live` | Copy live DB into test DB (overwrites all test data) |
+| `npm run sync:live` | Copy live DB into test DB (overwrites all test data; rewrites all user emails to `@mailsac.com`) |
 | `npm run restore:db` | Interactive — list backups, pick one, restore to test or live — **requires YES if live** |
 
 ---

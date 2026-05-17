@@ -346,6 +346,30 @@ npm run test:all    # smoke + unit + e2e (same as what deploy:live runs automati
 
 ---
 
+## Test Email Addresses
+
+All seeded test users use `@mailsac.com` addresses. Any email triggered to a test user lands in a Mailsac inbox — visible at mailsac.com — rather than disappearing into a dead-end domain.
+
+| Address | Used by |
+|---|---|
+| `e2e_testing_testuser_f1@mailsac.com` | `admin.spec.js`, `profile.spec.js` |
+| `e2e_testing_invite_f1@mailsac.com` | `admin.spec.js` |
+| `e2e_reset_race_f1@mailsac.com` | `admin.spec.js` |
+| `e2e_bet_user_f1@mailsac.com` | `betting.spec.js` |
+| `e2e_register_f1@mailsac.com` | `registration.spec.js` |
+| `e2e_notify_open_in_f1@mailsac.com` | `cron.spec.js` — in-competition user |
+| `e2e_notify_open_out_f1@mailsac.com` | `cron.spec.js` — non-competing user |
+| `e2e_notify_open_invite_f1@mailsac.com` | `cron.spec.js` — pending invite |
+| `e2e_notify_close_a_f1@mailsac.com` | `cron.spec.js` — unbetted user |
+| `e2e_notify_close_b_f1@mailsac.com` | `cron.spec.js` — betted user |
+| `e2e_bet_delete_f1@mailsac.com` | `admin.spec.js` — bet deletion notification |
+
+Users synced from live via `sync:live` are also rewritten to `@mailsac.com` (e.g. `thomas@helvegpovlsen.dk` → `thomas@mailsac.com`). The admin account (`F1_ADMIN_EMAIL`) is restored unchanged by both sync and seed scripts.
+
+Mailsac public inboxes are readable by anyone who knows the address. The fixed test addresses above contain no personal data. Synced addresses use real local-parts derived from live user names — treat them as publicly observable.
+
+---
+
 ## How tests find credentials
 
 All test scripts use `build-deploy/php-config.js` to read `config.test.php` or `config.live.php` directly. You do not need credentials in `.env` or environment variables when running locally.

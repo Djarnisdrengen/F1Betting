@@ -131,6 +131,16 @@ There is no incoming-only condition available in Proton's simple filter builder,
 
 ---
 
+## 16. `sync:live` rewrites all user emails to `@mailsac.com`
+
+When `npm run sync:live` copies the live database into test, every user email that is not already `@mailsac.com` is rewritten: `thomas@helvegpovlsen.dk` becomes `thomas@mailsac.com`, `user@gmail.com` becomes `user@mailsac.com`, and so on. This prevents any email accidentally triggered on the test site from reaching real inboxes.
+
+The admin account (`F1_ADMIN_EMAIL`, currently `f1_admin@helvegpovlsen.dk`) is preserved unchanged — it is saved before the sync wipe and restored afterward.
+
+If you expect to trigger emails to synced users during manual testing, look them up in the Mailsac web UI at mailsac.com using the rewritten address.
+
+---
+
 ## 14. `quali_p1/p2/p3` must match exact bet validation
 
 When qualifying results are entered, the bet form shows an error if the user's selected P1/P2/P3 exactly matches the qualifying order (the qualy-match rule). This validation compares driver IDs, not names. If you add qualifying results to a race in the admin panel, the P1/P2/P3 fields must be driver IDs from the `drivers` table — not display names.

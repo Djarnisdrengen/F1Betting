@@ -3,10 +3,10 @@ const path = require("path");
 
 const ADMIN_AUTH    = path.join(__dirname, "../../.auth/admin.json");
 const SEED_TOKEN    = process.env.INTEGRATION_SEED_TOKEN;
-const E2E_USER_EMAIL      = "e2e_testing_testuser_f1@helvegpovlsen.dk";
+const E2E_USER_EMAIL      = "e2e_testing_testuser_f1@mailsac.com";
 const E2E_USER_INITIAL_PW = "E2ETestPassword2026!";
 const E2E_USER_NEW_PW     = "E2ENewPassword456!";
-const E2E_INVITE_EMAIL    = "e2e_testing_invite_f1@helvegpovlsen.dk";
+const E2E_INVITE_EMAIL    = "e2e_testing_invite_f1@mailsac.com";
 
 async function confirmDeleteModal(page) {
     await page.locator(".btn-user-delete-confirm").click();
@@ -169,7 +169,7 @@ test.describe("Admin panel", () => {
             await page.goto("/admin.php?tab=users");
             const card = page
                 .locator(".card")
-                .filter({ has: page.locator("small", { hasText: "e2e_reset_race_f1@helvegpovlsen.dk" }) });
+                .filter({ has: page.locator("small", { hasText: "e2e_reset_race_f1@mailsac.com" }) });
             await expect(card.locator(".text-accent")).toContainText("0 pts");
         });
     });
