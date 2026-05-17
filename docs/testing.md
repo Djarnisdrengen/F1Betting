@@ -72,8 +72,9 @@ Runs on both test and live.
 |---|---|
 | Pages load | `/`, `/login.php`, `/leaderboard.php`, `/races.php` all return 200 |
 | Login form renders | Email and password inputs visible |
-| Leaderboard has rows | At least one `tbody tr` visible |
+| Leaderboard has rows with non-zero points | At least one `tbody tr` visible and first row contains a non-zero number |
 | Races page loads | Body visible |
+| Index page shows at least one race card | `.race-card` element visible on homepage |
 
 **Translations**
 
@@ -90,6 +91,8 @@ Runs on both test and live.
 | Authenticated index | Logout link visible in desktop nav |
 | Rules page accessible | `/rules.php` returns 200 |
 | Bet page accessible | `/bet.php` returns 200 |
+| Profile page shows all section headings | Edit Profile, Change Password, and Betting History headings visible (DA or EN accepted) |
+| Admin panel loads with races tab | `/admin.php?tab=races` renders at least one card |
 | Logout | Clicking logout → redirects to `index.php` → login link visible in desktop nav |
 
 ---

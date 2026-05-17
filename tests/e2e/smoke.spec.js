@@ -19,14 +19,20 @@ test.describe("Public pages", () => {
         await expect(page.locator('input[name="password"]')).toBeVisible();
     });
 
-    test("leaderboard has rows", async ({ page }) => {
+    test("leaderboard has rows with non-zero points", async ({ page }) => {
         await page.goto("/leaderboard.php");
         await expect(page.locator("table.leaderboard-table tbody tr").first()).toBeVisible();
+        await expect(page.locator("table.leaderboard-table tbody tr").first()).toContainText(/[1-9]\d*/);
     });
 
     test("races page loads", async ({ page }) => {
         await page.goto("/races.php");
         await expect(page.locator("body")).toBeVisible();
+    });
+
+    test("index page shows at least one race card", async ({ page }) => {
+        await page.goto("/");
+        await expect(page.locator(".race-card").first()).toBeVisible();
     });
 });
 
@@ -56,11 +62,6 @@ test.describe("Translations", () => {
 test.describe("Protected pages", () => {
     test.use({ storageState: ADMIN_AUTH });
 
-    test("admin session is active", async ({ page }) => {
-        await page.goto("/");
-        await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
-    });
-
     test("authenticated index visible", async ({ page }) => {
         await page.goto("/");
         await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
@@ -74,6 +75,18 @@ test.describe("Protected pages", () => {
     test("bet page accessible", async ({ page }) => {
         const res = await page.goto("/bet.php");
         expect(res.status()).toBe(200);
+    });
+
+    test("profile page shows all section headings", async ({ page }) => {
+        await page.goto("/profile.php");
+        await expect(page.locator(".card-header h3").filter({ hasText: /Edit Profile|Rediger Profil/ })).toBeVisible();
+        await expect(page.locator(".card-header h3").filter({ hasText: /Change Password|Skift Adgangskode/ })).toBeVisible();
+        await expect(page.locator(".card-header h3").filter({ hasText: /Betting History|Din Betting Historik/ })).toBeVisible();
+    });
+
+    test("admin panel loads with races tab", async ({ page }) => {
+        await page.goto("/admin.php?tab=races");
+        await expect(page.locator(".card").first()).toBeVisible();
     });
 
     test("logout clears session and shows login button", async ({ page }) => {
