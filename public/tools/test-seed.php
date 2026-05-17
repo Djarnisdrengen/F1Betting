@@ -28,9 +28,10 @@ if (($_GET['action'] ?? '') === 'create_e2e_user') {
         mt_rand(0,0xffff), mt_rand(0,0xffff), mt_rand(0,0xffff),
         mt_rand(0,0x0fff)|0x4000, mt_rand(0,0x3fff)|0x8000,
         mt_rand(0,0xffff), mt_rand(0,0xffff), mt_rand(0,0xffff));
-    $hash = hashPassword('E2ETestPassword2026!');
-    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Test User', 'user', 0, 0, 0)")
-       ->execute([$id, $e2eUserEmail, $hash]);
+    $hash     = hashPassword('E2ETestPassword2026!');
+    $userLang = in_array($_GET['language'] ?? '', ['da', 'en']) ? $_GET['language'] : 'da';
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars, language) VALUES (?, ?, ?, 'E2E Test User', 'user', 0, 0, 0, ?)")
+       ->execute([$id, $e2eUserEmail, $hash, $userLang]);
     echo json_encode(['ok' => true]);
     exit;
 }
@@ -212,12 +213,12 @@ if (($_GET['action'] ?? '') === 'seed_notification_open') {
 
     $db->query("UPDATE settings SET betting_window_hours = 48 WHERE id = 1");
 
-    // In-competition user — should receive the betting-opened notification
-    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Notify Open In', 'user', 1, 0, 0)")
+    // In-competition user — language='en' to verify per-user language in betting-opened email
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars, language) VALUES (?, ?, ?, 'E2E Notify Open In', 'user', 1, 0, 0, 'en')")
        ->execute([seed_uuid(), $e2eEmailIn, hashPassword('E2ENotifyOpen2026!')]);
 
-    // Non-competing registered user — must receive pool reminder, not betting notification
-    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Notify Open Out', 'user', 0, 0, 0)")
+    // Non-competing registered user — language='en' to verify per-user language in pool reminder
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars, language) VALUES (?, ?, ?, 'E2E Notify Open Out', 'user', 0, 0, 0, 'en')")
        ->execute([seed_uuid(), $e2eEmailOut, hashPassword('E2ENotifyOpen2026!')]);
 
     // Pending invite — must receive pool reminder with registration link
@@ -308,8 +309,9 @@ if (($_GET['action'] ?? '') === 'seed_notification_close') {
         }
     }
 
+    // User A — language='en' to verify per-user language in betting-closing email
     $userAId = seed_uuid();
-    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Notify Close A', 'user', 1, 0, 0)")
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars, language) VALUES (?, ?, ?, 'E2E Notify Close A', 'user', 1, 0, 0, 'en')")
        ->execute([$userAId, $e2eEmailA, hashPassword('E2ENotifyCloseA2026!')]);
 
     $userBId = seed_uuid();
@@ -449,7 +451,8 @@ if (($_GET['action'] ?? '') === 'seed_bet_deleted') {
     }
 
     $userId = seed_uuid();
-    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Bet Delete User', 'user', 1, 0, 0)")
+    // language='en' to verify per-user language in bet-deleted email
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars, language) VALUES (?, ?, ?, 'E2E Bet Delete User', 'user', 1, 0, 0, 'en')")
        ->execute([$userId, $e2eEmail, hashPassword('E2EBetDelete2026!')]);
 
     // Race 12 h from now → betting opened 36 h ago, race not yet started → canDelete = true

@@ -213,6 +213,7 @@ test.describe("Admin panel", () => {
             const body = await page.textContent("body");
             expect(body, `Admin bets page body:\n${body}`).toContain(`[bet-deleted-to] ${seedData.email}`);
             expect(body).toContain(`[bet-deleted-race] ${seedData.raceName}`);
+            expect(body).toContain("[bet-deleted-lang] en"); // email must use bet owner's language
         });
     });
 
@@ -222,7 +223,7 @@ test.describe("Admin panel", () => {
         test.beforeAll(async ({ browser }) => {
             const page = await browser.newPage();
             const res = await page.goto(
-                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=create_e2e_user`
+                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=create_e2e_user&language=en`
             );
             expect(res.status()).toBe(200);
             const body = JSON.parse(await page.textContent("body"));
@@ -273,6 +274,7 @@ test.describe("Admin panel", () => {
             const body = await page.textContent("body");
             expect(body).toContain(`[admin-reset-to] ${E2E_USER_EMAIL}`);
             expect(body).toContain(`[admin-reset-new-password] ${E2E_USER_NEW_PW}`);
+            expect(body).toContain("[admin-reset-lang] en"); // email must use target user's language
         });
 
         // Needs a fresh context: login.php redirects already-authenticated users.

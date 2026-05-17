@@ -125,14 +125,15 @@ test.describe("Cron jobs", () => {
             // Pass full cron output as the error message so failures are self-diagnosing
             expect(text, `Cron output:\n${text}`).toContain("Betting opened for: E2E Notify Open Race");
 
-            // In-competition user — betting-opened email
+            // In-competition user — betting-opened email in user's preferred language (en)
             expect(text).toContain(`Sent open notification to: ${seedData.emailCompeting}`);
             expect(text).toContain("[race] E2E Notify Open Race"); // race name in email body
             expect(text).toContain("[window] 48h");               // betting window duration
             expect(text).toContain("[pool] 150");                 // pool size in email body
             expect(text).toContain("bet.php?race=");              // CTA links to bet page
+            expect(text).toContain("[lang] en");                  // email uses user's stored language
 
-            // Non-competing registered user — pool reminder, not betting-opened
+            // Non-competing registered user — pool reminder, not betting-opened, also in English
             expect(text).not.toContain(`Sent open notification to: ${seedData.emailNonCompeting}`);
             expect(text).toContain(`Sent pool reminder to: ${seedData.emailNonCompeting}`);
             expect(text).toContain("[pool] 150");       // pool amount in email body
@@ -184,10 +185,11 @@ test.describe("Cron jobs", () => {
             const text = await page.textContent("body");
             expect(text).toContain("Betting closing soon for: E2E Notify Close Race");
 
-            // Unbetted user — closing notification
+            // Unbetted user — closing notification in user's preferred language (en)
             expect(text).toContain(`Sent closing notification to: ${seedData.emailUnbetted}`);
             expect(text).toContain("[race] E2E Notify Close Race"); // race name in email body
             expect(text).toContain("bet.php?race=");               // CTA links to bet page
+            expect(text).toContain("[lang] en");                   // email uses user's stored language
 
             // User who already placed a bet — skipped entirely
             expect(text).not.toContain(`Sent closing notification to: ${seedData.emailBetted}`);

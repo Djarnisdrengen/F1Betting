@@ -240,13 +240,18 @@ if (isset($_POST['reset_user_password'])) {
         // Send email til bruger
         require_once __DIR__ . '/includes/smtp.php';
         $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
-        
-        $subject    = sprintf(t('email_admin_reset_subject', $lang), $appName);
-        $greeting   = sprintf(t('email_admin_reset_greeting', $lang), $userName);
-        $intro      = sprintf(t('email_admin_reset_intro', $lang), $currentUser['display_name'], $newPassword);
-        $buttonText = t('email_admin_reset_button', $lang);
-        $expiry     = t('email_admin_contact', $lang);
-        $regards    = sprintf(t('email_regards', $lang), $appName);
+
+        $stmt2 = $db->prepare("SELECT language FROM users WHERE id = ?");
+        $stmt2->execute([$userId]);
+        $row2     = $stmt2->fetch();
+        $userLang = in_array($row2['language'] ?? '', ['da', 'en']) ? $row2['language'] : 'da';
+
+        $subject    = sprintf(t('email_admin_reset_subject', $userLang), $appName);
+        $greeting   = sprintf(t('email_admin_reset_greeting', $userLang), $userName);
+        $intro      = sprintf(t('email_admin_reset_intro', $userLang), $currentUser['display_name'], $newPassword);
+        $buttonText = t('email_admin_reset_button', $userLang);
+        $expiry     = t('email_admin_contact', $userLang);
+        $regards    = sprintf(t('email_regards', $userLang), $appName);
         
         $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
         $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', $regards, $appName);
@@ -254,6 +259,7 @@ if (isset($_POST['reset_user_password'])) {
             $emailTestOutput[] = "[admin-reset-to] {$userEmail}";
             $emailTestOutput[] = "[admin-reset-subject] {$subject}";
             $emailTestOutput[] = "[admin-reset-new-password] {$newPassword}";
+            $emailTestOutput[] = "[admin-reset-lang] {$userLang}";
         } else {
             sendEmail($userEmail, $subject, $htmlContent);
         }
@@ -271,7 +277,7 @@ if (isset($_POST['delete_bet'])) {
     
     // Hent bet info inkl race data for at tjekke betting status
     $stmt = $db->prepare("
-        SELECT b.*, u.email, u.display_name, u.id as bet_user_id, 
+        SELECT b.*, u.email, u.display_name, u.language, u.id as bet_user_id,
                r.name as race_name, r.race_date, r.race_time, r.result_p1
         FROM bets b 
         JOIN users u ON b.user_id = u.id 
@@ -307,17 +313,18 @@ if (isset($_POST['delete_bet'])) {
             $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
             
             $userName   = $bet['display_name'] ?: $bet['email'];
-            $subject    = sprintf(t('email_bet_deleted_subject', $lang), $appName);
-            $greeting   = sprintf(t('email_bet_deleted_greeting', $lang), $userName);
-            $intro      = sprintf(t('email_bet_deleted_intro', $lang), htmlspecialchars($bet['race_name']));
-            $buttonText = t('email_go_to_app', $lang);
-            $expiry     = t('email_contact_admin', $lang);
-            
+            $betLang    = in_array($bet['language'] ?? '', ['da', 'en']) ? $bet['language'] : 'da';
+            $subject    = sprintf(t('email_bet_deleted_subject', $betLang), $appName);
+            $greeting   = sprintf(t('email_bet_deleted_greeting', $betLang), $userName);
+            $intro      = sprintf(t('email_bet_deleted_intro', $betLang), htmlspecialchars($bet['race_name']));
+            $buttonText = t('email_go_to_app', $betLang);
+            $expiry     = t('email_contact_admin', $betLang);
+
             $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
-            $regards     = sprintf(t('email_regards', $lang), $appName);
+            $regards     = sprintf(t('email_regards', $betLang), $appName);
             $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', $regards, $appName);
             if ($testMode) {
-                $betMarkers = "[bet-deleted-to] {$bet['email']}\n[bet-deleted-race] {$bet['race_name']}";
+                $betMarkers = "[bet-deleted-to] {$bet['email']}\n[bet-deleted-race] {$bet['race_name']}\n[bet-deleted-lang] {$betLang}";
             } else {
                 sendEmail($bet['email'], $subject, $htmlContent);
             }

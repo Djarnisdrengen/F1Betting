@@ -126,13 +126,19 @@ Test env only. Uses the admin account. Several sub-groups use `test-seed.php` fo
 | Reset button visible | Admin sees reset button on most-recently-completed race |
 | Reset clears data | After reset: race result labels gone, reset button gone, user points back to 0 |
 
-**User management** (serial, seeded)
+**Bet deletion notification** (serial, seeded — bet owner created with `language=en`)
+
+| Test | Asserts |
+|---|---|
+| Admin deletes bet and notification email sent | Bet-delete button triggers confirm modal; after confirm, redirect contains `tab=bets`; `[bet-deleted-to]` marker matches seeded user's email; `[bet-deleted-race]` matches race name; `[bet-deleted-lang] en` confirms email uses bet owner's language, not the admin's |
+
+**User management** (serial, seeded — user created with `language=en`)
 
 | Test | Asserts |
 |---|---|
 | Toggle in-competition | Button state flips between "In Competition" and "Not In Competition" |
 | Toggle admin role | Badge cycles `user → admin → user` |
-| Admin sets user password | New password accepted → success alert |
+| Admin sets user password | New password accepted → success alert; `[admin-reset-lang] en` marker confirms email sent in target user's language, not the admin's |
 | Update display name | User logs in with new password, updates display name → success alert; input reflects new name |
 | Delete user | Confirm-modal delete → user card gone |
 
@@ -156,17 +162,17 @@ Test env only.
 | Unauthorized without token | Response body contains "Unauthorized access" |
 | Authorized with cron secret | Response contains "Notification check complete" |
 
-**Notifications — betting just opened** (serial, seeded — race 47 h 30 min away, 48 h window, pool 150 kr)
+**Notifications — betting just opened** (serial, seeded — race 47 h 30 min away, 48 h window, pool 150 kr; both seeded users have `language=en`)
 
 | Test | Asserts |
 |---|---|
-| In-competition user notified; non-competing user and pending invite get pool reminder | "Betting opened for: E2E Notify Open Race" present; competing user gets open notification; non-competing user gets pool reminder (not open notification); pending invite gets pool reminder; test mode echoes `[pool] 150` and `[cta] …`; non-competing CTA contains `leaderboard.php`; invite CTA contains `register.php?token=…` |
+| In-competition user notified; non-competing user and pending invite get pool reminder | "Betting opened for: E2E Notify Open Race" present; competing user gets open notification; non-competing user gets pool reminder (not open notification); pending invite gets pool reminder; `[pool] 150` and `[cta] …` present; non-competing CTA contains `leaderboard.php`; invite CTA contains `register.php?token=…`; `[lang] en` confirms emails use each registered user's stored language preference |
 
-**Notifications — betting closing soon** (serial, seeded — race 2 h 30 min away)
+**Notifications — betting closing soon** (serial, seeded — race 2 h 30 min away; unbetted user has `language=en`)
 
 | Test | Asserts |
 |---|---|
-| Unbetted user notified, user with existing bet skipped | "Betting closing soon for: E2E Notify Close Race" present; unbetted user's email present; betted user's email absent |
+| Unbetted user notified, user with existing bet skipped | "Betting closing soon for: E2E Notify Close Race" present; unbetted user's email present; `[lang] en` confirms email uses user's stored language; betted user's email absent |
 
 All notification scenario tests use `?test=true` so SMTP is skipped — the logic and output are identical to a live run but no emails are actually sent.
 
