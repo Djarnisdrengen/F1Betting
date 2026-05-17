@@ -32,23 +32,23 @@ All terminal commands for the F1 Betting project.
 |---|---|
 | `npm run test:smoke` | HTTP checks — key pages return 200 (test env) |
 | `npm run test:unit` | Node built-in runner — mailer unit tests (no network, no browser) |
-| `npm run test:e2e:test` | Playwright browser tests against hpovlsen.dk |
-| `npm run test:e2e:live` | Playwright browser tests against formula-1.dk |
+| `npm run test:e2e:test` | Sync from live + Playwright browser tests against hpovlsen.dk |
+| `npm run test:e2e:live` | Playwright browser tests against formula-1.dk — **requires YES** |
 | `npm run test:integration` | Seeded integration tests — **test env only, destroys DB** |
-| `npm run test:all` | Smoke + unit + E2E (same as what `deploy:live` runs) |
+| `npm run test:all` | Smoke + unit + E2E against test (syncs from live first) |
 
 ### Security tests
 
 | Command | What it does |
 |---|---|
-| `npm run test:security` | OWASP scan against test |
-| `npm run test:security:ratelimit` | + rate-limit check against test |
-| `npm run test:security:ssllabs` | + SSL Labs TLS grade against test (60–90 s) |
-| `npm run test:security:full` | All security checks against test |
-| `npm run test:security:live` | OWASP scan against live |
-| `npm run test:security:live:ratelimit` | + rate-limit check against live |
-| `npm run test:security:live:ssllabs` | + SSL Labs TLS grade against live (60–90 s) |
-| `npm run test:security:live:full` | All security checks against live |
+| `npm run test:security:test` | OWASP scan against test |
+| `npm run test:security:test:ratelimit` | + rate-limit check against test |
+| `npm run test:security:test:ssllabs` | + SSL Labs TLS grade against test (60–90 s) |
+| `npm run test:security:test:full` | All security checks against test |
+| `npm run test:security:live` | OWASP scan against live — **requires YES** |
+| `npm run test:security:live:ratelimit` | + rate-limit check against live — **requires YES** |
+| `npm run test:security:live:ssllabs` | + SSL Labs TLS grade against live — **requires YES** (60–90 s) |
+| `npm run test:security:live:full` | All security checks against live — **requires YES** |
 
 ---
 
@@ -57,7 +57,7 @@ All terminal commands for the F1 Betting project.
 | Command | What it does |
 |---|---|
 | `npm run sync:live` | Copy live DB into test DB (overwrites all test data) |
-| `npm run restore:db` | Interactive — list backups, pick one, restore to test or live |
+| `npm run restore:db` | Interactive — list backups, pick one, restore to test or live — **requires YES if live** |
 
 ---
 

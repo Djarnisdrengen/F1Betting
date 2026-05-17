@@ -60,9 +60,17 @@ async function main() {
     }
 
     if (env === "live") {
-        console.log("\n⚠️  You are about to overwrite the LIVE database.");
-        console.log("   Press Ctrl+C within 5 seconds to abort...");
-        await new Promise(r => setTimeout(r, 5000));
+        const rl2 = readline.createInterface({ input: process.stdin, output: process.stdout });
+        const confirmed = await new Promise(resolve =>
+            rl2.question("\n⚠️  You are about to overwrite the LIVE database. Type YES to confirm: ", answer => {
+                rl2.close();
+                resolve(answer === "YES");
+            })
+        );
+        if (!confirmed) {
+            console.log("Aborted.");
+            process.exit(1);
+        }
     }
 
     const backup = JSON.parse(fs.readFileSync(path.join(backupsDir, timestamp, "db-backup.json"), "utf8"));
