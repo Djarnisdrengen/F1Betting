@@ -287,7 +287,7 @@ npm run test:security:live:full
 
 - `public/logs/` directory not browsable (non-200 response)
 - `config.php` not directly accessible
-- `tools/test-seed.php` blocked without valid token (returns 403)
+- `tools/test-seed.php` blocked without valid token (returns 403); also blocked on live regardless of token (`APP_ENV` guard)
 - Admin endpoints reject non-admin users
 
 **Section E — CSRF**

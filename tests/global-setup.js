@@ -27,7 +27,7 @@ const MAILSAC_INBOXES = [
 ];
 
 module.exports = async function globalSetup() {
-    if (process.env.MAILSAC_API_KEY) {
+    if (process.env.MAILSAC_API_KEY && env !== 'live') {
         await Promise.all(MAILSAC_INBOXES.map(inbox => purgeInbox(inbox, process.env.MAILSAC_API_KEY)));
         console.log('[setup] Mailsac inboxes purged →', MAILSAC_INBOXES.join(', '));
     }

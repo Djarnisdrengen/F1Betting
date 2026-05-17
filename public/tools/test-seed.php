@@ -11,6 +11,12 @@ if (!defined('INTEGRATION_SEED_TOKEN') || $token !== INTEGRATION_SEED_TOKEN) {
     exit;
 }
 
+if (!defined('APP_ENV') || APP_ENV !== 'test') {
+    http_response_code(403);
+    echo json_encode(['ok' => false, 'error' => 'Not available in this environment']);
+    exit;
+}
+
 $db = getDB();
 
 $e2eUserEmail   = 'e2e_testing_testuser_f1@mailsac.com';
