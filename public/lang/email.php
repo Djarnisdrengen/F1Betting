@@ -13,7 +13,7 @@ return [
         'email_betting_open_starts_text'   => 'Løbet starter: %s kl. %s',
 
         // Pool reminder (non-competing users and pending invites)
-        'email_pool_reminder_subject'      => 'Du går glip af %s kr! – %s',
+        'email_pool_reminder_subject'      => 'Du går måske glip af %s kr! – %s',
         'email_pool_reminder_greeting'     => 'Hej %s!',
         'email_pool_reminder_intro'        => 'Betting er nu åbent for <strong>%s</strong> (%s).',
         'email_pool_reminder_body'         => 'Den aktuelle pulje er <strong>%s kr</strong> — og du er ikke med endnu!<br><br>Løbet starter: %s kl. %s',
@@ -75,7 +75,7 @@ return [
         'email_betting_open_starts_text'   => 'Race starts: %s at %s',
 
         // Pool reminder (non-competing users and pending invites)
-        'email_pool_reminder_subject'      => "You're missing out on %s kr! – %s",
+        'email_pool_reminder_subject'      => "You're missing out on possible %s kr! – %s",
         'email_pool_reminder_greeting'     => 'Hi %s!',
         'email_pool_reminder_intro'        => 'Betting is now open for <strong>%s</strong> (%s).',
         'email_pool_reminder_body'         => "The current pool is <strong>%s kr</strong> — and you're not in it yet!<br><br>Race starts: %s at %s",

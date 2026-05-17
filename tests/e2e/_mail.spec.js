@@ -1,9 +1,47 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
-const ADMIN_AUTH   = path.join(__dirname, '../../.auth/admin.json');
-const SEED_TOKEN   = process.env.INTEGRATION_SEED_TOKEN;
+const ADMIN_AUTH      = path.join(__dirname, '../../.auth/admin.json');
+const SEED_TOKEN      = process.env.INTEGRATION_SEED_TOKEN;
 const TEST_USER_EMAIL = process.env.TEST_USER_EMAIL;
+
+// ─── Email preview ────────────────────────────────────────────────────────────
+// Sends one real email of every implemented type to F1_ADMIN_EMAIL so the
+// visual layout and content can be reviewed manually. Runs first so the pool
+// size reflects the real next race before other tests modify DB state.
+// Run selectively:
+//   npx playwright test mail.spec.js --grep "email preview"
+
+test.describe("email preview", () => {
+    test("sends one of each email type to F1_ADMIN_EMAIL in Danish and English", async ({ page }) => {
+        test.setTimeout(180000);
+        const res = await page.goto(
+            `${process.env.BASE_URL}/tools/test-seed.php?token=${SEED_TOKEN}&action=send_email_preview`,
+            { timeout: 150000 }
+        );
+        expect(res.status()).toBe(200);
+        const body = JSON.parse(await page.textContent("body"));
+
+        const detailLines = ["\n── Email preview results ──────────────────────────"];
+        for (const [name, info] of Object.entries(body.emails ?? {})) {
+            const status = info.sent ? "✓ SENT" : "✗ FAILED";
+            detailLines.push(`\n${status}  ${name}`);
+            detailLines.push(`   to:      ${info.to}`);
+            detailLines.push(`   subject: ${info.subject}`);
+            const skip = new Set(["sent", "to", "subject"]);
+            for (const [k, v] of Object.entries(info)) {
+                if (!skip.has(k)) detailLines.push(`   ${k.padEnd(12)}: ${v}`);
+            }
+        }
+        detailLines.push("────────────────────────────────────────────────\n");
+        console.log(detailLines.join("\n"));
+
+        for (const [name, info] of Object.entries(body.emails ?? {})) {
+            expect(info.sent, `Email "${name}" failed to send`).toBe(true);
+        }
+        expect(body.ok, JSON.stringify(body)).toBe(true);
+    });
+});
 
 // ─── SMTP / Resend config (test_smtp.php) ─────────────────────────────────────
 
