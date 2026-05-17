@@ -1,12 +1,15 @@
 const { test, expect } = require("@playwright/test");
 const path = require("path");
+const { waitForMessages, getEmailBody } = require("../helpers/mailsac");
 
 const ADMIN_AUTH    = path.join(__dirname, "../../.auth/admin.json");
 const SEED_TOKEN    = process.env.INTEGRATION_SEED_TOKEN;
+const MAILSAC_API_KEY     = process.env.MAILSAC_API_KEY;
 const E2E_USER_EMAIL      = "e2e_testing_testuser_f1@mailsac.com";
 const E2E_USER_INITIAL_PW = "E2ETestPassword2026!";
 const E2E_USER_NEW_PW     = "E2ENewPassword456!";
 const E2E_INVITE_EMAIL    = "e2e_testing_invite_f1@mailsac.com";
+const E2E_BET_DELETE_EMAIL = "e2e_bet_delete_f1@mailsac.com";
 
 async function confirmDeleteModal(page) {
     await page.locator(".btn-user-delete-confirm").click();
@@ -77,26 +80,39 @@ test.describe("Admin panel", () => {
     });
 
     test.describe("invite CRUD", () => {
-        test.beforeAll(async ({ request }) => {
-            await request.get(
-                `/tools/test-seed.php?token=${SEED_TOKEN}&action=cleanup_e2e_invite`
+        test.beforeAll(async ({ browser }) => {
+            const page = await browser.newPage();
+            await page.goto(
+                `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=cleanup_e2e_invite`
             );
+            await page.close();
         });
 
         test("invite a user and delete the invitation", async ({ page }) => {
+            test.setTimeout(60000);
             await page.goto(`/admin.php?tab=invites&e2e_token=${SEED_TOKEN}`);
 
             await page.fill('input[name="invite_email"]', E2E_INVITE_EMAIL);
             await page.locator('button[name="create_invite"]').evaluate(el => el.click());
 
-            // Invite creation sends an email via the API — wait for the response page.
-            await expect(page.locator(".alert-success")).toBeVisible({ timeout: 15000 });
+            // Invite creation sends a real email — SMTP may take up to 30s if it falls back to Resend.
+            await page.waitForURL(/tab=invites/, { timeout: 50000 });
+            await expect(page.locator(".alert-success")).toBeVisible({ timeout: 5000 });
 
             // Verify email markers emitted in test mode
             const body = await page.textContent("body");
             expect(body).toContain(`[invite-to] ${E2E_INVITE_EMAIL}`);
             expect(body).toContain("[invite-link] ");
             expect(body).toContain("/register.php?token=");
+            expect(body, `Invite email failed to send: ${body}`).toContain("[invite-sent] true");
+
+            // Mailsac delivery assertion
+            if (MAILSAC_API_KEY) {
+                const msgs = await waitForMessages(E2E_INVITE_EMAIL, 1, MAILSAC_API_KEY, { timeout: 20000 });
+                expect((msgs[0].from ?? []).map(f => f.address).join()).toContain('info@formula-1.dk');
+                const text = await getEmailBody(E2E_INVITE_EMAIL, msgs[0]._id, MAILSAC_API_KEY);
+                expect(text, 'Invite email missing register link').toContain('/register.php?token=');
+            }
 
             const card = page.locator(".card").filter({ hasText: E2E_INVITE_EMAIL });
             await expect(card).toBeVisible();
@@ -207,6 +223,7 @@ test.describe("Admin panel", () => {
         });
 
         test("admin deletes bet and notification email markers are emitted", async ({ page }) => {
+            test.setTimeout(60000);
             await page.goto(`/admin.php?tab=bets&e2e_token=${SEED_TOKEN}`);
 
             // Find the bet-delete button inside the race card for our seeded race
@@ -215,13 +232,20 @@ test.describe("Admin panel", () => {
             await raceCard.locator('button[name="delete_bet"]').click();
             await confirmDeleteModal(page);
 
-            await page.waitForURL(/tab=bets/);
+            await page.waitForURL(/tab=bets/, { timeout: 50000 });
 
             // Verify email markers passed through the redirect
             const body = await page.textContent("body");
             expect(body, `Admin bets page body:\n${body}`).toContain(`[bet-deleted-to] ${seedData.email}`);
             expect(body).toContain(`[bet-deleted-race] ${seedData.raceName}`);
             expect(body).toContain("[bet-deleted-lang] en"); // email must use bet owner's language
+            expect(body, `Bet-delete email failed to send: ${body}`).toContain("[bet-deleted-sent] true");
+
+            // Mailsac delivery assertion
+            if (MAILSAC_API_KEY) {
+                const msgs = await waitForMessages(E2E_BET_DELETE_EMAIL, 1, MAILSAC_API_KEY, { timeout: 20000 });
+                expect((msgs[0].from ?? []).map(f => f.address).join()).toContain('info@formula-1.dk');
+            }
         });
     });
 
@@ -268,6 +292,7 @@ test.describe("Admin panel", () => {
         });
 
         test("Set password on test user", async ({ page }) => {
+            test.setTimeout(60000);
             await page.goto(`/admin.php?tab=users&e2e_token=${SEED_TOKEN}`);
 
             await userCard(page).locator(".btn-reset-pwd").click();
@@ -276,13 +301,22 @@ test.describe("Admin panel", () => {
             await pwInput.fill(E2E_USER_NEW_PW);
             await userCard(page).locator('button[name="reset_user_password"]').click();
 
-            await expect(page.locator(".alert-success")).toBeVisible();
+            // Password reset sends a real email then redirects — SMTP may take up to 30s.
+            await page.waitForURL(/tab=users/, { timeout: 50000 });
+            await expect(page.locator(".alert-success")).toBeVisible({ timeout: 5000 });
 
             // Verify email markers emitted in test mode
             const body = await page.textContent("body");
             expect(body).toContain(`[admin-reset-to] ${E2E_USER_EMAIL}`);
             expect(body).toContain(`[admin-reset-new-password] ${E2E_USER_NEW_PW}`);
             expect(body).toContain("[admin-reset-lang] en"); // email must use target user's language
+            expect(body, `Admin-reset email failed to send: ${body}`).toContain("[admin-reset-sent] true");
+
+            // Mailsac delivery assertion
+            if (MAILSAC_API_KEY) {
+                const msgs = await waitForMessages(E2E_USER_EMAIL, 1, MAILSAC_API_KEY, { timeout: 20000 });
+                expect((msgs[0].from ?? []).map(f => f.address).join()).toContain('info@formula-1.dk');
+            }
         });
 
         // Needs a fresh context: login.php redirects already-authenticated users.

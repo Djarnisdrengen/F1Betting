@@ -260,14 +260,23 @@ if (isset($_POST['reset_user_password'])) {
             $emailTestOutput[] = "[admin-reset-subject] {$subject}";
             $emailTestOutput[] = "[admin-reset-new-password] {$newPassword}";
             $emailTestOutput[] = "[admin-reset-lang] {$userLang}";
-        } else {
-            sendEmail($userEmail, $subject, $htmlContent);
+        }
+        $sendResult = sendEmail($userEmail, $subject, $htmlContent);
+        if ($testMode) {
+            $emailTestOutput[] = "[admin-reset-sent] " . ($sendResult['success'] ? 'true' : 'false');
+            if (!$sendResult['success']) {
+                $emailTestOutput[] = "[admin-reset-error] " . ($sendResult['message'] ?? 'unknown');
+            }
         }
 
+        $redirectExtra = ($testMode && !empty($emailTestOutput))
+            ? '&e2e_token=' . urlencode($_e2eRawToken) . '&e2e_markers=' . urlencode(base64_encode(implode("\n", $emailTestOutput)))
+            : '';
+        header("Location: admin.php?tab=users&msg=" . urlencode($message) . $redirectExtra);
+        exit;
     } else {
         $error = t('password_min_6_admin');
     }
-
 
 }
 
@@ -323,10 +332,13 @@ if (isset($_POST['delete_bet'])) {
             $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
             $regards     = sprintf(t('email_regards', $betLang), $appName);
             $htmlContent = getEmailTemplate($greeting, $intro, $buttonText, $emailBaseUrl, $expiry, '', $regards, $appName);
+            $betSendResult = sendEmail($bet['email'], $subject, $htmlContent);
             if ($testMode) {
                 $betMarkers = "[bet-deleted-to] {$bet['email']}\n[bet-deleted-race] {$bet['race_name']}\n[bet-deleted-lang] {$betLang}";
-            } else {
-                sendEmail($bet['email'], $subject, $htmlContent);
+                $betMarkers .= "\n[bet-deleted-sent] " . ($betSendResult['success'] ? 'true' : 'false');
+                if (!$betSendResult['success']) {
+                    $betMarkers .= "\n[bet-deleted-error] " . ($betSendResult['message'] ?? 'unknown');
+                }
             }
 
             $message = t('bet_deleted_notified');
@@ -374,16 +386,20 @@ if (isset($_POST['create_invite'])) {
                 if ($testMode) {
                     $emailTestOutput[] = "[invite-to] {$inviteEmail}";
                     $emailTestOutput[] = "[invite-link] {$inviteLink}";
+                }
+                $result = sendInviteEmail($inviteEmail, $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
+                if ($testMode) {
+                    $emailTestOutput[] = "[invite-sent] " . ($result['success'] ? 'true' : 'false');
+                    if (!$result['success']) {
+                        $emailTestOutput[] = "[invite-error] " . ($result['message'] ?? 'unknown');
+                    }
+                }
+                if ($result['success']) {
                     $message = sprintf(t('invite_sent_to'), $inviteEmail);
                 } else {
-                    $result = sendInviteEmail($inviteEmail, $inviteLink, $currentUser['display_name'] ?: $currentUser['email'], $lang);
-                    if ($result['success']) {
-                        $message = sprintf(t('invite_sent_to'), $inviteEmail);
-                    } else {
-                        $message = $lang === 'da'
-                            ? 'Invitation oprettet! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
-                            : 'Invitation created! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>';
-                    }
+                    $message = $lang === 'da'
+                        ? 'Invitation oprettet! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
+                        : 'Invitation created! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>';
                 }
             }
         }

@@ -36,13 +36,14 @@ class CustomReporter {
         const indent = "  ".repeat(path.length - 1);
         const title = path[path.length - 1];
 
+        const secs = (result.duration / 1000).toFixed(1) + "s";
         if (result.status === "passed") {
             this._passed++;
-            process.stdout.write(`\r${indent}✅ ${title}\n`);
+            process.stdout.write(`\r${indent}✅ ${title} (${secs})\n`);
         } else {
             this._failed++;
             const msg = result.error?.message?.split("\n")[0] || "failed";
-            process.stdout.write(`\r${indent}❌ ${title} → ${msg}\n`);
+            process.stdout.write(`\r${indent}❌ ${title} (${secs}) → ${msg}\n`);
         }
     }
 

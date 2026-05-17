@@ -115,11 +115,11 @@ Test env only. Uses the admin account. Several sub-groups use `test-seed.php` fo
 | Create driver | Form submission → success alert; driver card appears |
 | Delete driver | Confirm-modal delete → URL contains `msg=deleted`; driver card gone |
 
-**Invite management**
+**Invite management** (serial, seeded cleanup — real email sent)
 
 | Test | Asserts |
 |---|---|
-| Create invite | Email submitted → invite card appears |
+| Create invite | Email submitted → success alert; `[invite-sent] true` confirms SMTP/Resend accepted; invite card appears; Mailsac delivery asserted (from `info@formula-1.dk`; body contains `/register.php?token=`) |
 | Delete invite | Confirm-modal delete → invite card gone |
 
 **Reset race result** (serial, seeded)
@@ -133,7 +133,7 @@ Test env only. Uses the admin account. Several sub-groups use `test-seed.php` fo
 
 | Test | Asserts |
 |---|---|
-| Admin deletes bet and notification email sent | Bet-delete button triggers confirm modal; after confirm, redirect contains `tab=bets`; `[bet-deleted-to]` marker matches seeded user's email; `[bet-deleted-race]` matches race name; `[bet-deleted-lang] en` confirms email uses bet owner's language, not the admin's |
+| Admin deletes bet and notification email sent | Bet-delete button triggers confirm modal; after confirm, redirect contains `tab=bets`; `[bet-deleted-to]` marker matches seeded user's email; `[bet-deleted-race]` matches race name; `[bet-deleted-lang] en` confirms email uses bet owner's language, not the admin's; `[bet-deleted-sent] true` confirms real email sent; Mailsac delivery asserted (from `info@formula-1.dk`) |
 
 **User management** (serial, seeded — user created with `language=en`)
 
@@ -141,7 +141,7 @@ Test env only. Uses the admin account. Several sub-groups use `test-seed.php` fo
 |---|---|
 | Toggle in-competition | Button state flips between "In Competition" and "Not In Competition" |
 | Toggle admin role | Badge cycles `user → admin → user` |
-| Admin sets user password | New password accepted → success alert; `[admin-reset-lang] en` marker confirms email sent in target user's language, not the admin's |
+| Admin sets user password | New password accepted → success alert; `[admin-reset-lang] en` marker confirms email sent in target user's language, not the admin's; `[admin-reset-sent] true` confirms real email sent; Mailsac delivery asserted (from `info@formula-1.dk`) |
 | Update display name | User logs in with new password, updates display name → success alert; input reflects new name |
 | Delete user | Confirm-modal delete → user card gone |
 
@@ -367,6 +367,17 @@ All seeded test users use `@mailsac.com` addresses. Any email triggered to a tes
 Users synced from live via `sync:live` are also rewritten to `@mailsac.com` (e.g. `thomas@helvegpovlsen.dk` → `thomas@mailsac.com`). The admin account (`F1_ADMIN_EMAIL`) is restored unchanged by both sync and seed scripts.
 
 Mailsac public inboxes are readable by anyone who knows the address. The fixed test addresses above contain no personal data. Synced addresses use real local-parts derived from live user names — treat them as publicly observable.
+
+Four inboxes are **owned** on the Mailsac Indie Plan, which enables inbox purge and reliable message retention:
+
+| Owned inbox | Purged by | Asserted by |
+|---|---|---|
+| `f1betting-preview@mailsac.com` | `global-setup.js` | `_mail.spec.js` — 16 email types |
+| `e2e_testing_invite_f1@mailsac.com` | `global-setup.js` | `admin.spec.js` — invite email |
+| `e2e_bet_delete_f1@mailsac.com` | `global-setup.js` | `admin.spec.js` — bet deletion email |
+| `e2e_testing_testuser_f1@mailsac.com` | `global-setup.js` | `admin.spec.js` — admin password reset email |
+
+All 4 inboxes are purged in parallel at suite start (`global-setup.js`). The three `admin.spec.js` flows send **real emails** via SMTP/Resend during every test run — visible in Mailsac after the run. Tests assert `[...-sent] true` (SMTP/Resend accepted) then poll Mailsac (20s timeout; emails typically arrive in 5–7s via Resend). Requires `MAILSAC_API_KEY` in `config.test.php` or as a GitHub Actions secret; Mailsac assertions skip cleanly if the key is absent.
 
 ---
 

@@ -1,20 +1,34 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
+const { waitForMessages, getEmailBody } = require('../helpers/mailsac');
 
 const ADMIN_AUTH      = path.join(__dirname, '../../.auth/admin.json');
 const SEED_TOKEN      = process.env.INTEGRATION_SEED_TOKEN;
 const TEST_USER_EMAIL = process.env.TEST_USER_EMAIL;
+const MAILSAC_API_KEY = process.env.MAILSAC_API_KEY;
+const MAILSAC_INBOX   = process.env.MAILSAC_INBOX;
 
 // ─── Email preview ────────────────────────────────────────────────────────────
-// Sends one real email of every implemented type to F1_ADMIN_EMAIL so the
-// visual layout and content can be reviewed manually. Runs first so the pool
-// size reflects the real next race before other tests modify DB state.
+// Sends one real email of every implemented type to MAILSAC_INBOX and verifies:
+//
+//   Tier 1 (all 16): PHP mailer reports sent:true — SMTP accepted every email.
+//
+//   Tier 2 (all 16): inbox is purged before the run (requires MAILSAC_INBOX to
+//   be an owned inbox on the Mailsac Indie Plan), then all 16 are waited for.
+//   Assertions: correct sender on every message; invite body contains site
+//   domain and register link; betting-open delivery confirmed by subject match.
+//
+// Requires MAILSAC_API_KEY and MAILSAC_INBOX in config.test.php.
+// Skips cleanly if MAILSAC_API_KEY is not set.
+//
 // Run selectively:
-//   npx playwright test mail.spec.js --grep "email preview"
+//   npx playwright test _mail.spec.js --grep "email preview"
 
 test.describe("email preview", () => {
-    test("sends one of each email type to F1_ADMIN_EMAIL in Danish and English", async ({ page }) => {
+    test("sends one of each email type to MAILSAC_INBOX and verifies delivery and content", async ({ page }) => {
+        test.skip(!MAILSAC_API_KEY, 'MAILSAC_API_KEY not set — skipping Mailsac delivery assertions');
         test.setTimeout(180000);
+
         const res = await page.goto(
             `${process.env.BASE_URL}/tools/test-seed.php?token=${SEED_TOKEN}&action=send_email_preview`,
             { timeout: 150000 }
@@ -36,10 +50,39 @@ test.describe("email preview", () => {
         detailLines.push("────────────────────────────────────────────────\n");
         console.log(detailLines.join("\n"));
 
+        // Tier 1: every email was accepted by SMTP
         for (const [name, info] of Object.entries(body.emails ?? {})) {
             expect(info.sent, `Email "${name}" failed to send`).toBe(true);
         }
         expect(body.ok, JSON.stringify(body)).toBe(true);
+
+        // Tier 2: all emails must arrive in Mailsac (inbox was purged before send)
+        const expectedCount = Object.keys(body.emails ?? {}).length;
+        const messages = await waitForMessages(MAILSAC_INBOX, expectedCount, MAILSAC_API_KEY, { timeout: 90000 });
+
+        console.log(`Mailsac: ${messages.length}/${expectedCount} emails arrived`);
+        expect(messages.length, `Expected ${expectedCount} emails in Mailsac, got ${messages.length}`).toBe(expectedCount);
+
+        // Every arrived message must be from the configured sender
+        for (const msg of messages) {
+            const fromAddr = (msg.from ?? []).map(f => f.address).join(', ');
+            expect(fromAddr, `Unexpected sender on "${msg.subject}"`).toContain('info@formula-1.dk');
+        }
+
+        // Spot-check body of invite EN — sendInviteEmail() includes a text/plain part
+        // so Mailsac's /text/ endpoint returns the full URL.
+        const siteHost = new URL(process.env.BASE_URL).hostname;
+        const inviteEnMsg = messages.find(m => m.subject === body.emails['3_invite_en']?.subject);
+        if (inviteEnMsg) {
+            const text = await getEmailBody(MAILSAC_INBOX, inviteEnMsg._id, MAILSAC_API_KEY);
+            expect(text, 'Invite email body missing site domain').toContain(siteHost);
+            expect(text, 'Invite email body missing register link').toContain('/register.php?token=');
+        }
+
+        // Betting-open email has no text/plain alternative (href URLs stripped by auto-text)
+        // — assert delivery only via subject match.
+        const bettingOpenEnMsg = messages.find(m => m.subject === body.emails['4_betting_open_en']?.subject);
+        expect(bettingOpenEnMsg, 'Betting-open EN email did not arrive in Mailsac').toBeDefined();
     });
 });
 

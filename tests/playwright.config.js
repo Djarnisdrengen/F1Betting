@@ -14,6 +14,8 @@ try {
     process.env.TEST_USER_PASSWORD    = process.env.TEST_USER_PASSWORD    || cfg.adminPassword;
     process.env.INTEGRATION_SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN || cfg.integrationSeedToken;
     process.env.CRON_SECRET           = process.env.CRON_SECRET           || cfg.cronSecret;
+    process.env.MAILSAC_API_KEY       = process.env.MAILSAC_API_KEY       || cfg.mailsacApiKey;
+    process.env.MAILSAC_INBOX         = process.env.MAILSAC_INBOX         || cfg.mailsacInbox;
 } catch {
     // PHP config not available — rely on pre-set environment variables (e.g. GitHub Actions).
     process.env.BASE_URL           = process.env[`BASE_URL_${env.toUpperCase()}`]           || process.env.BASE_URL;
