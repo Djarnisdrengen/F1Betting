@@ -118,7 +118,7 @@ foreach ($races as $race) {
         }
         foreach ($pendingInvites as $invite) {
             $link = convertToEmailUrl(SITE_URL . '/register.php?token=' . $invite['token']);
-            sendPoolReminderEmail($invite['email'], $invite['email'], $race, $link, 'da');
+            sendPoolReminderEmail($invite['email'], $invite['email'], $race, $link, 'da', 'invite');
         }
     }
 
@@ -142,18 +142,19 @@ echo "Notification check complete.\n";
  * Registered-but-not-competing users get a link to the leaderboard;
  * pending invitees get their personal registration link.
  */
-function sendPoolReminderEmail($email, $name, $race, $ctaLink, $userLang = 'da') {
+function sendPoolReminderEmail($email, $name, $race, $ctaLink, $userLang = 'da', $type = 'noncompeting') {
     global $appName, $TEST_MODE;
 
     $poolSize = (int)$race['bettingpool_size'];
     $raceDate = date('d M Y', strtotime($race['race_date']));
     $raceTime = substr($race['race_time'], 0, 5);
+    $keyPfx   = "email_pool_{$type}";
 
-    $subject  = sprintf(t('email_pool_reminder_subject', $userLang), $poolSize, $appName);
-    $greeting = sprintf(t('email_pool_reminder_greeting', $userLang), $name);
-    $intro    = sprintf(t('email_pool_reminder_intro', $userLang), $race['name'], $race['location']);
-    $body     = sprintf(t('email_pool_reminder_body', $userLang), $poolSize, $raceDate, $raceTime);
-    $button   = t('email_pool_reminder_button', $userLang);
+    $subject  = sprintf(t("{$keyPfx}_subject", $userLang), $poolSize);
+    $greeting = sprintf(t("{$keyPfx}_greeting", $userLang), $name);
+    $intro    = sprintf(t("{$keyPfx}_intro", $userLang), $race['name'], $race['location']);
+    $body     = sprintf(t("{$keyPfx}_body", $userLang), $poolSize, $raceDate, $raceTime);
+    $button   = t("{$keyPfx}_button", $userLang);
 
     if ($TEST_MODE) {
         echo "  - [pool] {$poolSize}\n";
@@ -162,7 +163,7 @@ function sendPoolReminderEmail($email, $name, $race, $ctaLink, $userLang = 'da')
         $result = ['success' => true, 'message' => 'test mode'];
     } else {
         $html   = getEmailTemplate($greeting, "$intro<br><br>$body", $button, $ctaLink, '', '', $appName, $appName);
-        $text   = "$greeting\n\n$intro\n\n" . sprintf(t('email_pool_reminder_body_text', $userLang), $poolSize, $raceDate, $raceTime) . "\n\n$button: $ctaLink";
+        $text   = "$greeting\n\n$intro\n\n" . sprintf(t("{$keyPfx}_body_text", $userLang), $poolSize, $raceDate, $raceTime) . "\n\n$button: $ctaLink";
         $result = sendEmail($email, $subject, $html, $text);
     }
 
@@ -186,7 +187,7 @@ function sendBettingOpenEmail($user, $race, $bettingWindowHours = 48) {
     $betLink  = convertToEmailUrl(SITE_URL . "/bet.php?race=" . $race['id']);
     $poolSize = (int)$race['bettingpool_size'];
 
-    $subject    = sprintf(t('email_betting_open_subject', $userLang), $race['name'], $appName);
+    $subject    = sprintf(t('email_betting_open_subject', $userLang), $race['name']);
     $greeting   = sprintf(t('email_betting_open_greeting', $userLang), $name);
     $intro      = sprintf(t('email_betting_open_intro', $userLang), $race['name'], $race['location']);
     $poolLine   = $poolSize > 0 ? sprintf(t('email_betting_open_pool', $userLang), $poolSize) : '';
@@ -228,7 +229,7 @@ function sendBettingClosingEmail($user, $race) {
     $raceTime = substr($race['race_time'], 0, 5);
     $betLink  = convertToEmailUrl(SITE_URL . "/bet.php?race=" . $race['id']);
 
-    $subject    = sprintf(t('email_betting_closing_subject', $userLang), $race['name'], $appName);
+    $subject    = sprintf(t('email_betting_closing_subject', $userLang), $race['name']);
     $greeting   = sprintf(t('email_betting_closing_greeting', $userLang), $name);
     $intro      = sprintf(t('email_betting_closing_intro', $userLang), $race['name']);
     $details    = sprintf(t('email_betting_closing_details', $userLang), $raceDate, $raceTime);

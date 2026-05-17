@@ -246,7 +246,7 @@ if (isset($_POST['reset_user_password'])) {
         $row2     = $stmt2->fetch();
         $userLang = in_array($row2['language'] ?? '', ['da', 'en']) ? $row2['language'] : 'da';
 
-        $subject    = sprintf(t('email_admin_reset_subject', $userLang), $appName);
+        $subject    = t('email_admin_reset_subject', $userLang);
         $greeting   = sprintf(t('email_admin_reset_greeting', $userLang), $userName);
         $intro      = sprintf(t('email_admin_reset_intro', $userLang), $currentUser['display_name'], $newPassword);
         $buttonText = t('email_admin_reset_button', $userLang);
@@ -314,7 +314,7 @@ if (isset($_POST['delete_bet'])) {
             
             $userName   = $bet['display_name'] ?: $bet['email'];
             $betLang    = in_array($bet['language'] ?? '', ['da', 'en']) ? $bet['language'] : 'da';
-            $subject    = sprintf(t('email_bet_deleted_subject', $betLang), $appName);
+            $subject    = t('email_bet_deleted_subject', $betLang);
             $greeting   = sprintf(t('email_bet_deleted_greeting', $betLang), $userName);
             $intro      = sprintf(t('email_bet_deleted_intro', $betLang), htmlspecialchars($bet['race_name']));
             $buttonText = t('email_go_to_app', $betLang);

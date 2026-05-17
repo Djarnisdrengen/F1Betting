@@ -514,7 +514,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
 
         // 1. Forgot password
         $resetLink = SITE_URL . '/reset_password.php?token=preview-reset-token-1234';
-        $subject   = sprintf(t('email_reset_subject', $lang), $appName);
+        $subject   = t('email_reset_subject', $lang);
         $r = sendPasswordResetEmail($adminEmail, $previewName, $resetLink, $lang);
         $emails["1_password_reset{$suffix}"] = [
             'sent'       => $r['success'],
@@ -524,7 +524,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
         ];
 
         // 2. Admin reset password (inline — matches admin.php logic)
-        $subject  = sprintf(t('email_admin_reset_subject', $lang), $appName);
+        $subject  = t('email_admin_reset_subject', $lang);
         $greeting = sprintf(t('email_admin_reset_greeting', $lang), $previewName);
         $intro    = sprintf(t('email_admin_reset_intro', $lang), 'Admin', 'PreviewPw123!');
         $btnText  = t('email_admin_reset_button', $lang);
@@ -540,7 +540,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
             'reset_by'     => 'Admin',
         ];
 
-        // 3. Invitation
+        // 3. Invitation (keeps app name in subject)
         $inviteLink = SITE_URL . '/register.php?token=preview-invite-token-5678';
         $subject    = sprintf(t('email_invite_subject', $lang), $appName);
         $r = sendInviteEmail($adminEmail, $inviteLink, 'Admin', $lang);
@@ -554,7 +554,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
 
         // 4. Betting window open (in-competition user)
         $poolSize4 = (int)$previewRace['bettingpool_size'];
-        $subject   = sprintf(t('email_betting_open_subject', $lang), $previewRace['name'], $appName);
+        $subject   = sprintf(t('email_betting_open_subject', $lang), $previewRace['name']);
         $greeting4 = sprintf(t('email_betting_open_greeting', $lang), $previewName);
         $intro     = sprintf(t('email_betting_open_intro', $lang), $previewRace['name'], $previewRace['location']);
         $poolLine  = $poolSize4 > 0 ? sprintf(t('email_betting_open_pool', $lang), $poolSize4) : '';
@@ -575,37 +575,42 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
         ];
 
         // 5. Pool reminder — non-competing registered user (leaderboard CTA)
-        $poolSize    = (int)$previewRace['bettingpool_size'];
-        $prSubject   = sprintf(t('email_pool_reminder_subject', $lang), $poolSize, $appName);
-        $prGreeting  = sprintf(t('email_pool_reminder_greeting', $lang), $previewName);
-        $prIntro     = sprintf(t('email_pool_reminder_intro', $lang), $previewRace['name'], $previewRace['location']);
-        $prBody      = sprintf(t('email_pool_reminder_body', $lang), $poolSize, $raceDate, $raceTime);
-        $prButton    = t('email_pool_reminder_button', $lang);
-        $html        = getEmailTemplate($prGreeting, "$prIntro<br><br>$prBody", $prButton, $lbLink, '', '', $appName, $appName);
-        $r = sendEmail($adminEmail, $prSubject, $html);
-        $emails["5_pool_reminder_noncompeting{$suffix}"] = [
+        $poolSize   = (int)$previewRace['bettingpool_size'];
+        $ncSubject  = sprintf(t('email_pool_noncompeting_subject', $lang), $poolSize);
+        $ncGreeting = sprintf(t('email_pool_noncompeting_greeting', $lang), $previewName);
+        $ncIntro    = sprintf(t('email_pool_noncompeting_intro', $lang), $previewRace['name'], $previewRace['location']);
+        $ncBody     = sprintf(t('email_pool_noncompeting_body', $lang), $poolSize, $raceDate, $raceTime);
+        $ncButton   = t('email_pool_noncompeting_button', $lang);
+        $html       = getEmailTemplate($ncGreeting, "$ncIntro<br><br>$ncBody", $ncButton, $lbLink, '', '', $appName, $appName);
+        $r = sendEmail($adminEmail, $ncSubject, $html);
+        $emails["5_pool_noncompeting{$suffix}"] = [
             'sent'      => $r['success'],
             'to'        => $adminEmail,
-            'subject'   => $prSubject,
+            'subject'   => $ncSubject,
             'race'      => $previewRace['name'],
             'pool_size' => $poolSize,
             'cta_link'  => $lbLink,
         ];
 
         // 6. Pool reminder — pending invite (registration CTA)
-        $html = getEmailTemplate($prGreeting, "$prIntro<br><br>$prBody", $prButton, $regLink, '', '', $appName, $appName);
-        $r = sendEmail($adminEmail, $prSubject, $html);
-        $emails["6_pool_reminder_invite{$suffix}"] = [
+        $invSubject  = sprintf(t('email_pool_invite_subject', $lang), $poolSize);
+        $invGreeting = t('email_pool_invite_greeting', $lang);
+        $invIntro    = sprintf(t('email_pool_invite_intro', $lang), $previewRace['name'], $previewRace['location']);
+        $invBody     = sprintf(t('email_pool_invite_body', $lang), $poolSize, $raceDate, $raceTime);
+        $invButton   = t('email_pool_invite_button', $lang);
+        $html        = getEmailTemplate($invGreeting, "$invIntro<br><br>$invBody", $invButton, $regLink, '', '', $appName, $appName);
+        $r = sendEmail($adminEmail, $invSubject, $html);
+        $emails["6_pool_invite{$suffix}"] = [
             'sent'      => $r['success'],
             'to'        => $adminEmail,
-            'subject'   => $prSubject,
+            'subject'   => $invSubject,
             'race'      => $previewRace['name'],
             'pool_size' => $poolSize,
             'cta_link'  => $regLink,
         ];
 
         // 7. Betting closing soon
-        $subject  = sprintf(t('email_betting_closing_subject', $lang), $previewRace['name'], $appName);
+        $subject  = sprintf(t('email_betting_closing_subject', $lang), $previewRace['name']);
         $greeting = sprintf(t('email_betting_closing_greeting', $lang), $previewName);
         $intro    = sprintf(t('email_betting_closing_intro', $lang), $previewRace['name']);
         $details  = sprintf(t('email_betting_closing_details', $lang), $raceDate, $raceTime);
@@ -623,7 +628,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
         ];
 
         // 8. Bet deleted (inline — matches admin.php logic)
-        $subject  = sprintf(t('email_bet_deleted_subject', $lang), $appName);
+        $subject  = t('email_bet_deleted_subject', $lang);
         $greeting = sprintf(t('email_bet_deleted_greeting', $lang), $previewName);
         $intro    = sprintf(t('email_bet_deleted_intro', $lang), htmlspecialchars($previewRace['name']));
         $btnText  = t('email_go_to_app', $lang);

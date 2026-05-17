@@ -378,7 +378,7 @@ function sendPasswordResetEmail($email, $displayName, $resetLink, $lang = 'da') 
     // Convert link to use EMAIL_BASE_URL
     $resetLink = convertToEmailUrl($resetLink);
     
-    $subject    = sprintf(t('email_reset_subject', $lang), $appName);
+    $subject    = t('email_reset_subject', $lang);
     $greeting   = sprintf(t('email_reset_greeting', $lang), $name);
     $intro      = sprintf(t('email_reset_intro', $lang), $appName);
     $buttonText = t('email_reset_button', $lang);
