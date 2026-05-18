@@ -29,8 +29,8 @@ module.exports = defineConfig({
     globalSetup: require.resolve("./global-setup"),
     testDir: "./e2e",
     testMatch: isLive
-        ? ["**/smoke.spec.js"]
-        : ["**/_mail.spec.js", "**/smoke.spec.js", "**/admin.spec.js", "**/cron.spec.js", "**/betting.spec.js", "**/profile.spec.js", "**/registration.spec.js"],
+        ? ["**/01-smoke.spec.js"]
+        : ["**/[0-9]*.spec.js", "**/admin/[0-9]*.spec.js"],
     timeout: 10000,
     outputDir: "../build-deploy/screenshots",
     reporter: [["./reporter.js"]],

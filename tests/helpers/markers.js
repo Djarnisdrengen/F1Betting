@@ -3,12 +3,12 @@
 // Stack A only — used by Playwright specs to parse e2e_markers emitted by the backend.
 // Markers are [key] value pairs in the page body after a POST-redirect-GET.
 
-const MARKER_RE = /\[([^\]]+)\]\s*(\S+)/g;
+const MARKER_RE = /\[([^\]]+)\]\s*([^\n\r]+)/g;
 
 function parseMarkers(text) {
     const result = {};
     for (const [, key, value] of text.matchAll(MARKER_RE)) {
-        result[key] = value;
+        result[key] = value.trim();
     }
     return result;
 }

@@ -22,7 +22,7 @@ const MAILSAC_INBOX   = process.env.MAILSAC_INBOX;
 // Skips cleanly if MAILSAC_API_KEY is not set.
 //
 // Run selectively:
-//   npx playwright test _mail.spec.js --grep "email preview"
+//   npx playwright test 06-emails.spec.js --grep "email preview"
 
 test.describe("email preview", () => {
     test("sends one of each email type to MAILSAC_INBOX and verifies delivery and content", async ({ page }) => {
@@ -123,6 +123,7 @@ test.describe('SMTP / Resend config (test_smtp.php)', () => {
 });
 
 // ─── Password reset email ──────────────────────────────────────────────────────
+// Moved to 02-auth.spec.js in step 7.
 
 test.describe('Password reset email', () => {
     test('forgot_password page renders form', async ({ page }) => {

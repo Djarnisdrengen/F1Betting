@@ -24,6 +24,7 @@ const MAILSAC_INBOXES = [
     'e2e_testing_invite_f1@mailsac.com',
     'e2e_bet_delete_f1@mailsac.com',
     'e2e_testing_testuser_f1@mailsac.com',
+    'e2e_auth_f1@mailsac.com',
 ];
 
 module.exports = async function globalSetup() {

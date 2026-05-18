@@ -161,4 +161,6 @@ test.describe("Cron jobs", () => {
             expect(text).toContain("Notification check complete");
         });
     });
+
+    // ─── Real-run group added in step 9 ──────────────────────────────────────
 });
