@@ -30,7 +30,7 @@ module.exports = defineConfig({
     testDir: "./e2e",
     testMatch: isLive
         ? ["**/01-smoke.spec.js"]
-        : ["**/[0-9]*.spec.js", "**/admin/[0-9]*.spec.js"],
+        : ["**/*.spec.js"],
     timeout: 10000,
     outputDir: "../build-deploy/screenshots",
     reporter: [["./reporter.js"]],
