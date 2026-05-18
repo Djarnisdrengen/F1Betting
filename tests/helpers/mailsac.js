@@ -57,4 +57,19 @@ async function getEmailBody(inbox, messageId, apiKey) {
     return res.text();
 }
 
-module.exports = { getMessages, purgeInbox, waitForMessages, waitForNewMessages, getEmailBody };
+// Waits for `count` messages to arrive in `inbox`, asserts each came from `fromDomain`.
+// Returns [] silently if apiKey is falsy (clean skip in CI without Mailsac configured).
+// Use after purgeInbox() so there is no baseline to track.
+async function assertDelivered(inbox, apiKey, { count = 1, timeout = 20000, fromDomain = 'formula-1.dk' } = {}) {
+    if (!apiKey) return [];
+    const msgs = await waitForMessages(inbox, count, apiKey, { timeout });
+    for (const msg of msgs) {
+        const addresses = (msg.from || []).map(f => f.address || '').join(' ');
+        if (!addresses.includes(fromDomain)) {
+            throw new Error(`Mailsac: message in ${inbox} not from ${fromDomain} — got: ${addresses}`);
+        }
+    }
+    return msgs;
+}
+
+module.exports = { getMessages, purgeInbox, waitForMessages, waitForNewMessages, getEmailBody, assertDelivered };
