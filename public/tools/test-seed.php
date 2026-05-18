@@ -666,6 +666,191 @@ if (($_GET['action'] ?? '') === 'cleanup_reset_result') {
     exit;
 }
 
+// Action: seed_auth_user — creates test user for auth/forgot-password tests
+// Returns: { ok, email, password }
+if (($_GET['action'] ?? '') === 'seed_auth_user') {
+    $e2eAuthEmail = 'e2e_auth_f1@mailsac.com';
+
+    $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")
+       ->execute([$e2eAuthEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eAuthEmail]);
+
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars, language) VALUES (?, ?, ?, 'E2E Auth User', 'user', 0, 0, 0, 'en')")
+       ->execute([seed_uuid(), $e2eAuthEmail, hashPassword('E2EAuthPassword2026!')]);
+
+    echo json_encode(['ok' => true, 'email' => $e2eAuthEmail, 'password' => 'E2EAuthPassword2026!']);
+    exit;
+}
+
+// Action: cleanup_auth_user
+if (($_GET['action'] ?? '') === 'cleanup_auth_user') {
+    $e2eAuthEmail = 'e2e_auth_f1@mailsac.com';
+    $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")
+       ->execute([$e2eAuthEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eAuthEmail]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: seed_score_race — two-race scoring fixture
+// Race A: past (2019-01-15), result set (Ham/Ver/Lec), no perfect bet → pool carries to Race B
+// Race B: past+1d (2019-01-16), bets placed, no result set → test enters result via admin UI
+// Using 2019 dates so Race B is guaranteed to be the next DB race after Race A (app data starts 2024+)
+// Returns: { ok, raceAId, raceBId, driverIds: {p1,p2,p3},
+//           expectedPoints: [{email, ptsAfterB, ptsAfterReset, star}], poolA, poolB }
+if (($_GET['action'] ?? '') === 'seed_score_race') {
+    $e2eEmails = [
+        'alice'   => 'e2e_score_alice_f1@mailsac.com',
+        'bob'     => 'e2e_score_bob_f1@mailsac.com',
+        'charlie' => 'e2e_score_charlie_f1@mailsac.com',
+    ];
+
+    // Idempotent cleanup
+    foreach ($e2eEmails as $email) {
+        $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$email]);
+        $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$email]);
+        $db->prepare("DELETE FROM users WHERE email = ?")->execute([$email]);
+    }
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B'))");
+    $db->query("DELETE FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B')");
+
+    // Read settings for deterministic point calculation
+    $settingsRow = $db->query("SELECT * FROM settings WHERE id = 1")->fetch();
+    $ptsP1    = (int)($settingsRow['points_p1']        ?? 25);
+    $ptsP2    = (int)($settingsRow['points_p2']        ?? 18);
+    $ptsP3    = (int)($settingsRow['points_p3']        ?? 15);
+    $ptsWrong = (int)($settingsRow['points_wrong_pos'] ?? 5);
+
+    // Ensure drivers exist (Hamilton P1, Verstappen P2, Leclerc P3)
+    $driverDefs = [
+        'p1' => [44, 'Hamilton',   'Lewis Hamilton',  'Mercedes'],
+        'p2' => [1,  'Verstappen', 'Max Verstappen',  'Red Bull'],
+        'p3' => [16, 'Leclerc',    'Charles Leclerc', 'Ferrari'],
+    ];
+    $driverIds = [];
+    foreach ($driverDefs as $pos => [$num, $lastName, $fullName, $team]) {
+        $stmt = $db->prepare("SELECT id FROM drivers WHERE LOWER(name) LIKE LOWER(?)");
+        $stmt->execute(['%' . $lastName . '%']);
+        $row = $stmt->fetch();
+        if ($row) {
+            $driverIds[$pos] = $row['id'];
+        } else {
+            $newId = seed_uuid();
+            $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")
+               ->execute([$newId, $fullName, $team, $num]);
+            $driverIds[$pos] = $newId;
+        }
+    }
+    [$hamId, $verId, $lecId] = [$driverIds['p1'], $driverIds['p2'], $driverIds['p3']];
+
+    // Create 3 in-competition users (counted in pool calc)
+    $userIds = [];
+    $hash    = hashPassword('E2EScorePassword2026!');
+    foreach (['alice' => 'E2E Score Alice', 'bob' => 'E2E Score Bob', 'charlie' => 'E2E Score Charlie'] as $key => $displayName) {
+        $id          = seed_uuid();
+        $userIds[$key] = $id;
+        $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, ?, 'user', 1, 0, 0)")
+           ->execute([$id, $e2eEmails[$key], $hash, $displayName]);
+    }
+
+    // Race A: 2019-01-15 (past), result already set, no perfect bet possible with the bets below
+    $poolA   = 30;
+    $raceAId = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size, result_p1, result_p2, result_p3) VALUES (?, 'E2E Score Race A', 'Test Circuit', '2019-01-15', '14:00:00', ?, ?, ?, ?)")
+       ->execute([$raceAId, $poolA, $hamId, $verId, $lecId]);
+
+    // Race B: 2019-01-16 (next day after Race A, no result set yet)
+    // Must be inserted BEFORE calculateRacePoints so it is found as the next race for pool carryover
+    $raceBId = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Score Race B', 'Test Circuit', '2019-01-16', '14:00:00', 0)")
+       ->execute([$raceBId]);
+
+    // Bets for Race A — result is Ham/Ver/Lec, none of these bets are perfect:
+    // Alice:   P1=Ham(correct), P2=Lec(wrong pos), P3=Ver(wrong pos)   → ptsP1+ptsWrong+ptsWrong
+    // Bob:     P1=Ver(wrong pos), P2=Ham(wrong pos), P3=Lec(correct)   → ptsWrong+ptsWrong+ptsP3
+    // Charlie: P1=Lec(wrong pos), P2=Ver(correct), P3=Ham(wrong pos)   → ptsWrong+ptsP2+ptsWrong
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userIds['alice'],   $raceAId, $hamId, $lecId, $verId]);
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userIds['bob'],     $raceAId, $verId, $hamId, $lecId]);
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userIds['charlie'], $raceAId, $lecId, $verId, $hamId]);
+
+    // Bets for Race B — Alice bets perfectly (Ham/Ver/Lec = the result the test will enter):
+    // Alice:   P1=Ham, P2=Ver, P3=Lec → PERFECT → ptsP1+ptsP2+ptsP3
+    // Bob:     P1=Ver(wrong pos), P2=Ham(wrong pos), P3=Lec(correct)   → ptsWrong+ptsWrong+ptsP3
+    // Charlie: P1=Lec(wrong pos), P2=Ver(correct), P3=Ham(wrong pos)   → ptsWrong+ptsP2+ptsWrong
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userIds['alice'],   $raceBId, $hamId, $verId, $lecId]);
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userIds['bob'],     $raceBId, $verId, $hamId, $lecId]);
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userIds['charlie'], $raceBId, $lecId, $verId, $hamId]);
+
+    // Score Race A — awards user points and rolls Race A's pool into Race B
+    calculateRacePoints($raceAId, $hamId, $verId, $lecId);
+
+    // Read back Race B pool (= totalBetters × betSize + poolA, set by calculateRacePoints)
+    $stmt = $db->prepare("SELECT bettingpool_size FROM races WHERE id = ?");
+    $stmt->execute([$raceBId]);
+    $poolBTotal = (int)$stmt->fetch()['bettingpool_size'];
+    $poolB      = $poolBTotal - $poolA; // Race B's own contribution
+
+    // Read user points from DB after Race A scoring → these are ptsAfterReset values
+    $ptsAfterReset = [];
+    foreach ($e2eEmails as $key => $email) {
+        $stmt = $db->prepare("SELECT points FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $ptsAfterReset[$key] = (int)$stmt->fetch()['points'];
+    }
+
+    // Compute expected points after the test scores Race B with result Ham/Ver/Lec
+    $raceBPts = [
+        'alice'   => $ptsP1 + $ptsP2 + $ptsP3,                   // perfect
+        'bob'     => $ptsWrong + $ptsWrong + $ptsP3,              // P3 correct only
+        'charlie' => $ptsWrong + $ptsP2 + $ptsWrong,             // P2 correct only
+    ];
+
+    $expectedPoints = [];
+    foreach (['alice', 'bob', 'charlie'] as $key) {
+        $expectedPoints[] = [
+            'email'         => $e2eEmails[$key],
+            'ptsAfterB'     => $ptsAfterReset[$key] + $raceBPts[$key],
+            'ptsAfterReset' => $ptsAfterReset[$key],
+            'star'          => $key === 'alice',
+        ];
+    }
+
+    echo json_encode([
+        'ok'             => true,
+        'raceAId'        => $raceAId,
+        'raceBId'        => $raceBId,
+        'driverIds'      => $driverIds,
+        'expectedPoints' => $expectedPoints,
+        'poolA'          => $poolA,
+        'poolB'          => $poolB,
+    ]);
+    exit;
+}
+
+// Action: cleanup_score_race — removes all data created by seed_score_race
+if (($_GET['action'] ?? '') === 'cleanup_score_race') {
+    $e2eEmails = [
+        'e2e_score_alice_f1@mailsac.com',
+        'e2e_score_bob_f1@mailsac.com',
+        'e2e_score_charlie_f1@mailsac.com',
+    ];
+    foreach ($e2eEmails as $email) {
+        $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$email]);
+        $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$email]);
+        $db->prepare("DELETE FROM users WHERE email = ?")->execute([$email]);
+    }
+    $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B'))");
+    $db->query("DELETE FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B')");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Reset to known state — settings table is preserved
 $db->query("UPDATE settings SET bet_size = 10");
 $db->query("DELETE FROM bets");
