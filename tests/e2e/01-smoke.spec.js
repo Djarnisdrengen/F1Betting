@@ -89,8 +89,23 @@ test.describe("Protected pages", () => {
         await expect(page.locator(".card").first()).toBeVisible();
     });
 
+});
+
+// ─── Logout ───────────────────────────────────────────────────────────────────
+// Uses a fresh login (not the shared admin session) so that logging out does
+// not destroy the PHP session stored in .auth/admin.json, which all subsequent
+// admin specs depend on.
+
+test.describe("Logout", () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
     test("logout clears session and shows login button", async ({ page }) => {
-        await page.goto("/");
+        await page.goto("/login.php");
+        await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL);
+        await page.fill('input[name="password"]', process.env.TEST_USER_PASSWORD);
+        await page.click('button[type="submit"]');
+        await page.waitForURL(/index\.php/);
+
         await page.click('.desktop-only a[href="logout.php"]');
         await page.waitForURL(/index\.php/);
         await expect(page.locator('.desktop-only a[href="login.php"]')).toBeVisible();
