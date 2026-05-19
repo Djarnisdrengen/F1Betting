@@ -753,17 +753,21 @@ if (($_GET['action'] ?? '') === 'seed_score_race') {
            ->execute([$id, $e2eEmails[$key], $hash, $displayName]);
     }
 
-    // Race A: 2019-01-15 (past), result already set, no perfect bet possible with the bets below
-    $poolA   = 30;
-    $raceAId = seed_uuid();
-    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size, result_p1, result_p2, result_p3) VALUES (?, 'E2E Score Race A', 'Test Circuit', '2019-01-15', '14:00:00', ?, ?, ?, ?)")
-       ->execute([$raceAId, $poolA, $hamId, $verId, $lecId]);
+    // Race A: +400 days from now, result already set, no perfect bet possible with the bets below.
+    // Using far-future dates so that Race B (after its result is entered in the test) becomes
+    // the most-recently dated completed race — required for the reset button to appear on Race B.
+    $raceADate = (new DateTime('+400 days'))->format('Y-m-d');
+    $poolA     = 30;
+    $raceAId   = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size, result_p1, result_p2, result_p3) VALUES (?, 'E2E Score Race A', 'Test Circuit', ?, '14:00:00', ?, ?, ?, ?)")
+       ->execute([$raceAId, $raceADate, $poolA, $hamId, $verId, $lecId]);
 
-    // Race B: 2019-01-16 (next day after Race A, no result set yet)
-    // Must be inserted BEFORE calculateRacePoints so it is found as the next race for pool carryover
-    $raceBId = seed_uuid();
-    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Score Race B', 'Test Circuit', '2019-01-16', '14:00:00', 0)")
-       ->execute([$raceBId]);
+    // Race B: day after Race A. Must be inserted BEFORE calculateRacePoints so it is found
+    // as the next race for pool carryover. No result set — test enters it via admin UI.
+    $raceBDate = (new DateTime('+401 days'))->format('Y-m-d');
+    $raceBId   = seed_uuid();
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Score Race B', 'Test Circuit', ?, '14:00:00', 0)")
+       ->execute([$raceBId, $raceBDate]);
 
     // Bets for Race A — result is Ham/Ver/Lec, none of these bets are perfect:
     // Alice:   P1=Ham(correct), P2=Lec(wrong pos), P3=Ver(wrong pos)   → ptsP1+ptsWrong+ptsWrong
