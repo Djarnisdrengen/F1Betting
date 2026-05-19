@@ -64,7 +64,8 @@ test.describe("Protected pages", () => {
 
     test("authenticated index visible", async ({ page }) => {
         await page.goto("/");
-        await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
+        await page.click('.hf-hamburger');
+        await expect(page.locator('a[href="logout.php"]')).toBeVisible();
     });
 
     test("rules page accessible", async ({ page }) => {
@@ -106,8 +107,10 @@ test.describe("Logout", () => {
         await page.click('button[type="submit"]');
         await page.waitForURL(/index\.php/);
 
-        await page.click('.desktop-only a[href="logout.php"]');
+        await page.click('.hf-hamburger');
+        await page.click('a[href="logout.php"]');
         await page.waitForURL(/index\.php/);
-        await expect(page.locator('.desktop-only a[href="login.php"]')).toBeVisible();
+        await page.click('.hf-hamburger');
+        await expect(page.locator('a[href="login.php"]')).toBeVisible();
     });
 });
