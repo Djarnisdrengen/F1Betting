@@ -693,9 +693,10 @@ if (($_GET['action'] ?? '') === 'cleanup_auth_user') {
 }
 
 // Action: seed_score_race — two-race scoring fixture
-// Race A: past (2019-01-15), result set (Ham/Ver/Lec), no perfect bet → pool carries to Race B
-// Race B: past+1d (2019-01-16), bets placed, no result set → test enters result via admin UI
-// Using 2019 dates so Race B is guaranteed to be the next DB race after Race A (app data starts 2024+)
+// Race A: +400 days from now, result set (Ham/Ver/Lec), no perfect bet → pool carries to Race B
+// Race B: +401 days from now, bets placed, no result set → test enters result via admin UI
+// Far-future dates ensure Race B is the most-recently dated completed race after result is entered,
+// which is required for the reset button to appear on Race B and not on Race A.
 // Returns: { ok, raceAId, raceBId, driverIds: {p1,p2,p3},
 //           expectedPoints: [{email, ptsAfterB, ptsAfterReset, star}], poolA, poolB }
 if (($_GET['action'] ?? '') === 'seed_score_race') {
