@@ -182,7 +182,7 @@ test.describe("Cron jobs", () => {
 
         test('betting-open email delivered to in-competition inbox', async ({ page }) => {
             test.skip(!MAILSAC_API_KEY, 'MAILSAC_API_KEY not set — skipping real-send assertion');
-            test.setTimeout(60000);
+            test.setTimeout(90000);
 
             const inbox = 'e2e_notify_open_in_f1@mailsac.com';
             const baseline = new Set(
@@ -190,8 +190,11 @@ test.describe("Cron jobs", () => {
             );
 
             await page.goto(`/cron/notifications.php?token=${CRON_SECRET}`);
+            const cronText = await page.textContent('body');
+            // Confirm the cron actually dispatched the email before polling Mailsac
+            expect(cronText, `Cron output:\n${cronText}`).toContain(`Sent open notification to: ${inbox}`);
 
-            const msgs = await waitForNewMessages(inbox, baseline, 1, MAILSAC_API_KEY, { timeout: 30000 });
+            const msgs = await waitForNewMessages(inbox, baseline, 1, MAILSAC_API_KEY, { timeout: 45000 });
             const from = (msgs[0].from ?? []).map(f => f.address).join(' ');
             expect(from).toContain('formula-1.dk');
         });
