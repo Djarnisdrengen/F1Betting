@@ -5,7 +5,7 @@
     
     <footer class="footer">
         <div class="container">
-            <p>&copy; 1996-<?= date("Y") ?> - <?= t('contact') ?> info@<?= SITE_DOMAIN ?></p>
+            <p>&copy; 1996-<?= date("Y") ?> - <?= t('contact') ?> info@<?= preg_replace('/^www\./', '', SITE_DOMAIN) ?></p>
         </div>
 
     </footer>
