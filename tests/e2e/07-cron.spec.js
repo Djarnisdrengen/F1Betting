@@ -1,7 +1,10 @@
 const { test, expect } = require("@playwright/test");
+const seed = require('../helpers/seed');
+const { getMessages, waitForNewMessages } = require('../helpers/mailsac');
 
 const SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN;
 const CRON_SECRET = process.env.CRON_SECRET;
+const MAILSAC_API_KEY = process.env.MAILSAC_API_KEY;
 
 // ─── Cron jobs ────────────────────────────────────────────────────────────────
 
@@ -159,6 +162,70 @@ test.describe("Cron jobs", () => {
             expect(text).not.toContain(`Sent closing notification to: ${seedData.emailBetted}`);
 
             expect(text).toContain("Notification check complete");
+        });
+    });
+
+    // ─── Notifications — betting just opened (real send) ─────────────────────
+    // Runs the cron without ?test=true so a real email is sent to the Mailsac
+    // inbox of the seeded in-competition user. Skips if MAILSAC_API_KEY is absent.
+    // Uses waitForNewMessages (baseline approach) — inbox is non-owned, cannot purge.
+
+    test.describe.serial('notifications — betting just opened (real send)', () => {
+        test.beforeAll(async () => {
+            await seed.cleanup.notifyOpen();
+            await seed.notifyOpen();
+        });
+
+        test.afterAll(async () => {
+            await seed.cleanup.notifyOpen();
+        });
+
+        test('betting-open email delivered to in-competition inbox', async ({ page }) => {
+            test.skip(!MAILSAC_API_KEY, 'MAILSAC_API_KEY not set — skipping real-send assertion');
+            test.setTimeout(90000);
+
+            const inbox = 'e2e_notify_open_in_f1@mailsac.com';
+            const baseline = new Set(
+                (await getMessages(inbox, MAILSAC_API_KEY)).map(m => m._id)
+            );
+
+            await page.goto(`/cron/notifications.php?token=${CRON_SECRET}`);
+            const cronText = await page.textContent('body');
+            // Confirm the cron actually dispatched the email before polling Mailsac
+            expect(cronText, `Cron output:\n${cronText}`).toContain(`Sent open notification to: ${inbox}`);
+
+            const msgs = await waitForNewMessages(inbox, baseline, 1, MAILSAC_API_KEY, { timeout: 45000 });
+            const from = (msgs[0].from ?? []).map(f => f.address).join(' ');
+            expect(from).toContain('formula-1.dk');
+        });
+    });
+
+    // ─── Notifications — betting closing soon (real send) ────────────────────
+
+    test.describe.serial('notifications — betting closing soon (real send)', () => {
+        test.beforeAll(async () => {
+            await seed.cleanup.notifyClose();
+            await seed.notifyClose();
+        });
+
+        test.afterAll(async () => {
+            await seed.cleanup.notifyClose();
+        });
+
+        test('betting-close email delivered to unbetted inbox', async ({ page }) => {
+            test.skip(!MAILSAC_API_KEY, 'MAILSAC_API_KEY not set — skipping real-send assertion');
+            test.setTimeout(60000);
+
+            const inbox = 'e2e_notify_close_a_f1@mailsac.com';
+            const baseline = new Set(
+                (await getMessages(inbox, MAILSAC_API_KEY)).map(m => m._id)
+            );
+
+            await page.goto(`/cron/notifications.php?token=${CRON_SECRET}`);
+
+            const msgs = await waitForNewMessages(inbox, baseline, 1, MAILSAC_API_KEY, { timeout: 30000 });
+            const from = (msgs[0].from ?? []).map(f => f.address).join(' ');
+            expect(from).toContain('formula-1.dk');
         });
     });
 });

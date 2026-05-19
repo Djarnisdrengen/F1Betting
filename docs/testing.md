@@ -1,20 +1,23 @@
 # Testing
 
-The project has four test types. They run against the deployed site over HTTP — there is no local test server.
+All tests run against the deployed site over HTTP — there is no local test server.
 
 ---
 
 ## Overview
 
-| Command | Type | What it checks | Target |
-|---|---|---|---|
-| `npm run test:smoke` | HTTP | Key pages return 200 and render expected content | test or live |
-| `npm run test:unit` | Node | mailer transport logic (no network) | local |
-| `npm run test:e2e:test` | Playwright | Login, navigation, UI, user flows | test |
-| `npm run test:e2e:live` | Playwright | Public pages + login only | live |
-| `npm run test:integration` | Playwright | Points, leaderboard, pool size | test only |
-| `npm run test:security` | HTTP/TLS | OWASP headers, cookies, access control | test |
-| `npm run test:security:live` | HTTP/TLS | Same | live |
+| Command | Stack | What it checks | Target | Duration |
+|---|---|---|---|---|
+| `npm run test:smoke` | B | Key pages return 200 and contain expected content | test or live | ~5s |
+| `npm run test:unit` | B | Mailer transport logic (no network) | local | ~1s |
+| `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery | test | ~5–10 min |
+| `npm run test:e2e:live` | A | `01-smoke.spec.js` only — read-only live health check | live | ~30s |
+| `npm run test:email:preview` | B | Sends all 16 email types to Mailsac for manual visual review | test | ~2 min |
+| `npm run test:security` | B | OWASP headers, cookies, access control, CWE Top 25 | test or live | ~30s |
+| `npm run test:all` | B+A | smoke + unit + e2e:test | test | ~10 min |
+
+Stack A = Playwright (browser-based, reads config via `playwright.config.js`).
+Stack B = standalone Node scripts (read config directly from `php-config.js`, fall back to `process.env` on GitHub Actions).
 
 ---
 
@@ -24,14 +27,14 @@ The project has four test types. They run against the deployed site over HTTP �
 npm run test:smoke
 ```
 
-Fires HTTP GET requests and asserts pages return 200 and contain expected content. Fast (seconds), no browser.
+Fires HTTP GET requests, asserts 200 and content. Fast, no browser, no seeds.
 
 **Unauthenticated checks:**
 
 | Page | Asserts |
 |---|---|
 | `/` | HTML renders |
-| `/login.php` | Email input present; Danish label "Adgangskode" visible (default language DA) |
+| `/login.php` | Email input present; "Adgangskode" label visible (default language DA) |
 | `/leaderboard.php` | Page contains "leaderboard" |
 | `/races.php` | HTML renders |
 
@@ -39,10 +42,8 @@ Fires HTTP GET requests and asserts pages return 200 and contain expected conten
 
 | Page | Asserts |
 |---|---|
-| `/profile.php` | Betting history heading visible (DA: "Din Betting Historik" or EN: "Betting History") |
-| `/profile.php` | Change-password heading visible (DA: "Skift Adgangskode" or EN: "Change Password") |
-
-Both checks accept either language because the admin user's preferred language is stored in the database and may be set to English.
+| `/profile.php` | Betting history heading visible (DA or EN) |
+| `/profile.php` | Change-password heading visible (DA or EN) |
 
 Runs automatically at the end of every `deploy:test` and `deploy:live`.
 
@@ -51,20 +52,31 @@ Runs automatically at the end of every `deploy:test` and `deploy:live`.
 ## E2E Tests (Playwright)
 
 ```bash
-npm run test:e2e:test    # against test env
-npm run test:e2e:live    # against live env (smoke.spec.js only)
+npm run test:e2e:test    # full suite against test env
+npm run test:e2e:live    # 01-smoke.spec.js only, against live
 ```
 
-Runs browser tests using Chromium. Config is in `tests/playwright.config.js`. Screenshots on failure are saved to `build-deploy/screenshots/`.
+Config: `tests/playwright.config.js`. Screenshots on failure: `build-deploy/screenshots/`.
 
-**On test:** all spec files run.
-**On live:** `smoke.spec.js` only.
+**On test:** all `tests/e2e/**/*.spec.js` and `tests/e2e/admin/**/*.spec.js` files matching the numbered glob are run.
+**On live:** `01-smoke.spec.js` only.
+
+### Architecture layers
+
+```
+tests/fixtures/index.js      — Playwright fixture: adminPage (applies admin storageState)
+tests/helpers/seed.js        — typed wrappers for all test-seed.php actions (Node fetch, no browser)
+tests/helpers/mailsac.js     — Mailsac polling: waitForMessages, waitForNewMessages, assertDelivered
+tests/helpers/markers.js     — parses e2e_markers strings emitted by admin.php in test mode
+```
+
+`seed.js` is Stack A only — it reads `process.env.BASE_URL` set by `playwright.config.js`. Do not import it from standalone scripts.
 
 ---
 
-### `smoke.spec.js`
+### `01-smoke.spec.js`
 
-Runs on both test and live.
+Runs on both test and live. No seeds.
 
 **Public pages**
 
@@ -72,148 +84,63 @@ Runs on both test and live.
 |---|---|
 | Pages load | `/`, `/login.php`, `/leaderboard.php`, `/races.php` all return 200 |
 | Login form renders | Email and password inputs visible |
-| Leaderboard has rows with non-zero points | At least one `tbody tr` visible and first row contains a non-zero number |
+| Leaderboard has rows | At least one `tbody tr` visible with non-zero points |
 | Races page loads | Body visible |
-| Index page shows at least one race card | `.race-card` element visible on homepage |
+| Index page renders upcoming races section | `.races-section` element visible |
 
 **Translations**
 
 | Test | Asserts |
 |---|---|
 | Default language is Danish | Submit button reads "Log ind"; "Adgangskode" label visible |
-| Language toggle DA ↔ EN | Toggle switches button text between "Log ind" and "Login"; state restored after test |
+| Language toggle DA ↔ EN | Button text switches between "Log ind" and "Login" |
 
 **Protected pages**
 
 | Test | Asserts |
 |---|---|
-| Login succeeds | Admin credentials → redirects to `index.php` |
 | Authenticated index | Logout link visible in desktop nav |
-| Rules page accessible | `/rules.php` returns 200 |
-| Bet page accessible | `/bet.php` returns 200 |
-| Profile page shows all section headings | Edit Profile, Change Password, and Betting History headings visible (DA or EN accepted) |
-| Admin panel loads with races tab | `/admin.php?tab=races` renders at least one card |
-| Logout | Clicking logout → redirects to `index.php` → login link visible in desktop nav |
+| Rules page | `/rules.php` returns 200 |
+| Bet page | `/bet.php` returns 200 |
+| Profile page | Edit Profile, Change Password, and Betting History headings visible |
+| Admin panel | `/admin.php?tab=races` renders at least one card |
+| Logout | Clicking logout → login link visible |
 
 ---
 
-### `admin.spec.js`
+### `02-auth.spec.js`
 
-Test env only. Uses the admin account. Several sub-groups use `test-seed.php` for setup/teardown.
+Test env only. Serial. Seeds a dedicated user (`seed.authUser()` / `seed.cleanup.authUser()`). Real forgot-password email sent and asserted via Mailsac.
 
-**Race management**
-
-| Test | Asserts |
-|---|---|
-| Create race | Form submission → success alert; race card appears |
-| Delete race | Confirm-modal delete → URL contains `msg=deleted`; race card gone |
-
-**Driver management**
+**Login**
 
 | Test | Asserts |
 |---|---|
-| Create driver | Form submission → success alert; driver card appears |
-| Delete driver | Confirm-modal delete → URL contains `msg=deleted`; driver card gone |
+| Wrong password | Error alert visible |
+| Correct credentials | Redirect to `index.php` |
 
-**Invite management** (serial, seeded cleanup — real email sent)
-
-| Test | Asserts |
-|---|---|
-| Create invite | Email submitted → success alert; `[invite-sent] true` confirms SMTP/Resend accepted; invite card appears; Mailsac delivery asserted (from `info@formula-1.dk`; body contains `/register.php?token=`) |
-| Delete invite | Confirm-modal delete → invite card gone |
-
-**Reset race result** (serial, seeded)
+**Forgot password**
 
 | Test | Asserts |
 |---|---|
-| Reset button visible | Admin sees reset button on most-recently-completed race |
-| Reset clears data | After reset: race result labels gone, reset button gone, user points back to 0 |
+| Form renders | Forgot-password form visible |
+| Unknown email | Success message shown; no user enumeration |
+| Known email | `[reset-sent] true` marker; Mailsac delivery asserted |
+| Reset via token link | Navigate to reset link from marker; set new password; login succeeds |
 
-**Bet deletion notification** (serial, seeded — bet owner created with `language=en`)
-
-| Test | Asserts |
-|---|---|
-| Admin deletes bet and notification email sent | Bet-delete button triggers confirm modal; after confirm, redirect contains `tab=bets`; `[bet-deleted-to]` marker matches seeded user's email; `[bet-deleted-race]` matches race name; `[bet-deleted-lang] en` confirms email uses bet owner's language, not the admin's; `[bet-deleted-sent] true` confirms real email sent; Mailsac delivery asserted (from `info@formula-1.dk`) |
-
-**User management** (serial, seeded — user created with `language=en`)
+**Password change via profile**
 
 | Test | Asserts |
 |---|---|
-| Toggle in-competition | Button state flips between "In Competition" and "Not In Competition" |
-| Toggle admin role | Badge cycles `user → admin → user` |
-| Admin sets user password | New password accepted → success alert; `[admin-reset-lang] en` marker confirms email sent in target user's language, not the admin's; `[admin-reset-sent] true` confirms real email sent; Mailsac delivery asserted (from `info@formula-1.dk`) |
-| Update display name | User logs in with new password, updates display name → success alert; input reflects new name |
-| Delete user | Confirm-modal delete → user card gone |
+| Wrong current password | Error alert visible |
+| Mismatched confirm | Error alert visible |
+| Correct inputs | Success alert visible |
 
 ---
 
-### `cron.spec.js`
+### `03-registration.spec.js`
 
 Test env only.
-
-**Import qualifying** (serial, seeded)
-
-| Test | Asserts |
-|---|---|
-| Unauthorized without token | Response body contains "Unauthorized access" |
-| Test mode imports results | Response contains "[SUCCESS] Updated qualifying results" and "Total races updated: 1" |
-
-**Notifications — access control**
-
-| Test | Asserts |
-|---|---|
-| Unauthorized without token | Response body contains "Unauthorized access" |
-| Authorized with cron secret | Response contains "Notification check complete" |
-
-**Notifications — betting just opened** (serial, seeded — race 47 h 30 min away, 48 h window, pool 150 kr; both seeded users have `language=en`)
-
-| Test | Asserts |
-|---|---|
-| In-competition user notified; non-competing user and pending invite get pool reminder | "Betting opened for: E2E Notify Open Race" present; competing user gets open notification; non-competing user gets pool reminder (not open notification); pending invite gets pool reminder; `[pool] 150` and `[cta] …` present; non-competing CTA contains `leaderboard.php`; invite CTA contains `register.php?token=…`; `[lang] en` confirms emails use each registered user's stored language preference |
-
-**Notifications — betting closing soon** (serial, seeded — race 2 h 30 min away; unbetted user has `language=en`)
-
-| Test | Asserts |
-|---|---|
-| Unbetted user notified, user with existing bet skipped | "Betting closing soon for: E2E Notify Close Race" present; unbetted user's email present; `[lang] en` confirms email uses user's stored language; betted user's email absent |
-
-All notification scenario tests use `?test=true` so SMTP is skipped — the logic and output are identical to a live run but no emails are actually sent.
-
----
-
-### `betting.spec.js`
-
-Test env only. Serial. Seeds a dedicated race (open, 2 h from now, 48 h window) and a user with `in_competition = 1`.
-
-| Test | Asserts |
-|---|---|
-| Place a bet | Select P1/P2/P3, submit → redirect to `index.php?success=bet_placed` → success alert visible |
-| Attempt to bet again | Going to bet.php with existing bet → redirects to URL containing `already_bet` |
-| Edit a bet | Edit link visible on index; swap P1/P3, submit → redirect to `index.php?success=bet_updated` → success alert visible |
-| Duplicate driver validation | Submitting same driver in two positions → error alert visible on edit form |
-
----
-
-### `profile.spec.js`
-
-Test env only. Serial. Seeds a dedicated test user.
-
-| Test | Asserts |
-|---|---|
-| Empty bet history | No-bets-yet card body visible |
-| Wrong current password | Error alert visible |
-| Mismatched new passwords | Error alert visible |
-| Correct password change | Success alert visible |
-| Login with new password | Logout link visible after logging in with the changed password |
-| Language — switch to English | Select English in profile form, save → success alert; "Edit Profile" heading visible |
-| Language — survives re-login | Log out and back in → profile page still in English (loaded from DB) |
-| Language — switch back to Danish | Select Danish, save → success alert; "Rediger Profil" heading visible |
-
----
-
-### `registration.spec.js`
-
-Test env only. Invalid-token tests are independent; valid-invite flow is serial and seeded.
 
 **Invalid token**
 
@@ -226,29 +153,164 @@ Test env only. Invalid-token tests are independent; valid-invite flow is serial 
 
 | Test | Asserts |
 |---|---|
-| Form pre-fills email | Email field matches invite email; password input visible |
-| Successful registration | Submit → redirect to `index.php?success=welcome` → logout link visible (auto-logged in) |
-| Used token rejected | Revisiting same token URL → error alert visible; password input absent |
+| Form pre-fills email | Email matches invite; password input visible |
+| Successful registration | Redirect to `index.php?success=welcome`; logout link visible |
+| Used token rejected | Same token URL → error alert |
 
 ---
 
-## Integration Tests (`tests/e2e/integration.spec.js`)
+### `04-betting.spec.js`
+
+Test env only. Serial. Seeds a race and in-competition user (`seed.bettingRace()`).
+
+| Test | Asserts |
+|---|---|
+| Place a bet | Submit → redirect to `index.php?success=bet_placed`; success alert |
+| Attempt to bet again | Redirect contains `already_bet` |
+| Edit a bet | Swap P1/P3 → redirect to `index.php?success=bet_updated`; success alert |
+| Duplicate driver | Same driver in two positions → validation error |
+
+---
+
+### `05-profile.spec.js`
+
+Test env only. Serial. Seeds a dedicated user (`seed.e2eUser()`).
+
+| Test | Asserts |
+|---|---|
+| Empty bet history | No-bets card visible |
+| Wrong current password | Error alert |
+| Mismatched new passwords | Error alert |
+| Correct password change | Success alert |
+| Login with new password | Logout link visible |
+| Language — switch to English | "Edit Profile" heading visible |
+| Language — survives re-login | Profile still in English after logout/login |
+| Language — switch back to Danish | "Rediger Profil" heading visible |
+
+---
+
+### `06-emails.spec.js`
+
+Test env only. Verifies the SMTP/Resend config page. No email-sending assertions (those live in the spec that triggers the action).
+
+| Test | Asserts |
+|---|---|
+| Unauthenticated access denied | Body contains "Access denied" |
+| Admin can access page | HTTP 200 |
+| Config table shows required keys | SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_FROM_EMAIL, RESEND_API_KEY visible |
+| RESEND_API_KEY is configured | Row shows masked value; "Not defined" absent |
+
+---
+
+### `07-cron.spec.js`
+
+Test env only.
+
+**Import qualifying** (serial, seeded)
+
+| Test | Asserts |
+|---|---|
+| Unauthorized without token | "Unauthorized access" in body |
+| Test mode imports results | "[SUCCESS] Updated qualifying results"; "Total races updated: 1" |
+
+**Notifications — access control**
+
+| Test | Asserts |
+|---|---|
+| Unauthorized without token | "Unauthorized access" in body |
+| Authorized with CRON_SECRET | "Notification check complete"; no "FAILED to send" |
+
+**Notifications — betting just opened** (serial, seeded, `?test=true`)
+
+| Test | Asserts |
+|---|---|
+| In-competition user notified; others get pool reminder | "Betting opened for: E2E Notify Open Race"; competing user sent open notification; non-competing user sent pool reminder; pending invite sent pool reminder with registration link; `[pool] 150`; `[lang] en` |
+
+**Notifications — betting closing soon** (serial, seeded, `?test=true`)
+
+| Test | Asserts |
+|---|---|
+| Unbetted user notified; betted user skipped | "Betting closing soon for: E2E Notify Close Race"; unbetted user in output; betted user absent; `[lang] en` |
+
+**Notifications — betting just opened (real send)** (serial, seeded)
+
+Runs real cron without `?test=true`. Skips if `MAILSAC_API_KEY` absent.
+
+| Test | Asserts |
+|---|---|
+| Betting-open email delivered to in-competition inbox | Cron output confirms send; Mailsac `e2e_notify_open_in_f1@mailsac.com` receives 1 message from `formula-1.dk` |
+
+**Notifications — betting closing soon (real send)** (serial, seeded)
+
+| Test | Asserts |
+|---|---|
+| Betting-close email delivered to unbetted inbox | Cron output confirms send; Mailsac `e2e_notify_close_a_f1@mailsac.com` receives 1 message from `formula-1.dk` |
+
+---
+
+### `admin/10-content.spec.js`
+
+Test env only. Admin auth applied via fixture.
+
+| Test | Asserts |
+|---|---|
+| Create and delete a race | Form → success alert; race card appears; delete → card gone |
+| Create and delete a driver | Form → success alert; driver card appears; delete → card gone |
+
+---
+
+### `admin/11-invites.spec.js`
+
+Test env only. Real invite email sent and asserted via Mailsac.
+
+| Test | Asserts |
+|---|---|
+| Invite a user and delete | Success alert; `[invite-sent] true`; Mailsac delivery asserted; delete → invite gone |
+
+---
+
+### `admin/12-users.spec.js`
+
+Test env only. Serial. Seeds a user (`seed.e2eUser(language=en)`). Real emails sent for password reset.
+
+| Test | Asserts |
+|---|---|
+| Toggle in competition | Button state flips |
+| Toggle admin role | Badge cycles `user → admin → user` |
+| Set password | Success alert; `[admin-reset-lang] en`; `[admin-reset-sent] true`; Mailsac delivery asserted |
+| Update display name | User logs in, updates name → success alert; input reflects new name |
+| Delete user | Confirm-modal delete → user card gone |
+
+---
+
+### `admin/13-scoring.spec.js`
+
+Test env only. Serial. Seeds two races and 3 users (`seed.scoreRace()` / `seed.cleanup.scoreRace()`).
+
+Race A: future date, result already set by seed (no perfect bet, pool carries to Race B).
+Race B: day after Race A, no result yet — test enters it via admin UI.
+
+| Test | Asserts |
+|---|---|
+| Enter Race B result via admin | Select P1/P2/P3 → success alert |
+| Leaderboard points after Race B | Each user's total points matches expected from seed |
+| Star badge for perfect bet | Alice's leaderboard row shows star badge |
+| Race B pool includes Race A carryover | `poolA + poolB` shown on Race B card |
+| Race A pool unchanged | `poolA` shown on Race A card |
+| Reset button scope | Race A: no reset button; Race B: reset button visible |
+| Reset Race B | Confirm → Race B result gone, reset button gone; leaderboard rolled back to Race A baseline |
+
+---
+
+## Email Preview (`tests/email-preview.js`)
 
 ```bash
-npm run test:integration
+npm run test:email:preview
 ```
 
-**Never run against live.** Calls `tools/test-seed.php` to replace the test database with 5 races of deterministic data (3 users, 10 drivers, 15 bets), then verifies scoring correctness.
+Standalone Stack B script. Calls `test-seed.php?action=send_email_preview` which sends all 8 email types in DA + EN (16 total) to `MAILSAC_INBOX`. Prints a formatted summary of every email (name, to, subject, extra fields). Not pass/fail — exit 0 always. Use it for manual visual review of email templates after copy or layout changes.
 
-**Scope:**
-
-| Area | Asserts |
-|---|---|
-| Leaderboard order | Alice (220 pts, 1 star) → Bob (140 pts) → Charlie (65 pts) |
-| Per-user points per race | Correct points awarded for each bet outcome |
-| Betting pool sizes | Race 2: 60 kr, Race 3: 90 kr, Race 4: 30 kr, Race 5: 60 kr |
-
-Config is in `tests/playwright.integration.config.js`. Seed token is read from `config.test.php`.
+Open `MAILSAC_INBOX` (`f1betting-preview@mailsac.com`) in the Mailsac web UI to inspect the rendered emails.
 
 ---
 
@@ -285,19 +347,19 @@ npm run test:security:live:full
 
 **Section D — Access Control**
 
-- `public/logs/` directory not browsable (non-200 response)
+- `public/logs/` directory not browsable
 - `config.php` not directly accessible
-- `tools/test-seed.php` blocked without valid token (returns 403); also blocked on live regardless of token (`APP_ENV` guard)
+- `tools/test-seed.php` blocked without valid token; also blocked on live regardless of token (`APP_ENV` guard)
 - Admin endpoints reject non-admin users
 
 **Section E — CSRF**
 
-- Login and other POST forms contain a hidden CSRF token field
+- Login and POST forms contain a hidden CSRF token field
 
 **Section F — Information Disclosure**
 
 - No PHP error messages or stack traces in HTTP responses
-- No sensitive keywords (passwords, tokens) in page source
+- No sensitive keywords in page source
 
 **Section H — Outdated Components**
 
@@ -305,7 +367,7 @@ npm run test:security:live:full
 
 **Section I — Account Enumeration**
 
-- Login error responses are identical for unknown email vs. wrong password (no user enumeration)
+- Login error responses identical for unknown email vs. wrong password
 
 **Section J — DNS Security**
 
@@ -314,75 +376,72 @@ npm run test:security:live:full
 
 **Section K — Application Hardening**
 
-- Unauthenticated POST to protected endpoints is blocked
-- Change-password endpoint requires correct current password (CWE-620)
+- Unauthenticated POST to protected endpoints blocked
+- Change-password requires correct current password (CWE-620)
 - External scripts checked for `integrity` (SRI) attributes
-- Session fixation: session ID rotates on login
+- Session ID rotates on login (session fixation prevention)
 
 **Section L — CWE Top 25**
 
 | CWE | Check |
 |---|---|
-| CWE-89 (SQL Injection) | Login form with SQL payloads → no DB errors in response |
+| CWE-89 (SQL Injection) | Login form with SQL payloads → no DB errors |
 | CWE-79 (Reflected XSS) | Query-string injection → payload not reflected unescaped |
-| CWE-22 (Path Traversal) | `../` sequences in inputs → no `/etc/passwd` content in response |
+| CWE-22 (Path Traversal) | `../` sequences → no `/etc/passwd` content |
 | CWE-287 (Improper Auth) | Empty credentials → login rejected |
 | CWE-269 (Privilege Escalation) | Regular user cannot access admin endpoints |
 | CWE-434 (File Upload) | No unprotected file upload inputs exposed |
 
-**Rate-limit test** *(optional)*: sends 6 rapid failed login attempts and expects `429`. Only enable if the scan IP is not already blocked.
+**Rate-limit test** *(optional)*: 6 rapid failed login attempts → expects `429`.
+**SSL Labs** *(optional)*: Qualys SSL Labs API TLS grade. Takes 60–90s.
 
-**SSL Labs** *(optional)*: queries Qualys SSL Labs API for a full TLS grade. Requires internet access, takes 60–90 s.
-
-Reports are saved to `build-deploy/security-reports/` as `.md` and `.json`. The two most recent reports per environment are kept.
-
----
-
-## Running everything
-
-```bash
-npm run test:all    # smoke + unit + e2e (same as what deploy:live runs automatically)
-```
+Reports saved to `build-deploy/security-reports/` as `.md` and `.json` (two most recent per environment).
 
 ---
 
 ## Test Email Addresses
 
-All seeded test users use `@mailsac.com` addresses. Any email triggered to a test user lands in a Mailsac inbox — visible at mailsac.com — rather than disappearing into a dead-end domain.
+All seeded test users use `@mailsac.com` addresses. Emails triggered during tests land in readable Mailsac inboxes rather than disappearing.
 
 | Address | Used by |
 |---|---|
-| `e2e_testing_testuser_f1@mailsac.com` | `admin.spec.js`, `profile.spec.js` |
-| `e2e_testing_invite_f1@mailsac.com` | `admin.spec.js` |
-| `e2e_reset_race_f1@mailsac.com` | `admin.spec.js` |
-| `e2e_bet_user_f1@mailsac.com` | `betting.spec.js` |
-| `e2e_register_f1@mailsac.com` | `registration.spec.js` |
-| `e2e_notify_open_in_f1@mailsac.com` | `cron.spec.js` — in-competition user |
-| `e2e_notify_open_out_f1@mailsac.com` | `cron.spec.js` — non-competing user |
-| `e2e_notify_open_invite_f1@mailsac.com` | `cron.spec.js` — pending invite |
-| `e2e_notify_close_a_f1@mailsac.com` | `cron.spec.js` — unbetted user |
-| `e2e_notify_close_b_f1@mailsac.com` | `cron.spec.js` — betted user |
-| `e2e_bet_delete_f1@mailsac.com` | `admin.spec.js` — bet deletion notification |
+| `e2e_auth_f1@mailsac.com` | `02-auth.spec.js` — forgot-password reset email |
+| `e2e_register_f1@mailsac.com` | `03-registration.spec.js` |
+| `e2e_bet_user_f1@mailsac.com` | `04-betting.spec.js` |
+| `e2e_testing_testuser_f1@mailsac.com` | `admin/12-users.spec.js` — admin password reset |
+| `e2e_testing_invite_f1@mailsac.com` | `admin/11-invites.spec.js` — invite email |
+| `e2e_bet_delete_f1@mailsac.com` | `admin/12-users.spec.js` — bet deletion notification |
+| `e2e_score_alice_f1@mailsac.com` | `admin/13-scoring.spec.js` |
+| `e2e_score_bob_f1@mailsac.com` | `admin/13-scoring.spec.js` |
+| `e2e_score_charlie_f1@mailsac.com` | `admin/13-scoring.spec.js` |
+| `e2e_notify_open_in_f1@mailsac.com` | `07-cron.spec.js` — in-competition user |
+| `e2e_notify_open_out_f1@mailsac.com` | `07-cron.spec.js` — non-competing user |
+| `e2e_notify_open_invite_f1@mailsac.com` | `07-cron.spec.js` — pending invite |
+| `e2e_notify_close_a_f1@mailsac.com` | `07-cron.spec.js` — unbetted user |
+| `e2e_notify_close_b_f1@mailsac.com` | `07-cron.spec.js` — betted user |
 
-Users synced from live via `sync:live` are also rewritten to `@mailsac.com` (e.g. `thomas@helvegpovlsen.dk` → `thomas@mailsac.com`). The admin account (`F1_ADMIN_EMAIL`) is restored unchanged by both sync and seed scripts.
+Users synced from live via `sync:live` have their email addresses rewritten to `@mailsac.com`. The admin account (`F1_ADMIN_EMAIL`) is restored unchanged.
 
-Mailsac public inboxes are readable by anyone who knows the address. The fixed test addresses above contain no personal data. Synced addresses use real local-parts derived from live user names — treat them as publicly observable.
+### Owned Mailsac inboxes
 
-Four inboxes are **owned** on the Mailsac Indie Plan, which enables inbox purge and reliable message retention:
+Five inboxes are owned on the Mailsac Indie Plan, enabling inbox purge and reliable message retention. All five are purged in parallel at suite start by `global-setup.js`.
 
-| Owned inbox | Purged by | Asserted by |
-|---|---|---|
-| `f1betting-preview@mailsac.com` | `global-setup.js` | `_mail.spec.js` — 16 email types |
-| `e2e_testing_invite_f1@mailsac.com` | `global-setup.js` | `admin.spec.js` — invite email |
-| `e2e_bet_delete_f1@mailsac.com` | `global-setup.js` | `admin.spec.js` — bet deletion email |
-| `e2e_testing_testuser_f1@mailsac.com` | `global-setup.js` | `admin.spec.js` — admin password reset email |
+| Owned inbox | Asserted by |
+|---|---|
+| `f1betting-preview@mailsac.com` | `test:email:preview` — 16 email types |
+| `e2e_auth_f1@mailsac.com` | `02-auth.spec.js` — forgot-password reset email |
+| `e2e_testing_invite_f1@mailsac.com` | `admin/11-invites.spec.js` — invite email |
+| `e2e_bet_delete_f1@mailsac.com` | `admin/12-users.spec.js` — bet deletion email |
+| `e2e_testing_testuser_f1@mailsac.com` | `admin/12-users.spec.js` — admin password reset |
 
-All 4 inboxes are purged in parallel at suite start (`global-setup.js`). The three `admin.spec.js` flows send **real emails** via SMTP/Resend during every test run — visible in Mailsac after the run. Tests assert `[...-sent] true` (SMTP/Resend accepted) then poll Mailsac (20s timeout; emails typically arrive in 5–7s via Resend). Requires `MAILSAC_API_KEY` in `config.test.php` or as a GitHub Actions secret; Mailsac assertions skip cleanly if the key is absent.
+The two real-send cron inboxes (`e2e_notify_open_in_f1`, `e2e_notify_close_a_f1`) are **non-owned**. They use `waitForNewMessages` with a pre-run baseline snapshot instead of purge.
+
+The Mailsac Indie Plan allows 5 owned inboxes — the limit is reached. Any future owned inbox requires a plan upgrade; design new tests to use the baseline-snapshot approach on non-owned inboxes.
 
 ---
 
 ## How tests find credentials
 
-All test scripts use `build-deploy/php-config.js` to read `config.test.php` or `config.live.php` directly. You do not need credentials in `.env` or environment variables when running locally.
+All test scripts use `build-deploy/php-config.js` to read `config.test.php` or `config.live.php` directly. No `.env` file or environment variables needed when running locally.
 
-When running in GitHub Actions (where PHP config files are not available), tests fall back to `process.env` variables that must be set as GitHub secrets. See [GitHub Actions](github-actions.md).
+On GitHub Actions (no PHP config files), tests fall back to `process.env` variables set as GitHub Secrets. See [GitHub Actions](github-actions.md).
