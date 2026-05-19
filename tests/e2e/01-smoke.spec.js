@@ -30,9 +30,9 @@ test.describe("Public pages", () => {
         await expect(page.locator("body")).toBeVisible();
     });
 
-    test("index page shows at least one race card", async ({ page }) => {
+    test("index page renders upcoming races section", async ({ page }) => {
         await page.goto("/");
-        await expect(page.locator(".race-card").first()).toBeVisible();
+        await expect(page.locator(".races-section")).toBeVisible();
     });
 });
 

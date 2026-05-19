@@ -81,10 +81,10 @@ if (isset($_POST['add_race'])) {
     $location = trim($_POST['race_location'] ?? '');
     $date = $_POST['race_date'] ?? '';
     $time = $_POST['race_time'] ?? '';
-    $quali_p1 = $_POST['quali_p1'] ?? null;
-    $quali_p2 = $_POST['quali_p2'] ?? null;
-    $quali_p3 = $_POST['quali_p3'] ?? null;
-    
+    $quali_p1 = $_POST['quali_p1'] ?: null;
+    $quali_p2 = $_POST['quali_p2'] ?: null;
+    $quali_p3 = $_POST['quali_p3'] ?: null;
+
     if ($name && $location && $date && $time) {
         // Validate date format
         $dateObj = DateTime::createFromFormat('Y-m-d', $date);
@@ -109,9 +109,9 @@ if (isset($_POST['update_race'])) {
     $location = trim($_POST['race_location'] ?? '');
     $date = $_POST['race_date'] ?? '';
     $time = $_POST['race_time'] ?? '';
-    $quali_p1 = $_POST['quali_p1'] ?? null;
-    $quali_p2 = $_POST['quali_p2'] ?? null;
-    $quali_p3 = $_POST['quali_p3'] ?? null;
+    $quali_p1 = $_POST['quali_p1'] ?: null;
+    $quali_p2 = $_POST['quali_p2'] ?: null;
+    $quali_p3 = $_POST['quali_p3'] ?: null;
     $result_p1 = $_POST['result_p1'] ?: null;
     $result_p2 = $_POST['result_p2'] ?: null;
     $result_p3 = $_POST['result_p3'] ?: null;
