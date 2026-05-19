@@ -66,8 +66,9 @@ test.describe.serial("Registration — valid invite", () => {
         await page.click('button[type="submit"]');
 
         await page.waitForURL(/success=welcome/);
-        // Should be logged in — logout link visible in desktop controls
-        await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
+        // Should be logged in — logout link visible in drawer
+        await page.click('.hf-hamburger');
+        await expect(page.locator('a[href="logout.php"]')).toBeVisible();
     });
 
     test("used invite token cannot be reused", async ({ page }) => {

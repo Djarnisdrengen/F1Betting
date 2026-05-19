@@ -89,7 +89,8 @@ test.describe.serial("Profile", () => {
         await page.fill('input[name="password"]', NEW_PW);
         await page.click('button[type="submit"]');
         await page.waitForURL(/index\.php/, { timeout: 5000 });
-        await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
+        await page.click('.hf-hamburger');
+        await expect(page.locator('a[href="logout.php"]')).toBeVisible();
         await ctx.close();
     });
 
