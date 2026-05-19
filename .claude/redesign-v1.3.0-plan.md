@@ -26,8 +26,8 @@ Branch: `redesign/v1.3.0`
 3. Add font custom properties to `:root`
 4. Reload app — nothing should look different. Run `npm run test:smoke` — must still pass.
 
-**Gate:** No CSS errors in devtools. All existing pages pixel-identical.
-**Test:** `npm run test:smoke` — no spec changes required.
+**Gate (manual):** Open each page in devtools. Zero CSS errors. No layout shift from baseline. Both themes.
+**Automated test:** `npm run test:smoke` — confirms pages still return 200 and translations load. Cannot detect CSS regressions.
 
 ---
 
@@ -80,8 +80,19 @@ Add to every page **after `</main>` but before `</body>`** — **except `admin.p
 
 Pages: `index.php`, `races.php`, `bet.php`, `edit_bet.php`, `leaderboard.php`, `profile.php`, `rules.php`, `login.php`
 
-**Gate:** AC-SHELL-06 through AC-SHELL-08, AC-THEME-01/02, AC-LANG-01/02, AC-FONT-01.
+**Gate (manual):** AC-SHELL-06 through AC-SHELL-08, AC-THEME-01/02, AC-LANG-01/02, AC-FONT-01 — verified by side-by-side inspection.
 **Test:** `npm run test:e2e:test`. Lang cell uses `<a href="?toggle_lang=1">` — existing translation test remains valid, no changes needed.
+
+Add one bottom bar presence assertion to `01-smoke.spec.js` ("Protected pages" describe) so silent regressions are caught:
+
+```js
+test("bottom bar visible on authenticated pages", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator('.hf-bottom')).toBeVisible();
+});
+```
+
+Add `data-testid="hf-bottom"` to the `<nav>` in `bottom_bar.php` if `.hf-bottom` is not a stable class name.
 
 ---
 
@@ -124,7 +135,7 @@ Translation: use existing `t('key')` and `getLang()` — do not create new lang 
 **Gate:** AC-ADMIN-01–04.
 **Test:** Update `04-betting.spec.js` interaction steps:
 - Identify driver cells by `data-driver-id` attribute — **not DOM position** (order can change)
-- After picking P1, assert that driver's cell is non-interactive (`aria-disabled="true"` or `pointer-events: none`)
+- After picking P1, assert that driver's cell has `aria-disabled="true"` — this is both the testable and accessible signal. `pointer-events: none` is a CSS implementation detail and cannot be reliably asserted in Playwright.
 - Assert confirm button is disabled until all 3 drivers are picked
 - Rewrite duplicate-driver validation test: old `<select>` constraint → UI lock-out. Assert clicking an already-picked cell has no effect.
 
@@ -140,7 +151,15 @@ New table: `leaderboard_snapshots (id, user_id, race_id, rank, points, created_a
 - Update `leaderboard.php` query: LEFT JOIN snapshots, compute delta
 - Handle first-ever race: delta = `null`, render as `—`
 
-Migration: write as a PHP script in `database/` with both apply and rollback sections. Add `CREATE TABLE` to `database/schema.sql` as canonical record. Apply manually via CLI on test then live after merge.
+Migration: write as a PHP script in `database/` with both apply and rollback sections. Add `CREATE TABLE` to `database/schema.sql` as canonical record.
+
+**Migration test procedure (required before merge):**
+1. Dump test DB: `mysqldump ... > before.sql`
+2. Run: `php database/migrate_leaderboard_snapshots.php apply` → verify `SHOW TABLES LIKE 'leaderboard_snapshots'` returns the table
+3. Run: `php database/migrate_leaderboard_snapshots.php rollback` → verify table is gone
+4. Restore: `mysql ... < before.sql` and confirm app still works
+
+Apply to live manually via CLI after merge. Document exact commands in PR description.
 
 ### 2. Pool size in DKK
 
