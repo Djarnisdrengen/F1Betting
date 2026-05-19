@@ -189,6 +189,15 @@ Rules:
 
 ---
 
+## Post-migration tasks (after merge to main)
+
+- [ ] **Delete obsolete language keys** — audit `public/lang/user.php`, `public/lang/admin.php`, and `public/lang/email.php` for keys no longer referenced anywhere in the codebase and remove them.
+- [ ] **Merge `bet.php` and `edit_bet.php`** — the 5-step modal design assumes a single page. Merge into one to eliminate duplicated modal UI/JS.
+- [ ] **Add subject-line format check to `test:email:preview`** — the preview script already logs subject lines; add a sentence-case assertion so regressions are caught automatically rather than requiring manual review.
+- [ ] **Add drawer-state cleanup to serial describes** — any `test.describe.serial` block that opens the drawer should add a `beforeEach` step to close it, so a mid-test failure doesn't leave the drawer open for subsequent tests in the same block.
+
+---
+
 ## Merge checklist (§8 of handoff guide)
 
 - [ ] All §7.1–§7.12 acceptance criteria ticked in PR description
