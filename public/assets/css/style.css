@@ -1,9 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
 
 :root {
     --f1-red: #e10600;
     --f1-red-dark: #b30500;
     --f1-red-light: #ff1a14;
+
+    --font-display: 'Chivo', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body:    'Manrope', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-accent:  'Kalam', 'Patrick Hand', cursive;
+    --font-mono:    'Courier Prime', ui-monospace, Menlo, monospace;
 }
 
 * {
@@ -1516,3 +1521,925 @@ body.light .logo-light { display: block; }
     .tabs { display: none; }
     .admin-dropdown { display: block; }
 }
+/* ============================================================
+   Hi-fi design tokens · broadcast palette (dark + light)
+   Light theme switches via body.light .hifi-frame {…} below.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+    --f1-red: #e10600;
+    --f1-red-light: #ff1a14;
+    --f1-red-dark: #b30500;
+    --gold: #fbbf24;
+    --silver: #9ca3af;
+    --bronze: #cd7c2f;
+
+    --bg-primary: #131316;
+    --bg-secondary: #1c1c20;
+    --bg-card: #232328;
+    --bg-hover: #2d2d33;
+    --text-primary: #f5f5f7;
+    --text-secondary: #b8b8be;
+    --text-muted: #8e8e95;
+    --border-color: #34343a;
+    --border-soft: #2a2a2e;
+
+    --status-success: #10b981;
+    --status-warning: #f59e0b;
+    --status-danger: #ef4444;
+
+    --display: 'Chivo', system-ui, sans-serif;
+    --body: 'Manrope', system-ui, sans-serif;
+
+    --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px;
+    --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
+    --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+}
+
+/* Each .hifi-frame is an artboard root — clip + cover its declared
+   width so the content lays out as if it were the viewport. */
+.hifi-frame {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+.hifi-frame * { box-sizing: border-box; }
+.hifi-frame h1, .hifi-frame h2, .hifi-frame h3, .hifi-frame h4 {
+    font-family: var(--display);
+    margin: 0;
+    line-height: 1.1;
+}
+.hifi-frame a, .hifi-frame button { font-family: inherit; }
+
+/* Focus ring — visible only on keyboard nav */
+.hifi-frame *:focus { outline: none; }
+.hifi-frame *:focus-visible {
+    outline: 2px solid var(--f1-red);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+/* ============================================================
+   LIGHT THEME — overrides for body.light
+   ============================================================ */
+body.light .hifi-frame {
+    --bg-primary: #f0f0f2;
+    --bg-secondary: #e5e5e8;
+    --bg-card: #f8f8fa;
+    --bg-hover: #dcdce0;
+    --text-primary: #1a1a1d;
+    --text-secondary: #454549;
+    --text-muted: #66666b;
+    --border-color: #b3b3b8;
+    --border-soft: #c8c8cc;
+}
+body.light .hf-top,
+body.light .hf-bottom {
+    background: rgba(245, 245, 247, 0.92);
+}
+body.light .hf-cd-cell {
+    background: rgba(0, 0, 0, 0.03);
+}
+body.light .hf-hero::before {
+    background-image: repeating-linear-gradient(
+        135deg,
+        transparent 0, transparent 80px,
+        rgba(225,6,0,0.06) 80px, rgba(225,6,0,0.06) 82px
+    );
+}
+body.light .hf-drawer {
+    box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+}
+body.light .hf-row.self {
+    background: linear-gradient(90deg, rgba(225,6,0,0.07), var(--bg-card) 60%);
+}
+body.light .hf-cta-primary {
+    box-shadow: 0 4px 14px rgba(225,6,0,0.22);
+}
+body.light .hf-toc a.active::before { background: var(--f1-red); }
+
+/* ============================================================
+   Top bar — logo + hamburger
+   ============================================================ */
+.hf-top {
+    height: 56px;
+    padding: 0 16px;
+    background: rgba(28, 28, 32, 0.92);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+.hf-logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+.hf-logo-mark {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    background: var(--f1-red);
+    color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-weight: 900; font-size: 13px;
+    letter-spacing: -0.02em;
+}
+.hf-logo-text {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+.hf-logo-text .yr {
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-left: 6px;
+    font-size: 12px;
+}
+.hf-hamburger {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.1s, border-color 0.15s;
+}
+.hf-hamburger:hover { background: var(--bg-hover); border-color: var(--text-muted); }
+.hf-hamburger:active { transform: scale(0.96); }
+.hf-hamburger .bars {
+    width: 16px; height: 12px;
+    display: flex; flex-direction: column; justify-content: space-between;
+}
+.hf-hamburger .bars span {
+    height: 2px; background: currentColor; border-radius: 1px;
+}
+
+/* ============================================================
+   Bottom bar — persistent at every width
+   ============================================================ */
+.hf-bottom {
+    height: 64px;
+    padding: 8px 16px;
+    background: rgba(28, 28, 32, 0.95);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border-soft);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: center;
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+}
+.hf-bb-item {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
+    font-family: var(--display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    transition: color 0.15s, transform 0.1s;
+}
+.hf-bb-item:hover { color: var(--text-primary); }
+.hf-bb-item:active { transform: scale(0.95); }
+.hf-bb-item.active { color: var(--f1-red); }
+.hf-bb-icon {
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+.hf-bb-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1.5px solid var(--f1-red);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 800; font-size: 12px;
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   Drawer (visual reference for hi-fi only — opens from top bar)
+   ============================================================ */
+.hf-drawer {
+    position: absolute;
+    top: 56px;
+    right: 12px;
+    width: min(340px, calc(100% - 24px));
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+    display: flex; flex-direction: column;
+    z-index: 30;
+    animation: hf-drop 200ms cubic-bezier(.2,.7,.3,1.1);
+}
+@keyframes hf-drop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.hf-drawer-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 600;
+    position: relative;
+}
+.hf-drawer-row:hover { background: var(--bg-hover); color: var(--text-primary); }
+.hf-drawer-row.active {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+.hf-drawer-row.active::after {
+    content: ""; position: absolute; right: 12px; top: 12px; bottom: 12px;
+    width: 3px; background: var(--f1-red); border-radius: 2px;
+}
+.hf-drawer-row i {
+    width: 18px; text-align: center; color: var(--text-muted);
+    font-size: 14px;
+}
+.hf-drawer-row.active i { color: var(--f1-red); }
+
+/* ============================================================
+   Page body wrapper
+   ============================================================ */
+.hf-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+}
+.hf-container {
+    width: 100%;
+    margin: 0 auto;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+/* Container max-widths per breakpoint */
+.hf-frame-md .hf-container { padding-left: 24px; padding-right: 24px; max-width: 760px; }
+.hf-frame-lg .hf-container { padding-left: 32px; padding-right: 32px; max-width: 1080px; }
+.hf-frame-xl .hf-container { padding-left: 48px; padding-right: 48px; max-width: 1280px; }
+
+/* ============================================================
+   Hero — full-bleed next-race
+   ============================================================ */
+.hf-hero {
+    position: relative;
+    padding: 32px 16px 28px;
+    background:
+        radial-gradient(circle at 80% 0%, rgba(225,6,0,0.18), transparent 60%),
+        radial-gradient(circle at 10% 100%, rgba(225,6,0,0.10), transparent 50%),
+        var(--bg-secondary);
+    border-bottom: 1px solid var(--border-soft);
+    overflow: hidden;
+}
+.hf-hero::before {
+    /* Subtle racing-stripe diagonal — pure CSS, no image */
+    content: "";
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(
+        135deg,
+        transparent 0, transparent 80px,
+        rgba(225,6,0,0.04) 80px, rgba(225,6,0,0.04) 82px
+    );
+    pointer-events: none;
+}
+.hf-hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    background: rgba(225,6,0,0.12);
+    border: 1px solid rgba(225,6,0,0.4);
+    font-family: var(--display);
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--f1-red-light);
+    white-space: nowrap;
+    max-width: 100%;
+}
+.hf-hero-eyebrow::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--f1-red-light);
+    box-shadow: 0 0 8px var(--f1-red-light);
+    animation: hf-pulse 1.5s ease-in-out infinite;
+}
+@keyframes hf-pulse { 50% { opacity: 0.5; transform: scale(0.85); } }
+.hf-hero-title {
+    font-family: var(--display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-top: 12px;
+}
+.hf-hero-meta {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    flex-wrap: wrap;
+}
+.hf-hero-meta .dot {
+    width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted);
+}
+
+/* Countdown */
+.hf-countdown {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 24px;
+    max-width: 480px;
+}
+.hf-cd-cell {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 8px 10px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+}
+.hf-cd-num {
+    font-family: var(--display);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--text-primary);
+}
+.hf-cd-label {
+    font-family: var(--display);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+.hf-cta-primary {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 22px;
+    border-radius: 10px;
+    border: none;
+    background: var(--f1-red);
+    color: white;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    margin-top: 22px;
+    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 4px 14px rgba(225,6,0,0.35);
+}
+.hf-cta-primary:hover { background: var(--f1-red-light); }
+.hf-cta-primary:active { transform: translateY(1px); }
+.hf-cta-primary .arrow { font-size: 17px; }
+
+/* ============================================================
+   Generic page section
+   ============================================================ */
+.hf-section { padding: 28px 0 12px; }
+.hf-section-h {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 14px;
+}
+.hf-section-h h2 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+}
+.hf-section-h a {
+    color: var(--text-muted);
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.hf-section-h a:hover { color: var(--text-primary); }
+
+/* ============================================================
+   Leaderboard row
+   ============================================================ */
+.hf-row {
+    display: grid;
+    grid-template-columns: 36px 32px 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+}
+.hf-row:hover {
+    border-color: var(--border-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.hf-row.self {
+    background: linear-gradient(90deg, rgba(225,6,0,0.10), var(--bg-card) 50%);
+    border-color: rgba(225,6,0,0.35);
+}
+.hf-rank {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 14px;
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+}
+.hf-rank.r1 { background: linear-gradient(135deg, #fbbf24, #d97706); color: #1a1a1d; }
+.hf-rank.r2 { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #1a1a1d; }
+.hf-rank.r3 { background: linear-gradient(135deg, #cd7c2f, #a15c1d); color: white; }
+.hf-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+.hf-who {
+    min-width: 0;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.hf-who-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hf-who-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+.hf-stars {
+    color: var(--gold);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    display: inline-flex; align-items: center; gap: 2px;
+}
+.hf-pts {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+    min-width: 48px;
+    text-align: right;
+}
+
+/* ============================================================
+   Race card (smaller — for "recent" lists)
+   ============================================================ */
+.hf-racecard {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+}
+.hf-racecard:hover {
+    border-color: var(--border-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.hf-racenum {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 800; font-size: 13px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+.hf-racename {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+}
+.hf-racemeta {
+    font-size: 12px; color: var(--text-muted);
+    margin-top: 2px;
+}
+.hf-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: var(--display);
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.hf-badge.open { background: rgba(16,185,129,0.12); color: var(--status-success); border: 1px solid rgba(16,185,129,0.3); }
+.hf-badge.soon { background: rgba(245,158,11,0.12); color: var(--status-warning); border: 1px solid rgba(245,158,11,0.3); }
+.hf-badge.done { background: rgba(139,139,150,0.10); color: var(--text-muted); border: 1px solid var(--border-color); }
+.hf-badge.live { background: rgba(225,6,0,0.18); color: var(--f1-red-light); border: 1px solid rgba(225,6,0,0.45); }
+
+/* ============================================================
+   Stat tile (used on profile + leaderboard summary)
+   ============================================================ */
+.hf-stat {
+    padding: 16px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    display: flex; flex-direction: column; gap: 4px;
+}
+.hf-stat-n {
+    font-family: var(--display);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+.hf-stat-l {
+    font-family: var(--display);
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* ============================================================
+   Profile header + stripe
+   ============================================================ */
+.hf-profile-head {
+    display: flex; align-items: center; gap: 16px;
+    padding: 24px 0 20px;
+}
+.hf-profile-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2d2d33, #1c1c20);
+    border: 2px solid var(--f1-red);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 900;
+    font-size: 26px;
+    color: var(--text-primary);
+}
+.hf-profile-id { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.hf-profile-name {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+}
+.hf-profile-sub { color: var(--text-muted); font-size: 13px; }
+.hf-profile-sub .star { color: var(--gold); font-weight: 700; }
+
+/* ============================================================
+   Rules — numbered editorial sections
+   ============================================================ */
+.hf-rule {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 14px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border-soft);
+}
+.hf-rule:last-child { border-bottom: none; }
+.hf-rule-num {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 36px;
+    line-height: 0.9;
+    color: var(--f1-red);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+.hf-rule h3 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+.hf-rule p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 60ch;
+}
+.hf-rule p + p { margin-top: 10px; }
+.hf-rule code {
+    font-family: ui-monospace, Menlo, monospace;
+    background: var(--bg-secondary);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+.hf-rule .kbd {
+    display: inline-block;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+/* ============================================================
+   TOC sidebar (rules at LG+)
+   ============================================================ */
+.hf-toc {
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 14px;
+    background: var(--bg-card);
+    position: sticky; top: 72px;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.hf-toc-title {
+    font-family: var(--display); font-weight: 700;
+    font-size: 11px; color: var(--text-muted);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 8px; padding: 0 8px;
+}
+.hf-toc a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 7px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-family: var(--display); font-weight: 600; font-size: 13px;
+}
+.hf-toc a:hover { background: var(--bg-hover); color: var(--text-primary); }
+.hf-toc a.active { background: var(--bg-hover); color: var(--text-primary); }
+.hf-toc a.active::before {
+    content: ""; width: 3px; height: 14px; background: var(--f1-red); border-radius: 2px;
+    margin-right: -3px;
+}
+.hf-toc .n {
+    width: 22px; height: 22px; border-radius: 5px;
+    background: var(--bg-secondary); color: var(--text-muted);
+    font-family: var(--display); font-weight: 800; font-size: 11px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.hf-toc a.active .n { background: var(--f1-red); color: white; }
+
+/* ============================================================
+   Page header (titles for non-hero pages)
+   ============================================================ */
+.hf-pageh { padding: 28px 0 10px; }
+.hf-pageh .crumb {
+    color: var(--text-muted);
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.hf-pageh h1 {
+    font-family: var(--display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+.hf-pageh .lede {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-top: 8px;
+    max-width: 60ch;
+}
+
+/* ============================================================
+   Segmented control (filters)
+   ============================================================ */
+.hf-seg {
+    display: inline-flex;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+}
+.hf-seg button {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    padding: 8px 14px;
+    border-radius: 7px;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.hf-seg button:hover { color: var(--text-primary); }
+.hf-seg button.active {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   Tabs (used on profile)
+   ============================================================ */
+.hf-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 14px;
+}
+.hf-tabs button {
+    background: none; border: none;
+    padding: 10px 14px;
+    color: var(--text-muted);
+    font-family: var(--display); font-weight: 600;
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+.hf-tabs button:hover { color: var(--text-primary); }
+.hf-tabs button.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--f1-red);
+}
+
+/* ============================================================
+   Empty / muted variants
+   ============================================================ */
+.hf-mute { color: var(--text-muted); }
+/* ============================================================
+   Page footer — versioned, sits above the sticky bottom bar
+   ============================================================ */
+.hf-footer {
+    padding: 28px 0 20px;
+    margin-top: auto;
+    border-top: 1px solid var(--border-soft);
+    text-align: center;
+    color: var(--text-muted);
+    font-family: var(--display);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+}
+.hf-footer .name { font-weight: 700; color: var(--text-secondary); }
+.hf-footer .v {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    margin: 0 4px;
+}
+
+.hf-divider { height: 1px; background: var(--border-soft); margin: 4px 0; }
+
+/* ============================================================
+   States reference — forced classes that mirror :hover / :active
+   so the user can see interactive states statically in the canvas
+   (pointer events go through the canvas, making :hover hard to test)
+   ============================================================ */
+.is-hover.hf-row,
+.is-hover.hf-racecard {
+    border-color: var(--border-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.is-hover.hf-hamburger { background: var(--bg-hover); border-color: var(--text-muted); }
+.is-active.hf-hamburger,
+.is-active.hf-bb-item { transform: scale(0.96); }
+.is-hover.hf-bb-item { color: var(--text-primary); }
+.is-focus {
+    outline: 2px solid var(--f1-red);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+.is-hover.hf-cta-primary {
+    background: var(--f1-red-light);
+}
+.is-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.state-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px dashed var(--border-soft);
+}
+.state-row:last-child { border-bottom: none; }
+.state-row .label {
+    font-family: var(--display); font-weight: 700;
+    font-size: 11px; color: var(--text-muted);
+    letter-spacing: 0.1em; text-transform: uppercase;
+}
+.state-row .sample {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.state-sample-frame {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 28px 24px;
+    border-radius: 16px;
+    border: 1px solid var(--border-soft);
+    font-family: var(--body);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.state-sample-frame h3 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+    margin: 0 0 8px;
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   Per-breakpoint type ramp (frame-level multiplier)
+   The artboard has a .hf-frame-{xs|sm|md|lg|xl} class set by JS.
+   ============================================================ */
+.hf-frame-xs .hf-hero-title  { font-size: 36px; }
+.hf-frame-sm .hf-hero-title  { font-size: 44px; }
+.hf-frame-md .hf-hero-title  { font-size: 56px; }
+.hf-frame-lg .hf-hero-title  { font-size: 72px; }
+.hf-frame-xl .hf-hero-title  { font-size: 84px; }
+
+.hf-frame-xs .hf-cd-num { font-size: 28px; }
+.hf-frame-sm .hf-cd-num { font-size: 34px; }
+.hf-frame-md .hf-cd-num { font-size: 40px; }
+.hf-frame-lg .hf-cd-num { font-size: 48px; }
+.hf-frame-xl .hf-cd-num { font-size: 56px; }
+
+.hf-frame-xs .hf-pageh h1 { font-size: 28px; }
+.hf-frame-sm .hf-pageh h1 { font-size: 34px; }
+.hf-frame-md .hf-pageh h1 { font-size: 42px; }
+.hf-frame-lg .hf-pageh h1 { font-size: 52px; }
+.hf-frame-xl .hf-pageh h1 { font-size: 60px; }
+
+.hf-frame-xs .hf-stat-n { font-size: 30px; }
+.hf-frame-sm .hf-stat-n { font-size: 36px; }
+.hf-frame-md .hf-stat-n { font-size: 44px; }
+.hf-frame-lg .hf-stat-n { font-size: 52px; }
+.hf-frame-xl .hf-stat-n { font-size: 60px; }
+
+.hf-frame-md .hf-section { padding: 36px 0 12px; }
+.hf-frame-lg .hf-section { padding: 44px 0 16px; }
+.hf-frame-xl .hf-section { padding: 52px 0 18px; }
+
+.hf-frame-md .hf-hero { padding: 44px 24px 36px; }
+.hf-frame-lg .hf-hero { padding: 64px 32px 56px; }
+.hf-frame-xl .hf-hero { padding: 80px 48px 72px; }
