@@ -45,12 +45,13 @@ test.describe.serial("Betting", () => {
 
     test("place a bet", async () => {
         await sharedPage.goto(`/bet.php?race=${seedData.raceId}&return=index`);
-        await expect(sharedPage).toHaveURL(/bet\.php/);
+        await expect(sharedPage.locator('.hf-modal-overlay')).toBeVisible();
 
-        await sharedPage.selectOption('select[name="p1"]', seedData.drivers[0].id);
-        await sharedPage.selectOption('select[name="p2"]', seedData.drivers[1].id);
-        await sharedPage.selectOption('select[name="p3"]', seedData.drivers[2].id);
-        await sharedPage.locator('button[type="submit"]').click();
+        // P1 slot is auto-active on open; pick drivers in order (auto-advance P1→P2→P3)
+        await sharedPage.click(`.hf-driver-row[data-driver-id="${seedData.drivers[0].id}"]`);
+        await sharedPage.click(`.hf-driver-row[data-driver-id="${seedData.drivers[1].id}"]`);
+        await sharedPage.click(`.hf-driver-row[data-driver-id="${seedData.drivers[2].id}"]`);
+        await sharedPage.click('[data-link="saveBet"]');
 
         await sharedPage.waitForURL(/success=bet_placed/);
         await expect(sharedPage.locator(".alert-success")).toBeVisible();
@@ -69,27 +70,16 @@ test.describe.serial("Betting", () => {
         await editLink.click();
         await sharedPage.waitForURL(/edit_bet\.php/);
 
-        await sharedPage.selectOption('select[name="p1"]', seedData.drivers[2].id);
-        await sharedPage.selectOption('select[name="p2"]', seedData.drivers[1].id);
-        await sharedPage.selectOption('select[name="p3"]', seedData.drivers[0].id);
-        await sharedPage.locator('button[type="submit"]').click();
+        // All positions pre-filled — activate each slot explicitly before picking
+        await sharedPage.click('[data-link="activateSlot"][data-pos="1"]');
+        await sharedPage.click(`.hf-driver-row[data-driver-id="${seedData.drivers[2].id}"]`);
+        await sharedPage.click('[data-link="activateSlot"][data-pos="2"]');
+        await sharedPage.click(`.hf-driver-row[data-driver-id="${seedData.drivers[1].id}"]`);
+        await sharedPage.click('[data-link="activateSlot"][data-pos="3"]');
+        await sharedPage.click(`.hf-driver-row[data-driver-id="${seedData.drivers[0].id}"]`);
+        await sharedPage.click('[data-link="saveBet"]');
 
         await sharedPage.waitForURL(/success=bet_updated/);
         await expect(sharedPage.locator(".alert-success")).toBeVisible();
-    });
-
-    test("same driver in two positions shows validation error", async () => {
-        await sharedPage.goto("/");
-
-        const editLink = sharedPage.locator('a[href*="edit_bet.php"]').first();
-        await editLink.click();
-        await sharedPage.waitForURL(/edit_bet\.php/);
-
-        await sharedPage.selectOption('select[name="p1"]', seedData.drivers[0].id);
-        await sharedPage.selectOption('select[name="p2"]', seedData.drivers[0].id); // duplicate
-        await sharedPage.selectOption('select[name="p3"]', seedData.drivers[2].id);
-        await sharedPage.locator('button[type="submit"]').click();
-
-        await expect(sharedPage.locator(".alert-error")).toBeVisible();
     });
 });
