@@ -53,35 +53,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 ?>
 
-<div style="max-width: 400px; margin: 3rem auto;">
-    <div class="card">
-        <div class="card-header text-center">
-            <div style="width: 64px; height: 64px; background: var(--f1-red); border-radius: 16px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-flag-checkered" style="font-size: 2rem; color: white;"></i>
-            </div>
-            <h2><?= t('login') ?></h2>
+<div class="hf-container">
+    <?php if ($error): ?>
+        <div class="alert alert-error" role="alert"><i class="fas fa-exclamation-triangle"></i> <?= escape($error) ?></div>
+    <?php endif; ?>
+    <div class="hf-login-grid">
+        <div class="hf-login-intro">
+            <div class="hf-hero-eyebrow"><?= t('season') ?> <?= escape($settings['app_year']) ?></div>
+            <h1 style="font-family:var(--font-display);font-weight:900;font-size:clamp(48px,8vw,80px);letter-spacing:-0.02em;line-height:0.95;margin:12px 0 16px;">Søndag<br>igen, drenge.</h1>
+            <p style="color:var(--text-secondary);font-size:17px;line-height:1.55;max-width:44ch;">Ét bud per medlem, point for top-3, en stjerne hvis du rammer plet.</p>
         </div>
-        <div class="card-body">
-            <?php if ($error): ?>
-                <div class="alert alert-error"><?= escape($error) ?></div>
-            <?php endif; ?>
-            
-            <form method="POST">
+        <div class="hf-login-card">
+            <div>
+                <div class="hf-hero-eyebrow" style="margin-bottom:8px;"><?= $lang === 'da' ? 'Velkommen tilbage' : 'Welcome back' ?></div>
+                <h2 style="font-family:var(--font-display);font-weight:900;font-size:28px;letter-spacing:-0.02em;margin:0 0 8px;"><?= t('login') ?></h2>
+            </div>
+            <form method="POST" style="display:flex;flex-direction:column;gap:14px;">
                 <?= csrfField() ?>
-                <div class="form-group">
+                <div>
                     <label class="form-label"><?= t('email') ?></label>
                     <input type="email" name="email" class="form-input" required placeholder="name@example.com">
                 </div>
-                <div class="form-group">
-                    <label class="form-label"><?= t('password') ?></label>
+                <div>
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
+                        <label class="form-label" style="margin:0;"><?= t('password') ?></label>
+                        <a href="forgot_password.php" style="font-family:var(--font-display);font-weight:600;font-size:12px;color:var(--f1-red-light);text-decoration:none;"><?= t('forgot_password') ?></a>
+                    </div>
                     <input type="password" name="password" class="form-input" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;"><?= t('login') ?></button>
+                <button type="submit" class="hf-cta-primary" style="width:100%;margin-top:8px;">
+                    <?= t('login') ?> <span class="arrow">→</span>
+                </button>
             </form>
-            
-            <p class="text-center mt-2 text-muted">
-                <a href="forgot_password.php" class="text-accent"><?= t('forgot_password') ?></a>
-            </p>
         </div>
     </div>
 </div>

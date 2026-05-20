@@ -141,4 +141,4 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <?php endif; ?>
 </nav>
 
-<main class="container" style="padding: 2rem 1rem; min-height: calc(100vh - 200px);">
+<main>

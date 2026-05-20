@@ -18,6 +18,7 @@ return [
 
         // Footer
         'contact'               => 'Kontakt:',
+        'season'                => 'Sæson',
 
         // Actions
         'place_bet'             => 'Placer Bet',
@@ -206,6 +207,7 @@ return [
 
         // Footer
         'contact'               => 'Contact:',
+        'season'                => 'Season',
 
         // Actions
         'place_bet'             => 'Place Bet',

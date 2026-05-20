@@ -4,11 +4,10 @@
     <?php include __DIR__ . '/bottom_bar.php'; ?>
     <?php endif; ?>
 
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 1996-<?= date("Y") ?> - <?= t('contact') ?> info@<?= preg_replace('/^www\./', '', SITE_DOMAIN) ?></p>
-        </div>
-
+    <footer class="hf-footer">
+        <span class="name"><?= escape($settings['app_title']) ?></span>
+        &middot; <span class="v">v1.3.0</span>
+        &middot; <?= t('season') ?> <?= escape($settings['app_year']) ?>
     </footer>
     
     <!--  APP.JS INCLUDE -->

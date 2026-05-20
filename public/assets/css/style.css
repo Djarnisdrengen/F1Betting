@@ -2321,6 +2321,35 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-frame-lg .hf-hero { padding: 64px 32px 56px; }
 .hf-frame-xl .hf-hero { padding: 80px 48px 72px; }
 
+/* ── Phase D: Login layout ────────────────────────────────── */
+.hf-login-grid {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 0 24px;
+}
+.hf-login-intro { display: none; }
+.hf-login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    padding: 32px 28px 28px;
+    display: flex; flex-direction: column; gap: 16px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    max-width: 460px; margin: 0 auto; width: 100%;
+}
+@media (min-width: 1024px) {
+    .hf-login-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 64px;
+        align-items: center;
+        min-height: calc(100vh - 56px - 64px);
+        padding: 0;
+    }
+    .hf-login-intro { display: block; }
+    .hf-login-card { max-width: 440px; justify-self: end; margin: 0; }
+}
+
 /* Phase B: drawer is hidden until JS adds .open */
 .hf-drawer { display: none; }
 .hf-drawer.open { display: flex; flex-direction: column; }
