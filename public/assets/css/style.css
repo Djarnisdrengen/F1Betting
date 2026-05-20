@@ -2350,6 +2350,33 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     .hf-login-card { max-width: 440px; justify-self: end; margin: 0; }
 }
 
+/* ── Phase D: Rules layout ──────────────────────────────────── */
+.hf-rules-layout { display: block; padding-bottom: 32px; }
+.hf-rules-layout .hf-toc { display: none; }
+.hf-rules-chips { display: none; }
+@media (min-width: 768px) {
+    .hf-rules-chips {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+        margin: 24px 0 8px;
+        padding: 14px;
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+        background: var(--bg-card);
+    }
+}
+@media (min-width: 1024px) {
+    .hf-rules-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 48px;
+        align-items: start;
+    }
+    .hf-rules-layout .hf-toc { display: flex; }
+    .hf-rules-chips { display: none; }
+}
+
 /* Phase B: drawer is hidden until JS adds .open */
 .hf-drawer { display: none; }
 .hf-drawer.open { display: flex; flex-direction: column; }
