@@ -21,8 +21,8 @@ test.describe("Public pages", () => {
 
     test("leaderboard has rows with non-zero points", async ({ page }) => {
         await page.goto("/leaderboard.php");
-        await expect(page.locator("table.leaderboard-table tbody tr").first()).toBeVisible();
-        await expect(page.locator("table.leaderboard-table tbody tr").first()).toContainText(/[1-9]\d*/);
+        await expect(page.locator(".hf-row").first()).toBeVisible();
+        await expect(page.locator(".hf-row").first()).toContainText(/[1-9]\d*/);
     });
 
     test("races page loads", async ({ page }) => {

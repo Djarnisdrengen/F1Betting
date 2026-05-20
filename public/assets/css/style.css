@@ -2350,6 +2350,14 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     .hf-login-card { max-width: 440px; justify-self: end; margin: 0; }
 }
 
+/* ── Phase D: Leaderboard layout ───────────────────────────── */
+.hf-podium-strip { display: none; }
+.hf-self-pin { display: flex; }
+@media (min-width: 768px) {
+    .hf-podium-strip { display: grid; }
+    .hf-self-pin { display: none; }
+}
+
 /* ── Phase D: Rules layout ──────────────────────────────────── */
 .hf-rules-layout { display: block; padding-bottom: 32px; }
 .hf-rules-layout .hf-toc { display: none; }
