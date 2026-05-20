@@ -340,6 +340,26 @@ function convertToEmailUrl($link) {
  * Send email using configured SMTP
  */
 function sendEmail($to, $subject, $htmlContent, $textContent = null) {
+    // In test mode, write to JSONL file instead of sending real email.
+    if (defined('SMTP_INTERCEPT') && SMTP_INTERCEPT) {
+        $fromEmail = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : '';
+        $fromName  = defined('SMTP_FROM_NAME')  ? SMTP_FROM_NAME  : '';
+        $entry = json_encode([
+            'to'        => $to,
+            'from'      => [['address' => $fromEmail, 'name' => $fromName]],
+            'subject'   => $subject,
+            'html'      => $htmlContent,
+            'text'      => $textContent ?: strip_tags($htmlContent),
+            'timestamp' => time(),
+        ]) . "\n";
+        $file = defined('EMAIL_INTERCEPT_FILE') ? EMAIL_INTERCEPT_FILE : (sys_get_temp_dir() . '/f1betting_test_emails.jsonl');
+        file_put_contents($file, $entry, FILE_APPEND | LOCK_EX);
+        if (defined('MAIL_LOG_FILE')) {
+            logToFile(MAIL_LOG_FILE, '[INTERCEPTED] to=' . $to . ' subject="' . $subject . '"');
+        }
+        return ['success' => true, 'message' => 'intercepted'];
+    }
+
     // Check if SMTP is configured
     if (!defined('SMTP_HOST') || empty(SMTP_HOST)) {
         return ['success' => false, 'message' => 'SMTP not configured'];
