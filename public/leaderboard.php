@@ -56,8 +56,15 @@ include __DIR__ . '/includes/header.php';
             <div class="hf-who-name"><?= escape(displayUserName($entry)) ?></div>
             <div class="hf-who-sub"><?= $entry['bets_count'] ?> <?= t('bets') ?></div>
         </div>
-        <div class="hf-stars"><?= $entry['stars'] > 0 ? '★'.$entry['stars'] : '' ?></div>
+        <div class="hf-stars"><?= $entry['stars'] > 0 ? '<span class="star">★'.$entry['stars'].'</span>' : '' ?></div>
         <div class="hf-pts"><?= $entry['points'] ?>p</div>
+        <div class="hf-rank-delta"><?php
+            $d = $entry['rank_delta'];
+            if ($d === null)    echo '<span class="nc">—</span>';
+            elseif ($d > 0)    echo '<span class="up">▲'.$d.'</span>';
+            elseif ($d < 0)    echo '<span class="dn">▼'.abs($d).'</span>';
+            else               echo '<span class="nc">—</span>';
+        ?></div>
     </div>
     <?php       break;
             endif;
@@ -80,8 +87,15 @@ include __DIR__ . '/includes/header.php';
                     <div class="hf-who-name"><?= escape(displayUserName($entry)) ?></div>
                     <div class="hf-who-sub"><?= $entry['bets_count'] ?> <?= t('bets') ?></div>
                 </div>
-                <div class="hf-stars"><?= $entry['stars'] > 0 ? '★'.$entry['stars'] : '' ?></div>
+                <div class="hf-stars"><?= $entry['stars'] > 0 ? '<span class="star">★'.$entry['stars'].'</span>' : '' ?></div>
                 <div class="hf-pts"><?= $entry['points'] ?>p</div>
+                <div class="hf-rank-delta"><?php
+                    $d = $entry['rank_delta'];
+                    if ($d === null)    echo '<span class="nc">—</span>';
+                    elseif ($d > 0)    echo '<span class="up">▲'.$d.'</span>';
+                    elseif ($d < 0)    echo '<span class="dn">▼'.abs($d).'</span>';
+                    else               echo '<span class="nc">—</span>';
+                ?></div>
             </div>
             <?php endforeach; ?>
         <?php endif; ?>

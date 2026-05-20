@@ -234,8 +234,24 @@ function getRaces(PDO $db): array {
 
 // Returns leaderboard rows ordered by stars desc, points desc. Pass a limit to cap results.
 function getLeaderboard(PDO $db, ?int $limit = null): array {
+    $db->exec("CREATE TABLE IF NOT EXISTS leaderboard_snapshots (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        race_id VARCHAR(36) NOT NULL,
+        `rank` INT NOT NULL,
+        points INT NOT NULL,
+        scored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_user_race (user_id, race_id)
+    ) DEFAULT CHARSET=utf8mb4");
+
     $sql = "
-        SELECT u.*, COUNT(b.id) AS bets_count
+        SELECT u.*, COUNT(b.id) AS bets_count,
+            (SELECT snap.`rank`
+             FROM leaderboard_snapshots snap
+             JOIN races r2 ON snap.race_id = r2.id
+             WHERE snap.user_id = u.id
+             ORDER BY r2.race_date DESC, r2.race_time DESC
+             LIMIT 1 OFFSET 1) AS prev_rank
         FROM users u
         LEFT JOIN bets b ON u.id = b.user_id
         WHERE u.in_competition = 1
@@ -245,7 +261,13 @@ function getLeaderboard(PDO $db, ?int $limit = null): array {
     if ($limit !== null) {
         $sql .= ' LIMIT ' . $limit;
     }
-    return $db->query($sql)->fetchAll();
+    $rows = $db->query($sql)->fetchAll();
+    foreach ($rows as $i => &$row) {
+        $prev = $row['prev_rank'];
+        $row['rank_delta'] = ($prev !== null) ? (int)$prev - ($i + 1) : null;
+    }
+    unset($row);
+    return $rows;
 }
 
 // Returns all bets (with display_name + email) grouped by race_id.

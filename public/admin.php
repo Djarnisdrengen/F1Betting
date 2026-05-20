@@ -175,6 +175,7 @@ if (isset($_POST['reset_race_result'])) {
 
         $db->prepare("UPDATE races SET result_p1 = NULL, result_p2 = NULL, result_p3 = NULL, bettingpool_won = NULL WHERE id = ?")
            ->execute([$id]);
+        $db->prepare("DELETE FROM leaderboard_snapshots WHERE race_id = ?")->execute([$id]);
 
         $resetMsg = t('result_reset');
         header("Location: admin.php?tab=races&edit=" . urlencode($id) . "&msg=" . urlencode($resetMsg));

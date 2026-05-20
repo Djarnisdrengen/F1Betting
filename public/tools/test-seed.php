@@ -851,7 +851,27 @@ if (($_GET['action'] ?? '') === 'cleanup_score_race') {
         $db->prepare("DELETE FROM users WHERE email = ?")->execute([$email]);
     }
     $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B'))");
+    $db->exec("CREATE TABLE IF NOT EXISTS leaderboard_snapshots (id INT AUTO_INCREMENT PRIMARY KEY, user_id VARCHAR(36) NOT NULL, race_id VARCHAR(36) NOT NULL, `rank` INT NOT NULL, points INT NOT NULL, scored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uniq_user_race (user_id, race_id)) DEFAULT CHARSET=utf8mb4");
+    $db->query("DELETE FROM leaderboard_snapshots WHERE race_id IN (SELECT id FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B'))");
     $db->query("DELETE FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B')");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: get_test_emails — returns all intercepted emails as JSON array
+if (($_GET['action'] ?? '') === 'get_test_emails') {
+    $file = defined('EMAIL_INTERCEPT_FILE') ? EMAIL_INTERCEPT_FILE : (sys_get_temp_dir() . '/f1betting_test_emails.jsonl');
+    if (!file_exists($file)) { echo json_encode([]); exit; }
+    $lines  = array_filter(array_map('trim', file($file)));
+    $emails = array_values(array_filter(array_map(fn($s) => json_decode($s, true), $lines)));
+    echo json_encode($emails);
+    exit;
+}
+
+// Action: clear_test_emails — truncates the intercept file
+if (($_GET['action'] ?? '') === 'clear_test_emails') {
+    $file = defined('EMAIL_INTERCEPT_FILE') ? EMAIL_INTERCEPT_FILE : (sys_get_temp_dir() . '/f1betting_test_emails.jsonl');
+    file_put_contents($file, '');
     echo json_encode(['ok' => true]);
     exit;
 }
