@@ -90,6 +90,11 @@ test.describe("Protected pages", () => {
         await expect(page.locator(".card").first()).toBeVisible();
     });
 
+    test("bottom bar visible on authenticated pages", async ({ page }) => {
+        await page.goto("/");
+        await expect(page.locator('.hf-bottom')).toBeVisible();
+    });
+
 });
 
 // ─── Logout ───────────────────────────────────────────────────────────────────
@@ -110,7 +115,6 @@ test.describe("Logout", () => {
         await page.click('.hf-hamburger');
         await page.click('a[href="logout.php"]');
         await page.waitForURL(/index\.php/);
-        await page.click('.hf-hamburger');
-        await expect(page.locator('a[href="login.php"]')).toBeVisible();
+        await expect(page.locator('.hf-bottom a[href="login.php"]')).toBeVisible();
     });
 });

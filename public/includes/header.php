@@ -51,6 +51,14 @@ if (isset($_GET['toggle_lang'])) {
     header("Location: " . $currentUrl);
     exit;
 }
+if (isset($_GET['toggle_font'])) {
+    // TODO: implement font toggle — see AC-FONT-01
+    $currentUrl = $_SERVER['REQUEST_URI'];
+    $currentUrl = preg_replace('/([&?])toggle_font=1(&|$)/', '$1', $currentUrl);
+    $currentUrl = rtrim($currentUrl, '?&');
+    header("Location: " . $currentUrl);
+    exit;
+}
 // Refresh theme/lang after potential toggle
 $theme = getTheme();
 $lang = getLang();
