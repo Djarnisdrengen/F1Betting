@@ -290,6 +290,7 @@ body.clubhouse .bet-item.my-bet {
     box-shadow: 0 8px 24px rgba(225, 6, 0, 0.15);
 }
 
+
 .card-header {
     padding: 1.25rem;
     border-bottom: 1px solid var(--border-color);
@@ -1409,8 +1410,8 @@ body.light .logo-light { display: block; }
     --f1-red-light: #ff1a14;
     --f1-red-dark: #b30500;
     --gold: #fbbf24;
-    --silver: #9ca3af;
-    --bronze: #cd7c2f;
+    --silver: #C0C0C8;
+    --bronze: #CD7F32;
 
     --bg-primary: #131316;
     --bg-secondary: #1c1c20;
@@ -1930,6 +1931,8 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
+.hf-racecard--static { cursor: default; }
+.hf-racecard--static:hover { transform: none; box-shadow: none; border-color: var(--border-soft); }
 .hf-racenum {
     width: 38px; height: 38px;
     border-radius: 50%;
@@ -2388,3 +2391,309 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 /* Phase B: drawer is hidden until JS adds .open */
 .hf-drawer { display: none; }
 .hf-drawer.open { display: flex; flex-direction: column; }
+
+/* ── Phase D: Home (index) layout ───────────────────────────── */
+.hf-hero-inner { display: flex; flex-direction: column; gap: 0; }
+.hf-hero-left  { flex: 1; }
+.hf-hero-right { display: none; }          /* hidden mobile */
+.hf-hero-cd-inline { display: grid; }      /* countdown shown inline mobile */
+
+.hf-home-stats {
+    display: none;                         /* hidden mobile */
+}
+.hf-home-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-bottom: 48px;
+}
+
+@media (min-width: 768px) {
+    .hf-home-grid {
+        grid-template-columns: 280px 1fr;
+        gap: 32px;
+        align-items: start;
+    }
+    .hf-home-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        padding: 20px 0 4px;
+    }
+}
+@media (min-width: 1024px) {
+    .hf-hero-inner { flex-direction: row; align-items: center; gap: 48px; }
+    .hf-hero-right { display: flex; flex: 0 0 auto; }
+    .hf-hero-cd-inline { display: none; } /* hide inline, show right-col instead */
+    .hf-home-grid { grid-template-columns: 300px 1fr; gap: 40px; }
+}
+
+/* ── Phase D: Races full-page card ─────────────────────────── */
+.hf-racefull {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+}
+.hf-racefull:hover { border-color: var(--border-color); }
+.hf-racefull-hd {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+}
+.hf-racefull-info { flex: 1; min-width: 0; }
+.hf-racefull-body {
+    padding: 10px 16px 14px;
+    display: flex; flex-direction: column; gap: 10px;
+    border-top: 1px solid var(--border-soft);
+}
+
+/* ── Phase D: Races page layout ─────────────────────────────── */
+.hf-races-seg-wrap { margin: 8px 0 16px; }
+.hf-races-grid { display: block; padding-bottom: 48px; }
+.hf-races-col.hidden { display: none; }
+
+@media (min-width: 1024px) {
+    .hf-races-seg-wrap { display: none; }
+    .hf-races-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        align-items: start;
+    }
+    .hf-races-col.hidden { display: block; }
+}
+
+/* ── Phase D: Profile layout ────────────────────────────────── */
+.hf-profile-grid  { display: block; padding-bottom: 48px; }
+.hf-profile-forms { display: flex; flex-direction: column; gap: 16px; }
+
+@media (min-width: 1024px) {
+    .hf-profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.3fr;
+        gap: 40px;
+        align-items: start;
+    }
+}
+
+/* ── Phase D: Bet page ──────────────────────────────────────── */
+.hf-bet-wrap  { max-width: 640px; margin: 0 auto; }
+.hf-auth-wrap { max-width: 440px; margin: 0 auto; }
+
+/* ============================================================
+   v1.3.2 — Bet modal (full re-spec)
+   ============================================================ */
+
+.hf-modal-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px 16px;
+    animation: hf-overlay-in 180ms ease-out;
+}
+.hf-modal-overlay[hidden] { display: none; }
+.hf-modal-card {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 560px;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 16px;
+    animation: hf-modal-in 220ms cubic-bezier(.2,.7,.3,1.1);
+}
+@keyframes hf-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes hf-modal-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 767px) {
+    .hf-modal-overlay { padding: 0; background: var(--bg-primary); backdrop-filter: none; }
+    .hf-modal-card { max-width: none; max-height: none; min-height: 100vh; gap: 1px; }
+}
+
+/* Card 1 — race info */
+.hf-bet-header {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px 48px 16px 16px;
+    display: flex; align-items: center; gap: 14px;
+}
+.hf-bet-avatar {
+    flex-shrink: 0;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Chivo', sans-serif; font-weight: 800; font-size: 13px;
+    color: var(--text-secondary); letter-spacing: 0.04em;
+}
+.hf-bet-meta { flex: 1; min-width: 0; }
+.hf-bet-title {
+    font-family: 'Chivo', sans-serif; font-weight: 800; font-size: 18px;
+    letter-spacing: -0.01em; color: var(--text-primary); margin: 0;
+}
+.hf-bet-test { color: var(--text-muted); font-weight: 500; }
+.hf-bet-submeta {
+    color: var(--text-muted); font-size: 13px; margin-top: 2px;
+}
+.hf-bet-countdown {
+    margin-top: 6px;
+    color: var(--text-muted); font-size: 13px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.hf-bet-countdown i { font-size: 12px; }
+.hf-bet-countdown-val {
+    color: var(--status-success);
+    font-family: 'Courier Prime', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+.hf-bet-badge {
+    position: absolute; top: 16px; right: 48px;
+    padding: 4px 10px; border-radius: 999px;
+    font-family: 'Chivo', sans-serif; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
+}
+.hf-bet-badge.open {
+    background: rgba(16,185,129,0.15);
+    color: var(--status-success);
+    border: 1px solid rgba(16,185,129,0.35);
+}
+.hf-bet-badge.closed {
+    background: rgba(225,6,0,0.12);
+    color: var(--f1-red-light);
+    border: 1px solid rgba(225,6,0,0.40);
+}
+.hf-bet-close {
+    position: absolute; top: 8px; right: 8px;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: transparent; border: none; color: var(--text-muted);
+    cursor: pointer; font-size: 16px;
+    display: inline-flex; align-items: center; justify-content: center;
+    text-decoration: none;
+}
+.hf-bet-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* Card 2 — betting controls */
+.hf-bet-controls {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 16px;
+}
+
+/* Position slots */
+.hf-slots { display: flex; flex-direction: column; gap: 12px; }
+.hf-slot {
+    height: 56px; padding: 0 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; color: var(--text-primary);
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    width: 100%; text-align: left;
+}
+.hf-slot:hover { background: var(--bg-hover); }
+.hf-slot.is-empty { border-style: dashed; }
+.hf-slot.is-empty .hf-slot-name { color: var(--text-muted); }
+.hf-slot.is-active {
+    border: 2px solid var(--f1-red);
+    box-shadow: 0 0 0 4px rgba(225,6,0,0.15);
+    padding: 0 15px;
+}
+.hf-slot-badge {
+    width: 28px; height: 28px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Chivo', sans-serif; font-weight: 800; font-size: 12px;
+    color: white; flex-shrink: 0;
+}
+.hf-slot-badge.pos-1 { background: var(--gold,   #FBBF24); color: #1c1c1c; }
+.hf-slot-badge.pos-2 { background: var(--silver, #C0C0C8); color: #1c1c1c; }
+.hf-slot-badge.pos-3 { background: var(--bronze, #CD7F32); color: #ffffff; }
+.hf-slot-name {
+    flex: 1; min-width: 0;
+    font-family: 'Chivo', sans-serif; font-weight: 700; font-size: 15px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hf-slot-pts {
+    color: var(--text-muted); font-size: 13px; font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* Driver list */
+.hf-driver-list {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    max-height: min(360px, 40vh);
+    overflow-y: auto;
+}
+.hf-driver-list::-webkit-scrollbar { width: 6px; }
+.hf-driver-list::-webkit-scrollbar-track { background: transparent; }
+.hf-driver-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+.hf-driver-list::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+.hf-driver-row {
+    width: 100%; height: 40px; padding: 0 12px;
+    background: transparent; border: none;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; color: var(--text-primary);
+    text-align: left; transition: background 0.12s;
+}
+.hf-driver-row:last-child { border-bottom: none; }
+.hf-driver-row:hover:not(:disabled) { background: var(--bg-hover); }
+.hf-driver-row.is-selected { background: rgba(225,6,0,0.10); }
+.hf-driver-row:disabled { cursor: default; }
+.hf-driver-num {
+    width: 52px; flex-shrink: 0;
+    color: var(--text-muted); font-size: 13px;
+    font-weight: 500;
+}
+.hf-driver-name {
+    flex: 1; min-width: 0;
+    font-family: 'Chivo', sans-serif; font-weight: 700; font-size: 14px;
+    color: var(--text-primary);
+}
+.hf-driver-pill {
+    padding: 3px 7px; border-radius: 6px;
+    font-family: 'Chivo', sans-serif; font-weight: 800; font-size: 11px;
+    letter-spacing: 0.04em; flex-shrink: 0;
+}
+.hf-driver-pill.pos-1 { background: var(--gold,   #FBBF24); color: #1c1c1c; }
+.hf-driver-pill.pos-2 { background: var(--silver, #C0C0C8); color: #1c1c1c; }
+.hf-driver-pill.pos-3 { background: var(--bronze, #CD7F32); color: #ffffff; }
+
+/* Footer actions */
+.hf-bet-actions {
+    display: flex; gap: 12px;
+    padding-top: 4px;
+}
+.hf-btn-ghost {
+    flex: 1; height: 48px; border-radius: 10px;
+    background: transparent; border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-family: 'Chivo', sans-serif; font-weight: 600; font-size: 15px;
+    cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.hf-btn-ghost:hover { background: var(--bg-hover); }
+.hf-btn-primary {
+    flex: 2; height: 48px; border-radius: 10px;
+    background: var(--f1-red); border: none; color: white;
+    font-family: 'Chivo', sans-serif; font-weight: 700; font-size: 15px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 14px rgba(225,6,0,0.35);
+    transition: background 0.15s, transform 0.1s;
+}
+.hf-btn-primary:hover { background: var(--f1-red-light); }
+.hf-btn-primary:active { transform: translateY(1px); }
+.hf-btn-primary.is-disabled,
+.hf-btn-primary[aria-disabled="true"] {
+    opacity: 0.5; cursor: not-allowed; pointer-events: none;
+    box-shadow: none;
+}

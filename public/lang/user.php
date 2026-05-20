@@ -53,6 +53,7 @@ return [
         'result'                => 'Resultat',
         'results'               => 'Resultater',
         'select_driver'         => 'Vælg kører',
+        'close'                 => 'Luk',
         'drivers'               => 'Kørere',
         'users'                 => 'Brugere',
         'bets'                  => 'Bets',
@@ -80,6 +81,11 @@ return [
         'no_upcoming_races'     => 'Ingen kommende løb',
         'points_system'         => 'Point: P1=25, P2=18, P3=15, +5 for top 3 forkert position',
         'no_bets'               => 'Ingen bets endnu',
+        'see_all'               => 'Se alle',
+        'recent_results'        => 'Seneste Resultater',
+        'status_done'           => 'Afsluttet',
+        'rounds_played'         => 'Løb spillet',
+        'rounds_remaining'      => 'Løb tilbage',
 
         // Bet messages
         'perfect_bet'           => 'Perfekt!',
@@ -242,6 +248,7 @@ return [
         'result'                => 'Result',
         'results'               => 'Results',
         'select_driver'         => 'Select driver',
+        'close'                 => 'Close',
         'drivers'               => 'Drivers',
         'users'                 => 'Users',
         'bets'                  => 'Bets',
@@ -269,6 +276,11 @@ return [
         'no_upcoming_races'     => 'No upcoming races',
         'points_system'         => 'Points: P1=25, P2=18, P3=15, +5 for top 3 wrong position',
         'no_bets'               => 'No bets yet',
+        'see_all'               => 'See all',
+        'recent_results'        => 'Recent Results',
+        'status_done'           => 'Done',
+        'rounds_played'         => 'Rounds played',
+        'rounds_remaining'      => 'Rounds left',
 
         // Bet messages
         'perfect_bet'           => 'Perfect!',
