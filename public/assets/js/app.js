@@ -217,5 +217,23 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => alert.remove(), 500);
         }, 5000);
     });
+
+    // Drawer toggle
+    const hamburger = document.getElementById('hf-hamburger');
+    const drawer    = document.getElementById('hf-drawer');
+    if (hamburger && drawer) {
+        hamburger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const open = drawer.classList.toggle('open');
+            this.setAttribute('aria-expanded', String(open));
+        });
+        document.addEventListener('click', function (e) {
+            if (!drawer.classList.contains('open')) return;
+            if (!drawer.contains(e.target) && !hamburger.contains(e.target)) {
+                drawer.classList.remove('open');
+                hamburger.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
 });
 

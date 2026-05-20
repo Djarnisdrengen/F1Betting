@@ -32,7 +32,6 @@ header("Content-Security-Policy: $csp_policy");
 // Handle toggle requests BEFORE any output
 $theme = getTheme();
 $lang = getLang();
-$palette = getPalette();
 
 if (isset($_GET['toggle_theme'])) {
     setTheme($theme === 'dark' ? 'light' : 'dark');
@@ -52,19 +51,9 @@ if (isset($_GET['toggle_lang'])) {
     header("Location: " . $currentUrl);
     exit;
 }
-if (isset($_GET['toggle_palette'])) {
-    setPalette($palette === 'broadcast' ? 'clubhouse' : 'broadcast');
-    $currentUrl = $_SERVER['REQUEST_URI'];
-    $currentUrl = preg_replace('/([&?])toggle_palette=1(&|$)/', '$1', $currentUrl);
-    $currentUrl = rtrim($currentUrl, '?&');
-    header("Location: " . $currentUrl);
-    exit;
-}
-
-// Refresh theme/lang/palette after potential toggle
+// Refresh theme/lang after potential toggle
 $theme = getTheme();
 $lang = getLang();
-$palette = getPalette();
 
 $currentUser = getCurrentUser();
 $settings = getSettings();
@@ -96,118 +85,52 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             </script>
     <?php endif; ?>
 </head>
-<body class="<?= $theme ?><?= $palette === 'clubhouse' ? ' clubhouse' : '' ?>">
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">
-                    <img src="assets/logo_header_dark.png" alt="<?= escape($settings['app_title']) ?>" class="logo-img logo-dark">
-                    <img src="assets/logo_header_light.png" alt="<?= escape($settings['app_title']) ?>" class="logo-img logo-light">
-                    <span class="logo-text"><?= escape($settings['app_title']) ?></span>
-                    <span class="logo-year"><?= escape($settings['app_year']) ?></span>
-                </a>
-                
-                <!-- Mobile menu button -->
-                <button class="mobile-menu-btn" data-link="toggleMobileMenu" aria-label="Menu">
-                    <i class="fas fa-bars"></i>
-                </button>
-                
-                <nav class="nav" id="main-nav">
-                    <a href="/" class="nav-link <?= $currentPage === 'index' ? 'active' : '' ?>" title="<?= t('home') ?>">
-                        <i class="fas fa-home"></i> <span><?= t('home') ?></span>
-                    </a>
-                    <a href="leaderboard.php" class="nav-link <?= $currentPage === 'leaderboard' ? 'active' : '' ?>" title="<?= t('leaderboard') ?>">
-                        <i class="fas fa-trophy"></i> <span><?= t('leaderboard') ?></span>
-                    </a>
-                    <a href="races.php" class="nav-link <?= $currentPage === 'races' ? 'active' : '' ?>" title="<?= t('races') ?>">
-                        <i class="fas fa-flag"></i> <span><?= t('races') ?></span>
-                    </a>
-                    <?php if ($currentUser): ?>
-                    <a href="rules.php" class="nav-link <?= $currentPage === 'rules' ? 'active' : '' ?>" title="<?= t('rules') ?>">
-                        <i class="fas fa-book"></i> <span><?= t('rules') ?></span>
-                    </a>
-                    <?php endif; ?>
-                    <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
-                    <a href="admin.php" class="nav-link <?= $currentPage === 'admin' ? 'active' : '' ?>" title="<?= t('admin') ?>">
-                        <i class="fas fa-cog"></i> <span><?= t('admin') ?></span>
-                    </a>
-                    <?php endif; ?>
-                    
-                    <!-- Mobile-only items — v1.1.0: holds ALL secondary actions -->
-                    <div class="mobile-nav-extras">
-                        <div class="nav-divider"></div>
+<body class="<?= $theme ?>">
+<header class="hf-top">
+    <a class="hf-logo" href="/">
+        <span class="hf-logo-mark">F1</span>
+        <span class="hf-logo-text">
+            <?= escape($settings['app_title']) ?>
+            <span class="yr"><?= escape($settings['app_year']) ?></span>
+        </span>
+    </a>
+    <button class="hf-hamburger" id="hf-hamburger" aria-label="Menu" aria-expanded="false" aria-controls="hf-drawer">
+        <span class="bars"><span></span><span></span><span></span></span>
+    </button>
+</header>
 
-                        <?php if ($currentUser): ?>
-                            <a href="profile.php" class="nav-link <?= $currentPage === 'profile' ? 'active' : '' ?>">
-                                <i class="fas fa-user"></i> <span><?= t('profile') ?></span>
-                                <?php if ($currentUser['stars'] > 0): ?>
-                                    <span class="meta">★<?= $currentUser['stars'] ?></span>
-                                <?php endif; ?>
-                            </a>
-                            <a href="logout.php" class="nav-link">
-                                <i class="fas fa-sign-out-alt"></i> <span><?= t('logout') ?></span>
-                            </a>
-                        <?php else: ?>
-                            <a href="login.php" class="nav-link">
-                                <i class="fas fa-sign-in-alt"></i> <span><?= t('login') ?></span>
-                            </a>
-                        <?php endif; ?>
+<nav class="hf-drawer" id="hf-drawer">
+    <a href="/" class="hf-drawer-row <?= $currentPage === 'index' ? 'active' : '' ?>">
+        <i class="fas fa-home"></i><span><?= t('home') ?></span>
+    </a>
+    <a href="races.php" class="hf-drawer-row <?= $currentPage === 'races' ? 'active' : '' ?>">
+        <i class="fas fa-flag"></i><span><?= t('races') ?></span>
+    </a>
+    <a href="leaderboard.php" class="hf-drawer-row <?= $currentPage === 'leaderboard' ? 'active' : '' ?>">
+        <i class="fas fa-trophy"></i><span><?= t('leaderboard') ?></span>
+    </a>
+    <?php if ($currentUser): ?>
+    <a href="rules.php" class="hf-drawer-row <?= $currentPage === 'rules' ? 'active' : '' ?>">
+        <i class="fas fa-book"></i><span><?= t('rules') ?></span>
+    </a>
+    <?php endif; ?>
+    <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
+    <a href="admin.php" class="hf-drawer-row <?= $currentPage === 'admin' ? 'active' : '' ?>">
+        <i class="fas fa-cog"></i><span><?= t('admin') ?></span>
+    </a>
+    <?php endif; ?>
+    <?php if ($currentUser): ?>
+    <a href="profile.php" class="hf-drawer-row <?= $currentPage === 'profile' ? 'active' : '' ?>">
+        <i class="fas fa-user"></i><span><?= t('profile') ?></span>
+    </a>
+    <a href="logout.php" class="hf-drawer-row">
+        <i class="fas fa-sign-out-alt"></i><span><?= t('logout') ?></span>
+    </a>
+    <?php else: ?>
+    <a href="login.php" class="hf-drawer-row">
+        <i class="fas fa-sign-in-alt"></i><span><?= t('login') ?></span>
+    </a>
+    <?php endif; ?>
+</nav>
 
-                        <div class="nav-divider"></div>
-
-                        <a href="?toggle_palette=1" class="nav-link">
-                            <i class="fas fa-<?= $palette === 'clubhouse' ? 'tv' : 'mug-hot' ?>"></i>
-                            <span><?= t('toggle_palette') ?></span>
-                            <span class="meta"><?= $palette === 'clubhouse' ? 'Clubhouse' : 'Broadcast' ?></span>
-                        </a>
-
-                        <a href="?toggle_theme=1" class="nav-link">
-                            <i class="fas fa-<?= $theme === 'dark' ? 'sun' : 'moon' ?>"></i>
-                            <span><?= t('toggle_theme') ?></span>
-                            <span class="meta"><?= ucfirst($theme) ?></span>
-                        </a>
-
-                        <a href="?toggle_lang=1" class="nav-link">
-                            <i class="fas fa-globe"></i>
-                            <span><?= t('lang_switch_label') ?></span>
-                            <span class="meta"><?= strtoupper($lang) ?></span>
-                        </a>
-                    </div>
-                </nav>
-                
-                <div class="controls desktop-only">
-                    <!-- Palette Toggle -->
-                    <a href="?toggle_palette=1" class="btn btn-ghost btn-icon" title="<?= t('toggle_palette') ?>">
-                        <i class="fas fa-<?= $palette === 'clubhouse' ? 'tv' : 'mug-hot' ?>"></i>
-                    </a>
-
-                    <!-- Theme Toggle -->
-                    <a href="?toggle_theme=1" class="btn btn-ghost btn-icon" title="<?= t('toggle_theme') ?>">
-                        <i class="fas fa-<?= $theme === 'dark' ? 'sun' : 'moon' ?>"></i>
-                    </a>
-
-                    <!-- Language Toggle -->
-                    <a href="?toggle_lang=1" class="btn btn-ghost btn-icon" title="<?= t('change_language') ?>">
-                        <i class="fas fa-globe"></i>
-                    </a>
-                    
-                    <?php if ($currentUser): ?>
-                        <a href="profile.php" class="btn btn-ghost">
-                            <div class="user-avatar" style="width:32px;height:32px;font-size:0.875rem;">
-                                <?= strtoupper(substr($currentUser['display_name'] ?: $currentUser['email'], 0, 1)) ?>
-                            </div>
-                            <span class="user-name"><?= escape($currentUser['display_name'] ?: $currentUser['email']) ?></span>
-                            <?php if ($currentUser['stars'] > 0): ?>
-                                <span class="star">★<?= $currentUser['stars'] ?></span>
-                            <?php endif; ?>
-                        </a>
-                        <a href="logout.php" class="btn btn-secondary btn-sm"><?= t('logout') ?></a>
-                    <?php else: ?>
-                        <a href="login.php" class="btn btn-primary"><?= t('login') ?></a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </header>
-    
-    <main class="container" style="padding: 2rem 1rem; min-height: calc(100vh - 200px);">
+<main class="container" style="padding: 2rem 1rem; min-height: calc(100vh - 200px);">
