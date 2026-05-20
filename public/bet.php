@@ -7,15 +7,15 @@ $currentUser = getCurrentUser();
 $db = getDB();
 $settings = getSettings();
 
-$raceId    = sanitizeString($_GET['race'] ?? '');
-$returnTo  = ($_GET['return'] ?? '') === 'index' ? 'index.php' : 'races.php';
+$raceId      = sanitizeString($_GET['race'] ?? '');
+$returnParam = ($_GET['return'] ?? '') === 'index' ? 'index' : 'races';
+$returnTo    = $returnParam === 'index' ? 'index.php' : 'races.php';
 
 if (!$raceId) {
     header("Location: " . $returnTo);
     exit;
 }
 
-// Hent race
 $stmt = $db->prepare("SELECT * FROM races WHERE id = ?");
 $stmt->execute([$raceId]);
 $race = $stmt->fetch();
@@ -25,20 +25,17 @@ if (!$race) {
     exit;
 }
 
-// Tjek betting status
 $status = getBettingStatus($race, $settings);
 if ($status['status'] !== 'open') {
     header("Location: " . $returnTo);
     exit;
 }
 
-// Tjek om bruger er med i konkurrence
 if (!$currentUser['in_competition']) {
     header("Location: " . $returnTo . "?error=not_in_competition");
     exit;
 }
 
-// Tjek om bruger allerede har bet
 $stmt = $db->prepare("SELECT id FROM bets WHERE user_id = ? AND race_id = ?");
 $stmt->execute([$currentUser['id'], $raceId]);
 if ($stmt->fetch()) {
@@ -46,16 +43,15 @@ if ($stmt->fetch()) {
     exit;
 }
 
-// Hent kørere
 [$drivers, $driversById] = fetchDrivers($db);
 
-// Hent eksisterende bets for dette løb
 $stmt = $db->prepare("SELECT p1, p2, p3 FROM bets WHERE race_id = ?");
 $stmt->execute([$raceId]);
 $existingBets = $stmt->fetchAll();
 
 $error = '';
-$lang = getLang();
+$lang  = getLang();
+$pts   = ['p1' => $settings['points_p1'] ?? 25, 'p2' => $settings['points_p2'] ?? 18, 'p3' => $settings['points_p3'] ?? 15];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
@@ -74,69 +70,109 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Build JS driver map (surname only, JSON-safe)
+$driversForJs = [];
+foreach ($driversById as $id => $d) {
+    $parts = explode(' ', $d['name'] ?? '');
+    $driversForJs[$id] = ['surname' => array_pop($parts)];
+}
+
+$raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
+$locAbbr      = mb_strtoupper(mb_substr($race['location'], 0, 3));
+
 include __DIR__ . '/includes/header.php';
 ?>
 
-<div style="max-width: 600px; margin: 0 auto;">
-    <div class="card">
-        <div class="card-header">
-            <div class="flex items-center gap-2 mb-2">
-                <div style="width: 48px; height: 48px; background: var(--f1-red); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-flag-checkered" style="color: white; font-size: 1.25rem;"></i>
-                </div>
-                <div>
-                    <h2 style="margin: 0;"><?= escape($race['name']) ?></h2>
-                    <p class="text-muted" style="margin: 0;">
-                        <i class="fas fa-map-marker-alt"></i> <?= escape($race['location']) ?> · 
-                        <i class="fas fa-clock"></i> <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
-                    </p>
+<main class="hf-body">
+    <div class="hf-container" style="padding-top:24px; padding-bottom:24px;">
+        <div class="hf-racefull">
+            <div class="hf-racefull-hd">
+                <div class="hf-racenum"><?= escape($locAbbr) ?></div>
+                <div class="hf-racefull-info">
+                    <div class="hf-racename"><?= escape($race['name']) ?></div>
+                    <div class="hf-racemeta">
+                        <?= escape($race['location']) ?> &nbsp;·&nbsp;
+                        <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Qualifying -->
-            <?php $_qd_data = $race; $_qd_keys = ['quali_p1', 'quali_p2', 'quali_p3']; $_qd_label = t('qualifying'); include __DIR__ . '/includes/qualifying-display.php'; ?>
         </div>
-        
-        <div class="card-body">
-            <p class="text-muted mb-2"><?= t('betting_window') ?> · <?= t('points_system') ?></p>
-            
+    </div>
+
+<script nonce="<?= $nonce ?>">
+window.driversById = <?= json_encode($driversForJs) ?>;
+window.betPostBack = {
+    p1: <?= json_encode($_POST['p1'] ?? '') ?>,
+    p2: <?= json_encode($_POST['p2'] ?? '') ?>,
+    p3: <?= json_encode($_POST['p3'] ?? '') ?>
+};
+window.betL10n = { pickDriver: <?= json_encode(t('select_driver')) ?> };
+</script>
+
+<div class="hf-modal-overlay" data-link="closeBetModal" data-return="<?= escape($returnTo) ?>" role="presentation">
+    <div class="hf-modal-card" role="dialog" aria-modal="true" aria-labelledby="bet-modal-title">
+
+        <section class="hf-bet-header">
+            <div class="hf-bet-avatar"><?= escape($locAbbr) ?></div>
+            <div class="hf-bet-meta">
+                <h2 id="bet-modal-title" class="hf-bet-title"><?= escape($race['name']) ?></h2>
+                <div class="hf-bet-submeta">
+                    <?= escape($race['location']) ?> · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
+                </div>
+                <div class="countdown-timer betting-open hf-bet-countdown" data-closes="<?= $raceDateTime->format('c') ?>">
+                    <i class="fas fa-stopwatch"></i>
+                    <?= t('betting_closes_in') ?>:
+                    <span class="hf-bet-countdown-val countdown-value">--</span>
+                </div>
+            </div>
+            <span class="hf-bet-badge open"><?= t('betting_open') ?></span>
+            <a href="<?= escape($returnTo) ?>" class="hf-bet-close" aria-label="<?= t('close') ?>">✕</a>
+        </section>
+
+        <section class="hf-bet-controls">
             <?php if ($error): ?>
                 <div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> <?= escape($error) ?></div>
             <?php endif; ?>
-            
-            <form method="POST">
-                <?= csrfField() ?>
-                <?php
-                $positions = [
-                    ['key' => 'p1', 'label' => 'P1 (' . ($settings['points_p1'] ?? 25) . ' pts)', 'position' => 1],
-                    ['key' => 'p2', 'label' => 'P2 (' . ($settings['points_p2'] ?? 18) . ' pts)', 'position' => 2],
-                    ['key' => 'p3', 'label' => 'P3 (' . ($settings['points_p3'] ?? 15) . ' pts)', 'position' => 3],
-                ];
-                foreach ($positions as $pos): 
-                ?>
-                    <div class="form-group">
-                        <label class="form-label flex items-center gap-1">
-                            <span class="position-badge position-<?= $pos['position'] ?>">P<?= $pos['position'] ?></span>
-                            <?= $pos['label'] ?>
-                        </label>
-                        <select name="<?= $pos['key'] ?>" class="form-select" required>
-                            <option value=""><?= t('select_driver') ?></option>
-                            <?php foreach ($drivers as $driver): ?>
-                                <option value="<?= $driver['id'] ?>" <?= ($_POST[$pos['key']] ?? '') === $driver['id'] ? 'selected' : '' ?>><?= driverLabel($driver) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                <?php endforeach; ?>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <?= t('place_bet') ?>
+
+            <div class="hf-slots">
+                <?php foreach ([1 => [$pts['p1']], 2 => [$pts['p2']], 3 => [$pts['p3']]] as $pos => [$p]): ?>
+                <button class="hf-slot is-empty" data-link="activateSlot" data-pos="<?= $pos ?>" type="button">
+                    <span class="hf-slot-badge pos-<?= $pos ?>">P<?= $pos ?></span>
+                    <span class="hf-slot-name"><?= t('select_driver') ?></span>
+                    <span class="hf-slot-pts"><?= $p ?> pts</span>
                 </button>
-                <a href="<?= $returnTo ?>" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;">
-                    <?= t('cancel') ?>
-                </a>
-            </form>
-        </div>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="hf-driver-list">
+                <?php foreach ($drivers as $d): ?>
+                <button class="hf-driver-row" data-link="pickDriver" data-driver-id="<?= $d['id'] ?>" type="button">
+                    <span class="hf-driver-num">#<?= intval($d['number']) ?></span>
+                    <span class="hf-driver-name"><?= driverLastName($d) ?></span>
+                </button>
+                <?php endforeach; ?>
+            </div>
+
+            <footer class="hf-bet-actions">
+                <a href="<?= escape($returnTo) ?>" class="hf-btn-ghost"><?= t('cancel') ?></a>
+                <button class="hf-btn-primary is-disabled" data-link="saveBet" aria-disabled="true" type="button">
+                    <i class="fas fa-floppy-disk"></i> <?= t('save') ?>
+                </button>
+            </footer>
+        </section>
+
     </div>
 </div>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<form id="bet-form" method="POST" action="bet.php?race=<?= urlencode($raceId) ?>&return=<?= urlencode($returnParam) ?>" hidden>
+    <?= csrfField() ?>
+    <input type="hidden" name="p1" id="form-p1">
+    <input type="hidden" name="p2" id="form-p2">
+    <input type="hidden" name="p3" id="form-p3">
+</form>
+
+<script nonce="<?= $nonce ?>" src="assets/js/bet-modal.js"></script>
+
+<?php include __DIR__ . '/includes/footer.php';
+// Note: footer.php opens with </main> which closes the <main class="hf-body"> above
+?>
