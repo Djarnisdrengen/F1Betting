@@ -2,7 +2,7 @@
 const { test, expect } = require('@playwright/test');
 const seed = require('../helpers/seed');
 const { parseMarkers, expectMarker } = require('../helpers/markers');
-const { assertDelivered } = require('../helpers/mailsac');
+const { assertDelivered } = require('../helpers/email');
 
 const AUTH_INBOX = 'e2e_auth_f1@mailsac.com';
 

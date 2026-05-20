@@ -14,8 +14,12 @@ try {
     process.env.TEST_USER_PASSWORD    = process.env.TEST_USER_PASSWORD    || cfg.adminPassword;
     process.env.INTEGRATION_SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN || cfg.integrationSeedToken;
     process.env.CRON_SECRET           = process.env.CRON_SECRET           || cfg.cronSecret;
-    process.env.MAILSAC_API_KEY       = process.env.MAILSAC_API_KEY       || cfg.mailsacApiKey;
+    // MAILSAC_INBOX is always loaded — specs use it as the send-to address even in intercept mode.
     process.env.MAILSAC_INBOX         = process.env.MAILSAC_INBOX         || cfg.mailsacInbox;
+    // API key only needed for real Mailsac delivery checks.
+    if ((process.env.EMAIL_BACKEND || 'intercept') === 'mailsac') {
+        process.env.MAILSAC_API_KEY = process.env.MAILSAC_API_KEY || cfg.mailsacApiKey;
+    }
 } catch {
     // PHP config not available — rely on pre-set environment variables (e.g. GitHub Actions).
     process.env.BASE_URL           = process.env[`BASE_URL_${env.toUpperCase()}`]           || process.env.BASE_URL;

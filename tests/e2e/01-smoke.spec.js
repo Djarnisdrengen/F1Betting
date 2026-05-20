@@ -32,7 +32,7 @@ test.describe("Public pages", () => {
 
     test("index page renders upcoming races section", async ({ page }) => {
         await page.goto("/");
-        await expect(page.locator(".races-section")).toBeVisible();
+        await expect(page.locator('[data-testid="home-results"]')).toBeVisible();
     });
 });
 
@@ -80,9 +80,9 @@ test.describe("Protected pages", () => {
 
     test("profile page shows all section headings", async ({ page }) => {
         await page.goto("/profile.php");
-        await expect(page.locator(".card-header h3").filter({ hasText: /Edit Profile|Rediger Profil/ })).toBeVisible();
-        await expect(page.locator(".card-header h3").filter({ hasText: /Change Password|Skift Adgangskode/ })).toBeVisible();
-        await expect(page.locator(".card-header h3").filter({ hasText: /Betting History|Din Betting Historik/ })).toBeVisible();
+        await expect(page.locator("h3").filter({ hasText: /Edit Profile|Rediger Profil/ })).toBeVisible();
+        await expect(page.locator("h3").filter({ hasText: /Change Password|Skift Adgangskode/ })).toBeVisible();
+        await expect(page.locator("h3").filter({ hasText: /Betting History|Din Betting Historik/ })).toBeVisible();
     });
 
     test("admin panel loads with races tab", async ({ page }) => {

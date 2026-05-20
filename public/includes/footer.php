@@ -74,6 +74,33 @@
     // Update every second
     updateCountdowns();
     setInterval(updateCountdowns, 1000);
+
+    // hf-countdown: 4-cell DAG/TIM/MIN/SEK grid driven by data-target ISO string
+    function updateHfCountdowns() {
+        document.querySelectorAll('.hf-countdown[data-target]').forEach(el => {
+            const target = new Date(el.dataset.target);
+            const diff = target - new Date();
+            const cells = el.querySelectorAll('.hf-cd-num');
+            if (cells.length < 4) return;
+            if (diff <= 0) {
+                cells[0].textContent = '0';
+                cells[1].textContent = '0';
+                cells[2].textContent = '0';
+                cells[3].textContent = '0';
+                return;
+            }
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            cells[0].textContent = String(d).padStart(2, '0');
+            cells[1].textContent = String(h).padStart(2, '0');
+            cells[2].textContent = String(m).padStart(2, '0');
+            cells[3].textContent = String(s).padStart(2, '0');
+        });
+    }
+    updateHfCountdowns();
+    setInterval(updateHfCountdowns, 1000);
     </script>
 </body>
 </html>

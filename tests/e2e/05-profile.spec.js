@@ -44,7 +44,7 @@ test.describe.serial("Profile", () => {
 
     test("bet history shows empty state when no bets placed", async () => {
         await sharedPage.goto("/profile.php");
-        await expect(sharedPage.locator(".card-body.text-center.text-muted")).toBeVisible();
+        await expect(sharedPage.locator('[data-testid="empty-bet-history"]')).toBeVisible();
     });
 
     test("change password — wrong current password shows error", async () => {

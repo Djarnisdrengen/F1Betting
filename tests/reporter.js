@@ -40,6 +40,8 @@ class CustomReporter {
         if (result.status === "passed") {
             this._passed++;
             process.stdout.write(`\r${indent}✅ ${title} (${secs})\n`);
+        } else if (result.status === "skipped") {
+            process.stdout.write(`\r${indent}⏭  ${title} (skipped)\n`);
         } else {
             this._failed++;
             const msg = result.error?.message?.split("\n")[0] || "failed";

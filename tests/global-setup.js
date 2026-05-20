@@ -2,7 +2,7 @@
 const { chromium } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
-const { purgeInbox } = require('./helpers/mailsac');
+const { purgeInbox } = require('./helpers/email');
 
 require('dotenv').config({ path: path.join(__dirname, '../build-deploy/.env'), override: true });
 
@@ -13,8 +13,10 @@ try {
     process.env.BASE_URL           = process.env.BASE_URL           || cfg.siteUrl;
     process.env.TEST_USER_EMAIL    = process.env.TEST_USER_EMAIL    || cfg.adminEmail;
     process.env.TEST_USER_PASSWORD = process.env.TEST_USER_PASSWORD || cfg.adminPassword;
-    process.env.MAILSAC_API_KEY    = process.env.MAILSAC_API_KEY    || cfg.mailsacApiKey;
     process.env.MAILSAC_INBOX      = process.env.MAILSAC_INBOX      || cfg.mailsacInbox;
+    if ((process.env.EMAIL_BACKEND || 'intercept') === 'mailsac') {
+        process.env.MAILSAC_API_KEY = process.env.MAILSAC_API_KEY || cfg.mailsacApiKey;
+    }
 } catch { /* rely on pre-set env vars (e.g. GitHub Actions) */ }
 
 const AUTH_FILE = path.join(__dirname, '../.auth/admin.json');
@@ -28,9 +30,13 @@ const MAILSAC_INBOXES = [
 ];
 
 module.exports = async function globalSetup() {
-    if (process.env.MAILSAC_API_KEY && env !== 'live') {
+    const EMAIL_BACKEND = process.env.EMAIL_BACKEND || 'intercept';
+    if (EMAIL_BACKEND === 'mailsac' && process.env.MAILSAC_API_KEY && env !== 'live') {
         await Promise.all(MAILSAC_INBOXES.map(inbox => purgeInbox(inbox, process.env.MAILSAC_API_KEY)));
         console.log('[setup] Mailsac inboxes purged →', MAILSAC_INBOXES.join(', '));
+    } else if (EMAIL_BACKEND === 'intercept' && env !== 'live') {
+        await purgeInbox();
+        console.log('[setup] Intercepted email log cleared');
     }
 
     fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true });

@@ -1,6 +1,6 @@
 const { test, expect } = require("@playwright/test");
 const seed = require('../helpers/seed');
-const { getMessages, waitForNewMessages } = require('../helpers/mailsac');
+const { getMessages, waitForNewMessages } = require('../helpers/email');
 
 const SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN;
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -181,7 +181,6 @@ test.describe("Cron jobs", () => {
         });
 
         test('betting-open email delivered to in-competition inbox', async ({ page }) => {
-            test.skip(!MAILSAC_API_KEY, 'MAILSAC_API_KEY not set — skipping real-send assertion');
             test.setTimeout(90000);
 
             const inbox = 'e2e_notify_open_in_f1@mailsac.com';
@@ -213,7 +212,6 @@ test.describe("Cron jobs", () => {
         });
 
         test('betting-close email delivered to unbetted inbox', async ({ page }) => {
-            test.skip(!MAILSAC_API_KEY, 'MAILSAC_API_KEY not set — skipping real-send assertion');
             test.setTimeout(60000);
 
             const inbox = 'e2e_notify_close_a_f1@mailsac.com';

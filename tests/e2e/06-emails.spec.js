@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
-const { waitForMessages, getEmailBody } = require('../helpers/mailsac');
+const { waitForMessages, getEmailBody } = require('../helpers/email');
 
 const ADMIN_AUTH      = path.join(__dirname, '../../.auth/admin.json');
 const SEED_TOKEN      = process.env.INTEGRATION_SEED_TOKEN;
@@ -25,7 +25,6 @@ const MAILSAC_INBOX   = process.env.MAILSAC_INBOX;
 
 test.describe("email preview", () => {
     test("sends one of each email type to MAILSAC_INBOX and verifies delivery and content", async ({ page }) => {
-        test.skip(!MAILSAC_API_KEY, 'MAILSAC_API_KEY not set — skipping Mailsac delivery assertions');
         test.setTimeout(180000);
 
         const res = await page.goto(

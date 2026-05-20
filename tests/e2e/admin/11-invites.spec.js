@@ -1,7 +1,7 @@
 'use strict';
 const { test, expect } = require('../../fixtures');
 const seed = require('../../helpers/seed');
-const { assertDelivered, getEmailBody } = require('../../helpers/mailsac');
+const { assertDelivered, getEmailBody } = require('../../helpers/email');
 const { expectMarker } = require('../../helpers/markers');
 
 const SEED_TOKEN       = process.env.INTEGRATION_SEED_TOKEN;
@@ -24,10 +24,10 @@ test.describe('Invite management', () => {
         await page.goto(`/admin.php?tab=invites&e2e_token=${SEED_TOKEN}`);
 
         await page.fill('input[name="invite_email"]', E2E_INVITE_EMAIL);
-        await page.locator('button[name="create_invite"]').evaluate(el => el.click());
-
         // Invite creation sends a real email — SMTP may take up to 30s if it falls back to Resend.
-        await page.waitForURL(/tab=invites/, { timeout: 50000 });
+        // click() auto-waits for the POST navigation to complete; waitForURL resolves immediately
+        // when the URL already matches, so we rely on click() here instead.
+        await page.locator('button[name="create_invite"]').click({ timeout: 50000 });
         await expect(page.locator('.alert-success')).toBeVisible({ timeout: 5000 });
 
         const body = await page.textContent('body');

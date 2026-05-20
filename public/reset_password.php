@@ -62,56 +62,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
 include __DIR__ . '/includes/header.php';
 ?>
 
-<div style="max-width: 400px; margin: 3rem auto;">
-    <div class="card">
-        <div class="card-header text-center">
-            <div style="width: 64px; height: 64px; background: var(--f1-red); border-radius: 16px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-lock" style="font-size: 2rem; color: white;"></i>
-            </div>
-            <h2><?= t('reset_password_title') ?></h2>
-            <?php if ($validToken && isset($resetRequest)): ?>
-                <p class="text-muted"><?= escape($resetRequest['email']) ?></p>
-            <?php endif; ?>
-        </div>
-        <div class="card-body">
-            <?php if ($error): ?>
-                <div class="alert alert-error"><?= escape($error) ?></div>
-            <?php endif; ?>
-            
-            <?php if ($success): ?>
-                <div class="alert alert-success"><?= escape($success) ?></div>
-                <a href="login.php" class="btn btn-primary" style="width: 100%;">
-                    <?= t('go_to_login') ?>
-                </a>
-            <?php elseif ($validToken): ?>
-                <form method="POST">
-                    <?= csrfField() ?>
-                    <div class="form-group">
-                        <label class="form-label"><?= t('new_password') ?></label>
-                        <input type="password" name="password" class="form-input" required minlength="6" placeholder="••••••••">
+<div class="hf-container">
+    <div class="hf-auth-wrap">
+        <div class="card">
+            <div class="card-body">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div style="width:64px;height:64px;background:var(--f1-red);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-lock" style="font-size:2rem;color:white;"></i>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label"><?= t('confirm_password') ?></label>
-                        <input type="password" name="confirm_password" class="form-input" required minlength="6" placeholder="••••••••">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <?= t('reset_password_btn') ?>
-                    </button>
-                </form>
-            <?php else: ?>
-                <p class="text-center text-muted mb-2">
-                    <?= t('link_invalid_expired') ?>
+                    <h2 style="margin:0 0 6px;"><?= t('reset_password_title') ?></h2>
+                    <?php if ($validToken && isset($resetRequest)): ?>
+                        <p class="text-muted" style="margin:0;"><?= escape($resetRequest['email']) ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <?php if ($error): ?>
+                    <div class="alert alert-error"><?= escape($error) ?></div>
+                <?php endif; ?>
+
+                <?php if ($success): ?>
+                    <div class="alert alert-success"><?= escape($success) ?></div>
+                    <a href="login.php" class="btn btn-primary" style="width:100%;">
+                        <?= t('go_to_login') ?>
+                    </a>
+                <?php elseif ($validToken): ?>
+                    <form method="POST">
+                        <?= csrfField() ?>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('new_password') ?></label>
+                            <input type="password" name="password" class="form-input" required minlength="6" placeholder="••••••••">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('confirm_password') ?></label>
+                            <input type="password" name="confirm_password" class="form-input" required minlength="6" placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">
+                            <?= t('reset_password_btn') ?>
+                        </button>
+                    </form>
+                <?php else: ?>
+                    <p class="text-center text-muted mb-2">
+                        <?= t('link_invalid_expired') ?>
+                    </p>
+                    <a href="forgot_password.php" class="btn btn-primary" style="width:100%;">
+                        <?= t('request_new_link') ?>
+                    </a>
+                <?php endif; ?>
+
+                <p class="text-center mt-2 text-muted">
+                    <a href="login.php" class="text-accent">
+                        <i class="fas fa-arrow-left"></i> <?= t('back_to_login') ?>
+                    </a>
                 </p>
-                <a href="forgot_password.php" class="btn btn-primary" style="width: 100%;">
-                    <?= t('request_new_link') ?>
-                </a>
-            <?php endif; ?>
-            
-            <p class="text-center mt-2 text-muted">
-                <a href="login.php" class="text-accent">
-                    <i class="fas fa-arrow-left"></i> <?= t('back_to_login') ?>
-                </a>
-            </p>
+            </div>
         </div>
     </div>
 </div>
