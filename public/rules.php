@@ -31,7 +31,7 @@ include __DIR__ . '/includes/header.php';
 <div class="hf-container">
     <header class="hf-pageh">
         <div class="crumb"><?= t('rules_title') ?> &middot; <?= t('season') ?> <?= escape($settings['app_year']) ?></div>
-        <h1><?= $lang === 'da' ? 'Sådan spiller vi' : 'How we play' ?></h1>
+        <h1><?= t('rules_how_we_play') ?></h1>
     </header>
 
     <!-- MD-only chip row -->
@@ -47,7 +47,7 @@ include __DIR__ . '/includes/header.php';
     <div class="hf-rules-layout">
         <!-- LG+ TOC sidebar -->
         <nav class="hf-toc">
-            <div class="hf-toc-title"><?= $lang === 'da' ? 'Indhold' : 'Contents' ?></div>
+            <div class="hf-toc-title"><?= t('rules_contents') ?></div>
             <?php foreach ($ruleMeta as $r): ?>
             <a href="#r-<?= $r['n'] ?>"><span class="n"><?= $r['n'] ?></span><?= escape($r['label']) ?></a>
             <?php endforeach; ?>

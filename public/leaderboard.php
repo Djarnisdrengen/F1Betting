@@ -61,14 +61,14 @@ include __DIR__ . '/includes/header.php';
     <?php if ($selfEntry):
         $d = $selfEntry['rank_delta'];
         if ($d !== null) {
-            if ($d > 0)       $deltaText = '↑ ' . $d . ' ' . ($lang === 'da' ? 'pladser siden sidste runde' : 'places since last race');
-            elseif ($d < 0)   $deltaText = '↓ ' . abs($d) . ' ' . ($lang === 'da' ? 'pladser siden sidste runde' : 'places since last race');
-            else               $deltaText = $lang === 'da' ? 'Ingen ændring siden sidste runde' : 'No change since last race';
+            if ($d > 0)       $deltaText = '↑ ' . $d . ' ' . t('rank_delta_places');
+            elseif ($d < 0)   $deltaText = '↓ ' . abs($d) . ' ' . t('rank_delta_places');
+            else               $deltaText = t('rank_no_change');
         }
     ?>
     <div class="hf-self-card hf-self-card-home">
         <div class="hf-self-card-home-left">
-            <div class="hf-self-label"><?= $lang === 'da' ? 'DIN POSITION' : 'YOUR POSITION' ?></div>
+            <div class="hf-self-label"><?= t('your_position') ?></div>
             <div class="hf-self-rank">
                 <span class="hf-self-rank-n"><?= $selfRank ?></span>
                 <span class="hf-self-rank-of">/ <?= $totalUsers ?></span>

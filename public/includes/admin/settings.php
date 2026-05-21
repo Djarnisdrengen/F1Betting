@@ -5,7 +5,7 @@
             <?= csrfField() ?>
             <div class="grid grid-2 mb-2">
                 <div class="form-group">
-                    <label class="form-label">App Title</label>
+                    <label class="form-label"><?= t('app_title_label') ?></label>
                     <input type="text" name="app_title" class="form-input" value="<?= escape($settings['app_title']) ?>">
                 </div>
                 <div class="form-group">
@@ -15,21 +15,21 @@
             </div>
             <div class="grid grid-2 mb-2">
                 <div class="form-group">
-                    <label class="form-label">Hero Title (English)</label>
+                    <label class="form-label"><?= t('hero_title_en_label') ?></label>
                     <input type="text" name="hero_title_en" class="form-input" value="<?= escape($settings['hero_title_en']) ?>">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Hero Title (Dansk)</label>
+                    <label class="form-label"><?= t('hero_title_da_label') ?></label>
                     <input type="text" name="hero_title_da" class="form-input" value="<?= escape($settings['hero_title_da']) ?>">
                 </div>
             </div>
             <div class="grid grid-2 mb-2">
                 <div class="form-group">
-                    <label class="form-label">Hero Text (English)</label>
+                    <label class="form-label"><?= t('hero_text_en_label') ?></label>
                     <textarea name="hero_text_en" class="form-input" rows="3"><?= escape($settings['hero_text_en']) ?></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Hero Text (Dansk)</label>
+                    <label class="form-label"><?= t('hero_text_da_label') ?></label>
                     <textarea name="hero_text_da" class="form-input" rows="3"><?= escape($settings['hero_text_da']) ?></textarea>
                 </div>
             </div>

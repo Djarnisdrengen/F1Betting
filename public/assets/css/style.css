@@ -1684,10 +1684,9 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     padding-left: 16px;
     padding-right: 16px;
 }
-/* Container max-widths per breakpoint */
-.hf-frame-md .hf-container { padding-left: 24px; padding-right: 24px; max-width: 760px; }
-.hf-frame-lg .hf-container { padding-left: 32px; padding-right: 32px; max-width: 1080px; }
-.hf-frame-xl .hf-container { padding-left: 48px; padding-right: 48px; max-width: 1280px; }
+@media (min-width: 768px)  { .hf-container { padding-left: 24px; padding-right: 24px; max-width: 760px; } }
+@media (min-width: 1024px) { .hf-container { padding-left: 32px; padding-right: 32px; max-width: 1080px; } }
+@media (min-width: 1280px) { .hf-container { padding-left: 48px; padding-right: 48px; max-width: 1280px; } }
 
 /* ============================================================
    Hero — full-bleed next-race
@@ -2004,7 +2003,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-profile-avatar {
     width: 64px; height: 64px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2d2d33, #1c1c20);
+    background: linear-gradient(135deg, var(--bg-hover), var(--bg-secondary));
     border: 2px solid var(--f1-red);
     display: inline-flex; align-items: center; justify-content: center;
     font-family: var(--display); font-weight: 900;

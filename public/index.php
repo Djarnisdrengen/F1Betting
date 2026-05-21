@@ -82,10 +82,7 @@ $badgeMap = [
     'status-completed' => 'done',
 ];
 
-// Countdown label arrays (DA/EN)
-$cdLabels = $lang === 'da'
-    ? ['DAG', 'TIM', 'MIN', 'SEK']
-    : ['DAYS', 'HRS', 'MIN', 'SEC'];
+$cdLabels = [t('cd_days'), t('cd_hrs'), t('cd_min'), t('cd_sec')];
 
 $heroTitle = $lang === 'da' ? $settings['hero_title_da'] : $settings['hero_title_en'];
 
@@ -175,15 +172,15 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
 <div class="hf-container">
     <div class="hf-self-card hf-self-card-home">
         <div class="hf-self-card-home-left">
-            <div class="hf-self-label"><?= $lang === 'da' ? 'DIN POSITION' : 'YOUR POSITION' ?></div>
+            <div class="hf-self-label"><?= t('your_position') ?></div>
             <div class="hf-self-rank">
                 <span class="hf-self-rank-n"><?= $myRank ?></span>
                 <span class="hf-self-rank-of">/ <?= $totalUsers ?></span>
             </div>
             <?php if ($myDelta !== null):
-                if ($myDelta > 0)        $deltaText = '↑ ' . $myDelta . ' ' . ($lang === 'da' ? 'pladser siden sidste runde' : 'places since last race');
-                elseif ($myDelta < 0)    $deltaText = '↓ ' . abs($myDelta) . ' ' . ($lang === 'da' ? 'pladser siden sidste runde' : 'places since last race');
-                else                     $deltaText = $lang === 'da' ? 'Ingen ændring siden sidste runde' : 'No change since last race';
+                if ($myDelta > 0)        $deltaText = '↑ ' . $myDelta . ' ' . t('rank_delta_places');
+                elseif ($myDelta < 0)    $deltaText = '↓ ' . abs($myDelta) . ' ' . t('rank_delta_places');
+                else                     $deltaText = t('rank_no_change');
             ?>
             <div class="hf-self-delta"><?= escape($deltaText) ?></div>
             <?php endif; ?>

@@ -22,11 +22,11 @@ $firstName = $currentUser
         <div class="hf-bb-icon">
             <i class="fas <?= $theme === 'dark' ? 'fa-sun' : 'fa-moon' ?>"></i>
         </div>
-        <span>THEME</span>
+        <span><?= strtoupper(t('theme')) ?></span>
     </a>
     <a href="?toggle_lang=1" class="hf-bb-item" title="Language">
         <div class="hf-bb-icon"><?= strtoupper($lang) ?></div>
-        <span><?= $lang === 'da' ? 'DANSK' : 'ENGLISH' ?></span>
+        <span><?= strtoupper(t('lang_name')) ?></span>
     </a>
     <a href="?toggle_font=1" class="hf-bb-item">
         <div class="hf-bb-icon" style="font-family: var(--font-accent);">Aa</div>

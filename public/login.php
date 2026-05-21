@@ -65,7 +65,7 @@ include __DIR__ . '/includes/header.php';
         </div>
         <div class="hf-login-card">
             <div>
-                <div class="hf-hero-eyebrow" style="margin-bottom:8px;"><?= $lang === 'da' ? 'Velkommen tilbage' : 'Welcome back' ?></div>
+                <div class="hf-hero-eyebrow" style="margin-bottom:8px;"><?= t('welcome_back') ?></div>
                 <h2 style="font-family:var(--font-display);font-weight:900;font-size:28px;letter-spacing:-0.02em;margin:0 0 8px;"><?= t('login') ?></h2>
             </div>
             <form method="POST" style="display:flex;flex-direction:column;gap:14px;">

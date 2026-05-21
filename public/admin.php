@@ -398,9 +398,7 @@ if (isset($_POST['create_invite'])) {
                 if ($result['success']) {
                     $message = sprintf(t('invite_sent_to'), $inviteEmail);
                 } else {
-                    $message = $lang === 'da'
-                        ? 'Invitation oprettet! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
-                        : 'Invitation created! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>';
+                    $message = sprintf(t('invite_created_email_failed'), $inviteLink);
                 }
             }
         }
@@ -438,9 +436,7 @@ if (isset($_POST['resend_invite'])) {
         if ($result['success']) {
             $message = t('invite_resent');
         } else {
-            $message = $lang === 'da' 
-                ? 'Invitation forlænget! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>'
-                : 'Invitation extended! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">' . $inviteLink . '</code>';
+            $message = sprintf(t('invite_extended_email_failed'), $inviteLink);
         }
     }
     header("Location: admin.php?tab=invites&msg=" . urlencode($message));
