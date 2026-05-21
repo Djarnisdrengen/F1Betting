@@ -98,7 +98,7 @@ function t($key, $lang = null) {
 // TEMA FUNKTIONER
 // ============================================
 function getTheme() {
-    return $_SESSION['theme'] ?? 'dark';
+    return $_SESSION['theme'] ?? 'light';
 }
 
 function setTheme($theme) {
