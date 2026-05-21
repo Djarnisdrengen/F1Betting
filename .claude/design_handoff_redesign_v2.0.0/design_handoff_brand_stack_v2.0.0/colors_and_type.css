@@ -1,0 +1,294 @@
+/* ============================================================
+   Frederikssund Formel 1 Klub — Colors & Type
+   Lifted directly from public/assets/css/style.css in the
+   F1Betting repo. Two themes: dark (default) and light.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+/* Self-hosted Font Awesome 6 (icon system).
+   Kalam + Courier Prime remain Google-hosted — no brand-font upload exists for them yet. */
+@font-face {
+    font-family: "Font Awesome 6 Free";
+    font-style: normal; font-weight: 900; font-display: block;
+    src: url("fonts/fa-solid-900.woff2") format("woff2"),
+         url("fonts/fa-solid-900.ttf") format("truetype");
+}
+@font-face {
+    font-family: "Font Awesome 6 Free";
+    font-style: normal; font-weight: 400; font-display: block;
+    src: url("fonts/fa-regular-400.woff2") format("woff2"),
+         url("fonts/fa-regular-400.ttf") format("truetype");
+}
+@font-face {
+    font-family: "Font Awesome 6 Brands";
+    font-style: normal; font-weight: 400; font-display: block;
+    src: url("fonts/fa-brands-400.woff2") format("woff2"),
+         url("fonts/fa-brands-400.ttf") format("truetype");
+}
+
+/* ---- Brand red (constant across themes) -------------------- */
+:root {
+    --f1-red:        #e10600; /* Hero / primary action / accents */
+    --f1-red-dark:   #b30500; /* Pressed states */
+    --f1-red-light:  #ff1a14; /* Hover */
+
+    /* Semantic / status colors (constant across themes) */
+    --status-success:        #059669; /* "Betting open" */
+    --status-success-light:  #10b981;
+    --status-warning:        #d97706; /* "Pending" */
+    --status-warning-light:  #f59e0b;
+    --status-danger:         #dc2626; /* "Betting closed" / errors */
+    --status-danger-light:   #ef4444;
+    --status-neutral:        #6b7280; /* "Completed" */
+
+    /* Podium colors — gold / silver / bronze */
+    --gold:        #fbbf24;
+    --gold-deep:   #f59e0b;
+    --silver:      #9ca3af;
+    --silver-deep: #6b7280;
+    --bronze:      #cd7c2f;
+    --bronze-deep: #a15c1d;
+    --pool-gold:   #b98f10; /* Used for the "bettingpool_size" highlight */
+
+    /* Type families — 2 brand fonts + system (v2.0.0).
+       Kalam  · accent (handwriting): page ledes after H1, friendly empty states,
+                callouts, anywhere the design wants clubhouse-newsletter warmth
+       Courier Prime · mono (typewriter): timestamps, countdown values, prediction
+                strings, version chips, code/kbd, admin tab counts, masked passwords
+       Display + body fall to the OS UI font — there is no brand display or body
+       font. The handmade character lives in the accent + mono surfaces.
+
+       Fallback policy ("either or, never mix"): either the brand font loads, or we
+       fall straight to a generic family. NEVER list sketch fonts (Patrick Hand,
+       Special Elite — wireframe-only) or system look-alikes (Comic Sans, Courier
+       New) as fallbacks — a bad substitute pretends to be the brand and isn't,
+       which is worse than landing on a generic family.
+
+       Font changes happen ONLY via the bottom-bar font toggle (AC-FONT-01), which
+       swaps between Stack A (these tokens) and Stack B (`body.font-system`, below).
+       No partial swaps. */
+    --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-body:    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-accent:  'Kalam',         cursive;
+    --font-mono:    'Courier Prime', ui-monospace, monospace;
+
+    /* Type scale (matches site's existing rems @ 16px root) */
+    --fs-hero:    2.5rem;   /* 40px — hero h1 */
+    --fs-h1:      1.75rem;  /* 28px — page h1 */
+    --fs-h2:      1.5rem;   /* 24px — section heading */
+    --fs-h3:      1.25rem;  /* 20px — card title */
+    --fs-body:    1rem;     /* 16px — paragraph */
+    --fs-small:   0.875rem; /* 14px — meta */
+    --fs-xs:      0.75rem;  /* 12px — badge */
+
+    /* Radii */
+    --radius-sm: 6px;   /* quali chips */
+    --radius-md: 8px;   /* buttons, inputs */
+    --radius-lg: 12px;  /* cards */
+    --radius-xl: 16px;  /* hero + modal */
+    --radius-pill: 9999px;
+
+    /* Spacing (1rem = 16px) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+}
+
+/* ---- Dark theme (default on the live site) ----------------- */
+body.dark,
+.theme-dark {
+    --bg-primary:    #131316; /* page background — eased up from #0a0a0b */
+    --bg-secondary:  #1c1c20; /* header / inset panels */
+    --bg-card:       #232328; /* cards / hero */
+    --bg-hover:      #2d2d33; /* hovered rows / buttons */
+    --text-primary:  #f5f5f7;
+    --text-secondary:#b8b8be;
+    --text-muted:    #8e8e95;
+    --border-color:  #34343a;
+
+    /* Brand-tinted shadow used on hover */
+    --shadow-card-hover: 0 8px 24px rgba(225, 6, 0, 0.15);
+    --shadow-btn-hover:  0 4px 12px rgba(225, 6, 0, 0.30);
+    --shadow-perfect:    0 0 20px rgba(251, 191, 36, 0.40);
+}
+
+/* ---- Font toggle Stack B (system-only) — see AC-FONT-01 --- */
+/* Stack A loads Kalam + Courier Prime from Google; Stack B loads nothing.
+   Display + body are already system in Stack A — only --font-accent and
+   --font-mono actually change between the two stacks. Triggered by adding
+   `font-system` to <body>. */
+body.font-system {
+    --font-accent:  system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono:    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ---- Light theme ------------------------------------------- */
+body.light,
+.theme-light {
+    --bg-primary:    #e3e3e7; /* deepened from #f0f0f2 */
+    --bg-secondary:  #d6d6db;
+    --bg-card:       #ececf0;
+    --bg-hover:      #cacace;
+    --text-primary:  #18181b;
+    --text-secondary:#454549;
+    --text-muted:    #66666b;
+    --border-color:  #b3b3b8;
+
+    --shadow-card-hover: 0 8px 24px rgba(225, 6, 0, 0.15);
+    --shadow-btn-hover:  0 4px 12px rgba(225, 6, 0, 0.30);
+    --shadow-perfect:    0 0 20px rgba(251, 191, 36, 0.40);
+}
+
+/* ============================================================
+   Clubhouse palette (opt-in)
+   Apply on <body class="dark clubhouse"> or <body class="light clubhouse">
+   to switch from the broadcast palette to the warmer paddock/cream look.
+   Token names are preserved — every component that reads --bg-*, --text-*,
+   --f1-red, --border-color, --gold inherits the new values automatically.
+   ============================================================ */
+body.clubhouse,
+.theme-clubhouse {
+    /* Raw clubhouse swatches (exposed for direct use too) */
+    --c-cream:        #f3ecdc;
+    --c-cream-deep:   #e8dfc8;
+    --c-paper:        #fbf6ea;
+    --c-paddock:      #1f1a14;
+    --c-paddock-2:    #2a241b;
+    --c-paddock-3:    #36302a;
+    --c-oxblood:      #8a1f1a;
+    --c-oxblood-light:#a8302a;
+    --c-oxblood-dark: #6a1612;
+    --c-racing-green: #1d3a2a;
+    --c-brass:        #b8893f;
+    --c-brass-deep:   #8e6829;
+    --c-ink:          #2a2520;
+    --c-ink-2:        #5a4f44;
+
+    /* Brand red remapped to oxblood — calmer, club-crest energy */
+    --f1-red:         var(--c-oxblood);
+    --f1-red-light:   var(--c-oxblood-light);
+    --f1-red-dark:    var(--c-oxblood-dark);
+
+    /* Podium gold remapped to brass */
+    --gold:           var(--c-brass);
+    --gold-deep:      var(--c-brass-deep);
+    --pool-gold:      var(--c-brass-deep);
+
+    /* Shadows: warm oxblood tint, brass for the "perfect" glow */
+    --shadow-card-hover: 0 8px 24px rgba(138, 31, 26, 0.18);
+    --shadow-btn-hover:  0 4px 12px rgba(138, 31, 26, 0.32);
+    --shadow-perfect:    0 0 20px rgba(184, 137, 63, 0.45);
+}
+
+body.clubhouse.dark,
+.theme-clubhouse.theme-dark {
+    --bg-primary:    var(--c-paddock);
+    --bg-secondary:  var(--c-paddock-2);
+    --bg-card:       var(--c-paddock-2);
+    --bg-hover:      var(--c-paddock-3);
+    --text-primary:  var(--c-cream);
+    --text-secondary:#c8bba0;
+    --text-muted:    #9b8e74;
+    --border-color:  #4a423a;
+}
+
+body.clubhouse.light,
+.theme-clubhouse.theme-light {
+    --bg-primary:    var(--c-cream);
+    --bg-secondary:  var(--c-cream-deep);
+    --bg-card:       var(--c-paper);
+    --bg-hover:      #e1d6b8;
+    --text-primary:  var(--c-ink);
+    --text-secondary:var(--c-ink-2);
+    --text-muted:    #8a7e6e;
+    --border-color:  #d4c6a8;
+}
+
+/* ============================================================
+   Semantic element styles
+   ============================================================ */
+
+body {
+    font-family: var(--font-body);
+    font-size: var(--fs-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); }
+
+.hero-title { font-size: var(--fs-hero); }
+
+small, .text-meta { font-size: var(--fs-small); color: var(--text-muted); }
+.text-accent   { color: var(--f1-red); }
+.text-muted    { color: var(--text-muted); }
+.text-secondary{ color: var(--text-secondary); }
+
+/* The all-caps badge label used throughout the site */
+.label-badge {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* The driver-number / position-badge mono-tabular look */
+.label-position {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+}
+
+/* Editorial lede after a page H1 — Kalam handwriting accent (Stack A)
+   or system-ui (Stack B). Use for the friendly one-liner that follows
+   a page title. NEVER use for body paragraphs. */
+.label-lede {
+    font-family: var(--font-accent);
+    font-weight: 400;
+    font-size: 1.125rem;     /* 18px */
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+/* Typewriter mono-tabular — Courier Prime in Stack A, ui-monospace in
+   Stack B. Use for: countdown values, prediction strings ("VER · NOR ·
+   LEC"), timestamps, version chips, code, masked passwords, admin
+   tab-count chips. The tabular-nums variant keeps digit width fixed
+   so live countdowns don't reflow on each tick. */
+.label-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+/* Version chip variant — Courier Prime, smaller, on a muted pill background.
+   Used in the page footer + design-canvas footer. */
+.label-version {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.625rem;     /* 10px */
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+}
