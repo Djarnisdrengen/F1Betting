@@ -5,6 +5,13 @@
  * Keeping this to one entry prevents the cron test from touching real races in the DB.
  */
 
+if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    http_response_code(403);
+    header('Content-Type: application/json');
+    echo json_encode(['ok' => false, 'error' => 'Forbidden']);
+    exit;
+}
+
 return [
     'MRData' => [
         'RaceTable' => [

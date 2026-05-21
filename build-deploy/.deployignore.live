@@ -1,3 +1,4 @@
 tools/test-seed.php
 tools/sync-from-live.php
 tools/db-restore.php
+tools/f1_testdata.php
