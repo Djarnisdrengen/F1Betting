@@ -1125,6 +1125,13 @@ async function checkApplicationHardening() {
     }
 
     // Subresource Integrity — flag external scripts/styles missing integrity=
+    // Google Analytics / GTM scripts are intentionally excluded: Google does not publish
+    // stable SRI hashes for gtag.js (the script is served dynamically and updated without notice),
+    // so pinning a hash would silently break analytics on every Google-side update.
+    const SRI_EXEMPT = [
+        'googletagmanager.com',
+        'google-analytics.com',
+    ];
     try {
         const res  = await request(BASE_URL);
         const html = res.body;
@@ -1135,10 +1142,11 @@ async function checkApplicationHardening() {
             if (!srcMatch) continue;
             const url = srcMatch[1];
             if (!url.startsWith('http') || url.includes(hostname)) continue;
+            if (SRI_EXEMPT.some(h => url.includes(h))) continue;
             externals.push({ url, hasIntegrity: /integrity=["'][^"']+["']/.test(attrs) });
         }
         if (!externals.length) {
-            pass('K', 'Subresource Integrity', 'No external scripts or stylesheets on home page');
+            pass('K', 'Subresource Integrity', 'No external scripts or stylesheets on home page (analytics exempt)');
         } else {
             const missing = externals.filter(e => !e.hasIntegrity);
             if (missing.length) {
