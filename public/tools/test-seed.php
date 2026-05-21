@@ -519,14 +519,25 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
         $previewName = $lang === 'da' ? 'Preview Bruger' : 'Preview User';
 
         // 1. Forgot password
-        $resetLink = SITE_URL . '/reset_password.php?token=preview-reset-token-1234';
-        $subject   = t('email_reset_subject', $lang);
+        $resetLink  = SITE_URL . '/reset_password.php?token=preview-reset-token-1234';
+        $subject    = t('email_reset_subject', $lang);
+        $html       = getEmailTemplate(
+            sprintf(t('email_reset_greeting', $lang), $previewName),
+            sprintf(t('email_reset_intro', $lang), $appName),
+            t('email_reset_button', $lang),
+            convertToEmailUrl($resetLink),
+            t('email_reset_expiry', $lang),
+            t('email_reset_ignore', $lang),
+            sprintf(t('email_footer', $lang), $appName),
+            $appName
+        );
         $r = sendPasswordResetEmail($adminEmail, $previewName, $resetLink, $lang);
         $emails["1_password_reset{$suffix}"] = [
             'sent'       => $r['success'],
             'to'         => $adminEmail,
             'subject'    => $subject,
             'reset_link' => convertToEmailUrl($resetLink),
+            'html'       => $html,
         ];
 
         // 2. Admin reset password (inline — matches admin.php logic)
@@ -544,11 +555,22 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
             'subject'      => $subject,
             'new_password' => 'PreviewPw123!',
             'reset_by'     => 'Admin',
+            'html'         => $html,
         ];
 
         // 3. Invitation (keeps app name in subject)
-        $inviteLink = SITE_URL . '/register.php?token=preview-invite-token-5678';
-        $subject    = sprintf(t('email_invite_subject', $lang), $appName);
+        $inviteLink  = SITE_URL . '/register.php?token=preview-invite-token-5678';
+        $subject     = sprintf(t('email_invite_subject', $lang), $appName);
+        $invHtml     = getEmailTemplate(
+            t('email_invite_greeting', $lang),
+            sprintf(t('email_invite_intro', $lang), 'Admin', $appName) . '<br><br>' . t('email_invite_desc', $lang),
+            t('email_invite_button', $lang),
+            convertToEmailUrl($inviteLink),
+            t('email_invite_expiry', $lang),
+            '',
+            sprintf(t('email_footer', $lang), $appName),
+            $appName
+        );
         $r = sendInviteEmail($adminEmail, $inviteLink, 'Admin', $lang);
         $emails["3_invite{$suffix}"] = [
             'sent'        => $r['success'],
@@ -556,6 +578,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
             'subject'     => $subject,
             'invite_link' => convertToEmailUrl($inviteLink),
             'invited_by'  => 'Admin',
+            'html'        => $invHtml,
         ];
 
         // 4. Betting window open (in-competition user)
@@ -578,6 +601,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
             'pool_size'            => $poolSize4,
             'betting_window_hours' => 48,
             'bet_link'             => $betLink,
+            'html'                 => $html,
         ];
 
         // 5. Pool reminder — non-competing registered user (leaderboard CTA)
@@ -596,6 +620,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
             'race'      => $previewRace['name'],
             'pool_size' => $poolSize,
             'cta_link'  => $lbLink,
+            'html'      => $html,
         ];
 
         // 6. Pool reminder — pending invite (registration CTA)
@@ -613,6 +638,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
             'race'      => $previewRace['name'],
             'pool_size' => $poolSize,
             'cta_link'  => $regLink,
+            'html'      => $html,
         ];
 
         // 7. Betting closing soon
@@ -631,6 +657,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
             'race'      => $previewRace['name'],
             'race_date' => "$raceDate $raceTime",
             'bet_link'  => $betLink,
+            'html'      => $html,
         ];
 
         // 8. Bet deleted (inline — matches admin.php logic)
@@ -647,6 +674,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
             'to'      => $adminEmail,
             'subject' => $subject,
             'race'    => $previewRace['name'],
+            'html'    => $html,
         ];
     }
 
@@ -851,7 +879,43 @@ if (($_GET['action'] ?? '') === 'cleanup_score_race') {
         $db->prepare("DELETE FROM users WHERE email = ?")->execute([$email]);
     }
     $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B'))");
+    $db->exec("CREATE TABLE IF NOT EXISTS leaderboard_snapshots (id INT AUTO_INCREMENT PRIMARY KEY, user_id VARCHAR(36) NOT NULL, race_id VARCHAR(36) NOT NULL, `rank` INT NOT NULL, points INT NOT NULL, scored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uniq_user_race (user_id, race_id)) DEFAULT CHARSET=utf8mb4");
+    $db->query("DELETE FROM leaderboard_snapshots WHERE race_id IN (SELECT id FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B'))");
     $db->query("DELETE FROM races WHERE name IN ('E2E Score Race A', 'E2E Score Race B')");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: smtp_live_on — creates flag file so PHP sends real SMTP even when SMTP_INTERCEPT=true.
+// Called by Playwright global-setup when EMAIL_BACKEND=mailsac.
+if (($_GET['action'] ?? '') === 'smtp_live_on') {
+    file_put_contents(sys_get_temp_dir() . '/f1betting_smtp_live', '1');
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: smtp_live_off — removes the flag file, restoring intercept mode.
+// Called by Playwright global-teardown after a mailsac run completes.
+if (($_GET['action'] ?? '') === 'smtp_live_off') {
+    @unlink(sys_get_temp_dir() . '/f1betting_smtp_live');
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: get_test_emails — returns all intercepted emails as JSON array
+if (($_GET['action'] ?? '') === 'get_test_emails') {
+    $file = defined('EMAIL_INTERCEPT_FILE') ? EMAIL_INTERCEPT_FILE : (sys_get_temp_dir() . '/f1betting_test_emails.jsonl');
+    if (!file_exists($file)) { echo json_encode([]); exit; }
+    $lines  = array_filter(array_map('trim', file($file)));
+    $emails = array_values(array_filter(array_map(fn($s) => json_decode($s, true), $lines)));
+    echo json_encode($emails);
+    exit;
+}
+
+// Action: clear_test_emails — truncates the intercept file
+if (($_GET['action'] ?? '') === 'clear_test_emails') {
+    $file = defined('EMAIL_INTERCEPT_FILE') ? EMAIL_INTERCEPT_FILE : (sys_get_temp_dir() . '/f1betting_test_emails.jsonl');
+    file_put_contents($file, '');
     echo json_encode(['ok' => true]);
     exit;
 }

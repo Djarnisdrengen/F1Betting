@@ -44,7 +44,7 @@ test.describe.serial("Profile", () => {
 
     test("bet history shows empty state when no bets placed", async () => {
         await sharedPage.goto("/profile.php");
-        await expect(sharedPage.locator(".card-body.text-center.text-muted")).toBeVisible();
+        await expect(sharedPage.locator('[data-testid="empty-bet-history"]')).toBeVisible();
     });
 
     test("change password — wrong current password shows error", async () => {
@@ -89,7 +89,8 @@ test.describe.serial("Profile", () => {
         await page.fill('input[name="password"]', NEW_PW);
         await page.click('button[type="submit"]');
         await page.waitForURL(/index\.php/, { timeout: 5000 });
-        await expect(page.locator('.desktop-only a[href="logout.php"]')).toBeVisible();
+        await page.click('.hf-hamburger');
+        await expect(page.locator('a[href="logout.php"]')).toBeVisible();
         await ctx.close();
     });
 

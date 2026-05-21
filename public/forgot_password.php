@@ -65,37 +65,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/includes/header.php';
 ?>
 
-<div style="max-width: 400px; margin: 3rem auto;">
-    <div class="card">
-        <div class="card-header text-center">
-            <div style="width: 64px; height: 64px; background: var(--f1-red); border-radius: 16px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-key" style="font-size: 2rem; color: white;"></i>
-            </div>
-            <h2><?= t('forgot_password_title') ?></h2>
-            <p class="text-muted"><?= t('forgot_password_desc') ?></p>
-        </div>
-        <div class="card-body">
-            <?php if ($error): ?>
-                <div class="alert alert-error"><?= escape($error) ?></div>
-            <?php endif; ?>
-            <?php if ($success): ?>
-                <div class="alert alert-success"><?= escape($success) ?></div>
-            <?php else: ?>
-                <form method="POST"<?= !empty($_GET['e2e_token']) ? ' action="forgot_password.php?e2e_token=' . urlencode($_GET['e2e_token']) . '"' : '' ?>>
-                    <?= csrfField() ?>
-                    <div class="form-group">
-                        <label class="form-label"><?= t('email') ?></label>
-                        <input type="email" name="email" class="form-input" required placeholder="din@email.dk">
+<div class="hf-container">
+    <div class="hf-auth-wrap">
+        <div class="card">
+            <div class="card-body">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div style="width:64px;height:64px;background:var(--f1-red);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-key" style="font-size:2rem;color:white;"></i>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <?= t('send_reset_link') ?>
-                    </button>
-                </form>
-            <?php endif; ?>
-            
-            <p class="text-center mt-2 text-muted">
-                <a href="login.php" class="text-accent"><?= t('back_to_login') ?></a>
-            </p>
+                    <h2 style="margin:0 0 6px;"><?= t('forgot_password_title') ?></h2>
+                    <p class="text-muted" style="margin:0;"><?= t('forgot_password_desc') ?></p>
+                </div>
+
+                <?php if ($error): ?>
+                    <div class="alert alert-error"><?= escape($error) ?></div>
+                <?php endif; ?>
+                <?php if ($success): ?>
+                    <div class="alert alert-success"><?= escape($success) ?></div>
+                <?php else: ?>
+                    <form method="POST"<?= !empty($_GET['e2e_token']) ? ' action="forgot_password.php?e2e_token=' . urlencode($_GET['e2e_token']) . '"' : '' ?>>
+                        <?= csrfField() ?>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('email') ?></label>
+                            <input type="email" name="email" class="form-input" required placeholder="din@email.dk">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">
+                            <?= t('send_reset_link') ?>
+                        </button>
+                    </form>
+                <?php endif; ?>
+
+                <p class="text-center mt-2 text-muted">
+                    <a href="login.php" class="text-accent"><?= t('back_to_login') ?></a>
+                </p>
+            </div>
         </div>
     </div>
 </div>

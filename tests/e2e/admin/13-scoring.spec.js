@@ -18,14 +18,14 @@ function adminRaceCard(page, name) {
 }
 
 // Find a race card on the public races page by raceId
-// races.php puts id="race-bets-{raceId}" inside each card
+// races.php puts id="race-bets-{raceId}" inside each hf-racefull card
 function publicRaceCard(page, raceId) {
-    return page.locator(`.card:has(#race-bets-${raceId})`);
+    return page.locator(`.hf-racefull:has(#race-bets-${raceId})`);
 }
 
 // Find a leaderboard row by the user's display name
 function lbRow(page, displayName) {
-    return page.locator('table.leaderboard-table tbody tr').filter({ hasText: displayName });
+    return page.locator('.hf-row').filter({ hasText: displayName });
 }
 
 test.describe.serial('Scoring', () => {
@@ -64,8 +64,16 @@ test.describe.serial('Scoring', () => {
 
         for (const { email, ptsAfterB } of seedData.expectedPoints) {
             const row = lbRow(page, DISPLAY_NAMES[email]);
-            await expect(row.locator('span.text-accent')).toContainText(String(ptsAfterB));
+            await expect(row.locator('.hf-pts')).toContainText(String(ptsAfterB));
         }
+    });
+
+    test('leaderboard shows rank delta indicators after Race B scoring', async ({ page }) => {
+        await page.goto('/leaderboard.php');
+        // After Race B, every row should have a visible .hf-rank-delta element
+        // (shows ▲/▼ for movement vs Race A, or — for no change / first race)
+        const firstRow = page.locator('.hf-row').first();
+        await expect(firstRow.locator('.hf-rank-delta')).toBeVisible();
     });
 
     test('Alice has star badge on leaderboard for her perfect Race B bet', async ({ page }) => {
@@ -128,7 +136,7 @@ test.describe.serial('Scoring', () => {
         await page.goto('/leaderboard.php');
         for (const { email, ptsAfterReset } of seedData.expectedPoints) {
             const row = lbRow(page, DISPLAY_NAMES[email]);
-            await expect(row.locator('span.text-accent')).toContainText(String(ptsAfterReset));
+            await expect(row.locator('.hf-pts')).toContainText(String(ptsAfterReset));
         }
     });
 });

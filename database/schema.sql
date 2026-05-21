@@ -124,6 +124,17 @@ CREATE TABLE invites (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Leaderboard rank snapshots — written after each race scoring; used to compute rank delta on leaderboard
+CREATE TABLE IF NOT EXISTS leaderboard_snapshots (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    race_id VARCHAR(36) NOT NULL,
+    `rank` INT NOT NULL,
+    points INT NOT NULL,
+    scored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_user_race (user_id, race_id)
+) DEFAULT CHARSET=utf8mb4;
+
 -- Service admin account — same credentials in test and live (set F1_ADMIN_EMAIL + F1_ADMIN_PASSWORD in config.php)
 -- Password: UKT@Qhs!fbUH@UX0pnjLpv@yt$GHfwTyCzF3Jl1GuwS#yjIQtJaaJ6V9icV8xU2R
 INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES

@@ -100,4 +100,31 @@ function calculateRacePoints($raceId, $p1, $p2, $p3) {
         $db->prepare("UPDATE races SET bettingpool_size = ? WHERE id = ?")
            ->execute([$newPoolSize, $upcomingRace['id']]);
     }
+
+    _writeRankSnapshot($db, $raceId);
+}
+
+function _writeRankSnapshot(PDO $db, string $raceId): void {
+    $db->exec("CREATE TABLE IF NOT EXISTS leaderboard_snapshots (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        race_id VARCHAR(36) NOT NULL,
+        `rank` INT NOT NULL,
+        points INT NOT NULL,
+        scored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_user_race (user_id, race_id)
+    ) DEFAULT CHARSET=utf8mb4");
+
+    $db->prepare("DELETE FROM leaderboard_snapshots WHERE race_id = ?")->execute([$raceId]);
+
+    $standings = $db->query(
+        "SELECT id, points FROM users WHERE in_competition = 1 ORDER BY stars DESC, points DESC"
+    )->fetchAll();
+
+    $stmt = $db->prepare(
+        "INSERT INTO leaderboard_snapshots (user_id, race_id, `rank`, points) VALUES (?, ?, ?, ?)"
+    );
+    foreach ($standings as $i => $user) {
+        $stmt->execute([$user['id'], $raceId, $i + 1, $user['points']]);
+    }
 }

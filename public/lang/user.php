@@ -11,19 +11,15 @@ return [
         'register'              => 'Registrer',
         'logout'                => 'Log ud',
         'rules'                 => 'Regler',
-        'toggle_theme'          => 'Skift tema',
-        'toggle_palette'        => 'Skift palette',
-        'lang_switch_label'     => 'English',
-        'change_language'       => 'Skift sprog',
+        'theme'                 => 'Tema',
 
-        // Footer
-        'contact'               => 'Kontakt:',
+        // Footer / bottom bar
+        'season'                => 'Sæson',
+        'lang_name'             => 'DANSK',
 
         // Actions
         'place_bet'             => 'Placer Bet',
-        'submit'                => 'Indsend',
         'save'                  => 'Gem',
-        'delete'                => 'Slet',
         'edit'                  => 'Rediger',
         'edit_profile'          => 'Rediger Profil',
         'language_label'        => 'Sprog',
@@ -32,13 +28,10 @@ return [
 
         // Labels
         'upcoming_races'        => 'Kommende Løb',
-        'your_bets'             => 'Dine Bets',
         'all_bets'              => 'Alle Bets',
         'points'                => 'Point',
         'stars'                 => 'Stjerner',
-        'rank'                  => 'Rang',
         'user'                  => 'Bruger',
-        'placed_at'             => 'Placeret',
         'display_name'          => 'Visningsnavn',
         'email'                 => 'E-mail',
         'password'              => 'Adgangskode',
@@ -52,8 +45,7 @@ return [
         'result'                => 'Resultat',
         'results'               => 'Resultater',
         'select_driver'         => 'Vælg kører',
-        'drivers'               => 'Kørere',
-        'users'                 => 'Brugere',
+        'close'                 => 'Luk',
         'bets'                  => 'Bets',
         'settings'              => 'Indstillinger',
         'role'                  => 'Rolle',
@@ -61,12 +53,23 @@ return [
         'yes'                   => 'Ja',
         'no'                    => 'Nej',
 
+        // Countdown labels
+        'cd_days'               => 'DAG',
+        'cd_hrs'                => 'TIM',
+        'cd_min'                => 'MIN',
+        'cd_sec'                => 'SEK',
+
+        // Leaderboard / position card
+        'your_position'         => 'DIN POSITION',
+        'rank_delta_places'     => 'pladser siden sidste runde',
+        'rank_no_change'        => 'Ingen ændring siden sidste runde',
+
+
         // Betting status
         'betting_open'          => 'Betting Åben',
         'betting_closed'        => 'Betting Lukket',
         'betting_not_open'      => 'Betting Ikke Åben',
         'race_completed'        => 'Løb Afsluttet',
-        'betting_window'        => 'Betting åbner 48t før løb',
         'betting_opens_in'      => 'Betting åbner om',
         'betting_closes_in'     => 'Betting lukker om',
         'pool_size'             => 'Puljestørrelse:',
@@ -77,27 +80,23 @@ return [
 
         // Index/races
         'no_upcoming_races'     => 'Ingen kommende løb',
-        'points_system'         => 'Point: P1=25, P2=18, P3=15, +5 for top 3 forkert position',
         'no_bets'               => 'Ingen bets endnu',
+        'see_all'               => 'Se alle',
+        'recent_results'        => 'Seneste Resultater',
+        'status_done'           => 'Afsluttet',
+        'rounds_played'         => 'Løb spillet',
 
         // Bet messages
-        'perfect_bet'           => 'Perfekt!',
-        'already_bet'           => 'Du har allerede et bet på dette løb',
         'already_bet_long'      => 'Du har allerede placed et bet på dette løb.',
         'not_in_competition'    => 'Du er ikke medlem af konkurrencen. Kontakt administrator.',
         'bet_placed'            => 'Bet placeret!',
         'bet_updated'           => 'Bet opdateret!',
-
-        // Edit bet
-        'edit_bet_title'        => 'Rediger Bet',
-        'timestamp_update_info' => 'Timestamp vil blive opdateret når du gemmer ændringer.',
 
         // Validation errors
         'select_all_positions'  => 'Vælg alle 3 positioner',
         'no_same_driver'        => 'Kan ikke vælge samme kører flere gange',
         'quali_match_error'     => 'Bet kan ikke matche kvalifikationsresultatet',
         'combo_taken'           => 'Denne kombination er allerede taget',
-        'error'                 => 'Der opstod en fejl',
         'invalid_credentials'   => 'Forkert email eller adgangskode',
         'rate_limited'          => 'For mange loginforsøg. Prøv igen om 15 minutter.',
         'email_exists'          => 'Email er allerede registreret',
@@ -108,13 +107,15 @@ return [
         'enter_valid_email'     => 'Indtast en gyldig email',
 
         // Registration
-        'registration_success'  => 'Registrering gennemført!',
         'you_are_invited'       => 'Du er inviteret!',
         'email_set_by_invite'   => 'Email er sat af invitation',
         'already_have_account'  => 'Har du allerede en konto?',
         'invalid_invite'        => 'Ugyldigt eller udløbet invitation. Kontakt administrator for en ny invitation.',
         'invite_required'       => 'Du skal have en invitation for at registrere dig. Kontakt administrator.',
         'email_must_match_invite' => 'Email skal matche invitationens email: %s',
+
+        // Login
+        'welcome_back'          => 'Velkommen tilbage',
 
         // Profile
         'profile_updated'           => 'Profil opdateret!',
@@ -145,6 +146,8 @@ return [
 
         // Rules page
         'rules_title'           => 'Spilleregler',
+        'rules_how_we_play'     => 'Sådan spiller vi',
+        'rules_contents'        => 'Indhold',
         'rules_betting_window'  => 'Betting Vindue',
         'opens'                 => 'Åbner',
         'betting_opens_hours'   => '%d timer før løbets starttid',
@@ -153,8 +156,6 @@ return [
         'edit_label'            => 'Rediger',
         'bets_editable'         => 'Bets kan redigeres så længe vinduet er åbent',
         'rules_points_system'   => 'Point System',
-        'position'              => 'Position',
-        'correct_prediction'    => 'Korrekt Forudsigelse',
         'points_label'          => 'point',
         'wrong_pos_rule'        => 'point hvis kører er i top 3, men forkert position',
         'rules_stars'           => 'Stjerner',
@@ -167,11 +168,8 @@ return [
         'one_bet_per_race_desc' => 'Hver bruger kan kun have ét bet per løb',
         'no_duplicates'         => 'Ingen duplikater',
         'no_duplicates_desc'    => 'Samme kører kan ikke vælges flere gange i ét bet',
-        'unique_combo'          => 'Unik kombination',
-        'unique_combo_desc'     => 'To brugere kan ikke have identisk P1/P2/P3 kombination',
         'quali_restriction'     => 'Kvalifikationsresultat',
         'quali_restriction_desc' => 'Bet kan ikke matche kvalifikationsresultatet 100%. Uanset om systemet har fået blokeret for det eller ej er bettet ugyldigt.',
-        'betting_pool_label'    => 'Betting pool',
 
         // Leaderboard sorting rules
         'rules_leaderboard_sort'  => 'Rangliste Sortering',
@@ -183,8 +181,6 @@ return [
         'race_result_label'       => 'Løbsresultat',
         'scenario_1'              => 'Scenarie 1',
         'scenario_2_perfect'      => 'Scenarie 2 (Perfekt!)',
-        'your_bet'                => 'Dit bet',
-        'correct'                 => 'korrekt',
         'wrong_but_top3_leclerc'  => 'forkert, men Leclerc i top 3',
         'wrong_but_top3_norris'   => 'forkert, men Norris i top 3',
     ],
@@ -199,19 +195,15 @@ return [
         'register'              => 'Register',
         'logout'                => 'Logout',
         'rules'                 => 'Rules',
-        'toggle_theme'          => 'Toggle theme',
-        'toggle_palette'        => 'Toggle palette',
-        'lang_switch_label'     => 'Dansk',
-        'change_language'       => 'Change language',
+        'theme'                 => 'Theme',
 
-        // Footer
-        'contact'               => 'Contact:',
+        // Footer / bottom bar
+        'season'                => 'Season',
+        'lang_name'             => 'ENGLISH',
 
         // Actions
         'place_bet'             => 'Place Bet',
-        'submit'                => 'Submit',
         'save'                  => 'Save',
-        'delete'                => 'Delete',
         'edit'                  => 'Edit',
         'edit_profile'          => 'Edit Profile',
         'language_label'        => 'Language',
@@ -220,13 +212,10 @@ return [
 
         // Labels
         'upcoming_races'        => 'Upcoming Races',
-        'your_bets'             => 'Your Bets',
         'all_bets'              => 'All Bets',
         'points'                => 'Points',
         'stars'                 => 'Stars',
-        'rank'                  => 'Rank',
         'user'                  => 'User',
-        'placed_at'             => 'Placed At',
         'display_name'          => 'Display Name',
         'email'                 => 'Email',
         'password'              => 'Password',
@@ -240,8 +229,7 @@ return [
         'result'                => 'Result',
         'results'               => 'Results',
         'select_driver'         => 'Select driver',
-        'drivers'               => 'Drivers',
-        'users'                 => 'Users',
+        'close'                 => 'Close',
         'bets'                  => 'Bets',
         'settings'              => 'Settings',
         'role'                  => 'Role',
@@ -249,12 +237,22 @@ return [
         'yes'                   => 'Yes',
         'no'                    => 'No',
 
+        // Countdown labels
+        'cd_days'               => 'DAYS',
+        'cd_hrs'                => 'HRS',
+        'cd_min'                => 'MIN',
+        'cd_sec'                => 'SEC',
+
+        // Leaderboard / position card
+        'your_position'         => 'YOUR POSITION',
+        'rank_delta_places'     => 'places since last race',
+        'rank_no_change'        => 'No change since last race',
+
         // Betting status
         'betting_open'          => 'Betting Open',
         'betting_closed'        => 'Betting Closed',
         'betting_not_open'      => 'Betting Not Open',
         'race_completed'        => 'Race Completed',
-        'betting_window'        => 'Betting opens 48h before race',
         'betting_opens_in'      => 'Betting opens in',
         'betting_closes_in'     => 'Betting closes in',
         'pool_size'             => 'Pool size:',
@@ -265,27 +263,23 @@ return [
 
         // Index/races
         'no_upcoming_races'     => 'No upcoming races',
-        'points_system'         => 'Points: P1=25, P2=18, P3=15, +5 for top 3 wrong position',
         'no_bets'               => 'No bets yet',
+        'see_all'               => 'See all',
+        'recent_results'        => 'Recent Results',
+        'status_done'           => 'Done',
+        'rounds_played'         => 'Rounds played',
 
         // Bet messages
-        'perfect_bet'           => 'Perfect!',
-        'already_bet'           => 'You already have a bet for this race',
         'already_bet_long'      => 'You have already placed a bet on this race.',
         'not_in_competition'    => 'You are not a member of the competition. Contact administrator.',
         'bet_placed'            => 'Bet placed!',
         'bet_updated'           => 'Bet updated!',
-
-        // Edit bet
-        'edit_bet_title'        => 'Edit Bet',
-        'timestamp_update_info' => 'Timestamp will be updated when you save changes.',
 
         // Validation errors
         'select_all_positions'  => 'Select all 3 positions',
         'no_same_driver'        => 'Cannot select same driver multiple times',
         'quali_match_error'     => 'Bet cannot match qualifying result',
         'combo_taken'           => 'This combination is already taken',
-        'error'                 => 'An error occurred',
         'invalid_credentials'   => 'Invalid email or password',
         'rate_limited'          => 'Too many login attempts. Please try again in 15 minutes.',
         'email_exists'          => 'Email already registered',
@@ -296,13 +290,15 @@ return [
         'enter_valid_email'     => 'Enter a valid email',
 
         // Registration
-        'registration_success'  => 'Registration successful!',
         'you_are_invited'       => 'You are invited!',
         'email_set_by_invite'   => 'Email is set by invitation',
         'already_have_account'  => 'Already have an account?',
         'invalid_invite'        => 'Invalid or expired invite. Contact administrator for a new invitation.',
         'invite_required'       => 'You need an invitation to register. Contact administrator.',
         'email_must_match_invite' => 'Email must match the invitation email: %s',
+
+        // Login
+        'welcome_back'          => 'Welcome back',
 
         // Profile
         'profile_updated'           => 'Profile updated!',
@@ -333,6 +329,8 @@ return [
 
         // Rules page
         'rules_title'           => 'Betting Rules',
+        'rules_how_we_play'     => 'How we play',
+        'rules_contents'        => 'Contents',
         'rules_betting_window'  => 'Betting Window',
         'opens'                 => 'Opens',
         'betting_opens_hours'   => '%d hours before race start time',
@@ -341,8 +339,6 @@ return [
         'edit_label'            => 'Edit',
         'bets_editable'         => 'Bets can be edited while window is open',
         'rules_points_system'   => 'Points System',
-        'position'              => 'Position',
-        'correct_prediction'    => 'Correct Prediction',
         'points_label'          => 'points',
         'wrong_pos_rule'        => 'points if driver is in top 3 but wrong position',
         'rules_stars'           => 'Stars',
@@ -355,11 +351,8 @@ return [
         'one_bet_per_race_desc' => 'Each user can only have one bet per race',
         'no_duplicates'         => 'No duplicates',
         'no_duplicates_desc'    => 'Same driver cannot be selected multiple times in one bet',
-        'unique_combo'          => 'Unique combination',
-        'unique_combo_desc'     => 'Two users cannot have identical P1/P2/P3 combination',
         'quali_restriction'     => 'Qualifying result',
         'quali_restriction_desc' => 'Bet cannot match qualifying result 100%. Even if the system did not block for it.',
-        'betting_pool_label'    => 'Betting pool',
 
         // Leaderboard sorting rules
         'rules_leaderboard_sort'  => 'Leaderboard Sorting',
@@ -371,8 +364,6 @@ return [
         'race_result_label'       => 'Race Result',
         'scenario_1'              => 'Scenario 1',
         'scenario_2_perfect'      => 'Scenario 2 (Perfect!)',
-        'your_bet'                => 'Your bet',
-        'correct'                 => 'correct',
         'wrong_but_top3_leclerc'  => 'wrong, but Leclerc in top 3',
         'wrong_but_top3_norris'   => 'wrong, but Norris in top 3',
     ],

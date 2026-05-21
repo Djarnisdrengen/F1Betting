@@ -1,6 +1,6 @@
 const { test, expect } = require("@playwright/test");
 const seed = require('../helpers/seed');
-const { getMessages, waitForNewMessages } = require('../helpers/mailsac');
+const { getMessages, waitForNewMessages } = require('../helpers/email');
 
 const SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN;
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -158,8 +158,14 @@ test.describe("Cron jobs", () => {
             expect(text).toContain("bet.php?race=");               // CTA links to bet page
             expect(text).toContain("[lang] en");                   // email uses user's stored language
 
-            // User who already placed a bet — skipped entirely
-            expect(text).not.toContain(`Sent closing notification to: ${seedData.emailBetted}`);
+            // Scope to the E2E Notify Close Race block only — a real F1 session falling
+            // in the 2-3h window would legitimately notify user B (no bet for real races).
+            const closeBlockStart = text.indexOf('Betting closing soon for: E2E Notify Close Race');
+            const closeBlockNext  = text.indexOf('\nBetting', closeBlockStart + 1);
+            const closeBlock      = closeBlockNext === -1
+                ? text.slice(closeBlockStart)
+                : text.slice(closeBlockStart, closeBlockNext);
+            expect(closeBlock, `Full cron output:\n${text}`).not.toContain(`Sent closing notification to: ${seedData.emailBetted}`);
 
             expect(text).toContain("Notification check complete");
         });
@@ -181,7 +187,6 @@ test.describe("Cron jobs", () => {
         });
 
         test('betting-open email delivered to in-competition inbox', async ({ page }) => {
-            test.skip(!MAILSAC_API_KEY, 'MAILSAC_API_KEY not set — skipping real-send assertion');
             test.setTimeout(90000);
 
             const inbox = 'e2e_notify_open_in_f1@mailsac.com';
@@ -213,7 +218,6 @@ test.describe("Cron jobs", () => {
         });
 
         test('betting-close email delivered to unbetted inbox', async ({ page }) => {
-            test.skip(!MAILSAC_API_KEY, 'MAILSAC_API_KEY not set — skipping real-send assertion');
             test.setTimeout(60000);
 
             const inbox = 'e2e_notify_close_a_f1@mailsac.com';

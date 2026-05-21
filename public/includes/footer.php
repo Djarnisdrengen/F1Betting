@@ -1,13 +1,13 @@
     </main>
-    
-    <!-- Mobile nav overlay -->
-    <div class="nav-overlay" id="nav-overlay" onclick="toggleMobileMenu()"></div>
-    
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 1996-<?= date("Y") ?> - <?= t('contact') ?> info@<?= preg_replace('/^www\./', '', SITE_DOMAIN) ?></p>
-        </div>
 
+    <?php if ($currentPage !== 'admin'): ?>
+    <?php include __DIR__ . '/bottom_bar.php'; ?>
+    <?php endif; ?>
+
+    <footer class="hf-footer">
+        <span class="name"><?= escape($settings['app_title']) ?></span>
+        &middot; <span class="v">v1.3.0</span>
+        &middot; <?= t('season') ?> <?= escape($settings['app_year']) ?>
     </footer>
     
     <!--  APP.JS INCLUDE -->
@@ -17,54 +17,21 @@
     <script nonce="<?php echo $nonce; ?>">
 
     document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.mobile-menu-btn').forEach(btn => {
-            btn.addEventListener('click', toggleMobileMenu);
-        });
         document.querySelectorAll('.leaderboard-section').forEach(div => {
             div.addEventListener('click', toggleLeaderboard);
         });
     });
 
-    function toggleMobileMenu() {
-        const nav = document.getElementById('main-nav');
-        const overlay = document.getElementById('nav-overlay');
-        const btn = document.querySelector('.mobile-menu-btn i');
-        
-        nav.classList.toggle('active');
-        overlay.classList.toggle('active');
-        
-        if (nav.classList.contains('active')) {
-            btn.className = 'fas fa-times';
-            document.body.style.overflow = 'hidden';
-        } else {
-            btn.className = 'fas fa-bars';
-            document.body.style.overflow = '';
-        }
-    }
-    
     // Toggle leaderboard on mobile
     function toggleLeaderboard() {
         const header = document.querySelector('.leaderboard-collapse-header');
         const content = document.getElementById('leaderboard-content');
-        
+
         if (header && content) {
             header.classList.toggle('expanded');
             content.classList.toggle('expanded');
         }
     }
-    
-    // Close mobile menu on resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            const nav = document.getElementById('main-nav');
-            const overlay = document.getElementById('nav-overlay');
-            if (nav && nav.classList.contains('active')) {
-                nav.classList.remove('active');
-                overlay.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        }
-    });
     
     // Countdown timer functionality
     function updateCountdowns() {
@@ -107,6 +74,33 @@
     // Update every second
     updateCountdowns();
     setInterval(updateCountdowns, 1000);
+
+    // hf-countdown: 4-cell DAG/TIM/MIN/SEK grid driven by data-target ISO string
+    function updateHfCountdowns() {
+        document.querySelectorAll('.hf-countdown[data-target]').forEach(el => {
+            const target = new Date(el.dataset.target);
+            const diff = target - new Date();
+            const cells = el.querySelectorAll('.hf-cd-num');
+            if (cells.length < 4) return;
+            if (diff <= 0) {
+                cells[0].textContent = '0';
+                cells[1].textContent = '0';
+                cells[2].textContent = '0';
+                cells[3].textContent = '0';
+                return;
+            }
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            cells[0].textContent = String(d).padStart(2, '0');
+            cells[1].textContent = String(h).padStart(2, '0');
+            cells[2].textContent = String(m).padStart(2, '0');
+            cells[3].textContent = String(s).padStart(2, '0');
+        });
+    }
+    updateHfCountdowns();
+    setInterval(updateHfCountdowns, 1000);
     </script>
 </body>
 </html>

@@ -24,9 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $currentUser['language']     = $newLang;
 
     } elseif ($action === 'change_password') {
-        $currentPw  = $_POST['current_password'] ?? '';
-        $newPw      = $_POST['new_password'] ?? '';
-        $confirmPw  = $_POST['confirm_password'] ?? '';
+        $currentPw = $_POST['current_password'] ?? '';
+        $newPw     = $_POST['new_password'] ?? '';
+        $confirmPw = $_POST['confirm_password'] ?? '';
 
         $stmt = $db->prepare("SELECT password FROM users WHERE id = ?");
         $stmt->execute([$currentUser['id']]);
@@ -35,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!verifyPassword($currentPw, $hash)) {
             $error = t('current_password_wrong');
         }
-
         if (!$error) {
             if (strlen($newPw) < 6) {
                 $error = t('passwords_min_6');
@@ -69,8 +68,36 @@ $betHistory = $betHistory->fetchAll();
 include __DIR__ . '/includes/header.php';
 ?>
 
-<div style="max-width: 700px; margin: 0 auto;">
-    <h1 class="mb-3"><i class="fas fa-user text-accent"></i> <?= t('profile') ?></h1>
+<div class="hf-container">
+
+    <!-- Profile head -->
+    <div class="hf-profile-head">
+        <div class="hf-profile-avatar"><?= escape(userInitial($currentUser)) ?></div>
+        <div class="hf-profile-id">
+            <div class="hf-profile-name"><?= escape(displayUserName($currentUser)) ?></div>
+            <div class="hf-profile-sub"><?= escape($currentUser['email']) ?></div>
+        </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:24px;">
+        <div class="hf-stat">
+            <div class="hf-stat-n"><?= $currentUser['points'] ?></div>
+            <div class="hf-stat-l"><?= t('points') ?></div>
+        </div>
+        <div class="hf-stat">
+            <div class="hf-stat-n"><?= $currentUser['stars'] ?></div>
+            <div class="hf-stat-l"><?= t('stars') ?></div>
+        </div>
+        <div class="hf-stat">
+            <div class="hf-stat-n"><?= $currentUser['role'] === 'admin' ? 'Admin' : t('user') ?></div>
+            <div class="hf-stat-l"><?= t('role') ?></div>
+        </div>
+        <div class="hf-stat">
+            <div class="hf-stat-n"><?= $currentUser['in_competition'] ? t('yes') : t('no') ?></div>
+            <div class="hf-stat-l"><?= t('in_competition') ?></div>
+        </div>
+    </div>
 
     <?php if ($success): ?>
         <div class="alert alert-success mb-3"><?= escape($success) ?></div>
@@ -79,144 +106,105 @@ include __DIR__ . '/includes/header.php';
         <div class="alert alert-error mb-3"><i class="fas fa-exclamation-triangle"></i> <?= escape($error) ?></div>
     <?php endif; ?>
 
-    <!-- Stats -->
-    <div class="grid grid-2 mb-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="fas fa-trophy text-accent" style="font-size: 2rem;"></i>
-                <h2><?= $currentUser['points'] ?></h2>
-                <p class="text-muted"><?= t('points') ?></p>
-            </div>
-        </div>
-        <div class="card text-center">
-            <div class="card-body">
-                <span class="star" style="font-size: 2rem;">★</span>
-                <h2><?= $currentUser['stars'] ?></h2>
-                <p class="text-muted"><?= t('stars') ?></p>
-            </div>
-        </div>
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="fas fa-<?= $currentUser['role'] === 'admin' ? 'user-shield' : 'user' ?> text-accent" style="font-size: 2rem;"></i>
-                <h2><?= $currentUser['role'] === 'admin' ? 'Admin' : t('user') ?></h2>
-                <p class="text-muted"><?= t('role') ?></p>
-            </div>
-        </div>
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="fas fa-<?= $currentUser['in_competition'] ? 'check-circle' : 'times-circle' ?>" style="font-size: 2rem; color: <?= $currentUser['in_competition'] ? 'var(--f1-red)' : 'var(--text-muted)' ?>;"></i>
-                <h2><?= $currentUser['in_competition'] ? t('yes') : t('no') ?></h2>
-                <p class="text-muted"><?= t('in_competition') ?></p>
-            </div>
-        </div>
-    </div>
+    <!-- 2-col grid -->
+    <div class="hf-profile-grid">
 
-    <!-- Edit Profile -->
-    <div class="card mb-3">
-        <div class="card-header">
-            <h3><?= t('edit_profile') ?></h3>
-        </div>
-        <div class="card-body">
-            <form method="POST">
-                <?= csrfField() ?>
-                <input type="hidden" name="action" value="update_profile">
-                <div class="form-group">
-                    <label class="form-label"><?= t('email') ?></label>
-                    <input type="email" class="form-input" value="<?= escape($currentUser['email']) ?>" disabled style="opacity: 0.7;">
-                </div>
-                <div class="form-group">
-                    <label class="form-label"><?= t('display_name') ?></label>
-                    <input type="text" name="display_name" class="form-input" value="<?= escape($currentUser['display_name']) ?>">
-                </div>
-                <div class="form-group">
-                    <label class="form-label"><?= t('language_label') ?></label>
-                    <select name="language" class="form-input">
-                        <option value="da" <?= ($currentUser['language'] ?? 'da') === 'da' ? 'selected' : '' ?>>🇩🇰 Dansk</option>
-                        <option value="en" <?= ($currentUser['language'] ?? 'da') === 'en' ? 'selected' : '' ?>>🇬🇧 English</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <i class="fas fa-save"></i> <?= t('save') ?>
-                </button>
-            </form>
-        </div>
-    </div>
+        <!-- Left: forms -->
+        <div class="hf-profile-forms">
 
-    <!-- Change Password -->
-    <div class="card mb-3">
-        <div class="card-header">
-            <h3><i class="fas fa-lock text-accent"></i> <?= t('change_password_title') ?></h3>
-        </div>
-        <div class="card-body">
-            <form method="POST">
-                <?= csrfField() ?>
-                <input type="hidden" name="action" value="change_password">
-                <div class="form-group">
-                    <label class="form-label"><?= t('current_password') ?></label>
-                    <input type="password" name="current_password" class="form-input" required autocomplete="current-password">
+            <!-- Edit Profile -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 style="margin-bottom:16px;"><?= t('edit_profile') ?></h3>
+                    <form method="POST">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="action" value="update_profile">
+                        <div class="form-group">
+                            <label class="form-label"><?= t('email') ?></label>
+                            <input type="email" class="form-input" value="<?= escape($currentUser['email']) ?>" disabled style="opacity: 0.7;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('display_name') ?></label>
+                            <input type="text" name="display_name" class="form-input" value="<?= escape($currentUser['display_name']) ?>">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('language_label') ?></label>
+                            <select name="language" class="form-input">
+                                <option value="da" <?= ($currentUser['language'] ?? 'da') === 'da' ? 'selected' : '' ?>>🇩🇰 Dansk</option>
+                                <option value="en" <?= ($currentUser['language'] ?? 'da') === 'en' ? 'selected' : '' ?>>🇬🇧 English</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">
+                            <i class="fas fa-save"></i> <?= t('save') ?>
+                        </button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label class="form-label"><?= t('new_password') ?></label>
-                    <input type="password" name="new_password" class="form-input" required autocomplete="new-password" minlength="6">
-                </div>
-                <div class="form-group">
-                    <label class="form-label"><?= t('confirm_password') ?></label>
-                    <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password" minlength="6">
-                </div>
-                <button type="submit" class="btn btn-secondary" style="width: 100%;">
-                    <i class="fas fa-key"></i> <?= t('change_password_title') ?>
-                </button>
-            </form>
-        </div>
-    </div>
+            </div>
 
-    <!-- Bet History -->
-    <div class="card mb-3">
-        <div class="card-header">
-            <h3><i class="fas fa-history text-accent"></i> <?= t('betting_history') ?></h3>
-        </div>
-        <?php if (empty($betHistory)): ?>
-            <div class="card-body text-center text-muted"><?= t('no_bets_yet') ?></div>
-        <?php else: ?>
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <th style="padding: 0.75rem 1rem; text-align: left;"><?= t('races') ?></th>
-                        <th style="padding: 0.75rem 1rem; text-align: left; white-space: nowrap;">P1 / P2 / P3</th>
-                        <th style="padding: 0.75rem 1rem; text-align: right;"><?= t('points') ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($betHistory as $bet): ?>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 0.75rem 1rem;">
-                                <div style="font-weight: 600;"><?= escape($bet['race_name']) ?></div>
-                                <div class="text-muted" style="font-size: 0.8rem;"><?= date('d M Y', strtotime($bet['race_date'])) ?></div>
-                            </td>
-                            <td style="padding: 0.75rem 1rem;">
-                                <div class="bet-predictions" style="flex-direction: column; gap: 0.15rem;">
-                                    <span class="bet-pred"><b>P1:</b> <?= escape(explode(' ', $bet['p1_name'])[count(explode(' ', $bet['p1_name']))-1]) ?></span>
-                                    <span class="bet-pred"><b>P2:</b> <?= escape(explode(' ', $bet['p2_name'])[count(explode(' ', $bet['p2_name']))-1]) ?></span>
-                                    <span class="bet-pred"><b>P3:</b> <?= escape(explode(' ', $bet['p3_name'])[count(explode(' ', $bet['p3_name']))-1]) ?></span>
-                                </div>
-                            </td>
-                            <td style="padding: 0.75rem 1rem; text-align: right; white-space: nowrap;">
-                                <?php if ($bet['result_p1']): ?>
-                                    <?php if ($bet['is_perfect']): ?>
-                                        <span class="star">★</span>
-                                    <?php endif; ?>
-                                    <span class="text-accent" style="font-weight: bold;"><?= $bet['points'] ?> pts</span>
-                                <?php else: ?>
-                                    <span class="text-muted" style="font-size: 0.85rem;">—</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-    </div>
+            <!-- Change Password -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 style="margin-bottom:16px;"><i class="fas fa-lock text-accent"></i> <?= t('change_password_title') ?></h3>
+                    <form method="POST">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="action" value="change_password">
+                        <div class="form-group">
+                            <label class="form-label"><?= t('current_password') ?></label>
+                            <input type="password" name="current_password" class="form-input" required autocomplete="current-password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('new_password') ?></label>
+                            <input type="password" name="new_password" class="form-input" required autocomplete="new-password" minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('confirm_password') ?></label>
+                            <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password" minlength="6">
+                        </div>
+                        <button type="submit" class="btn btn-secondary" style="width:100%;">
+                            <i class="fas fa-key"></i> <?= t('change_password_title') ?>
+                        </button>
+                    </form>
+                </div>
+            </div>
 
+        </div>
+
+        <!-- Right: bet history -->
+        <div>
+            <div class="hf-section-h" style="margin-bottom:12px;">
+                <h3><?= t('betting_history') ?></h3>
+            </div>
+
+            <?php if (empty($betHistory)): ?>
+                <p data-testid="empty-bet-history" class="text-muted" style="padding: 12px 0;"><?= t('no_bets_yet') ?></p>
+            <?php else: ?>
+                <?php foreach ($betHistory as $bet): ?>
+                    <div class="hf-racecard hf-racecard--static">
+                        <div class="hf-racenum"><?= escape(mb_strtoupper(mb_substr($bet['race_name'], 0, 3))) ?></div>
+                        <div>
+                            <div class="hf-racename">
+                                <?= escape($bet['race_name']) ?>
+                                <?php if ($bet['is_perfect']): ?><span class="star" style="margin-left:4px;">★</span><?php endif; ?>
+                            </div>
+                            <div class="hf-racemeta">
+                                P1: <?= driverLastName(['name' => $bet['p1_name']]) ?>
+                                &nbsp;· P2: <?= driverLastName(['name' => $bet['p2_name']]) ?>
+                                &nbsp;· P3: <?= driverLastName(['name' => $bet['p3_name']]) ?>
+                            </div>
+                        </div>
+                        <?php if ($bet['result_p1']): ?>
+                            <span class="hf-badge <?= $bet['is_perfect'] ? 'open' : 'done' ?>">
+                                <?= $bet['is_perfect'] ? '★ ' : '' ?><?= $bet['points'] ?>p
+                            </span>
+                        <?php else: ?>
+                            <span class="text-muted">—</span>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+    </div>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

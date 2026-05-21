@@ -21,8 +21,8 @@ test.describe("Public pages", () => {
 
     test("leaderboard has rows with non-zero points", async ({ page }) => {
         await page.goto("/leaderboard.php");
-        await expect(page.locator("table.leaderboard-table tbody tr").first()).toBeVisible();
-        await expect(page.locator("table.leaderboard-table tbody tr").first()).toContainText(/[1-9]\d*/);
+        await expect(page.locator(".hf-row").first()).toBeVisible();
+        await expect(page.locator(".hf-row").first()).toContainText(/[1-9]\d*/);
     });
 
     test("races page loads", async ({ page }) => {
@@ -32,7 +32,7 @@ test.describe("Public pages", () => {
 
     test("index page renders upcoming races section", async ({ page }) => {
         await page.goto("/");
-        await expect(page.locator(".races-section")).toBeVisible();
+        await expect(page.locator('[data-testid="home-results"]')).toBeVisible();
     });
 });
 
@@ -54,6 +54,18 @@ test.describe("Translations", () => {
 
         // restore DA so this test does not bleed into others
         await page.goto("/login.php?toggle_lang=1");
+    });
+
+    test("font toggle switches EDIT ↔ SYS and persists via session", async ({ page }) => {
+        await page.goto("/login.php");
+        await expect(page.locator('body')).toHaveClass(/font-editorial/);
+
+        await page.goto("/login.php?toggle_font=1");
+        await expect(page.locator('body')).toHaveClass(/font-system/);
+
+        // restore so session state does not bleed into other tests
+        await page.goto("/login.php?toggle_font=1");
+        await expect(page.locator('body')).toHaveClass(/font-editorial/);
     });
 });
 
@@ -80,14 +92,19 @@ test.describe("Protected pages", () => {
 
     test("profile page shows all section headings", async ({ page }) => {
         await page.goto("/profile.php");
-        await expect(page.locator(".card-header h3").filter({ hasText: /Edit Profile|Rediger Profil/ })).toBeVisible();
-        await expect(page.locator(".card-header h3").filter({ hasText: /Change Password|Skift Adgangskode/ })).toBeVisible();
-        await expect(page.locator(".card-header h3").filter({ hasText: /Betting History|Din Betting Historik/ })).toBeVisible();
+        await expect(page.locator("h3").filter({ hasText: /Edit Profile|Rediger Profil/ })).toBeVisible();
+        await expect(page.locator("h3").filter({ hasText: /Change Password|Skift Adgangskode/ })).toBeVisible();
+        await expect(page.locator("h3").filter({ hasText: /Betting History|Din Betting Historik/ })).toBeVisible();
     });
 
     test("admin panel loads with races tab", async ({ page }) => {
         await page.goto("/admin.php?tab=races");
         await expect(page.locator(".card").first()).toBeVisible();
+    });
+
+    test("bottom bar visible on authenticated pages", async ({ page }) => {
+        await page.goto("/");
+        await expect(page.locator('.hf-bottom')).toBeVisible();
     });
 
 });
@@ -110,7 +127,6 @@ test.describe("Logout", () => {
         await page.click('.hf-hamburger');
         await page.click('a[href="logout.php"]');
         await page.waitForURL(/index\.php/);
-        await page.click('.hf-hamburger');
-        await expect(page.locator('a[href="login.php"]')).toBeVisible();
+        await expect(page.locator('.hf-bottom a[href="login.php"]')).toBeVisible();
     });
 });

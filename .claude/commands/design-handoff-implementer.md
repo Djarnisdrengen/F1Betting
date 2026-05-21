@@ -821,6 +821,26 @@ You've successfully implemented the handoff when:
 
 When all these are true, the handoff is complete and ready for merge to production.
 
+## Project-specific note: font/theme/lang toggles
+
+All UI state toggles (theme, language, font stack) use `$_SESSION`, not cookies. The pattern is:
+
+```php
+if (isset($_GET['toggle_font'])) {
+    $_SESSION['font_stack'] = ($_SESSION['font_stack'] ?? 'editorial') === 'editorial' ? 'system' : 'editorial';
+    $currentUrl = $_SERVER['REQUEST_URI'];
+    $currentUrl = preg_replace('/([&?])toggle_font=1(&|$)/', '$1', $currentUrl);
+    $currentUrl = rtrim($currentUrl, '?&');
+    header('Location: ' . $currentUrl);
+    exit;
+}
+$fontStack = $_SESSION['font_stack'] ?? 'editorial';
+```
+
+**Do not use `setcookie()`** for these toggles. On this server, calling `setcookie()` after the security headers have been sent (they are sent unconditionally in `config.shared.php`) can silently fail and also prevent the subsequent `header('Location:')` redirect from firing — leaving `?toggle_font=1` permanently in the URL. `$_SESSION` writes do not emit HTTP headers and are always safe.
+
+The preg_replace pattern preserves other query params (e.g. `?tab=upcoming&toggle_font=1` → `?tab=upcoming`). The same pattern is used for `toggle_theme` and `toggle_lang`.
+
 ## Project-specific note: i18n
 This project already has a translation system — do NOT create new `lang/da.php` / `lang/en.php` files or a new `t()` function. Instead:
 - Use the existing `t('key')` helper defined in `public/includes/functions.php`

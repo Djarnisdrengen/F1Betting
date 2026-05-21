@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
             style.textContent = [
                 '#delete-modal .modal-overlay { position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5); }',
                 '#delete-modal .modal-content { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-card);padding:2rem;border-radius:12px;min-width:300px;border:1px solid var(--border-color); }',
-                '#delete-modal h3 { margin:0 0 1rem 0;font-family:\'Chivo\',sans-serif; }',
+                '#delete-modal h3 { margin:0 0 1rem 0;font-family:var(--font-display); }',
                 '#delete-modal p { margin:0 0 1.5rem 0;color:var(--text-secondary); }',
                 '#delete-modal .modal-buttons { display:flex;gap:0.5rem;justify-content:flex-end; }',
             ].join('');
@@ -217,5 +217,23 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => alert.remove(), 500);
         }, 5000);
     });
+
+    // Drawer toggle
+    const hamburger = document.getElementById('hf-hamburger');
+    const drawer    = document.getElementById('hf-drawer');
+    if (hamburger && drawer) {
+        hamburger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const open = drawer.classList.toggle('open');
+            this.setAttribute('aria-expanded', String(open));
+        });
+        document.addEventListener('click', function (e) {
+            if (!drawer.classList.contains('open')) return;
+            if (!drawer.contains(e.target) && !hamburger.contains(e.target)) {
+                drawer.classList.remove('open');
+                hamburger.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
 });
 

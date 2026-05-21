@@ -7,201 +7,306 @@ $currentUser = getCurrentUser();
 $settings = getSettings();
 $lang = getLang();
 
-// Hent data
 $races = getRaces($db);
 [$drivers, $driversById] = fetchDrivers($db, 'number');
-
 $betsByRace = getBetsByRace($db);
+$leaderboard = getLeaderboard($db);
 
-$leaderboard = getLeaderboard($db, 10);
-
-// Hero tekst
-$heroTitle = $lang === 'da' ? $settings['hero_title_da'] : $settings['hero_title_en'];
-$heroText = $lang === 'da' ? $settings['hero_text_da'] : $settings['hero_text_en'];
-
-// Find first upcoming race for scroll - exclude completed AND past races
 $now = new DateTime();
-$upcomingRaces = array_filter($races, function($r) use ($now) {
-    //if ($r['result_p1']) return false; // Har resultat = afsluttet
-    $raceDateTime = new DateTime($r['race_date'] . ' ' . $r['race_time']);
+$bettingWindowHours = $settings['betting_window_hours'] ?? 48;
 
-    $eightHoursAgo = (clone $now)->modify('-8 hours');
-    return $raceDateTime > $eightHoursAgo; // Fremtidige løb + op til 8 timer gamle
-});
-$firstUpcomingRaceId = !empty($upcomingRaces) ? array_values($upcomingRaces)[0]['id'] : null;
+// Split races into upcoming (future + running) and completed
+$upcomingRaces = array_values(array_filter($races, function($r) use ($now) {
+    $raceDateTime = new DateTime($r['race_date'] . ' ' . $r['race_time']);
+    return $raceDateTime > (clone $now)->modify('-8 hours');
+}));
+$completedRaces = array_values(array_filter($races, function($r) use ($now) {
+    if (!$r['result_p1']) return false;
+    $raceDateTime = new DateTime($r['race_date'] . ' ' . $r['race_time']);
+    return $raceDateTime <= (clone $now)->modify('-8 hours');
+}));
+
+$racesCompleted  = count($completedRaces);
+$racesRemaining  = count($upcomingRaces);
+$recentResults   = array_slice(array_reverse($completedRaces), 0, 3);
+
+// Hero: derive from next upcoming race
+$heroRace = $upcomingRaces[0] ?? null;
+$heroCountdownTarget = null;
+$heroStatus = null;
+$heroPool = null;
+if ($heroRace) {
+    $heroStatus = getBettingStatus($heroRace, $settings);
+    $raceDateTime = new DateTime($heroRace['race_date'] . ' ' . $heroRace['race_time']);
+    $bettingOpens = (clone $raceDateTime)->modify("-{$bettingWindowHours} hours");
+    if ($heroStatus['status'] === 'pending') {
+        $heroCountdownTarget = $bettingOpens->format('c');
+    } else {
+        $heroCountdownTarget = $raceDateTime->format('c');
+    }
+    $heroPool = $heroRace['bettingpool_size'] ?: null;
+}
+
+// My rank for home card
+$myRank       = null;
+$myPoints     = null;
+$myBets       = null;
+$myStars      = null;
+$myDelta      = null;
+$totalUsers   = count($leaderboard);
+if ($currentUser) {
+    foreach ($leaderboard as $i => $entry) {
+        if ($entry['id'] === $currentUser['id']) {
+            $myRank   = $i + 1;
+            $myPoints = $entry['points'];
+            $myBets   = $entry['bets_count'];
+            $myStars  = $entry['stars'];
+            $myDelta  = $entry['rank_delta'];
+            break;
+        }
+    }
+    if ($myRank === null) {
+        $myPoints = $currentUser['points'] ?? 0;
+        $myStars  = $currentUser['stars'] ?? 0;
+        $stmt = $db->prepare("SELECT COUNT(*) FROM bets WHERE user_id = ?");
+        $stmt->execute([$currentUser['id']]);
+        $myBets = (int)$stmt->fetchColumn();
+    }
+}
+
+// Maps getBettingStatus() class → hf-badge modifier
+$badgeMap = [
+    'status-open'      => 'open',
+    'status-pending'   => 'soon',
+    'status-closed'    => 'done',
+    'status-completed' => 'done',
+];
+
+$cdLabels = [t('cd_days'), t('cd_hrs'), t('cd_min'), t('cd_sec')];
+
+$heroTitle = $lang === 'da' ? $settings['hero_title_da'] : $settings['hero_title_en'];
 
 include __DIR__ . '/includes/header.php';
 
 $successMessages = [
-    'bet_placed' => t('bet_placed'),
+    'bet_placed'  => t('bet_placed'),
     'bet_updated' => t('bet_updated'),
 ];
 $errorMessages = [
-    'already_bet'       => t('already_bet_long'),
+    'already_bet'        => t('already_bet_long'),
     'not_in_competition' => t('not_in_competition'),
 ];
 $flashSuccess = $successMessages[$_GET['success'] ?? ''] ?? null;
 $flashError   = $errorMessages[$_GET['error']   ?? ''] ?? null;
+
+// Inline countdown snippet (reused twice in the hero)
+function renderHfCountdown(string $target, array $labels, string $extraClass = ''): string {
+    $cells = '';
+    foreach ($labels as $lbl) {
+        $cells .= '<div class="hf-cd-cell"><div class="hf-cd-num">--</div><div class="hf-cd-label">' . htmlspecialchars($lbl) . '</div></div>';
+    }
+    $cls = 'hf-countdown' . ($extraClass ? ' ' . $extraClass : '');
+    return '<div class="' . $cls . '" data-target="' . htmlspecialchars($target) . '">' . $cells . '</div>';
+}
 ?>
 
-<?php if ($flashSuccess): ?>
-    <div class="alert alert-success"><i class="fas fa-check-circle"></i> <?= escape($flashSuccess) ?></div>
-<?php elseif ($flashError): ?>
-    <div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> <?= escape($flashError) ?></div>
-<?php endif; ?>
+<!-- Hero -->
+<section class="hf-hero">
+    <div class="hf-container">
+        <div class="hf-hero-inner">
+            <div class="hf-hero-left">
+                <?php if ($heroRace): ?>
+                    <div class="hf-hero-eyebrow"><?= escape($heroRace['name']) ?></div>
+                <?php endif; ?>
+                <h1 class="hf-hero-title"><?= escape($heroTitle) ?></h1>
 
-<!-- Hero Section -->
-<section class="hero">
-    <h1><?= escape($heroTitle) ?></h1>
-    <p><?= escape($heroText) ?></p>
+                <?php if ($heroRace): ?>
+                    <div class="hf-hero-meta">
+                        <?php if ($heroPool): ?>
+                            <span><?= t('pool_size') ?> <?= escape($heroPool) ?></span>
+                            <span class="dot"></span>
+                        <?php endif; ?>
+                        <span class="hf-badge <?= $badgeMap[$heroStatus['class']] ?? 'done' ?>"><?= $heroStatus['label'] ?></span>
+                    </div>
+
+                    <?php if ($heroCountdownTarget): ?>
+                        <?= renderHfCountdown($heroCountdownTarget, $cdLabels, 'hf-hero-cd-inline') ?>
+                    <?php endif; ?>
+
+                    <?php if ($heroStatus['status'] === 'open' && $currentUser && $currentUser['in_competition']): ?>
+                        <?php
+                        $userBet = null;
+                        foreach ($betsByRace[$heroRace['id']] ?? [] as $b) {
+                            if ($b['user_id'] === $currentUser['id']) { $userBet = $b; break; }
+                        }
+                        ?>
+                        <?php if (!$userBet): ?>
+                            <a href="bet.php?race=<?= $heroRace['id'] ?>&return=index" class="hf-cta-primary">
+                                <?= t('place_bet') ?> <span class="arrow">→</span>
+                            </a>
+                        <?php else: ?>
+                            <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="hf-cta-primary">
+                                <?= t('edit') ?> <span class="arrow">→</span>
+                            </a>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
+
+            <?php if ($heroRace && $heroCountdownTarget): ?>
+            <div class="hf-hero-right">
+                <?= renderHfCountdown($heroCountdownTarget, $cdLabels) ?>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
 </section>
 
-<div class="homepage-grid">
-    <!-- Leaderboard Sidebar (shows first on mobile, collapsed by default) -->
-    <div class="leaderboard-section"> 
+<?php if ($flashSuccess): ?>
+    <div class="hf-container"><div class="alert alert-success"><i class="fas fa-check-circle"></i> <?= escape($flashSuccess) ?></div></div>
+<?php elseif ($flashError): ?>
+    <div class="hf-container"><div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> <?= escape($flashError) ?></div></div>
+<?php endif; ?>
 
-        <!-- Mobile collapsible header -->
-        <div class="leaderboard-collapse-header">
-            <h2><i class="fas fa-trophy text-accent"></i> <?= t('leaderboard') ?></h2>
-            <i class="fas fa-chevron-down toggle-icon"></i>
+<?php if ($currentUser && $myRank !== null): ?>
+<div class="hf-container">
+    <div class="hf-self-card hf-self-card-home">
+        <div class="hf-self-card-home-left">
+            <div class="hf-self-label"><?= t('your_position') ?></div>
+            <div class="hf-self-rank">
+                <span class="hf-self-rank-n"><?= $myRank ?></span>
+                <span class="hf-self-rank-of">/ <?= $totalUsers ?></span>
+            </div>
+            <?php if ($myDelta !== null):
+                if ($myDelta > 0)        $deltaText = '↑ ' . $myDelta . ' ' . t('rank_delta_places');
+                elseif ($myDelta < 0)    $deltaText = '↓ ' . abs($myDelta) . ' ' . t('rank_delta_places');
+                else                     $deltaText = t('rank_no_change');
+            ?>
+            <div class="hf-self-delta"><?= escape($deltaText) ?></div>
+            <?php endif; ?>
         </div>
-        
-        <!-- Desktop header -->
-        <h2 class="mb-2 desktop-header"><i class="fas fa-trophy text-accent"></i> <?= t('leaderboard') ?></h2>
-        
-        <div class="leaderboard-content" id="leaderboard-content">
-            <div class="card">
+        <div class="hf-self-stats hf-self-card-home-right">
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('points_label')) ?></div>
+                <div class="hf-self-stat-val"><?= $myPoints ?? 0 ?></div>
+            </div>
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('stars')) ?></div>
+                <div class="hf-self-stat-val"><?= ($myStars ?? 0) > 0 ? '★' . $myStars : '—' ?></div>
+            </div>
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('bets')) ?></div>
+                <div class="hf-self-stat-val"><?= $myBets ?? 0 ?></div>
+            </div>
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('rounds_played')) ?></div>
+                <div class="hf-self-stat-val"><?= $racesCompleted ?></div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Main grid -->
+<div class="hf-container">
+    <div class="hf-home-grid">
+
+        <!-- Leaderboard column -->
+        <div>
+            <div class="hf-section">
+                <div class="hf-section-h">
+                    <h2><?= t('leaderboard') ?></h2>
+                    <a href="leaderboard.php"><?= t('see_all') ?></a>
+                </div>
+
                 <?php if (empty($leaderboard)): ?>
-                    <div class="card-body text-center text-muted"><?= t('no_bets') ?></div>
+                    <p class="text-muted" style="padding: 12px 0;"><?= t('no_bets') ?></p>
                 <?php else: ?>
-                    <?php foreach (array_slice($leaderboard, 0, 3) as $i => $entry): ?>
-                        <div class="leaderboard-entry" style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(90deg, rgba(225, 6, 0, 0.1), transparent);">
-                            <div class="flex items-center gap-2">
-                                <span class="position-badge position-<?= $i + 1 ?>"><?= $i + 1 ?></span>
-                                <div>
-                                    <strong><?= displayUserName($entry) ?></strong>
-                                    <br><small class="text-muted"><?= $entry['bets_count'] ?> bets</small>
-                                </div>
+                    <?php foreach (array_slice($leaderboard, 0, 5) as $i => $entry):
+                        $isSelf  = $currentUser && $entry['id'] === $currentUser['id'];
+                        $rankCls = $i < 3 ? 'hf-rank r'.($i+1) : 'hf-rank';
+                    ?>
+                        <div class="hf-row<?= $isSelf ? ' self' : '' ?>">
+                            <div class="<?= $rankCls ?>"><?= $i + 1 ?></div>
+                            <div class="hf-avatar"><?= escape(userInitial($entry)) ?></div>
+                            <div class="hf-who">
+                                <div class="hf-who-name"><?= escape(displayUserName($entry)) ?></div>
+                                <div class="hf-who-sub"><?= $entry['bets_count'] ?> <?= t('bets') ?></div>
                             </div>
-                            <div class="text-right">
-                                <span class="text-accent" style="font-weight: bold;"><?= $entry['points'] ?> pts</span>
-                                <?php if ($entry['stars'] > 0): ?>
-                                    <br><span class="star">★<?= $entry['stars'] ?></span>
-                                <?php endif; ?>
-                            </div>
+                            <div class="hf-stars"><?= $entry['stars'] > 0 ? '★'.$entry['stars'] : '' ?></div>
+                            <div class="hf-pts"><?= $entry['points'] ?>p</div>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-            <a href="leaderboard.php" class="btn btn-secondary mt-2" style="width: 100%;"><?= t('leaderboard') ?></a>
         </div>
-    </div>
 
-    <!-- Upcoming Races -->
-    <div class="races-section">
-        <h2 class="mb-2"><i class="fas fa-flag text-accent"></i> <?= t('upcoming_races') ?></h2>
-        
-        <?php if (empty($upcomingRaces)): ?>
-            <div class="card">
-                <div class="card-body text-center text-muted">
-                    <?= t('no_upcoming_races') ?>
+        <!-- Races + results column -->
+        <div data-testid="home-results">
+            <!-- Upcoming races -->
+            <div class="hf-section">
+                <div class="hf-section-h">
+                    <h2><?= t('upcoming_races') ?></h2>
+                    <a href="races.php"><?= t('see_all') ?></a>
                 </div>
-            </div>
-        <?php else: ?>
-            <?php 
-            $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
-            foreach ($upcomingRaces as $race): 
-                $status = getBettingStatus($race, $settings);
-                $raceBets = $betsByRace[$race['id']] ?? [];
-                $userBet = null;
-                if ($currentUser) {
-                    foreach ($raceBets as $b) {
-                        if ($b['user_id'] === $currentUser['id']) {
-                            $userBet = $b;
-                            break;
+
+                <?php if (empty($upcomingRaces)): ?>
+                    <p class="text-muted" style="padding: 12px 0;"><?= t('no_upcoming_races') ?></p>
+                <?php else: ?>
+                    <?php foreach (array_slice($upcomingRaces, 0, 3) as $race):
+                        $status  = getBettingStatus($race, $settings);
+                        $raceBets = $betsByRace[$race['id']] ?? [];
+                        $userBet = null;
+                        if ($currentUser) {
+                            foreach ($raceBets as $b) {
+                                if ($b['user_id'] === $currentUser['id']) { $userBet = $b; break; }
+                            }
                         }
-                    }
-                }
-                
-                // Beregn countdown
-                $raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
-                $bettingOpens = clone $raceDateTime;
-                $bettingOpens->modify("-{$bettingWindowHours} hours");
-                $now = new DateTime();
-            ?>
-                <div class="card mb-2" id="race-<?= $race['id'] ?>">
-                    <div class="race-card">
-                        <div class="race-header">
+                    ?>
+                        <div class="hf-racecard" id="race-<?= $race['id'] ?>">
+                            <div class="hf-racenum"><?= escape(mb_strtoupper(mb_substr($race['location'], 0, 3))) ?></div>
                             <div>
-                                <h3 class="race-title"><?= escape($race['name']) ?></h3>
-                                <div class="race-meta">
-                                    <span><i class="fas fa-map-marker-alt"></i> <?= escape($race['location']) ?></span>
-                                    <span><i class="fas fa-clock"></i> <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></span>
-                                </div>
-                                <!-- Countdown Timer -->
-                                <?php if ($status['status'] === 'pending'): ?>
-                                    <div class="countdown-timer" data-opens="<?= $bettingOpens->format('c') ?>">
-                                        <i class="fas fa-hourglass-half"></i>
-                                        <?= t('betting_opens_in') ?>:
-                                        <span class="countdown-value" id="countdown-<?= $race['id'] ?>">--</span>
-                                    </div>
-                                <?php elseif ($status['status'] === 'open'): ?>
-                                    <div class="countdown-timer betting-open" data-closes="<?= $raceDateTime->format('c') ?>">
-                                        <i class="fas fa-stopwatch"></i>
-                                        <?= t('betting_closes_in') ?>:
-                                        <span class="countdown-value" id="countdown-<?= $race['id'] ?>">--</span>
-                                    </div>
-                                <?php endif; ?>
+                                <div class="hf-racename"><?= escape($race['name']) ?></div>
+                                <div class="hf-racemeta"><?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></div>
                             </div>
-                            <span class="badge <?= $status['class'] ?>"><?= $status['label'] ?></span>
+                            <?php if ($status['status'] === 'open' && $currentUser && !$userBet && $currentUser['in_competition']): ?>
+                                <a href="bet.php?race=<?= $race['id'] ?>&return=index" class="hf-badge open"><?= t('place_bet') ?> →</a>
+                            <?php elseif ($status['status'] === 'open' && $currentUser && $userBet && $currentUser['in_competition']): ?>
+                                <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="hf-badge open"><?= t('edit') ?> →</a>
+                            <?php else: ?>
+                                <span class="hf-badge <?= $badgeMap[$status['class']] ?? 'done' ?>"><?= $status['label'] ?></span>
+                            <?php endif; ?>
                         </div>
-                        <!-- Betting Pool Size if there is a poolsize on the race-->
-                        <?php if ($race['bettingpool_size']): ?>
-                            <div class="countdown-timer bettingpool_size">
-                                <i class="fas fa-dollar-sign bettingpool_size"></i>
-                                <?= t('pool_size') ?>
-                                <span class="bettingpool_size">
-                                    <?= $race['bettingpool_size'] ?>
-                                </span>
-                            </div> 
-                        <?php endif; ?>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
 
-                        <!-- Qualifying -->
-                        <?php $_qd_data = $race; $_qd_keys = ['quali_p1', 'quali_p2', 'quali_p3']; $_qd_label = t('qualifying'); include __DIR__ . '/includes/qualifying-display.php'; ?>
-
-                        <!-- Race result -->
-                        <?php $_qd_data = $race; $_qd_keys = ['result_p1', 'result_p2', 'result_p3']; $_qd_label = t('result'); include __DIR__ . '/includes/qualifying-display.php'; ?>
-
-                        <!-- Actions -->
-                        <div class="flex items-center justify-between mt-2">
-                            <span class="text-muted"><i class="fas fa-users"></i> <?= count($raceBets) ?> bets</span>
-                            <div class="flex gap-1">
-                                <?php if ($status['status'] === 'open' && $currentUser && !$userBet && $currentUser['in_competition']): ?>                                    
-                                    <a href="bet.php?race=<?= $race['id'] ?>&return=index" class="btn btn-primary btn-sm"><?= t('place_bet') ?></a>
-                                <?php elseif ($status['status'] === 'open' && $currentUser && $userBet && $currentUser['in_competition']): ?>
-                                    <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> <?= t('edit') ?></a>
-                                <?php endif; ?>
-                                <?php if (count($raceBets) > 0): ?>
-                                    <button class="btn btn-ghost btn-sm toggle-bets" data-target="bets-<?= $race['id'] ?>">
-                                        <?= t('all_bets') ?> <i class="fas fa-chevron-down"></i>
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        
-                        <!-- All Bets (hidden by default) -->
-                        <?php if (count($raceBets) > 0): ?>
-                            <div id="bets-<?= $race['id'] ?>" class="bets-section hidden">
-                                <h4 class="mb-1"><?= t('all_bets') ?> (<?= count($raceBets) ?>)</h4>
-                                <?php foreach ($raceBets as $bet): ?>
-                                    <?php include __DIR__ . '/includes/bet-item.php'; ?>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+            <!-- Recent results -->
+            <?php if (!empty($recentResults)): ?>
+            <div class="hf-section">
+                <div class="hf-section-h">
+                    <h2><?= t('recent_results') ?></h2>
+                    <a href="races.php?tab=completed"><?= t('see_all') ?></a>
                 </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+                <?php foreach ($recentResults as $race): ?>
+                    <div class="hf-racecard">
+                        <div class="hf-racenum"><?= escape(mb_strtoupper(mb_substr($race['location'], 0, 3))) ?></div>
+                        <div>
+                            <div class="hf-racename"><?= escape($race['name']) ?></div>
+                            <div class="hf-racemeta">
+                                <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
+                                <?php if ($race['result_p1']): ?>
+                                    &nbsp;· P1: <?= escape($driversById[$race['result_p1']]['name'] ?? '—') ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <span class="hf-badge done"><?= t('status_done') ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+
     </div>
 </div>
 

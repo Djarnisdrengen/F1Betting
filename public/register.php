@@ -78,47 +78,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $inviteValid) {
 include __DIR__ . '/includes/header.php';
 ?>
 
-<div style="max-width: 400px; margin: 3rem auto;">
-    <div class="card">
-        <div class="card-header text-center">
-            <div style="width: 64px; height: 64px; background: var(--f1-red); border-radius: 16px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-user-plus" style="font-size: 2rem; color: white;"></i>
+<div class="hf-container">
+    <div class="hf-auth-wrap">
+        <div class="card">
+            <div class="card-body">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div style="width:64px;height:64px;background:var(--f1-red);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-user-plus" style="font-size:2rem;color:white;"></i>
+                    </div>
+                    <h2 style="margin:0 0 6px;"><?= t('register') ?></h2>
+                    <?php if ($inviteValid): ?>
+                        <p class="text-muted" style="margin:0;"><?= t('you_are_invited') ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <?php if ($error): ?>
+                    <div class="alert alert-error"><?= escape($error) ?></div>
+                <?php endif; ?>
+
+                <?php if ($inviteValid): ?>
+                    <form method="POST">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="token" value="<?= escape($token) ?>">
+                        <div class="form-group">
+                            <label class="form-label"><?= t('display_name') ?></label>
+                            <input type="text" name="display_name" class="form-input" placeholder="Max Verstappen">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('email') ?></label>
+                            <input type="email" name="email" class="form-input" required value="<?= escape($inviteEmail) ?>" readonly style="background:var(--bg-secondary);cursor:not-allowed;">
+                            <small class="text-muted"><?= t('email_set_by_invite') ?></small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('password') ?></label>
+                            <input type="password" name="password" class="form-input" required minlength="6" placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;"><?= t('register') ?></button>
+                    </form>
+                <?php endif; ?>
+
+                <p class="text-center mt-2 text-muted">
+                    <?= t('already_have_account') ?>
+                    <a href="login.php" class="text-accent"><?= t('login') ?></a>
+                </p>
             </div>
-            <h2><?= t('register') ?></h2>
-            <?php if ($inviteValid): ?>
-                <p class="text-muted"><?= t('you_are_invited') ?></p>
-            <?php endif; ?>
-        </div>
-        <div class="card-body">
-            <?php if ($error): ?>
-                <div class="alert alert-error"><?= escape($error) ?></div>
-            <?php endif; ?>
-            
-            <?php if ($inviteValid): ?>
-                <form method="POST">
-                    <?= csrfField() ?>
-                    <input type="hidden" name="token" value="<?= escape($token) ?>">
-                    <div class="form-group">
-                        <label class="form-label"><?= t('display_name') ?></label>
-                        <input type="text" name="display_name" class="form-input" placeholder="Max Verstappen">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label"><?= t('email') ?></label>
-                        <input type="email" name="email" class="form-input" required value="<?= escape($inviteEmail) ?>" readonly style="background: var(--bg-secondary); cursor: not-allowed;">
-                        <small class="text-muted"><?= t('email_set_by_invite') ?></small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label"><?= t('password') ?></label>
-                        <input type="password" name="password" class="form-input" required minlength="6" placeholder="••••••••">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;"><?= t('register') ?></button>
-                </form>
-            <?php endif; ?>
-            
-            <p class="text-center mt-2 text-muted">
-                <?= t('already_have_account') ?>
-                <a href="login.php" class="text-accent"><?= t('login') ?></a>
-            </p>
         </div>
     </div>
 </div>

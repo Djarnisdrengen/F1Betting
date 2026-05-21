@@ -2,7 +2,6 @@
 return [
     'da' => [
         // Tab labels
-        'invites'                   => 'Invitationer',
         'add_race'                  => 'Tilføj Løb',
         'add_driver'                => 'Tilføj Kører',
         'reset_result'              => 'Nulstil Resultat',
@@ -47,6 +46,8 @@ return [
         'invite_sent_to'            => 'Invitation sendt til %s',
         'invalid_email'             => 'Ugyldig email',
         'invite_resent'             => 'Invitation gensendt!',
+        'invite_created_email_failed'  => 'Invitation oprettet! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">%s</code>',
+        'invite_extended_email_failed' => 'Invitation forlænget! Email kunne ikke sendes. Del linket manuelt:<br><code style="word-break:break-all;font-size:0.75rem;">%s</code>',
         'invite_new_user'           => 'Inviter ny bruger',
         'send_invite'               => 'Send invitation',
         'invite_expires_desc'       => 'Invitationen udløber efter 7 dage. Brugeren modtager en email med et registreringslink.',
@@ -67,6 +68,11 @@ return [
 
         // Settings
         'settings_saved'            => 'Indstillinger gemt!',
+        'app_title_label'           => 'App Titel',
+        'hero_title_en_label'       => 'Hero Titel (English)',
+        'hero_title_da_label'       => 'Hero Titel (Dansk)',
+        'hero_text_en_label'        => 'Hero Tekst (English)',
+        'hero_text_da_label'        => 'Hero Tekst (Dansk)',
         'year'                      => 'År',
         'betting_window_section'    => 'Betting Vindue',
         'betting_window_config'     => 'Konfigurer hvornår betting åbner før løbsstart.',
@@ -83,7 +89,6 @@ return [
     ],
     'en' => [
         // Tab labels
-        'invites'                   => 'Invites',
         'add_race'                  => 'Add Race',
         'add_driver'                => 'Add Driver',
         'reset_result'              => 'Reset Result',
@@ -128,6 +133,8 @@ return [
         'invite_sent_to'            => 'Invitation sent to %s',
         'invalid_email'             => 'Invalid email',
         'invite_resent'             => 'Invitation resent!',
+        'invite_created_email_failed'  => 'Invitation created! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">%s</code>',
+        'invite_extended_email_failed' => 'Invitation extended! Email could not be sent. Share link manually:<br><code style="word-break:break-all;font-size:0.75rem;">%s</code>',
         'invite_new_user'           => 'Invite new user',
         'send_invite'               => 'Send invite',
         'invite_expires_desc'       => 'Invite expires after 7 days. User will receive an email with a registration link.',
@@ -148,6 +155,11 @@ return [
 
         // Settings
         'settings_saved'            => 'Settings saved!',
+        'app_title_label'           => 'App Title',
+        'hero_title_en_label'       => 'Hero Title (English)',
+        'hero_title_da_label'       => 'Hero Title (Dansk)',
+        'hero_text_en_label'        => 'Hero Text (English)',
+        'hero_text_da_label'        => 'Hero Text (Dansk)',
         'year'                      => 'Year',
         'betting_window_section'    => 'Betting Window',
         'betting_window_config'     => 'Configure when betting opens before race start.',

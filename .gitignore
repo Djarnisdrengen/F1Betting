@@ -106,6 +106,7 @@ build-deploy/backups/
 build-deploy/screenshots/
 build-deploy/security-reports/
 build-deploy/nightly-reports/
+tests/email-previews/
 
 # Added by ggshield
 .cache_ggshield

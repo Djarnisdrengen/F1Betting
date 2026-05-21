@@ -1,7 +1,7 @@
 'use strict';
 const { test, expect } = require('../../fixtures');
 const seed = require('../../helpers/seed');
-const { assertDelivered } = require('../../helpers/mailsac');
+const { assertDelivered } = require('../../helpers/email');
 const { expectMarker } = require('../../helpers/markers');
 
 const SEED_TOKEN           = process.env.INTEGRATION_SEED_TOKEN;
