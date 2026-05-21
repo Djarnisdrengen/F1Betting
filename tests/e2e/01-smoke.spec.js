@@ -55,6 +55,18 @@ test.describe("Translations", () => {
         // restore DA so this test does not bleed into others
         await page.goto("/login.php?toggle_lang=1");
     });
+
+    test("font toggle switches EDIT ↔ SYS and persists via session", async ({ page }) => {
+        await page.goto("/login.php");
+        await expect(page.locator('body')).toHaveClass(/font-editorial/);
+
+        await page.goto("/login.php?toggle_font=1");
+        await expect(page.locator('body')).toHaveClass(/font-system/);
+
+        // restore so session state does not bleed into other tests
+        await page.goto("/login.php?toggle_font=1");
+        await expect(page.locator('body')).toHaveClass(/font-editorial/);
+    });
 });
 
 // ─── Protected pages ──────────────────────────────────────────────────────────

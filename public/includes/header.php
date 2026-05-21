@@ -52,16 +52,17 @@ if (isset($_GET['toggle_lang'])) {
     exit;
 }
 if (isset($_GET['toggle_font'])) {
-    // TODO: implement font toggle — see AC-FONT-01
+    $_SESSION['font_stack'] = ($_SESSION['font_stack'] ?? 'editorial') === 'editorial' ? 'system' : 'editorial';
     $currentUrl = $_SERVER['REQUEST_URI'];
     $currentUrl = preg_replace('/([&?])toggle_font=1(&|$)/', '$1', $currentUrl);
     $currentUrl = rtrim($currentUrl, '?&');
-    header("Location: " . $currentUrl);
+    header('Location: ' . $currentUrl);
     exit;
 }
 // Refresh theme/lang after potential toggle
 $theme = getTheme();
 $lang = getLang();
+$fontStack = $_SESSION['font_stack'] ?? 'editorial';
 
 $currentUser = getCurrentUser();
 $settings = getSettings();
@@ -77,7 +78,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
             <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
             <link rel="apple-touch-icon" href="assets/favicon.png">
-            <link rel="stylesheet" href="assets/css/style.css">
+            <link rel="stylesheet" href="assets/css/style.css?v=<?= filemtime(__DIR__ . '/../assets/css/style.css') ?>">
             <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
             
     <?php if (defined('APP_ENV') && APP_ENV === 'live'): ?>
@@ -93,7 +94,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             </script>
     <?php endif; ?>
 </head>
-<body class="<?= $theme ?>">
+<body class="<?= escape($theme) ?> font-<?= escape($fontStack) ?>">
 <header class="hf-top">
     <a class="hf-logo" href="/">
         <span class="hf-logo-mark">F1</span>

@@ -28,9 +28,8 @@ $firstName = $currentUser
         <div class="hf-bb-icon"><?= strtoupper($lang) ?></div>
         <span><?= $lang === 'da' ? 'DANSK' : 'ENGLISH' ?></span>
     </a>
-    <a href="?toggle_font=1" class="hf-bb-item" title="Font">
-        <?php /* TODO: implement font toggle — see AC-FONT-01 */ ?>
-        <div class="hf-bb-icon" style="font-family: var(--font-display);">Aa</div>
-        <span>FONT</span>
+    <a href="?toggle_font=1" class="hf-bb-item">
+        <div class="hf-bb-icon" style="font-family: var(--font-accent);">Aa</div>
+        <span><?= $fontStack === 'editorial' ? 'EDIT' : 'SYS' ?></span>
     </a>
 </nav>

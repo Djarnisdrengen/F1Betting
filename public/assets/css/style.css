@@ -1,14 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
 
 :root {
     --f1-red: #e10600;
     --f1-red-dark: #b30500;
     --f1-red-light: #ff1a14;
 
-    --font-display: 'Chivo', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-body:    'Manrope', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --font-accent:  'Kalam', 'Patrick Hand', cursive;
-    --font-mono:    'Courier Prime', ui-monospace, Menlo, monospace;
+    --font-display: 'Kalam', cursive;
+    --font-body:    'Kalam', cursive;
+    --font-accent:  'Kalam', cursive;
+    --font-mono:    'Courier Prime', ui-monospace, monospace;
+
+    --display: var(--font-display);
+    --body:    var(--font-body);
+    --accent:  var(--font-accent);
+    --mono:    var(--font-mono);
 }
 
 * {
@@ -18,13 +23,13 @@
 }
 
 body {
-    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Chivo', sans-serif;
+    font-family: var(--font-display);
     font-weight: 700;
 }
 
@@ -158,7 +163,7 @@ body.clubhouse .bet-item.my-bet {
 }
 
 .logo-text {
-    font-family: 'Chivo', sans-serif;
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 1.25rem;
 }
@@ -219,7 +224,7 @@ body.clubhouse .bet-item.my-bet {
     cursor: pointer;
     transition: all 0.2s;
     border: none;
-    font-family: 'Chivo', sans-serif;
+    font-family: var(--font-display);
 }
 
 .btn-primary {
@@ -327,7 +332,9 @@ body.clubhouse .bet-item.my-bet {
 }
 
 .hero h1 {
+    font-family: var(--accent);
     font-size: 2.5rem;
+    font-weight: 700;
     margin-bottom: 1rem;
 }
 
@@ -376,7 +383,7 @@ body.clubhouse .bet-item.my-bet {
 
 /* Position Badges */
 .position-badge {
-    font-family: 'Chivo', sans-serif;
+    font-family: var(--font-display);
     font-weight: 800;
     width: 32px;
     height: 32px;
@@ -1355,7 +1362,7 @@ body.light .logo-light { display: block; }
     border: 1px solid var(--border-color);
     border-radius: 8px;
     cursor: pointer;
-    font-family: 'Chivo', sans-serif;
+    font-family: var(--font-display);
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 12px;
@@ -1379,7 +1386,7 @@ body.light .logo-light { display: block; }
     padding: 0.75rem 0.85rem;
     color: var(--text-secondary);
     text-decoration: none;
-    font-family: 'Chivo', sans-serif;
+    font-family: var(--font-display);
     font-weight: 600;
     font-size: 0.9rem;
     border-radius: 6px;
@@ -1403,8 +1410,6 @@ body.light .logo-light { display: block; }
    Hi-fi design tokens · broadcast palette (dark + light)
    Light theme switches via body.light .hifi-frame {…} below.
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap');
-
 :root {
     --f1-red: #e10600;
     --f1-red-light: #ff1a14;
@@ -1426,9 +1431,6 @@ body.light .logo-light { display: block; }
     --status-success: #10b981;
     --status-warning: #f59e0b;
     --status-danger: #ef4444;
-
-    --display: 'Chivo', system-ui, sans-serif;
-    --body: 'Manrope', system-ui, sans-serif;
 
     --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px;
     --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
@@ -1539,9 +1541,9 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 }
 .hf-logo-text {
     font-family: var(--display);
-    font-weight: 800;
+    font-weight: 700;
     font-size: 14px;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1734,9 +1736,9 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 @keyframes hf-pulse { 50% { opacity: 0.5; transform: scale(0.85); } }
 .hf-hero-title {
     font-family: var(--display);
-    font-weight: 900;
-    letter-spacing: -0.02em;
-    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
     margin-top: 12px;
 }
 .hf-hero-meta {
@@ -2054,7 +2056,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 }
 .hf-rule p + p { margin-top: 10px; }
 .hf-rule code {
-    font-family: ui-monospace, Menlo, monospace;
+    font-family: var(--font-mono);
     background: var(--bg-secondary);
     padding: 1px 6px;
     border-radius: 4px;
@@ -2067,7 +2069,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 1px 6px;
-    font-family: ui-monospace, Menlo, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-primary);
     line-height: 1.4;
@@ -2213,7 +2215,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 }
 .hf-footer .name { font-weight: 700; color: var(--text-secondary); }
 .hf-footer .v {
-    font-family: ui-monospace, Menlo, monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     padding: 1px 6px;
     border-radius: 3px;
@@ -2355,10 +2357,77 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 
 /* ── Phase D: Leaderboard layout ───────────────────────────── */
 .hf-podium-strip { display: none; }
-.hf-self-pin { display: flex; }
 @media (min-width: 768px) {
     .hf-podium-strip { display: grid; }
-    .hf-self-pin { display: none; }
+}
+
+.hf-lb-body { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+.hf-lb-list { flex: 1; min-width: 0; padding-bottom: 32px; }
+@media (min-width: 1024px) {
+    .hf-lb-body { flex-direction: row; align-items: flex-start; gap: 24px; }
+    .hf-self-card { flex: 0 0 280px; position: sticky; top: 72px; }
+}
+
+/* Self card */
+.hf-self-card {
+    background: linear-gradient(135deg, rgba(225,6,0,0.12), var(--bg-card) 70%);
+    border: 1px solid rgba(225,6,0,0.3);
+    border-radius: 12px;
+    padding: 20px 24px;
+}
+.hf-self-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--f1-red);
+    margin-bottom: 10px;
+}
+.hf-self-rank {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+.hf-self-rank-n {
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 900;
+    color: var(--text-primary);
+    line-height: 1;
+}
+.hf-self-rank-of {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.hf-self-delta {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+.hf-self-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    border-top: 1px solid var(--border-soft);
+    padding-top: 16px;
+}
+.hf-self-stat-label {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+.hf-self-stat-val {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
 }
 
 /* ── Phase D: Rules layout ──────────────────────────────────── */
@@ -2398,8 +2467,35 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-hero-right { display: none; }          /* hidden mobile */
 .hf-hero-cd-inline { display: grid; }      /* countdown shown inline mobile */
 
-.hf-home-stats {
-    display: none;                         /* hidden mobile */
+.hf-home-stats { display: none; }
+
+/* Home DIN POSITION card — horizontal layout */
+.hf-self-card-home {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 16px 0;
+}
+.hf-self-card-home .hf-self-stats {
+    border-top: 1px solid var(--border-soft);
+    padding-top: 16px;
+    grid-template-columns: repeat(4, 1fr);
+}
+@media (min-width: 640px) {
+    .hf-self-card-home {
+        flex-direction: row;
+        align-items: center;
+        gap: 32px;
+    }
+    .hf-self-card-home .hf-self-rank-n { font-size: 48px; }
+    .hf-self-card-home-left { flex-shrink: 0; }
+    .hf-self-card-home-right {
+        flex: 1;
+        border-top: none;
+        padding-top: 0;
+        border-left: 1px solid var(--border-soft);
+        padding-left: 32px;
+    }
 }
 .hf-home-grid {
     display: grid;
@@ -2526,12 +2622,12 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     width: 48px; height: 48px; border-radius: 50%;
     background: var(--bg-secondary); border: 1px solid var(--border-color);
     display: inline-flex; align-items: center; justify-content: center;
-    font-family: 'Chivo', sans-serif; font-weight: 800; font-size: 13px;
+    font-family: var(--font-display); font-weight: 800; font-size: 13px;
     color: var(--text-secondary); letter-spacing: 0.04em;
 }
 .hf-bet-meta { flex: 1; min-width: 0; }
 .hf-bet-title {
-    font-family: 'Chivo', sans-serif; font-weight: 800; font-size: 18px;
+    font-family: var(--font-display); font-weight: 800; font-size: 18px;
     letter-spacing: -0.01em; color: var(--text-primary); margin: 0;
 }
 .hf-bet-test { color: var(--text-muted); font-weight: 500; }
@@ -2546,14 +2642,14 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-bet-countdown i { font-size: 12px; }
 .hf-bet-countdown-val {
     color: var(--status-success);
-    font-family: 'Courier Prime', ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-weight: 700;
 }
 .hf-bet-badge {
     position: absolute; top: 16px; right: 48px;
     padding: 4px 10px; border-radius: 999px;
-    font-family: 'Chivo', sans-serif; font-size: 11px; font-weight: 700;
+    font-family: var(--font-display); font-size: 11px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
 }
 .hf-bet-badge.open {
@@ -2608,7 +2704,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-slot-badge {
     width: 28px; height: 28px; border-radius: 6px;
     display: inline-flex; align-items: center; justify-content: center;
-    font-family: 'Chivo', sans-serif; font-weight: 800; font-size: 12px;
+    font-family: var(--font-display); font-weight: 800; font-size: 12px;
     color: white; flex-shrink: 0;
 }
 .hf-slot-badge.pos-1 { background: var(--gold,   #FBBF24); color: #1c1c1c; }
@@ -2616,7 +2712,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-slot-badge.pos-3 { background: var(--bronze, #CD7F32); color: #ffffff; }
 .hf-slot-name {
     flex: 1; min-width: 0;
-    font-family: 'Chivo', sans-serif; font-weight: 700; font-size: 15px;
+    font-family: var(--font-display); font-weight: 700; font-size: 15px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .hf-slot-pts {
@@ -2655,12 +2751,12 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 }
 .hf-driver-name {
     flex: 1; min-width: 0;
-    font-family: 'Chivo', sans-serif; font-weight: 700; font-size: 14px;
+    font-family: var(--font-display); font-weight: 700; font-size: 14px;
     color: var(--text-primary);
 }
 .hf-driver-pill {
     padding: 3px 7px; border-radius: 6px;
-    font-family: 'Chivo', sans-serif; font-weight: 800; font-size: 11px;
+    font-family: var(--font-display); font-weight: 800; font-size: 11px;
     letter-spacing: 0.04em; flex-shrink: 0;
 }
 .hf-driver-pill.pos-1 { background: var(--gold,   #FBBF24); color: #1c1c1c; }
@@ -2676,7 +2772,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     flex: 1; height: 48px; border-radius: 10px;
     background: transparent; border: 1px solid var(--border-color);
     color: var(--text-primary);
-    font-family: 'Chivo', sans-serif; font-weight: 600; font-size: 15px;
+    font-family: var(--font-display); font-weight: 600; font-size: 15px;
     cursor: pointer; text-decoration: none;
     display: inline-flex; align-items: center; justify-content: center;
 }
@@ -2684,7 +2780,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-btn-primary {
     flex: 2; height: 48px; border-radius: 10px;
     background: var(--f1-red); border: none; color: white;
-    font-family: 'Chivo', sans-serif; font-weight: 700; font-size: 15px;
+    font-family: var(--font-display); font-weight: 700; font-size: 15px;
     cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     box-shadow: 0 4px 14px rgba(225,6,0,0.35);
@@ -2700,9 +2796,60 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 
 /* ── Phase F: Rank delta ─────────────────────────────────────── */
 .hf-rank-delta {
-    font-family: 'Chivo', sans-serif; font-size: 11px; font-weight: 700;
+    font-family: var(--font-display); font-size: 11px; font-weight: 700;
     min-width: 32px; text-align: right; flex-shrink: 0;
 }
 .hf-rank-delta .up { color: var(--status-success); }
 .hf-rank-delta .dn { color: var(--f1-red); }
 .hf-rank-delta .nc { color: var(--text-muted); }
+
+/* ── Font toggle Stack B — zero Google Fonts (AC-FONT-01) ────── */
+body.font-system {
+    --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-body:    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-accent:  system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono:    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    /* Short aliases must be overridden here too — overriding only the canonical token is not enough */
+    --display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --body:    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --accent:  system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono:    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ── Font utility classes ─────────────────────────────────────── */
+.label-badge {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+.label-position {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+}
+.label-lede {
+    font-family: var(--font-accent);
+    font-weight: 400;
+    font-size: 1.125rem;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+.label-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+.label-version {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.625rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+}

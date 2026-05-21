@@ -105,6 +105,7 @@ function setTheme($theme) {
     $_SESSION['theme'] = in_array($theme, ['dark', 'light']) ? $theme : 'dark';
 }
 
+
 function getPalette() {
     return $_SESSION['palette'] ?? 'broadcast';
 }

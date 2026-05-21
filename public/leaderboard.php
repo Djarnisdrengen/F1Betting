@@ -2,9 +2,22 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
 
-$db = getDB();
+$db          = getDB();
+$currentUser = getCurrentUser();
 
 $leaderboard = getLeaderboard($db);
+$totalUsers  = count($leaderboard);
+
+// Pre-compute current user's entry so we can use it in two places
+$selfEntry = null;
+$selfRank  = null;
+foreach ($leaderboard as $i => $entry) {
+    if ($currentUser && $entry['id'] === $currentUser['id']) {
+        $selfEntry = $entry;
+        $selfRank  = $i + 1;
+        break;
+    }
+}
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -44,62 +57,77 @@ include __DIR__ . '/includes/header.php';
     </div>
     <?php endif; ?>
 
-    <!-- XS/SM: current user row pinned above list -->
-    <?php if ($currentUser):
-        foreach ($leaderboard as $i => $entry):
-            if ($entry['id'] === $currentUser['id']):
+    <!-- DIN POSITION horizontal card -->
+    <?php if ($selfEntry):
+        $d = $selfEntry['rank_delta'];
+        if ($d !== null) {
+            if ($d > 0)       $deltaText = '↑ ' . $d . ' ' . ($lang === 'da' ? 'pladser siden sidste runde' : 'places since last race');
+            elseif ($d < 0)   $deltaText = '↓ ' . abs($d) . ' ' . ($lang === 'da' ? 'pladser siden sidste runde' : 'places since last race');
+            else               $deltaText = $lang === 'da' ? 'Ingen ændring siden sidste runde' : 'No change since last race';
+        }
     ?>
-    <div class="hf-row self hf-self-pin" style="margin:16px 0 8px;">
-        <div class="hf-rank <?= $i < 3 ? 'r'.($i+1) : '' ?>"><?= $i+1 ?></div>
-        <div class="hf-avatar"><?= escape(userInitial($entry)) ?></div>
-        <div class="hf-who">
-            <div class="hf-who-name"><?= escape(displayUserName($entry)) ?></div>
-            <div class="hf-who-sub"><?= $entry['bets_count'] ?> <?= t('bets') ?></div>
-        </div>
-        <div class="hf-stars"><?= $entry['stars'] > 0 ? '<span class="star">★'.$entry['stars'].'</span>' : '' ?></div>
-        <div class="hf-pts"><?= $entry['points'] ?>p</div>
-        <div class="hf-rank-delta"><?php
-            $d = $entry['rank_delta'];
-            if ($d === null)    echo '<span class="nc">—</span>';
-            elseif ($d > 0)    echo '<span class="up">▲'.$d.'</span>';
-            elseif ($d < 0)    echo '<span class="dn">▼'.abs($d).'</span>';
-            else               echo '<span class="nc">—</span>';
-        ?></div>
-    </div>
-    <?php       break;
-            endif;
-        endforeach;
-    endif; ?>
-
-    <!-- Full standings list -->
-    <div style="padding-top:16px;padding-bottom:32px;">
-        <?php if (empty($leaderboard)): ?>
-            <p style="text-align:center;color:var(--text-muted);padding:3rem 0;"><?= t('no_bets') ?></p>
-        <?php else: ?>
-            <?php foreach ($leaderboard as $i => $entry):
-                $isSelf = $currentUser && $entry['id'] === $currentUser['id'];
-                $rankCls = $i < 3 ? 'hf-rank r'.($i+1) : 'hf-rank';
-            ?>
-            <div class="hf-row<?= $isSelf ? ' self' : '' ?>">
-                <div class="<?= $rankCls ?>"><?= $i+1 ?></div>
-                <div class="hf-avatar"><?= escape(userInitial($entry)) ?></div>
-                <div class="hf-who">
-                    <div class="hf-who-name"><?= escape(displayUserName($entry)) ?></div>
-                    <div class="hf-who-sub"><?= $entry['bets_count'] ?> <?= t('bets') ?></div>
-                </div>
-                <div class="hf-stars"><?= $entry['stars'] > 0 ? '<span class="star">★'.$entry['stars'].'</span>' : '' ?></div>
-                <div class="hf-pts"><?= $entry['points'] ?>p</div>
-                <div class="hf-rank-delta"><?php
-                    $d = $entry['rank_delta'];
-                    if ($d === null)    echo '<span class="nc">—</span>';
-                    elseif ($d > 0)    echo '<span class="up">▲'.$d.'</span>';
-                    elseif ($d < 0)    echo '<span class="dn">▼'.abs($d).'</span>';
-                    else               echo '<span class="nc">—</span>';
-                ?></div>
+    <div class="hf-self-card hf-self-card-home">
+        <div class="hf-self-card-home-left">
+            <div class="hf-self-label"><?= $lang === 'da' ? 'DIN POSITION' : 'YOUR POSITION' ?></div>
+            <div class="hf-self-rank">
+                <span class="hf-self-rank-n"><?= $selfRank ?></span>
+                <span class="hf-self-rank-of">/ <?= $totalUsers ?></span>
             </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+            <?php if ($d !== null): ?>
+            <div class="hf-self-delta"><?= escape($deltaText) ?></div>
+            <?php endif; ?>
+        </div>
+        <div class="hf-self-stats hf-self-card-home-right">
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('points_label')) ?></div>
+                <div class="hf-self-stat-val"><?= $selfEntry['points'] ?></div>
+            </div>
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('stars')) ?></div>
+                <div class="hf-self-stat-val"><?= $selfEntry['stars'] > 0 ? '★' . $selfEntry['stars'] : '—' ?></div>
+            </div>
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('bets')) ?></div>
+                <div class="hf-self-stat-val"><?= $selfEntry['bets_count'] ?></div>
+            </div>
+        </div>
     </div>
+    <?php endif; ?>
+
+    <!-- Body: standings list -->
+    <div class="hf-lb-body">
+
+        <!-- Full standings list -->
+        <div class="hf-lb-list">
+            <?php if (empty($leaderboard)): ?>
+                <p style="text-align:center;color:var(--text-muted);padding:3rem 0;"><?= t('no_bets') ?></p>
+            <?php else: ?>
+                <?php foreach ($leaderboard as $i => $entry):
+                    $isSelf  = $currentUser && $entry['id'] === $currentUser['id'];
+                    $rankCls = $i < 3 ? 'hf-rank r'.($i+1) : 'hf-rank';
+                ?>
+                <div class="hf-row<?= $isSelf ? ' self' : '' ?>">
+                    <div class="<?= $rankCls ?>"><?= $i+1 ?></div>
+                    <div class="hf-avatar"><?= escape(userInitial($entry)) ?></div>
+                    <div class="hf-who">
+                        <div class="hf-who-name"><?= escape(displayUserName($entry)) ?></div>
+                        <div class="hf-who-sub"><?= $entry['bets_count'] ?> <?= t('bets') ?></div>
+                    </div>
+                    <div class="hf-stars"><?= $entry['stars'] > 0 ? '<span class="star">★'.$entry['stars'].'</span>' : '' ?></div>
+                    <div class="hf-pts"><?= $entry['points'] ?>p</div>
+                    <div class="hf-rank-delta"><?php
+                        $d = $entry['rank_delta'];
+                        if ($d === null)    echo '<span class="nc">—</span>';
+                        elseif ($d > 0)    echo '<span class="up">▲'.$d.'</span>';
+                        elseif ($d < 0)    echo '<span class="dn">▼'.abs($d).'</span>';
+                        else               echo '<span class="nc">—</span>';
+                    ?></div>
+                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+    </div><!-- .hf-lb-body -->
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

@@ -10,7 +10,7 @@ $lang = getLang();
 $races = getRaces($db);
 [$drivers, $driversById] = fetchDrivers($db, 'number');
 $betsByRace = getBetsByRace($db);
-$leaderboard = getLeaderboard($db, 10);
+$leaderboard = getLeaderboard($db);
 
 $now = new DateTime();
 $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
@@ -47,22 +47,27 @@ if ($heroRace) {
     $heroPool = $heroRace['bettingpool_size'] ?: null;
 }
 
-// My rank for stats strip
-$myRank = null;
-$myPoints = null;
-$myBets = null;
+// My rank for home card
+$myRank       = null;
+$myPoints     = null;
+$myBets       = null;
+$myStars      = null;
+$myDelta      = null;
+$totalUsers   = count($leaderboard);
 if ($currentUser) {
     foreach ($leaderboard as $i => $entry) {
         if ($entry['id'] === $currentUser['id']) {
             $myRank   = $i + 1;
             $myPoints = $entry['points'];
             $myBets   = $entry['bets_count'];
+            $myStars  = $entry['stars'];
+            $myDelta  = $entry['rank_delta'];
             break;
         }
     }
-    // Fall back to user points if not in top-10
     if ($myRank === null) {
         $myPoints = $currentUser['points'] ?? 0;
+        $myStars  = $currentUser['stars'] ?? 0;
         $stmt = $db->prepare("SELECT COUNT(*) FROM bets WHERE user_id = ?");
         $stmt->execute([$currentUser['id']]);
         $myBets = (int)$stmt->fetchColumn();
@@ -166,24 +171,40 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
     <div class="hf-container"><div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> <?= escape($flashError) ?></div></div>
 <?php endif; ?>
 
-<?php if ($currentUser): ?>
+<?php if ($currentUser && $myRank !== null): ?>
 <div class="hf-container">
-    <div class="hf-home-stats">
-        <div class="hf-stat">
-            <div class="hf-stat-n"><?= $myRank !== null ? '#' . $myRank : '—' ?></div>
-            <div class="hf-stat-l"><?= t('rank') ?></div>
+    <div class="hf-self-card hf-self-card-home">
+        <div class="hf-self-card-home-left">
+            <div class="hf-self-label"><?= $lang === 'da' ? 'DIN POSITION' : 'YOUR POSITION' ?></div>
+            <div class="hf-self-rank">
+                <span class="hf-self-rank-n"><?= $myRank ?></span>
+                <span class="hf-self-rank-of">/ <?= $totalUsers ?></span>
+            </div>
+            <?php if ($myDelta !== null):
+                if ($myDelta > 0)        $deltaText = '↑ ' . $myDelta . ' ' . ($lang === 'da' ? 'pladser siden sidste runde' : 'places since last race');
+                elseif ($myDelta < 0)    $deltaText = '↓ ' . abs($myDelta) . ' ' . ($lang === 'da' ? 'pladser siden sidste runde' : 'places since last race');
+                else                     $deltaText = $lang === 'da' ? 'Ingen ændring siden sidste runde' : 'No change since last race';
+            ?>
+            <div class="hf-self-delta"><?= escape($deltaText) ?></div>
+            <?php endif; ?>
         </div>
-        <div class="hf-stat">
-            <div class="hf-stat-n"><?= $myPoints ?? 0 ?></div>
-            <div class="hf-stat-l"><?= t('points') ?></div>
-        </div>
-        <div class="hf-stat">
-            <div class="hf-stat-n"><?= $myBets ?? 0 ?></div>
-            <div class="hf-stat-l"><?= t('bets') ?></div>
-        </div>
-        <div class="hf-stat">
-            <div class="hf-stat-n"><?= $racesCompleted ?></div>
-            <div class="hf-stat-l"><?= t('rounds_played') ?></div>
+        <div class="hf-self-stats hf-self-card-home-right">
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('points_label')) ?></div>
+                <div class="hf-self-stat-val"><?= $myPoints ?? 0 ?></div>
+            </div>
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('stars')) ?></div>
+                <div class="hf-self-stat-val"><?= ($myStars ?? 0) > 0 ? '★' . $myStars : '—' ?></div>
+            </div>
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('bets')) ?></div>
+                <div class="hf-self-stat-val"><?= $myBets ?? 0 ?></div>
+            </div>
+            <div>
+                <div class="hf-self-stat-label"><?= strtoupper(t('rounds_played')) ?></div>
+                <div class="hf-self-stat-val"><?= $racesCompleted ?></div>
+            </div>
         </div>
     </div>
 </div>
@@ -251,7 +272,13 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                                 <div class="hf-racename"><?= escape($race['name']) ?></div>
                                 <div class="hf-racemeta"><?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></div>
                             </div>
-                            <span class="hf-badge <?= $badgeMap[$status['class']] ?? 'done' ?>"><?= $status['label'] ?></span>
+                            <?php if ($status['status'] === 'open' && $currentUser && !$userBet && $currentUser['in_competition']): ?>
+                                <a href="bet.php?race=<?= $race['id'] ?>&return=index" class="hf-badge open"><?= t('place_bet') ?> →</a>
+                            <?php elseif ($status['status'] === 'open' && $currentUser && $userBet && $currentUser['in_competition']): ?>
+                                <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="hf-badge open"><?= t('edit') ?> →</a>
+                            <?php else: ?>
+                                <span class="hf-badge <?= $badgeMap[$status['class']] ?? 'done' ?>"><?= $status['label'] ?></span>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
