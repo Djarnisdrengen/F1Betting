@@ -327,7 +327,7 @@ function findRace($db, $raceName, $raceDate) {
     if ($race) {
         logMessage("[DEBUG] Race found by date range: {$race['name']} (ID {$race['id']})");
     } else {
-        logMessage("[WARN] Race not found in DB for date $raceDate: $raceName");
+        logMessage("[DEBUG] Race not found in DB for date $raceDate: $raceName (skipped)");
     }
 
     return $race;

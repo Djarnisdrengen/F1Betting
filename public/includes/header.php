@@ -17,7 +17,7 @@ $csp_policy =
         "https://www.googletagmanager.com " .
         "https://www.google-analytics.com; " .
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
-    "img-src 'self' data: https://www.google-analytics.com; " .
+    "img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com; " .
     "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; " .
     "font-src 'self' https://fonts.gstatic.com; " .
     "report-uri /csp-report.php";
