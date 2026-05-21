@@ -119,7 +119,19 @@
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting log --oneline main..redesign/v1.3.0)",
       "Bash(git stash *)",
       "Bash(git fetch *)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(node build-deploy/security-review.js)",
+      "Bash(curl -sI \"https://cwe.mitre.org/top25/archive/2024/2024_cwe_top25.json\")",
+      "Bash(curl -sI \"https://cwe.mitre.org/top25/archive/2024/2024_cwe_top25.html\")",
+      "Bash(curl -sI \"https://cwe.mitre.org/top25/\")",
+      "Bash(curl -s \"https://cwe.mitre.org/top25/archive/2024/2024_cwe_top25.html\")",
+      "Bash(curl -s \"https://cwe.mitre.org/top25/\")",
+      "Bash(gh workflow *)",
+      "Bash(gh repo *)",
+      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting status --short)",
+      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add .github/workflows/monthly-security-review.yml build-deploy/security-review.js package.json)",
+      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting commit -m ' *)",
+      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting push)"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",
