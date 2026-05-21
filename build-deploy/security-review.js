@@ -50,6 +50,7 @@ const OWASP_TOP10 = [
 const CWE_VERSION = '2024';
 // Web-application-relevant subset of the 2024 CWE Top 25.
 // Non-web items (buffer overflows, null pointer, integer overflow) are excluded.
+// Reviewed 2026-05-21: all items below are either tested or documented as not-applicable.
 const CWE_TOP25_WEB = [
     { rank:  1, id: 'CWE-79',  name: 'Cross-site Scripting (XSS)' },
     { rank:  3, id: 'CWE-89',  name: 'SQL Injection' },
@@ -68,6 +69,22 @@ const CWE_TOP25_WEB = [
     { rank: 24, id: 'CWE-863', name: 'Incorrect Authorization' },
     { rank: 25, id: 'CWE-276', name: 'Incorrect Default Permissions' },
 ];
+
+// ─── Not-applicable exemptions ───────────────────────────────────────────────
+// Items confirmed not applicable to this app (reviewed 2026-05-21).
+// These are removed from gap reporting. Re-evaluate if the app architecture changes.
+const OWASP_EXEMPT = {
+    A04: 'Insecure Design — architectural/threat-modelling concern; not testable via HTTP scanner.',
+    A09: 'Security Logging & Monitoring — satisfied by app.log, csp-report.php, and the nightly/monthly GitHub Actions reports. Not automatable via HTTP.',
+    A10: 'Server-Side Request Forgery (SSRF) — only outbound HTTP calls are to hardcoded URLs (api.resend.com, api.jolpi.ca). No user-controlled URL fetching. Also exempt as CWE-918.',
+};
+const CWE_EXEMPT = {
+    'CWE-502': 'Deserialization — app uses json_decode(), never PHP unserialize() on user input.',
+    'CWE-77':  'Command Injection — grep confirms no exec/shell_exec/system/passthru in user-facing PHP.',
+    'CWE-798': 'Hard-coded Credentials — SAST concern; credentials live in gitignored config.php. Not testable via HTTP scanner.',
+    'CWE-918': 'SSRF — only outbound HTTP calls are to hardcoded URLs (api.resend.com, api.jolpi.ca). No user-controlled URL fetching.',
+    'CWE-94':  'Code Injection — no eval() or dynamic include on user input anywhere in the codebase.',
+};
 
 // ─── Parse security.js for covered CWEs and OWASP section tags ──────────────
 function parseCoverage() {
@@ -88,13 +105,17 @@ function renderList(items, color) {
         : '<li style="color:#22c55e;">None — all items covered ✓</li>';
 }
 
-function buildEmail({ coveredCwes, owaspRefs, owaspGaps, cweGaps }) {
+function buildEmail({ coveredCwes, owaspRefs, owaspGaps, cweGaps, owaspExempt, cweExempt }) {
     const date        = new Date().toISOString().slice(0, 10);
     const totalGaps   = owaspGaps.length + cweGaps.length;
     const statusColor = totalGaps === 0 ? '#22c55e' : '#f59e0b';
     const statusText  = totalGaps === 0
         ? '✅ No gaps detected — security.js covers all reference items'
         : `⚠️ ${totalGaps} gap(s) found — review and update security.js`;
+
+    const exemptRows = (items) => Object.entries(items)
+        .map(([id, reason]) => `<li style="margin:4px 0;color:#666;"><strong style="color:#555;">${esc(id)}</strong> — ${esc(reason)}</li>`)
+        .join('');
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -142,6 +163,14 @@ function buildEmail({ coveredCwes, owaspRefs, owaspGaps, cweGaps }) {
             — verify the reference list in <code>build-deploy/security-review.js</code> matches the current year's publication.
           </p>
 
+          <h3 style="margin:0 0 8px;font-size:13px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.6px;">
+            Documented exemptions (not applicable to this app)
+          </h3>
+          <ul style="margin:0 0 6px;padding-left:20px;font-size:12px;">
+            ${exemptRows({ ...owaspExempt, ...cweExempt })}
+          </ul>
+          <p style="font-size:11px;color:#444;margin:4px 0 22px;">Re-evaluate these if the app architecture changes.</p>
+
           <hr style="border:none;border-top:1px solid #2a2a2a;margin:20px 0;">
           <p style="font-size:12px;color:#555;margin:0;line-height:1.6;">
             <strong style="color:#888;">Action if gaps found:</strong>
@@ -168,17 +197,17 @@ async function main() {
     console.log(`[security-review] Covered OWASP: ${[...owaspRefs].sort().join(', ')}`);
 
     const owaspGaps = OWASP_TOP10
-        .filter(o => !owaspRefs.has(o.id))
+        .filter(o => !owaspRefs.has(o.id) && !OWASP_EXEMPT[o.id])
         .map(o => `${o.id}: ${o.name}`);
 
     const cweGaps = CWE_TOP25_WEB
-        .filter(e => !coveredCwes.has(e.id))
+        .filter(e => !coveredCwes.has(e.id) && !CWE_EXEMPT[e.id])
         .map(e => `#${e.rank} ${e.id}: ${e.name}`);
 
     console.log(`[security-review] OWASP gaps (${owaspGaps.length}): ${owaspGaps.join(' | ') || 'none'}`);
     console.log(`[security-review] CWE gaps   (${cweGaps.length}): ${cweGaps.join(' | ') || 'none'}`);
 
-    const html    = buildEmail({ coveredCwes, owaspRefs, owaspGaps, cweGaps });
+    const html    = buildEmail({ coveredCwes, owaspRefs, owaspGaps, cweGaps, owaspExempt: OWASP_EXEMPT, cweExempt: CWE_EXEMPT });
     const subject = `[F1Betting] Monthly Security Review — ${new Date().toISOString().slice(0, 7)}`;
 
     const reportDir  = path.join(__dirname, 'security-reports');

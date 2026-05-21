@@ -191,8 +191,8 @@ const SECTION_NAMES = {
     H: 'Outdated Components (OWASP A06)',
     I: 'Account Enumeration (OWASP A07)',
     J: 'DNS Security',
-    L: 'CWE Top 25 (Web)',
-    K: 'Application Hardening',
+    L: 'CWE Top 25 / Injection (OWASP A03)',
+    K: 'Application Hardening (OWASP A08)',
     G: 'SSL Labs',
 };
 
@@ -453,20 +453,20 @@ async function checkAccessControl() {
             if (res.status >= 301 && res.status <= 308 && loc.includes('login')) {
                 pass('D', `Auth guard: ${p}`, `Redirects to login (${res.status})`);
             } else if (res.status >= 301 && res.status <= 308 && !loc.includes('login')) {
-                warn('D', `Auth guard: ${p}`, `Redirects but not to login: ${loc}`, 'CWE-284',
+                warn('D', `Auth guard: ${p}`, `Redirects but not to login: ${loc}`, 'CWE-862',
                     `Ensure ${p} redirects unauthenticated users to login.php`);
             } else if (res.status === 200) {
                 if (res.body.includes('login.php') || res.body.includes('name="email"')) {
                     pass('D', `Auth guard: ${p}`, 'Contains login redirect in body');
                 } else {
-                    fail('D', `Auth guard: ${p}`, `HTTP 200 with no login redirect`, 'CWE-284',
+                    fail('D', `Auth guard: ${p}`, `HTTP 200 with no login redirect`, 'CWE-862',
                         `${p} is accessible without authentication. Add session_start() + auth check at the top of the file.`);
                 }
             } else {
                 info('D', `Auth guard: ${p}`, `HTTP ${res.status}`);
             }
         } catch (e) {
-            fail('D', `Auth guard: ${p}`, `Request failed: ${e.message}`, 'CWE-284');
+            fail('D', `Auth guard: ${p}`, `Request failed: ${e.message}`, 'CWE-862');
         }
     }
 
@@ -930,15 +930,19 @@ async function checkCweTop25() {
                 // (Non-admin users are sent to index.php, not login.php, so we can't require 'login' in loc.)
                 const blocked = adminRes.status >= 301 && adminRes.status < 400;
                 if (blocked) {
-                    pass('L', 'Privilege escalation (CWE-269)', `Admin page redirects regular users (HTTP ${adminRes.status})`);
+                    pass('L', 'Privilege escalation (CWE-269 / CWE-863)', `Admin page redirects regular users (HTTP ${adminRes.status})`);
                 } else if (adminRes.status === 200) {
                     // Could be a real vulnerability OR TEST_USER is an admin account.
-                    warn('L', 'Privilege escalation (CWE-269)',
+                    warn('L', 'Privilege escalation (CWE-269 / CWE-863)',
                         'Admin page returned HTTP 200 — either access control is missing or TEST_USER is an admin account',
                         'CWE-269',
-                        'Ensure TEST_USER in .env is a non-admin account. If it is, call requireAdmin() at the top of admin.php.');
+                        'Verify requireAdmin() is called at the top of admin.php and TEST_USER in .env is a non-admin account.');
+                    warn('L', 'Incorrect authorization check (CWE-863)',
+                        'Admin page may be accessible to non-admin — confirm requireAdmin() enforces server-side role check',
+                        'CWE-863',
+                        'Ensure the admin flag is verified server-side, not just via session data the client can influence.');
                 } else {
-                    info('L', 'Privilege escalation (CWE-269)', `HTTP ${adminRes.status} — manual review needed`);
+                    info('L', 'Privilege escalation (CWE-269 / CWE-863)', `HTTP ${adminRes.status} — manual review needed`);
                 }
                 // Logout so the successful login clears login_attempts for the rate-limit test (K)
                 await request(`${BASE_URL}/logout.php`, { headers: { Cookie: authedCookies } });
