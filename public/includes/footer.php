@@ -7,7 +7,7 @@
     <footer class="hf-footer">
         <span class="name"><?= escape($settings['app_title']) ?></span>
         &middot; <span class="v">v1.3.0</span>
-        &middot; <?= t('season') ?> <?= escape($settings['app_year']) ?>
+        &middot; <?= escape($settings['app_year']) ?>
     </footer>
     
     <!--  APP.JS INCLUDE -->

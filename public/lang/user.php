@@ -115,6 +115,8 @@ return [
         'email_must_match_invite' => 'Email skal matche invitationens email: %s',
 
         // Login
+        'login_heading'         => 'Race weekend er tæt på.',
+        'login_intro'           => 'Ét bud per medlem, point for top-3, en stjerne hvis du rammer plet.',
         'welcome_back'          => 'Velkommen tilbage',
 
         // Profile
@@ -298,6 +300,8 @@ return [
         'email_must_match_invite' => 'Email must match the invitation email: %s',
 
         // Login
+        'login_heading'         => 'Race weekend is close.',
+        'login_intro'           => 'One pick per member, points for top-3, a star if you nail it.',
         'welcome_back'          => 'Welcome back',
 
         // Profile

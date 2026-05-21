@@ -11,6 +11,7 @@ All tests run against the deployed site over HTTP — there is no local test ser
 | `npm run test:smoke` | B | Key pages return 200 and contain expected content | test or live | ~5s |
 | `npm run test:unit` | B | Mailer transport logic (no network) | local | ~1s |
 | `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery | test | ~5–10 min |
+| `npm run test:e2e:test:mailsac` | A | Same as above, but sends real emails via SMTP and asserts delivery in Mailsac | test | ~10–15 min |
 | `npm run test:e2e:live` | A | `01-smoke.spec.js` only — read-only live health check | live | ~30s |
 | `npm run test:email:preview` | B | Sends all 16 email types to Mailsac for manual visual review | test | ~2 min |
 | `npm run test:security` | B | OWASP headers, cookies, access control, CWE Top 25 | test or live | ~30s |
@@ -52,11 +53,23 @@ Runs automatically at the end of every `deploy:test` and `deploy:live`.
 ## E2E Tests (Playwright)
 
 ```bash
-npm run test:e2e:test    # full suite against test env
-npm run test:e2e:live    # 01-smoke.spec.js only, against live
+npm run test:e2e:test           # full suite against test env (intercept mode)
+npm run test:e2e:test:mailsac   # same suite, real SMTP + Mailsac delivery assertions
+npm run test:e2e:live           # 01-smoke.spec.js only, against live
 ```
 
 Config: `tests/playwright.config.js`. Screenshots on failure: `build-deploy/screenshots/`.
+
+### Mailsac mode (`EMAIL_BACKEND=mailsac`)
+
+Sets `EMAIL_BACKEND=mailsac`, which activates real SMTP delivery during the suite:
+
+1. `global-setup.js` purges all owned Mailsac inboxes, then calls `test-seed.php?action=smtp_live_on` to create a flag file (`/tmp/f1betting_smtp_live`) on the test server.
+2. `smtp.php` detects the flag file and bypasses the normal intercept — emails are sent via real SMTP (Proton Mail → Resend fallback).
+3. Tests that assert email delivery poll Mailsac via the API instead of reading the local intercept log.
+4. `global-teardown.js` calls `smtp_live_off` to remove the flag file, restoring intercept mode for the next regular run.
+
+Requires `MAILSAC_API_KEY` in `config.test.php`. Run this mode before a production deploy or after changes to email templates, SMTP configuration, or the Resend fallback path.
 
 **On test:** all `tests/e2e/**/*.spec.js` and `tests/e2e/admin/**/*.spec.js` files matching the numbered glob are run.
 **On live:** `01-smoke.spec.js` only.

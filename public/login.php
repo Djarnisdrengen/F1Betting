@@ -59,9 +59,9 @@ include __DIR__ . '/includes/header.php';
     <?php endif; ?>
     <div class="hf-login-grid">
         <div class="hf-login-intro">
-            <div class="hf-hero-eyebrow"><?= t('season') ?> <?= escape($settings['app_year']) ?></div>
-            <h1 style="font-family:var(--font-display);font-weight:900;font-size:clamp(48px,8vw,80px);letter-spacing:-0.02em;line-height:0.95;margin:12px 0 16px;">Søndag<br>igen, drenge.</h1>
-            <p style="color:var(--text-secondary);font-size:17px;line-height:1.55;max-width:44ch;">Ét bud per medlem, point for top-3, en stjerne hvis du rammer plet.</p>
+            <div class="hf-hero-eyebrow"><?= escape($settings['app_title']) ?> <?= escape($settings['app_year']) ?></div>
+            <h1 style="font-family:var(--font-display);font-weight:900;font-size:clamp(48px,8vw,80px);letter-spacing:-0.02em;line-height:0.95;margin:12px 0 16px;"><?= t('login_heading') ?></h1>
+            <p style="color:var(--text-secondary);font-size:17px;line-height:1.55;max-width:44ch;"><?= t('login_intro') ?></p>
         </div>
         <div class="hf-login-card">
             <div>
