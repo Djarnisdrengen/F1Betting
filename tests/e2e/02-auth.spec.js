@@ -81,6 +81,7 @@ test.describe('Auth flows', () => {
         });
 
         test('real reset email delivered to Mailsac', async ({ page }) => {
+            test.setTimeout(90000);
             await page.goto('/forgot_password.php');
             await page.fill('input[name="email"]', seedData.email);
             await page.click('button[type="submit"]');

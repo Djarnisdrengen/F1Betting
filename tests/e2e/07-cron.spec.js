@@ -158,8 +158,14 @@ test.describe("Cron jobs", () => {
             expect(text).toContain("bet.php?race=");               // CTA links to bet page
             expect(text).toContain("[lang] en");                   // email uses user's stored language
 
-            // User who already placed a bet — skipped entirely
-            expect(text).not.toContain(`Sent closing notification to: ${seedData.emailBetted}`);
+            // Scope to the E2E Notify Close Race block only — a real F1 session falling
+            // in the 2-3h window would legitimately notify user B (no bet for real races).
+            const closeBlockStart = text.indexOf('Betting closing soon for: E2E Notify Close Race');
+            const closeBlockNext  = text.indexOf('\nBetting', closeBlockStart + 1);
+            const closeBlock      = closeBlockNext === -1
+                ? text.slice(closeBlockStart)
+                : text.slice(closeBlockStart, closeBlockNext);
+            expect(closeBlock, `Full cron output:\n${text}`).not.toContain(`Sent closing notification to: ${seedData.emailBetted}`);
 
             expect(text).toContain("Notification check complete");
         });

@@ -16,6 +16,10 @@ try {
     process.env.CRON_SECRET           = process.env.CRON_SECRET           || cfg.cronSecret;
     // MAILSAC_INBOX is always loaded — specs use it as the send-to address even in intercept mode.
     process.env.MAILSAC_INBOX         = process.env.MAILSAC_INBOX         || cfg.mailsacInbox;
+    if (cfg.smtpFromEmail) {
+        const domain = cfg.smtpFromEmail.split('@')[1];
+        if (domain) process.env.SMTP_FROM_DOMAIN = process.env.SMTP_FROM_DOMAIN || domain;
+    }
     // API key only needed for real Mailsac delivery checks.
     if ((process.env.EMAIL_BACKEND || 'intercept') === 'mailsac') {
         process.env.MAILSAC_API_KEY = process.env.MAILSAC_API_KEY || cfg.mailsacApiKey;
@@ -31,6 +35,7 @@ const isLive = env === "live";
 
 module.exports = defineConfig({
     globalSetup: require.resolve("./global-setup"),
+    globalTeardown: require.resolve("./global-teardown"),
     testDir: "./e2e",
     testMatch: isLive
         ? ["**/01-smoke.spec.js"]

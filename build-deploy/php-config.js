@@ -21,6 +21,7 @@ function readPhpConfig(env) {
         cronSecret:           str("CRON_SECRET"),
         mailsacApiKey:        str("MAILSAC_API_KEY"),
         mailsacInbox:         str("MAILSAC_INBOX"),
+        smtpFromEmail:        str("SMTP_FROM_EMAIL"),
     };
 }
 

@@ -341,7 +341,7 @@ function convertToEmailUrl($link) {
  */
 function sendEmail($to, $subject, $htmlContent, $textContent = null) {
     // In test mode, write to JSONL file instead of sending real email.
-    if (defined('SMTP_INTERCEPT') && SMTP_INTERCEPT) {
+    if (defined('SMTP_INTERCEPT') && SMTP_INTERCEPT && !file_exists(sys_get_temp_dir() . '/f1betting_smtp_live')) {
         $fromEmail = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : '';
         $fromName  = defined('SMTP_FROM_NAME')  ? SMTP_FROM_NAME  : '';
         $entry = json_encode([
