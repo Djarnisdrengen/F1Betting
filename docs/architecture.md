@@ -230,7 +230,7 @@ FTP_HOST, FTP_USER, FTP_PASS, FTP_ROOT_TEST, FTP_ROOT_LIVE, DRY_RUN
 | Authentication | bcrypt + `PASSWORD_PEPPER` constant |
 | Session fixation | `session_regenerate_id()` after login |
 | CSRF | Per-session token, `csrfField()` + `requireCsrf()` |
-| Rate limiting | 5 failed logins per IP per 15 min, `login_attempts` table |
+| Rate limiting | 5 failed logins per IP per 15 min, `login_attempts` table. Successful login clears the IP's attempts and updates `users.last_login`; no separate audit log exists |
 | XSS | `escape()` on all output, CSP with per-request nonce |
 | Clickjacking | `X-Frame-Options: DENY`, CSP `frame-ancestors 'none'` |
 | SQL injection | PDO prepared statements everywhere |

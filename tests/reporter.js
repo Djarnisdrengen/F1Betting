@@ -49,10 +49,14 @@ class CustomReporter {
         }
     }
 
-    onEnd() {
+    onEnd(result) {
         const total = this._passed + this._failed;
         process.stdout.write("\n");
-        if (this._failed > 0) {
+        if (result.status === 'timedout') {
+            process.stdout.write(`❌ E2E suite timed out\n\n`);
+        } else if (result.status === 'failed' && total === 0) {
+            process.stdout.write(`❌ E2E setup failed — no tests ran (check global-setup logs above)\n\n`);
+        } else if (this._failed > 0) {
             process.stdout.write(`❌ E2E tests failed (${this._failed}/${total} failed) — screenshots saved to build-deploy/screenshots/\n\n`);
         } else {
             process.stdout.write(`✅ E2E tests passed (${total}/${total})\n\n`);

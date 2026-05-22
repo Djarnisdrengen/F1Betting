@@ -136,7 +136,21 @@
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add public/rules.php)",
       "Bash(node build-deploy/backup-to-sql.js build-deploy/backups/live/2026-05-22T11-54-13-153Z/db-backup.json)",
       "Bash(node tests/smoke.js https://www.hpovlsen.dk)",
-      "Bash(node build-deploy/backup-to-sql.js)"
+      "Bash(node build-deploy/backup-to-sql.js)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/@playwright/test/package.json'\\).version\\)\")",
+      "Bash(DEPLOY_ENV=test EMAIL_BACKEND=mailsac node tests/global-setup.js)",
+      "Bash(EMAIL_BACKEND=mailsac PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(EMAIL_BACKEND=mailsac PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js --reporter=list)",
+      "Bash(EMAIL_BACKEND=intercept PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js --reporter=list)",
+      "Bash(DEPLOY_ENV=test node -e ' *)",
+      "Bash(php -l /home/thomas-helveg-povlsen/github/F1Betting/public/includes/bottom_bar.php)",
+      "Bash(php -l /home/thomas-helveg-povlsen/github/F1Betting/public/index.php)",
+      "Bash(php -l /home/thomas-helveg-povlsen/github/F1Betting/public/races.php)",
+      "Bash(php -l /home/thomas-helveg-povlsen/github/F1Betting/public/profile.php)",
+      "Bash(php -l /home/thomas-helveg-povlsen/github/F1Betting/public/bet.php)",
+      "Bash(find /home/thomas-helveg-povlsen -maxdepth 3 -name \"*.md\" | grep -i \"setup\\\\|ubuntu\\\\|install\" 2>/dev/null | head -20)",
+      "Read(//home/thomas-helveg-povlsen/**)"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",
