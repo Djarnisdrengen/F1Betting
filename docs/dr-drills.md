@@ -4,6 +4,23 @@ Record each disaster recovery drill here. Run the drill once per season or after
 
 ---
 
+## 2026-05-22 — Test server wiped drill (verification run)
+
+- **Scope:** Test server wiped (files + DB) — repeat drill after fixing runbook gaps from first run
+- **Snapshot row counts:** 1 settings, 22 drivers, 9 users, 24 races, 0 leaderboard_snapshots, 20 bets, 0 password_resets, 0 invites
+- **Destruction:** All DB tables dropped via phpMyAdmin SQL; `public/` renamed to `public.bak` via FTP
+- **Recovery time:** ~10 minutes (no issues encountered)
+- **Verification results:**
+  - Smoke tests (4.1): PASS — 8/8
+  - E2E tests (4.3): PASS — 74/74
+  - Admin login (4.4): PASS
+  - Row count comparison (4.5): PASS — all 8 tables match
+  - Cron qualifying (4.6): PASS — token valid
+  - Cron notifications (4.7): PASS — `Notification check complete.`
+- **Runbook gaps found:** none
+
+---
+
 ## 2026-05-22 — Test server wiped drill
 
 - **Scope:** Test server wiped (files + DB)
