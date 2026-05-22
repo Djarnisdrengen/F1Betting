@@ -27,7 +27,7 @@ All commands require environment config files (`config.test.php`, `config.live.p
 
 ```bash
 npm run deploy:test          # upload to test server → run smoke + E2E tests
-npm run deploy:live          # upload to live server → run smoke + E2E (smoke.spec.js only)
+npm run deploy:live          # upload to live server → run smoke + E2E (01-smoke.spec.js only)
 npm run sync:live            # copy live DB → test DB (rewrites emails to @mailsac.com)
 ```
 
@@ -38,9 +38,9 @@ Deploy includes automatic backup and rollback on test failure. Confirm prompts r
 ```bash
 npm run test:smoke           # HTTP endpoint checks (fast, no browser)
 npm run test:unit            # Node mailer unit tests only
-npm run test:e2e:test        # Playwright full suite (55 tests) against test env
-npm run test:e2e:live        # Playwright smoke.spec.js only (13 tests) against live
-npm run test:integration     # Seeded scoring/leaderboard correctness (test env only)
+npm run test:e2e:test        # Playwright full suite against test env
+npm run test:e2e:test:mailsac # Same suite with real SMTP + Mailsac delivery assertions
+npm run test:e2e:live        # Playwright 01-smoke.spec.js only against live
 npm run test:security        # OWASP headers/cookies/access control (test env)
 npm run test:security:live   # Same against live
 npm run test:all             # smoke + unit + e2e:test
@@ -50,7 +50,7 @@ npm run test:all             # smoke + unit + e2e:test
 
 To run a single Playwright spec:
 ```bash
-DEPLOY_ENV=test npx playwright test tests/e2e/admin.spec.js --config tests/playwright.config.js
+DEPLOY_ENV=test npx playwright test tests/e2e/admin/10-content.spec.js --config tests/playwright.config.js
 ```
 
 To run a single test by title:
@@ -120,7 +120,7 @@ The admin dashboard is split into tab-specific includes: `drivers.php`, `races.p
 - `import_qualifying.php` — fetches F1 API, updates qualifying results in DB
 - `notifications.php` — sends open/close betting window emails to users
 
-Both require `CRON_SECRET` as a bearer token. Called from server cron; also covered by `cron.spec.js`.
+Both require `CRON_SECRET` as a bearer token. Called from server cron; also covered by `07-cron.spec.js`.
 
 ### E2E test seeding (`public/tools/test-seed.php`)
 
@@ -168,7 +168,6 @@ $lang     = getLang();
 Full list in `docs/gotchas.md`. The ones most likely to affect code changes:
 
 - **Always use `www` in URLs** — `www.formula-1.dk` and `www.hpovlsen.dk`, not bare domains. Apache redirects non-www → www, which drops POST bodies on 301.
-- **`integration` tests wipe the test DB** — `npm run test:integration` calls `test-seed.php` with no action, which truncates all tables and inserts deterministic fixtures.
 - **Admin has `in_competition = 0`** — intentional. The admin account never appears on the leaderboard or in pool calculations.
 - **`quali_p1/p2/p3` are driver IDs** — not names. Bet validation compares driver IDs; mismatches silently fail scoring.
 - **`config.shared.php` must be deployed** — it's in git but must be present on the server alongside `config.php`.
@@ -188,4 +187,4 @@ Credentials come from GitHub repo Secrets/Variables — no `config.live.php` on 
 
 ## Email testing (Mailsac)
 
-4 owned Mailsac inboxes (`f1betting-preview`, `e2e_testing_invite_f1`, `e2e_bet_delete_f1`, `e2e_testing_testuser_f1`) are purged at test suite start and asserted after actions that send real emails. `MAILSAC_API_KEY` in `config.test.php` enables delivery assertions; tests skip cleanly if the key is absent.
+5 owned Mailsac inboxes (`f1betting-preview`, `e2e_auth_f1`, `e2e_testing_invite_f1`, `e2e_bet_delete_f1`, `e2e_testing_testuser_f1`) are purged at test suite start and asserted after actions that send real emails. `MAILSAC_API_KEY` in `config.test.php` enables delivery assertions; tests skip cleanly if the key is absent.

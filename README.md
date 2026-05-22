@@ -4,7 +4,7 @@ A Formula 1 prediction game where players pick the top-3 podium finishers for ea
 
 ## Documentation
 
-All documentation lives in [`docs/`](docs/README.md).
+All documentation lives in [`docs/`](docs/).
 
 | Document | What it covers |
 |---|---|
@@ -18,6 +18,8 @@ All documentation lives in [`docs/`](docs/README.md).
 | [Patterns & Best Practices](docs/patterns.md) | Code conventions used throughout the project |
 | [Common Gotchas](docs/gotchas.md) | Known traps that catch new developers |
 | [Command Reference](docs/commands.md) | Every terminal command in one printable table |
+| [Test Strategy](docs/test-strategy.md) | Testing philosophy, stack architecture, how to add new tests |
+| [Security Review Log](docs/security-review-log.md) | Monthly security review findings and actions |
 
 ## Quick links
 
@@ -25,7 +27,6 @@ All documentation lives in [`docs/`](docs/README.md).
 npm run deploy:test       # upload to test server + run smoke tests
 npm run deploy:live       # upload to live (requires YES confirmation)
 npm run test:e2e:test     # Playwright E2E against test
-npm run test:integration  # seeded integration tests against test
 npm run test:security     # OWASP security scan against test
 ```
 

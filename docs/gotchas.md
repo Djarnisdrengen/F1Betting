@@ -108,20 +108,15 @@ If you want an admin who also plays, create a separate regular-user account and 
 
 ---
 
-## 13. `.env.example` shows old keys
+## 13. `quali_p1/p2/p3` must match exact bet validation
 
-`build-deploy/.env.example` was written before the config consolidation and still lists `BASE_URL_TEST`, `BASE_URL_LIVE`, `TEST_USER_EMAIL_*`, `TEST_USER_PASSWORD_*`, `INTEGRATION_SEED_TOKEN`, and `CRON_SECRET`. These are no longer read from `.env` — they come from `config.*.php` via `php-config.js`.
+When qualifying results are entered, the bet form shows an error if the user's selected P1/P2/P3 exactly matches the qualifying order (the qualy-match rule). This validation compares driver IDs, not names. If you add qualifying results to a race in the admin panel, the P1/P2/P3 fields must be driver IDs from the `drivers` table — not display names.
 
-The current `.env` needs only:
-```
-FTP_HOST, FTP_USER, FTP_PASS, FTP_ROOT_TEST, FTP_ROOT_LIVE, DRY_RUN
-```
-
-Run `npm run setup:deploy` to create a clean `.env` without stale keys.
+The admin UI's qualifying fields use the same driver dropdowns as the bet form, so this should not be an issue in practice, but be aware of it if you write DB seeds manually.
 
 ---
 
-## 15. Nightly report emails appear twice when `SMTP_FROM` and `REPORT_TO` share the same Proton account
+## 14. Nightly report emails appear twice when `SMTP_FROM` and `REPORT_TO` share the same Proton account
 
 `SMTP_FROM` is `info@formula-1.dk` and `REPORT_TO` is `f1_admin@helvegpovlsen.dk` — both resolve to addresses on the same Proton Mail account. Proton treats this as a self-send and creates two copies: one stored as a sent item under `info@formula-1.dk` and one delivered to `thomas@helvegpovlsen.dk`. Any Proton filter that matches on subject will catch both copies and move them to the same folder, making it look like the email was sent twice.
 
@@ -131,7 +126,7 @@ There is no incoming-only condition available in Proton's simple filter builder,
 
 ---
 
-## 16. `sync:live` rewrites all user emails to `@mailsac.com`
+## 15. `sync:live` rewrites all user emails to `@mailsac.com`
 
 When `npm run sync:live` copies the live database into test, every user email that is not already `@mailsac.com` is rewritten: `thomas@helvegpovlsen.dk` becomes `thomas@mailsac.com`, `user@gmail.com` becomes `user@mailsac.com`, and so on. This prevents any email accidentally triggered on the test site from reaching real inboxes.
 
@@ -139,10 +134,3 @@ The admin account (`F1_ADMIN_EMAIL`, currently `f1_admin@helvegpovlsen.dk`) is p
 
 If you expect to trigger emails to synced users during manual testing, look them up in the Mailsac web UI at mailsac.com using the rewritten address.
 
----
-
-## 14. `quali_p1/p2/p3` must match exact bet validation
-
-When qualifying results are entered, the bet form shows an error if the user's selected P1/P2/P3 exactly matches the qualifying order (the qualy-match rule). This validation compares driver IDs, not names. If you add qualifying results to a race in the admin panel, the P1/P2/P3 fields must be driver IDs from the `drivers` table — not display names.
-
-The admin UI's qualifying fields use the same driver dropdowns as the bet form, so this should not be an issue in practice, but be aware of it if you write DB seeds manually.

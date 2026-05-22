@@ -17,7 +17,7 @@ Run after a race weekend is fully processed. Target: Monday or Tuesday morning C
 | Site | www.formula-1.dk |
 | Scope | DB data only (files stay up) |
 | Restore path | Option A — phpMyAdmin SQL import (`backup-to-sql.js`) |
-| Verification | 13 E2E tests (smoke.spec.js only) |
+| Verification | 13 E2E tests (01-smoke.spec.js only) |
 | Risk | Medium — real users, real data |
 
 ---

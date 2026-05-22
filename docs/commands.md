@@ -33,6 +33,7 @@ All terminal commands for the F1 Betting project.
 | `npm run test:smoke` | HTTP checks — key pages return 200 (test env) |
 | `npm run test:unit` | Node built-in runner — mailer unit tests (no network, no browser) |
 | `npm run test:e2e:test` | Playwright browser tests against hpovlsen.dk |
+| `npm run test:e2e:test:mailsac` | Same E2E suite with real SMTP emails + Mailsac delivery assertions |
 | `npm run test:e2e:live` | Playwright browser tests against formula-1.dk — **requires YES** |
 | `npm run test:email:preview` | Send all email types to Mailsac for manual visual review (not pass/fail) |
 | `npm run test:all` | Smoke + unit + E2E against test |
