@@ -1,8 +1,6 @@
 -- F1 Betting Database Schema for MySQL
 -- Kør dette script i phpMyAdmin på Simply.com
-
-CREATE DATABASE IF NOT EXISTS f1betting CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE f1betting;
+-- Select the target database in phpMyAdmin before running — do not add CREATE DATABASE or USE here.
 
 -- Brugere
 CREATE TABLE users (

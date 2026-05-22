@@ -22,21 +22,22 @@ if (!$data || !isset($data['tables'])) {
 $db = getDB();
 
 try {
-    $db->beginTransaction();
-
     if (!empty($data['schema'])) {
-        // Schema present — drop and recreate tables for a clean restore
+        // Schema present — DDL (DROP/CREATE TABLE) causes implicit commit in MySQL,
+        // so we do not wrap in a transaction. Start a fresh transaction after DDL for the INSERTs.
         $db->query("SET foreign_key_checks = 0");
-        foreach (array_reverse(['settings', 'drivers', 'users', 'races', 'bets', 'password_resets', 'invites']) as $table) {
+        foreach (array_reverse(['settings', 'drivers', 'users', 'races', 'leaderboard_snapshots', 'bets', 'password_resets', 'invites']) as $table) {
             $db->query("DROP TABLE IF EXISTS `$table`");
         }
-        foreach (['settings', 'drivers', 'users', 'races', 'bets', 'password_resets', 'invites'] as $table) {
+        foreach (['settings', 'drivers', 'users', 'races', 'leaderboard_snapshots', 'bets', 'password_resets', 'invites'] as $table) {
             if (!empty($data['schema'][$table])) {
                 $db->query($data['schema'][$table]);
             }
         }
         $db->query("SET foreign_key_checks = 1");
+        $db->beginTransaction();
     } else {
+        $db->beginTransaction();
         // No schema — clear existing data in FK-safe order
         $db->query("DELETE FROM bets");
         $db->query("DELETE FROM password_resets");
@@ -50,7 +51,7 @@ try {
     $restored = [];
 
     // Insert in FK-safe order (parents first)
-    foreach (['settings', 'drivers', 'users', 'races', 'bets', 'password_resets', 'invites'] as $table) {
+    foreach (['settings', 'drivers', 'users', 'races', 'leaderboard_snapshots', 'bets', 'password_resets', 'invites'] as $table) {
         $rows = $data['tables'][$table] ?? null;
         if ($rows === null || count($rows) === 0) {
             $restored[$table] = 0;

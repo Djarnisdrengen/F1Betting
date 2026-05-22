@@ -75,10 +75,16 @@ jobs:
           BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
           INTEGRATION_SEED_TOKEN: ${{ secrets.INTEGRATION_SEED_TOKEN }}
         run: |
-          curl -sf \
-            "${BASE_URL_LIVE}/tools/db-backup.php?token=${INTEGRATION_SEED_TOKEN}" \
-            -o db-backup.json
-          node -e "const d=JSON.parse(require('fs').readFileSync('db-backup.json','utf8')); if(!d.ok){console.error(d);process.exit(1);}"
+          node -e "
+            fetch(process.env.BASE_URL_LIVE + '/tools/db-backup.php?token=' + process.env.INTEGRATION_SEED_TOKEN)
+              .then(r => r.json())
+              .then(d => {
+                if (!d.ok) { console.error(d); process.exit(1); }
+                require('fs').writeFileSync('db-backup.json', JSON.stringify(d, null, 2));
+                console.log('Backup ok:', Object.entries(d.tables).map(([t,r]) => t+':'+r?.length).join(', '));
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "
 
       - name: Upload DB backup artifact
         uses: actions/upload-artifact@v4

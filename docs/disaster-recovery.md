@@ -96,10 +96,12 @@ If login fails (backup predates a password change, or `PASSWORD_PEPPER` was rota
 
 ### Step 8 — Verify
 
-```
-npm run test:smoke
+```bash
+node tests/smoke.js https://www.formula-1.dk
 npm run test:e2e:live
 ```
+
+Note: `test:smoke` requires the URL passed explicitly — it is not read from `.env` or the PHP config. Always use the `www` prefix.
 
 Smoke tests verify all pages respond. E2E tests verify login, race display, and betting workflow end-to-end.
 
@@ -107,8 +109,8 @@ Smoke tests verify all pages respond. E2E tests verify login, race display, and 
 
 Simply.com control panel → Cron jobs → re-add both endpoints with `CRON_SECRET`:
 
-- `https://www.formula-1.dk/cron/import_qualifying.php?secret=<CRON_SECRET>`
-- `https://www.formula-1.dk/cron/notifications.php?secret=<CRON_SECRET>`
+- `https://www.formula-1.dk/cron/import_qualifying.php?token=<CRON_SECRET>`
+- `https://www.formula-1.dk/cron/notifications.php?token=<CRON_SECRET>`
 
 ---
 
@@ -152,16 +154,19 @@ Run once per season or after any significant infrastructure change.
 
 ### Drill steps
 
+Note: Simply.com's WAF blocks curl when a long token appears in the query string. Use Node.js `fetch` for all token-authenticated requests.
+
 | Step | Command / Action | Pass condition |
 |---|---|---|
-| 1. Pre-drill snapshot | `curl "https://www.hpovlsen.dk/tools/db-backup.php?token=<TOKEN>" > /tmp/drill-before.json` | `"ok":true` in response |
-| 2. Simulate destruction | phpMyAdmin on test DB: `DELETE FROM bets; DELETE FROM users; DELETE FROM drivers; DELETE FROM races;` | Tables empty |
-| 2b. *(Extended drill)* Also destroy settings | `DELETE FROM settings;` in phpMyAdmin | Settings row absent before restore; present and correct after |
-| 3. Restore | `npm run restore:db -- --env test` → select the pre-drill snapshot | `✅ Restore complete` |
-| 4. Integration tests | `npm run test:integration` | All pass |
+| 1. Pre-drill snapshot | `node -e "…"` via `php-config.js` (see [DR Test Plan](../build-deploy/backups/dr-drill/)) | `ok: true` + row counts printed |
+| 2. Simulate destruction | phpMyAdmin → SQL: `SET foreign_key_checks=0; DROP TABLE IF EXISTS invites, bets, password_resets, leaderboard_snapshots, races, users, drivers, settings, login_attempts; SET foreign_key_checks=1;` | No tables in structure tab |
+| 2b. Simulate file loss | FTP/file manager: rename `public/` → `public.bak` | Site returns 404/500 |
+| 3. Restore files | `npm run deploy:test` | Upload complete (smoke failures OK — DB still empty) |
+| 3b. Restore schema | phpMyAdmin → SQL → paste `database/schema.sql` | 9 tables visible in structure tab |
+| 4. Restore data | `npm run restore:db -- --env test` → select pre-drill snapshot, type YES | `✅ Restore complete` |
 | 5. E2E tests | `npm run test:e2e:test` | All pass |
 | 6. Admin login | Browser: log in as `f1_admin@helvegpovlsen.dk` | Admin panel loads |
-| 7. Cron endpoints | `curl "https://www.hpovlsen.dk/cron/import_qualifying.php?secret=<CRON_SECRET>"` | `"ok":true` |
+| 7. Cron endpoints | Node.js fetch to `?token=<CRON_SECRET>` (not `?secret=`) | qualifying: `Cron token validation: VALID`; notifications: `Notification check complete.` |
 | 8. Sync back | `npm run sync:live` | Restores test DB to match live |
 
 Record drill date and outcome in `docs/dr-drills.md`.
@@ -171,11 +176,11 @@ Record drill date and outcome in `docs/dr-drills.md`.
 ```gherkin
 Feature: Disaster Recovery restore path
 
-  Scenario: DB restore from nightly artifact passes integration tests
+  Scenario: DB restore from nightly artifact passes E2E tests
     Given a nightly db-backup artifact exists from GitHub Actions
     And the test database has been wiped (all rows deleted)
     When I run `npm run restore:db -- --env test` selecting the artifact
-    Then `npm run test:integration` passes with 0 failures
+    Then `npm run test:e2e:test` passes with 0 failures
     And admin login works at https://www.hpovlsen.dk
 
   Scenario: restore:db requires YES for both environments
