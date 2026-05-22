@@ -151,8 +151,6 @@ If the GitHub repository must be recreated, re-provision in this order.
 | `SMTP_PASS` | Password manager |
 | `RESEND_API_KEY` | resend.com dashboard → API Keys |
 | `TEST_USER_PASSWORD_LIVE` | Password manager (= `F1_ADMIN_PASSWORD` from `config.live.php`) |
-| `TEST_REGULAR_USER_EMAIL_LIVE` | Password manager |
-| `TEST_REGULAR_USER_PASSWORD_LIVE` | Password manager |
 | `INTEGRATION_SEED_TOKEN` | Password manager (= `INTEGRATION_SEED_TOKEN` from `config.live.php`) |
 
 ### Variables (Settings → Secrets and variables → Actions → Variables)
