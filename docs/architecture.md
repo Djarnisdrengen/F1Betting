@@ -123,7 +123,9 @@ F1Betting/
 │
 └── .github/
     └── workflows/
-        └── nightly.yml                 Daily CI: E2E + security + email report
+        ├── nightly-tests.yml           Daily CI: E2E + security + email report
+        ├── nightly-backup.yml          Daily DB backup artifact (90-day retention)
+        └── monthly-security-review.yml Monthly OWASP/CWE coverage report
 ```
 
 ---

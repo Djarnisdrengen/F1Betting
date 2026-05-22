@@ -17,7 +17,7 @@
 
 ## Nightly Workflow
 
-**File:** `.github/workflows/nightly.yml`  
+**File:** `.github/workflows/nightly-tests.yml`  
 **Schedule:** 01:00 UTC every night  
 **Can also be triggered:** manually via the Actions tab → "Run workflow"
 
