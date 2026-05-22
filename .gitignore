@@ -110,3 +110,4 @@ tests/email-previews/
 
 # Added by ggshield
 .cache_ggshield
+test-output.log
