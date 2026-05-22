@@ -4,7 +4,7 @@ Record each disaster recovery drill here. Run the drill once per season or after
 
 ---
 
-## 2026-05-22 — Test server wiped drill (verification run)
+## 2026-05-22 17:30 CET — Test server wiped drill (verification run)
 
 - **Scope:** Test server wiped (files + DB) — repeat drill after fixing runbook gaps from first run
 - **Snapshot row counts:** 1 settings, 22 drivers, 9 users, 24 races, 0 leaderboard_snapshots, 20 bets, 0 password_resets, 0 invites
@@ -21,7 +21,7 @@ Record each disaster recovery drill here. Run the drill once per season or after
 
 ---
 
-## 2026-05-22 — Test server wiped drill
+## 2026-05-22 15:00 CET — Test server wiped drill
 
 - **Scope:** Test server wiped (files + DB)
 - **Snapshot row counts:** 1 settings, 22 drivers, 9 users, 24 races, 0 leaderboard_snapshots, 20 bets, 0 password_resets, 0 invites
