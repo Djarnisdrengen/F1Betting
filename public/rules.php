@@ -30,7 +30,7 @@ include __DIR__ . '/includes/header.php';
 
 <div class="hf-container">
     <header class="hf-pageh">
-        <div class="crumb"><?= t('rules_title') ?> &middot; <?= t('season') ?> <?= escape($settings['app_year']) ?></div>
+        <div class="crumb"><?= t('rules_title') ?></div>
         <h1><?= t('rules_how_we_play') ?></h1>
     </header>
 
