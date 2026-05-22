@@ -2219,15 +2219,6 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     line-height: 1.5;
 }
 .hf-footer .name { font-weight: 700; color: var(--text-secondary); }
-.hf-footer .v {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    padding: 1px 6px;
-    border-radius: 3px;
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
-    margin: 0 4px;
-}
 
 .hf-divider { height: 1px; background: var(--border-soft); margin: 4px 0; }
 

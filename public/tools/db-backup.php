@@ -11,7 +11,7 @@ if (!defined('INTEGRATION_SEED_TOKEN') || $token !== INTEGRATION_SEED_TOKEN) {
 }
 
 $db = getDB();
-$tables = ['settings', 'drivers', 'users', 'races', 'bets', 'password_resets', 'invites'];
+$tables = ['settings', 'drivers', 'users', 'races', 'leaderboard_snapshots', 'bets', 'password_resets', 'invites'];
 
 $schema = [];
 $dump = [];
