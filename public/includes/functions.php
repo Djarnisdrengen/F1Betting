@@ -98,11 +98,43 @@ function t($key, $lang = null) {
 // TEMA FUNKTIONER
 // ============================================
 function getTheme() {
-    return $_SESSION['theme'] ?? 'light';
+    return $_SESSION['theme'] ?? $_COOKIE['f1_theme'] ?? 'dark';
 }
 
 function setTheme($theme) {
-    $_SESSION['theme'] = in_array($theme, ['dark', 'light']) ? $theme : 'dark';
+    $valid = in_array($theme, ['dark', 'light']) ? $theme : 'dark';
+    $_SESSION['theme'] = $valid;
+    setcookie('f1_theme', $valid, [
+        'expires'  => time() + 31536000,
+        'path'     => '/',
+        'secure'   => true,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    if (!empty($_SESSION['user_id'])) {
+        getDB()->prepare("UPDATE users SET theme = ? WHERE id = ?")
+               ->execute([$valid, $_SESSION['user_id']]);
+    }
+}
+
+function getFont() {
+    return $_SESSION['font_stack'] ?? $_COOKIE['f1_font'] ?? 'system';
+}
+
+function setFont($font) {
+    $valid = in_array($font, ['system', 'editorial']) ? $font : 'system';
+    $_SESSION['font_stack'] = $valid;
+    setcookie('f1_font', $valid, [
+        'expires'  => time() + 31536000,
+        'path'     => '/',
+        'secure'   => true,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    if (!empty($_SESSION['user_id'])) {
+        getDB()->prepare("UPDATE users SET font_stack = ? WHERE id = ?")
+               ->execute([$valid, $_SESSION['user_id']]);
+    }
 }
 
 
@@ -166,7 +198,7 @@ function getCurrentUser() {
         return null;
     }
     $db = getDB();
-    $stmt = $db->prepare("SELECT id, email, display_name, role, points, stars, created_at, in_competition, language, last_login FROM users WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, email, display_name, role, points, stars, created_at, in_competition, language, theme, font_stack, last_login FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     return $stmt->fetch();
 }

@@ -144,6 +144,9 @@ Eight tables, all using UUID primary keys (VARCHAR 36) except auto-increment tab
 | role | ENUM('user','admin') | |
 | points | INT | Running total |
 | stars | INT | Perfect-bet count |
+| language | VARCHAR(2) | `'da'` or `'en'`, default `'da'` |
+| theme | ENUM('dark','light') | NULL = no profile pref yet |
+| font_stack | ENUM('system','editorial') | NULL = no profile pref yet |
 | in_competition | TINYINT(1) | 0 = observer/admin, 1 = player |
 | created_at, last_login | DATETIME | |
 
@@ -260,16 +263,33 @@ FTP_HOST, FTP_USER, FTP_PASS, FTP_ROOT_TEST, FTP_ROOT_LIVE, DRY_RUN
 
 ## Localisation & Theme
 
-Language (`da`/`en`) is stored both in the database (`users.language` column) and in the PHP session (`$_SESSION['lang']`). The session is the single source of truth during a request; the database is the persistent store.
+Three user preferences are exposed via the bottom-nav toggles: **language**, **theme**, and **font**. Each is stored in up to three places depending on the user's state:
 
-**How language is resolved:**
+| Store | When written | Purpose |
+|---|---|---|
+| PHP session (`$_SESSION`) | On every `set*()` call | Runtime source of truth for the current request |
+| Preference cookie (`f1_theme`, `f1_font`) | On every `setTheme()` / `setFont()` call, and on first page load if absent | Device persistence for anonymous visitors and across sessions |
+| DB (`users.theme`, `users.font_stack`, `users.language`) | When authenticated | Cross-device persistence, survives login on any device |
 
-1. On login, `$_SESSION['lang']` is set from the user's `users.language` column.
-2. Any call to `setLang()` updates both `$_SESSION['lang']` and `users.language` (when authenticated).
-3. The profile page exposes a language selector — saving the profile calls `setLang()` so the change persists immediately.
-4. On logout, the language preference is preserved in the anonymous session so public pages stay in the user's chosen language until they manually toggle or start a new session.
-5. Unauthenticated visitors control language via the header toggle (`?toggle_lang=1`), which updates `$_SESSION['lang']` only.
+**Resolution order** (first match wins):
+1. PHP session (already populated this request)
+2. Preference cookie (anonymous returning visitor, or post-logout)
+3. System default (`dark` / `da` / `system`)
 
-Theme (`dark`/`light`) and colour palette (`broadcast`/`clubhouse`) are session-only — toggled via `?toggle_theme=1` / `?toggle_palette=1`. All toggle redirects preserve existing query parameters.
+**On login:**
+- If the user's DB columns are NULL (first login), the current session prefs are written to the profile (seeding).
+- If the DB columns have values (returning user), those values override the session and cookies on this device.
+
+**On logout:**
+- `session_unset()` clears the session. The preference cookies remain untouched — they were kept in sync by every `setTheme()` / `setFont()` call during the session. The next anonymous page load reads them via the cookie fallback.
+
+**Helper functions** (all in `public/includes/functions.php`):
+- `getTheme()` / `setTheme($theme)` — session → cookie (`f1_theme`) → default `'dark'`
+- `getFont()` / `setFont($font)` — session → cookie (`f1_font`) → default `'system'`
+- `getLang()` / `setLang($lang)` — session → default `'da'`; language has no preference cookie (it already survives via DB on login and explicit session preservation on logout)
+
+Toggle redirects (`?toggle_theme=1`, `?toggle_lang=1`, `?toggle_font=1`) are handled in `public/includes/header.php` and preserve existing query parameters on redirect.
+
+Colour palette (`broadcast`/`clubhouse`) is session-only — toggled via `?toggle_palette=1`.
 
 Strings are loaded from `public/lang/user.php`, `admin.php`, and `email.php` via `t($key)`. Email functions pass the recipient's language explicitly: `t($key, $lang)`.

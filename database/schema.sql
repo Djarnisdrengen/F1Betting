@@ -12,10 +12,17 @@ CREATE TABLE users (
     points INT DEFAULT 0,
     stars INT DEFAULT 0,
     in_competition TINYINT(1) DEFAULT 1,
-    language VARCHAR(2) NOT NULL DEFAULT 'da',
+    language   VARCHAR(2) NOT NULL DEFAULT 'da',
+    theme      ENUM('dark','light')       NULL DEFAULT NULL,
+    font_stack ENUM('system','editorial') NULL DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_login DATETIME NULL
 );
+
+-- Migration: add theme and font_stack to users (run once on each environment via phpMyAdmin)
+-- ALTER TABLE users
+--   ADD COLUMN theme      ENUM('dark','light')       NULL DEFAULT NULL AFTER language,
+--   ADD COLUMN font_stack ENUM('system','editorial') NULL DEFAULT NULL AFTER theme;
  
 -- Kørere
 CREATE TABLE drivers (

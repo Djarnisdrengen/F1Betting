@@ -18,6 +18,7 @@
 - [Logging](#logging)
 - [Security Headers](#security-headers)
 - [Code Style](#code-style)
+- [UI Toggle Conventions](#ui-toggle-conventions)
 
 ---
 
@@ -281,3 +282,20 @@ Security headers are set once in `config.shared.php` (HSTS, X-Frame-Options, etc
 - PHP: single quotes for strings unless interpolation is needed.
 - JS: no framework — plain Node.js in build scripts, plain browser JS in `app.js`.
 - SQL: uppercase keywords, lowercase identifiers, prepared statements only.
+
+---
+
+## UI Toggle Conventions
+
+The three bottom-nav preference toggles (theme, language, font) display an icon and label representing the **current active state**, not the action that clicking will perform.
+
+| Toggle | Current state | Icon |
+|---|---|---|
+| Theme | Dark | `fa-moon` |
+| Theme | Light | `fa-sun` |
+| Language | Danish | Globe (`fa-globe`) + label `DA` |
+| Language | English | Globe (`fa-globe`) + label `EN` |
+| Font | System | Font (`fa-font`) + label `SYS` |
+| Font | Editorial | Font (`fa-font`) + label `EDIT` |
+
+Any new preference toggle added in future must follow the same current-state convention.

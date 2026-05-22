@@ -52,7 +52,7 @@ if (isset($_GET['toggle_lang'])) {
     exit;
 }
 if (isset($_GET['toggle_font'])) {
-    $_SESSION['font_stack'] = ($_SESSION['font_stack'] ?? 'editorial') === 'editorial' ? 'system' : 'editorial';
+    setFont(getFont() === 'system' ? 'editorial' : 'system');
     $currentUrl = $_SERVER['REQUEST_URI'];
     $currentUrl = preg_replace('/([&?])toggle_font=1(&|$)/', '$1', $currentUrl);
     $currentUrl = rtrim($currentUrl, '?&');
@@ -62,7 +62,15 @@ if (isset($_GET['toggle_font'])) {
 // Refresh theme/lang after potential toggle
 $theme = getTheme();
 $lang = getLang();
-$fontStack = $_SESSION['font_stack'] ?? 'editorial';
+$fontStack = getFont();
+
+// AC1: write preference cookies on first visit so device storage is always populated
+if (!isset($_COOKIE['f1_theme'])) {
+    setcookie('f1_theme', $theme, ['expires' => time() + 31536000, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
+}
+if (!isset($_COOKIE['f1_font'])) {
+    setcookie('f1_font', $fontStack, ['expires' => time() + 31536000, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
+}
 
 $currentUser = getCurrentUser();
 $settings = getSettings();

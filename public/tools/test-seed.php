@@ -920,6 +920,16 @@ if (($_GET['action'] ?? '') === 'clear_test_emails') {
     exit;
 }
 
+// Action: get_prefs — returns theme, font_stack, language for a given user email
+if (($_GET['action'] ?? '') === 'get_prefs') {
+    $email = $_GET['email'] ?? '';
+    $stmt  = $db->prepare("SELECT theme, font_stack, language FROM users WHERE email = ?");
+    $stmt->execute([$email]);
+    $row = $stmt->fetch();
+    echo json_encode($row ?: ['error' => 'user not found']);
+    exit;
+}
+
 // Reset to known state — settings table is preserved
 $db->query("UPDATE settings SET bet_size = 10");
 $db->query("DELETE FROM bets");

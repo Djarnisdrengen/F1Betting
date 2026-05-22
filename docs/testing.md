@@ -14,6 +14,7 @@
   - [05-profile.spec.js](#05-profilespecjs)
   - [06-emails.spec.js](#06-emailsspecjs)
   - [07-cron.spec.js](#07-cronspecjs)
+  - [08-preferences.spec.js](#08-preferencesspecjs)
   - [admin/10-content.spec.js](#admin10-contentspecjs)
   - [admin/11-invites.spec.js](#admin11-invitesspecjs)
   - [admin/12-users.spec.js](#admin12-usersspecjs)
@@ -285,6 +286,34 @@ Runs real cron without `?test=true`. Skips if `MAILSAC_API_KEY` absent.
 | Test | Asserts |
 |---|---|
 | Betting-close email delivered to unbetted inbox | Cron output confirms send; Mailsac `e2e_notify_close_a_f1@mailsac.com` receives 1 message from `formula-1.dk` |
+
+---
+
+### `08-preferences.spec.js`
+
+Test env only. Covers the full preference lifecycle: new-visitor defaults (AC1), returning anonymous visitor via cookie (AC2–AC3), first-login profile seeding (AC4), returning-login profile override (AC5), authenticated in-session sync (AC6), logout continuity (AC7–AC9), last-write-wins on overwritten cookie (AC10), and theme icon correctness (AC11).
+
+`beforeAll` triggers the global seed (resets Alice + Bob + Charlie to NULL prefs), then pre-sets Bob's theme to `light` for the AC5 override test.
+
+| Test | Asserts |
+|---|---|
+| AC1 — new visitor defaults | Body class `dark font-system`; `f1_theme=dark` and `f1_font=system` cookies set |
+| AC2 — returning anonymous visitor | Pre-set `f1_theme=light` cookie → body class `light` |
+| AC3 — anonymous toggle persists | Toggle → cookie updated → survives reload |
+| AC4 — first login seeds profile | Login as Alice (NULL prefs) → DB seeded with session values; body class unchanged |
+| AC5 — returning login overrides | Login as Bob (DB `light`) with dark cookie → body class `light`; cookie updated |
+| AC6 — authenticated toggle syncs to DB | Toggle while logged in → `get_prefs` confirms DB updated; survives re-login |
+| AC7+AC8 — logout preserves cookies | After logout: `f1_theme` cookie still present; body class unchanged on next page |
+| AC9 — return visit after logout | `storageState` snapshot → new context → body class matches pre-logout prefs |
+| AC10 — overwritten cookie wins | Overwrite cookie in saved state → body class matches overwritten value |
+| AC11 — theme icon current state | Dark → `fa-moon`; light → `fa-sun` in theme toggle |
+
+**Test-seed action used:** `get_prefs` — returns `{theme, font_stack, language}` from the DB for a given email. Used to assert server-side state without re-logging in.
+
+```
+GET /tools/test-seed.php?token=...&action=get_prefs&email=alice@test.local
+→ {"theme":"dark","font_stack":"system","language":"da"}
+```
 
 ---
 

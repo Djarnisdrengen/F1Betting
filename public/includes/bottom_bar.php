@@ -20,7 +20,7 @@ $firstName = $currentUser
     <?php endif; ?>
     <a href="?toggle_theme=1" class="hf-bb-item" title="Theme">
         <div class="hf-bb-icon">
-            <i class="fas <?= $theme === 'dark' ? 'fa-sun' : 'fa-moon' ?>"></i>
+            <i class="fas <?= $theme === 'dark' ? 'fa-moon' : 'fa-sun' ?>"></i>
         </div>
         <span><?= strtoupper(t('theme')) ?></span>
     </a>

@@ -56,16 +56,16 @@ test.describe("Translations", () => {
         await page.goto("/login.php?toggle_lang=1");
     });
 
-    test("font toggle switches EDIT ↔ SYS and persists via session", async ({ page }) => {
+    test("font toggle switches SYS ↔ EDIT and persists via session", async ({ page }) => {
         await page.goto("/login.php");
-        await expect(page.locator('body')).toHaveClass(/font-editorial/);
+        await expect(page.locator('body')).toHaveClass(/font-system/);
 
         await page.goto("/login.php?toggle_font=1");
-        await expect(page.locator('body')).toHaveClass(/font-system/);
+        await expect(page.locator('body')).toHaveClass(/font-editorial/);
 
         // restore so session state does not bleed into other tests
         await page.goto("/login.php?toggle_font=1");
-        await expect(page.locator('body')).toHaveClass(/font-editorial/);
+        await expect(page.locator('body')).toHaveClass(/font-system/);
     });
 });
 
