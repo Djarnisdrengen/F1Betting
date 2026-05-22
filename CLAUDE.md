@@ -210,4 +210,4 @@ Credentials come from GitHub repo Secrets/Variables — no `config.live.php` on 
 
 ## Email testing (Mailsac)
 
-5 owned Mailsac inboxes (`f1betting-preview`, `e2e_auth_f1`, `e2e_testing_invite_f1`, `e2e_bet_delete_f1`, `e2e_testing_testuser_f1`) are purged at test suite start and asserted after actions that send real emails. `MAILSAC_API_KEY` in `config.test.php` enables delivery assertions; tests skip cleanly if the key is absent.
+5 owned Mailsac inboxes total (`f1betting-preview`, `e2e_auth_f1`, `e2e_testing_invite_f1`, `e2e_bet_delete_f1`, `e2e_testing_testuser_f1`). The 4 suite inboxes (`e2e_auth_f1`, `e2e_testing_invite_f1`, `e2e_bet_delete_f1`, `e2e_testing_testuser_f1`) are purged at test suite start and asserted after actions that send real emails. `f1betting-preview` is used exclusively by `npm run test:email:preview`. `MAILSAC_API_KEY` in `config.test.php` enables delivery assertions; tests skip cleanly if the key is absent.

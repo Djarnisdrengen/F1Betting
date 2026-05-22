@@ -13,7 +13,6 @@ try {
     process.env.BASE_URL           = process.env.BASE_URL           || cfg.siteUrl;
     process.env.TEST_USER_EMAIL    = process.env.TEST_USER_EMAIL    || cfg.adminEmail;
     process.env.TEST_USER_PASSWORD = process.env.TEST_USER_PASSWORD || cfg.adminPassword;
-    process.env.MAILSAC_INBOX           = process.env.MAILSAC_INBOX           || cfg.mailsacInbox;
     process.env.INTEGRATION_SEED_TOKEN  = process.env.INTEGRATION_SEED_TOKEN  || cfg.integrationSeedToken;
     if ((process.env.EMAIL_BACKEND || 'intercept') === 'mailsac') {
         process.env.MAILSAC_API_KEY = process.env.MAILSAC_API_KEY || cfg.mailsacApiKey;
@@ -23,7 +22,6 @@ try {
 const AUTH_FILE = path.join(__dirname, '../.auth/admin.json');
 
 const MAILSAC_INBOXES = [
-    process.env.MAILSAC_INBOX || 'f1betting-preview@mailsac.com',
     'e2e_testing_invite_f1@mailsac.com',
     'e2e_bet_delete_f1@mailsac.com',
     'e2e_testing_testuser_f1@mailsac.com',

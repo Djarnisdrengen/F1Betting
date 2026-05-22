@@ -91,7 +91,7 @@ Config: `tests/playwright.config.js`. Screenshots on failure: `build-deploy/scre
 
 Sets `EMAIL_BACKEND=mailsac`, which activates real SMTP delivery during the suite:
 
-1. `global-setup.js` purges all owned Mailsac inboxes, then calls `test-seed.php?action=smtp_live_on` to create a flag file (`/tmp/f1betting_smtp_live`) on the test server.
+1. `global-setup.js` purges the 4 owned Mailsac inboxes used by the suite, then calls `test-seed.php?action=smtp_live_on` to create a flag file (`/tmp/f1betting_smtp_live`) on the test server.
 2. `smtp.php` detects the flag file and bypasses the normal intercept — emails are sent via real SMTP (Proton Mail → Resend fallback).
 3. Tests that assert email delivery poll Mailsac via the API instead of reading the local intercept log.
 4. `global-teardown.js` calls `smtp_live_off` to remove the flag file, restoring intercept mode for the next regular run.
@@ -453,7 +453,7 @@ All seeded test users use `@mailsac.com` addresses so that any email accidentall
 
 ### Inboxes asserted in test:e2e:test:mailsac
 
-The 5 owned inboxes (★) are purged by `global-setup.js` before the suite runs. The 2 non-owned inboxes use a baseline-snapshot approach (`waitForNewMessages`).
+The 4 owned inboxes (★) are purged by `global-setup.js` before the suite runs. The 2 non-owned inboxes use a baseline-snapshot approach (`waitForNewMessages`).
 
 | Inbox | Triggered by | Email type | Count |
 |---|---|---|---|
@@ -464,9 +464,9 @@ The 5 owned inboxes (★) are purged by `global-setup.js` before the suite runs.
 | `e2e_notify_open_in_f1@mailsac.com` | `07-cron.spec.js` | Betting window open | 1 |
 | `e2e_notify_close_a_f1@mailsac.com` | `07-cron.spec.js` | Betting window closing soon | 1 |
 
-`f1betting-preview@mailsac.com` (★ owned) is purged by `global-setup.js` at E2E suite start, then populated by `npm run test:email:preview` (Stack B, run separately). No E2E spec asserts delivery to it.
+`f1betting-preview@mailsac.com` (★ owned) is populated by `npm run test:email:preview` (Stack B, run separately). No E2E spec asserts delivery to it and it is not purged at suite start.
 
-The Mailsac Indie Plan allows 5 owned inboxes — the limit is reached. Any future owned inbox requires a plan upgrade; design new tests to use `waitForNewMessages` (baseline-snapshot approach) on non-owned inboxes.
+The Mailsac Indie Plan allows 5 owned inboxes — 4 are used by the suite. Any new assertion requiring a purged inbox can use the 5th (`f1betting-preview`) or a plan upgrade; new tests that tolerate non-purged inboxes should use `waitForNewMessages` (baseline-snapshot approach) on non-owned inboxes.
 
 ### All seeded inbox addresses
 
