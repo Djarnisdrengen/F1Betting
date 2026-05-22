@@ -88,7 +88,6 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                     }
                     $raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
                     $bettingOpens = (clone $raceDateTime)->modify("-{$bettingWindowHours} hours");
-                    $locAbbr = mb_strtoupper(mb_substr($race['location'], 0, 3));
                 ?>
                     <div class="hf-racefull">
                         <div class="hf-racefull-hd">
@@ -105,9 +104,9 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                                     <?php endif; ?>
                                 </div>
                                 <div class="hf-racemeta">
-                                    <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
+                                    <?= escape($race['location']) ?> · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
                                     <?php if ($race['bettingpool_size']): ?>
-                                        &nbsp;· <?= t('pool_size') ?> <span class="bettingpool_size"><?= escape($race['bettingpool_size']) ?></span>
+                                        <span class="pool-break"><?= t('pool_size') ?> <span class="bettingpool_size"><?= escape($race['bettingpool_size']) ?></span></span>
                                     <?php endif; ?>
                                 </div>
                                 <?php if ($status['status'] === 'pending'): ?>
@@ -170,7 +169,6 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                 <?php foreach ($completedRaces as $race):
                     $raceBets = $betsByRace[$race['id']] ?? [];
                     $hasBet   = in_array($race['id'], $myBets);
-                    $locAbbr  = mb_strtoupper(mb_substr($race['location'], 0, 3));
                 ?>
                     <div class="hf-racefull">
                         <div class="hf-racefull-hd">
@@ -187,7 +185,7 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                                     <?php endif; ?>
                                 </div>
                                 <div class="hf-racemeta">
-                                    <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
+                                    <?= escape($race['location']) ?> · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
                                     <?php if ($race['bettingpool_size']): ?>
                                         &nbsp;· <?= t('pool_size') ?> <span class="bettingpool_size"><?= escape($race['bettingpool_size']) ?></span>
                                     <?php endif; ?>

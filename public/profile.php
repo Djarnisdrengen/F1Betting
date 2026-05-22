@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Bet history
 $betHistory = $db->prepare("
     SELECT b.id, b.points, b.is_perfect, b.placed_at,
-           r.name AS race_name, r.race_date, r.result_p1,
+           r.name AS race_name, r.race_date, r.race_time, r.location, r.result_p1,
            d1.name AS p1_name, d2.name AS p2_name, d3.name AS p3_name
     FROM bets b
     JOIN races r  ON b.race_id = r.id
@@ -180,11 +180,13 @@ include __DIR__ . '/includes/header.php';
             <?php else: ?>
                 <?php foreach ($betHistory as $bet): ?>
                     <div class="hf-racecard hf-racecard--static">
-                        <div class="hf-racenum"><?= escape(mb_strtoupper(mb_substr($bet['race_name'], 0, 3))) ?></div>
                         <div>
                             <div class="hf-racename">
                                 <?= escape($bet['race_name']) ?>
                                 <?php if ($bet['is_perfect']): ?><span class="star" style="margin-left:4px;">★</span><?php endif; ?>
+                            </div>
+                            <div class="hf-racemeta">
+                                <?= escape($bet['location']) ?> · <?= formatRaceDateTime($bet['race_date'], $bet['race_time']) ?>
                             </div>
                             <div class="hf-racemeta">
                                 P1: <?= driverLastName(['name' => $bet['p1_name']]) ?>
@@ -193,11 +195,11 @@ include __DIR__ . '/includes/header.php';
                             </div>
                         </div>
                         <?php if ($bet['result_p1']): ?>
-                            <span class="hf-badge <?= $bet['is_perfect'] ? 'open' : 'done' ?>">
+                            <span class="hf-badge <?= $bet['is_perfect'] ? 'open' : 'done' ?>" style="align-self: center;">
                                 <?= $bet['is_perfect'] ? '★ ' : '' ?><?= $bet['points'] ?>p
                             </span>
                         <?php else: ?>
-                            <span class="text-muted">—</span>
+                            <span class="text-muted" style="align-self: center;">—</span>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>

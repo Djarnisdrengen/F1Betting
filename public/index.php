@@ -264,10 +264,9 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                         }
                     ?>
                         <div class="hf-racecard" id="race-<?= $race['id'] ?>">
-                            <div class="hf-racenum"><?= escape(mb_strtoupper(mb_substr($race['location'], 0, 3))) ?></div>
                             <div>
                                 <div class="hf-racename"><?= escape($race['name']) ?></div>
-                                <div class="hf-racemeta"><?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></div>
+                                <div class="hf-racemeta"><?= escape($race['location']) ?> · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></div>
                             </div>
                             <?php if ($status['status'] === 'open' && $currentUser && !$userBet && $currentUser['in_competition']): ?>
                                 <a href="bet.php?race=<?= $race['id'] ?>&return=index" class="hf-badge open"><?= t('place_bet') ?> →</a>
@@ -290,11 +289,10 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                 </div>
                 <?php foreach ($recentResults as $race): ?>
                     <div class="hf-racecard">
-                        <div class="hf-racenum"><?= escape(mb_strtoupper(mb_substr($race['location'], 0, 3))) ?></div>
                         <div>
                             <div class="hf-racename"><?= escape($race['name']) ?></div>
                             <div class="hf-racemeta">
-                                <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
+                                <?= escape($race['location']) ?> · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
                                 <?php if ($race['result_p1']): ?>
                                     &nbsp;· P1: <?= escape($driversById[$race['result_p1']]['name'] ?? '—') ?>
                                 <?php endif; ?>

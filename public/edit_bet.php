@@ -93,7 +93,6 @@ include __DIR__ . '/includes/header.php';
     <div class="hf-container" style="padding-top:24px; padding-bottom:24px;">
         <div class="hf-racefull">
             <div class="hf-racefull-hd">
-                <div class="hf-racenum"><?= escape($locAbbr) ?></div>
                 <div class="hf-racefull-info">
                     <div class="hf-racename"><?= escape($bet['race_name']) ?></div>
                     <div class="hf-racemeta">

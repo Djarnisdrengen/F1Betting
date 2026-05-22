@@ -25,11 +25,11 @@ $firstName = $currentUser
         <span><?= strtoupper(t('theme')) ?></span>
     </a>
     <a href="?toggle_lang=1" class="hf-bb-item" title="Language">
-        <div class="hf-bb-icon"><?= strtoupper($lang) ?></div>
-        <span><?= strtoupper(t('lang_name')) ?></span>
+        <div class="hf-bb-icon"><i class="fas fa-globe"></i></div>
+        <span><?= strtoupper($lang) ?></span>
     </a>
     <a href="?toggle_font=1" class="hf-bb-item">
-        <div class="hf-bb-icon" style="font-family: var(--font-accent);">Aa</div>
+        <div class="hf-bb-icon"><i class="fas fa-font"></i></div>
         <span><?= $fontStack === 'editorial' ? 'EDIT' : 'SYS' ?></span>
     </a>
 </nav>
