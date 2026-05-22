@@ -92,7 +92,6 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                 ?>
                     <div class="hf-racefull">
                         <div class="hf-racefull-hd">
-                            <div class="hf-racenum"><?= escape($locAbbr) ?></div>
                             <div class="hf-racefull-info">
                                 <div class="hf-racename">
                                     <?= escape($race['name']) ?>
@@ -175,7 +174,6 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                 ?>
                     <div class="hf-racefull">
                         <div class="hf-racefull-hd">
-                            <div class="hf-racenum"><?= escape($locAbbr) ?></div>
                             <div class="hf-racefull-info">
                                 <div class="hf-racename">
                                     <?= escape($race['name']) ?>

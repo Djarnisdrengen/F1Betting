@@ -131,7 +131,9 @@
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting status --short)",
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add .github/workflows/monthly-security-review.yml build-deploy/security-review.js package.json)",
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting commit -m ' *)",
-      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting push)"
+      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting push)",
+      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add public/assets/css/style.css public/tools/test_smtp.php)",
+      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add public/rules.php)"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",

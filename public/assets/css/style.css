@@ -651,6 +651,8 @@ body.clubhouse .bet-item.my-bet {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
 }
 
 .bet-avatar {
@@ -669,6 +671,7 @@ body.clubhouse .bet-item.my-bet {
 .bet-predictions {
     display: flex;
     gap: 0.5rem;
+    margin-left: 0.75rem;
 }
 
 .bet-pred {
@@ -937,11 +940,14 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     font-size: 0.875rem;
     color: var(--text-secondary);
     margin-top: 0.5rem;
+    white-space: nowrap;
+    flex-wrap: nowrap;
 }
 
 .countdown-timer .countdown-value {
     font-weight: 600;
     color: var(--f1-red);
+    white-space: nowrap;
 }
 
 .countdown-timer.betting-open .countdown-value {
@@ -2534,7 +2540,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-racefull:hover { border-color: var(--border-color); }
 .hf-racefull-hd {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     padding: 13px 16px;
 }
