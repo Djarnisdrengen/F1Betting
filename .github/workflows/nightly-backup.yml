@@ -1,0 +1,34 @@
+name: Nightly DB Backup
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # 01:00 UTC = 02:00 CET (winter) / 03:00 CEST (summer)
+  workflow_dispatch:       # allow manual trigger from GitHub UI
+
+jobs:
+  backup-db:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download live DB backup
+        env:
+          BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
+          INTEGRATION_SEED_TOKEN: ${{ secrets.INTEGRATION_SEED_TOKEN }}
+        run: |
+          node -e "
+            fetch(process.env.BASE_URL_LIVE + '/tools/db-backup.php?token=' + process.env.INTEGRATION_SEED_TOKEN)
+              .then(r => r.json())
+              .then(d => {
+                if (!d.ok) { console.error(d); process.exit(1); }
+                require('fs').writeFileSync('db-backup.json', JSON.stringify(d, null, 2));
+                console.log('Backup ok:', Object.entries(d.tables).map(([t,r]) => t+':'+r?.length).join(', '));
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "
+
+      - name: Upload DB backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}-${{ github.run_number }}
+          path: db-backup.json
+          retention-days: 90

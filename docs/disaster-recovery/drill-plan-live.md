@@ -214,5 +214,5 @@ Stop immediately and restore from the nightly artifact if:
 - Smoke tests still failing after import
 - Any user reports missing data
 
-Fallback: GitHub Actions → nightly workflow → most recent `db-backup-<run_id>` artifact →
+Fallback: GitHub Actions → **Nightly DB Backup** workflow → most recent `db-backup-<run_id>` artifact →
 repeat Option A restore with that file.

@@ -31,7 +31,7 @@
 |---|---|---|---|
 | Pre-deploy snapshot | `build-deploy/backups/live/` (5 kept) | Last 5 deploys | `npm run deploy:live` |
 | Manual snapshot | Same directory | Same 5-backup pool | `npm run backup:live` |
-| Nightly artifact | GitHub Actions → nightly workflow → Artifacts | 90 days | 01:00 UTC daily |
+| Nightly artifact | GitHub Actions → Nightly DB Backup workflow → Artifacts | 90 days | 01:00 UTC daily |
 
 ---
 
@@ -51,7 +51,7 @@
 
 ### Step 1 — Get latest backup
 
-GitHub → Actions → nightly workflow → most recent successful run → Artifacts → download `db-backup-<run_id>-<run_number>`.
+GitHub → Actions → **Nightly DB Backup** workflow → most recent successful run → Artifacts → download `db-backup-<run_id>-<run_number>`.
 
 If GitHub is unavailable, check local `build-deploy/backups/live/` for the most recent timestamped directory containing `db-backup.json`.
 
@@ -215,8 +215,8 @@ Feature: Disaster Recovery restore path
     And typing anything other than "YES" aborts with no changes
 
   Scenario: Nightly backup artifact is created even when E2E tests fail
-    Given the nightly workflow runs and E2E tests fail
-    When the backup-db job runs with `if: always()`
+    Given the nightly test workflow runs and E2E tests fail
+    When the Nightly DB Backup workflow runs independently at 01:00 UTC
     Then a db-backup artifact is uploaded to GitHub Actions
     And the artifact contains valid JSON with "ok":true
 

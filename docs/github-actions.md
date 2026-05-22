@@ -4,6 +4,8 @@
 
 - [Nightly Workflow](#nightly-workflow)
   - [What it does](#what-it-does)
+- [Nightly DB Backup Workflow](#nightly-db-backup-workflow)
+- [Monthly Security Review Workflow](#monthly-security-review-workflow)
 - [Required Configuration](#required-configuration)
   - [Variables tab](#variables-tab)
   - [Secrets tab](#secrets-tab)
@@ -31,6 +33,36 @@
 5. Uploads test artifacts (reports, screenshots, security reports) — retained 30 days
 
 **Timeout:** 30 minutes per run.
+
+---
+
+## Nightly DB Backup Workflow
+
+**File:** `.github/workflows/nightly-backup.yml`  
+**Schedule:** 01:00 UTC every night  
+**Can also be triggered:** manually via the Actions tab → "Run workflow"
+
+Fetches a full DB snapshot from the live site (`db-backup.php`) and uploads it as a GitHub Actions artifact retained for 90 days. Runs independently of the nightly test workflow — a test failure does not block the backup.
+
+**Required secrets/variables:** `BASE_URL_LIVE`, `INTEGRATION_SEED_TOKEN`
+
+Find artifacts under **Actions → Nightly DB Backup → (select run) → Artifacts**.
+
+---
+
+## Monthly Security Review Workflow
+
+**File:** `.github/workflows/monthly-security-review.yml`  
+**Schedule:** 1st of each month at 08:17 UTC  
+**Can also be triggered:** manually via the Actions tab → "Run workflow"
+
+Runs `node build-deploy/security-review.js`, which checks OWASP and CWE coverage against `tests/security/security.js` and emails an HTML report to `REPORT_TO`. Findings and actions are logged in `docs/security-review-log.md`.
+
+**Required secrets/variables:** `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `REPORT_TO`, `RESEND_API_KEY` (same set as the nightly workflow)
+
+Find artifacts under **Actions → Monthly Security Review → (select run) → Artifacts**. The report is also retained as `security-review-<run_id>` for 90 days.
+
+**Timeout:** 10 minutes per run.
 
 ---
 
@@ -93,11 +125,13 @@ The distinction: secrets for passwords/tokens, variables for config values that 
 
 ## Artifacts
 
-After each run, the workflow uploads:
-- `build-deploy/security-reports/` — OWASP scan results (`.md` + `.json`)
-- `build-deploy/screenshots/` — Playwright failure screenshots
+| Workflow | Artifact | Retention | Contents |
+|---|---|---|---|
+| Nightly Tests & Security Scan | `nightly-report-<run_id>` | 30 days | OWASP scan results, Playwright failure screenshots |
+| Nightly DB Backup | `db-backup-<run_id>-<run_number>` | 90 days | Full live DB snapshot as JSON |
+| Monthly Security Review | `security-review-<run_id>` | 90 days | HTML security review report |
 
-Find them under **Actions → (select run) → Artifacts** at the bottom of the summary page. Retained for 30 days.
+Find them under **Actions → (select workflow) → (select run) → Artifacts** at the bottom of the summary page.
 
 ---
 
