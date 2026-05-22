@@ -9,7 +9,7 @@ define('CRON_NOTIFICATIONS_LOG_FILE', __DIR__ . '/public/logs/cron_notifications
 define('CRON_QUALIFYING_LOG_FILE',    __DIR__ . '/public/logs/cron_qualifying.log');
 
 // ── APP VERSION ───────────────────────────────────────────────────────
-define('APP_VERSION', 'v2.0.0');
+define('APP_VERSION', 'v2.1.0');
 
 // ── F1 API ────────────────────────────────────────────────────────────
 define('F1_API_BASE',    'https://api.jolpi.ca/ergast/f1'); // Jolpica (Ergast successor)
