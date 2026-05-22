@@ -169,7 +169,7 @@ Note: Simply.com's WAF blocks curl when a long token appears in the query string
 | 7. Cron endpoints | Node.js fetch to `?token=<CRON_SECRET>` (not `?secret=`) | qualifying: `Cron token validation: VALID`; notifications: `Notification check complete.` |
 | 8. Sync back | `npm run sync:live` | Restores test DB to match live |
 
-Record drill date and outcome in `docs/dr-drills.md`.
+Record drill date and outcome in `docs/disaster-recovery/dr-drills.md`.
 
 ### Acceptance criteria
 
