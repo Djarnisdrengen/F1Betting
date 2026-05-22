@@ -133,7 +133,8 @@
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting commit -m ' *)",
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting push)",
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add public/assets/css/style.css public/tools/test_smtp.php)",
-      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add public/rules.php)"
+      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add public/rules.php)",
+      "Bash(node build-deploy/backup-to-sql.js build-deploy/backups/live/2026-05-22T11-54-13-153Z/db-backup.json)"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",

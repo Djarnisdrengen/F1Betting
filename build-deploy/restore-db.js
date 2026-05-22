@@ -22,6 +22,10 @@ async function main() {
         process.exit(1);
     }
 
+    const args = process.argv.slice(2);
+    const envFlagIdx = args.findIndex(a => a === '--env');
+    const envArg = envFlagIdx !== -1 ? args[envFlagIdx + 1] : null;
+
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
     console.log("\nAvailable DB backups:\n");
@@ -38,10 +42,14 @@ async function main() {
         process.exit(1);
     }
 
-    const envInput = await ask(rl, "Restore to [test/live] (default: test): ");
+    let env;
+    if (envArg === 'test' || envArg === 'live') {
+        env = envArg;
+    } else {
+        const envInput = await ask(rl, "Restore to [test/live] (default: test): ");
+        env = envInput.trim() === "live" ? "live" : "test";
+    }
     rl.close();
-
-    const env = envInput.trim() === "live" ? "live" : "test";
     const timestamp = available[index];
 
     let baseUrl, token;
@@ -59,18 +67,19 @@ async function main() {
         process.exit(1);
     }
 
-    if (env === "live") {
-        const rl2 = readline.createInterface({ input: process.stdin, output: process.stdout });
-        const confirmed = await new Promise(resolve =>
-            rl2.question("\n⚠️  You are about to overwrite the LIVE database. Type YES to confirm: ", answer => {
-                rl2.close();
-                resolve(answer === "YES");
-            })
-        );
-        if (!confirmed) {
-            console.log("Aborted.");
-            process.exit(1);
-        }
+    const envLabel = env === "live"
+        ? "⚠️  LIVE database (formula-1.dk)"
+        : "⚠️  TEST database (hpovlsen.dk)";
+    const rl2 = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const confirmed = await new Promise(resolve =>
+        rl2.question(`\nYou are about to overwrite the ${envLabel}. Type YES to confirm: `, answer => {
+            rl2.close();
+            resolve(answer === "YES");
+        })
+    );
+    if (!confirmed) {
+        console.log("Aborted.");
+        process.exit(1);
     }
 
     const backup = JSON.parse(fs.readFileSync(path.join(backupsDir, timestamp, "db-backup.json"), "utf8"));

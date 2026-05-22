@@ -82,9 +82,15 @@ function pruneBackups() {
         .filter(f => fs.statSync(path.join(dir, f)).isDirectory())
         .sort()
         .reverse();
-    entries.slice(2).forEach(e => {
+    entries.slice(5).forEach(e => {
         fs.rmSync(path.join(dir, e), { recursive: true, force: true });
     });
 }
 
 module.exports = { backup, pruneBackups };
+
+if (require.main === module) {
+    backup()
+        .then(({ timestamp }) => { pruneBackups(); console.log(`✅ Backup complete: ${timestamp}`); })
+        .catch(err => { console.error("❌ Backup failed:", err.message); process.exit(1); });
+}
