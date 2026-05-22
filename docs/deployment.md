@@ -1,5 +1,20 @@
 # Deployment
 
+## Contents
+
+- [Environments](#environments)
+- [npm deploy commands](#npm-deploy-commands)
+  - [npm run deploy:test](#npm-run-deploytest)
+  - [npm run deploy:live](#npm-run-deploylive)
+  - [What gets excluded](#what-gets-excluded)
+- [Backup](#backup)
+- [Rollback](#rollback)
+- [Database restore](#database-restore)
+- [Sync live → test](#sync-live--test)
+- [Dry run](#dry-run)
+
+---
+
 Day-to-day deploy workflow, backup, rollback, and database sync.
 
 For a brand-new server setup see [Deploy from Scratch](deploy-from-scratch.md).

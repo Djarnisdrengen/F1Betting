@@ -1,5 +1,23 @@
 # Cron Jobs
 
+## Contents
+
+- [1. Qualifying Results Import](#1-qualifying-results-import)
+  - [Authentication](#authentication)
+  - [Test mode](#test-mode)
+  - [Logging](#logging)
+  - [Suggested schedule](#suggested-schedule)
+- [2. Email Notifications](#2-email-notifications)
+  - [Authentication](#authentication-1)
+  - [Test mode](#test-mode-1)
+  - [Logging](#logging-1)
+  - [Suggested schedule](#suggested-schedule-1)
+- [Setting up cron on Simply.com](#setting-up-cron-on-simplycom)
+- [Triggering manually (HTTP)](#triggering-manually-http)
+- [Log file locations](#log-file-locations)
+
+---
+
 Two cron scripts live in `public/cron/`. Both can be triggered via HTTP or from the CLI.
 
 ---

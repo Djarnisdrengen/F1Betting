@@ -1,5 +1,15 @@
 # Security Review Log
 
+## Contents
+
+- [2026-05-21 — Initial review (first monthly report)](#2026-05-21--initial-review-first-monthly-report)
+  - [Findings](#findings)
+  - [Actions taken](#actions-taken)
+  - [Expected result for next monthly report](#expected-result-for-next-monthly-report)
+- [Template for future entries](#template-for-future-entries)
+
+---
+
 Each entry records what was examined, what was found, and what action was taken.
 Add a new entry after each monthly report or any ad-hoc review.
 

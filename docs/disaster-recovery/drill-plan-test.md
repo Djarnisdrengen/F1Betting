@@ -1,5 +1,29 @@
 # DR Drill Plan — TEST environment, "Test server wiped" scope
 
+## Contents
+
+- [Context](#context)
+- [Key facts](#key-facts)
+- [Prerequisites](#prerequisites)
+- [Phase 1 — Pre-test: establish known-good state](#phase-1--pre-test-establish-known-good-state)
+  - [Step 1.1 — Smoke-test the test site](#step-11--smoke-test-the-test-site)
+  - [Step 1.2 — Take a named snapshot](#step-12--take-a-named-snapshot)
+  - [Step 1.3 — Verify admin login](#step-13--verify-admin-login)
+- [Phase 2 — Simulate "test server wiped"](#phase-2--simulate-test-server-wiped)
+  - [Step 2.1 — Wipe the test database](#step-21--wipe-the-test-database)
+  - [Step 2.2 — Corrupt the test server files](#step-22--corrupt-the-test-server-files)
+  - [Step 2.3 — Confirm destruction](#step-23--confirm-destruction)
+- [Phase 3 — Recovery](#phase-3--recovery)
+  - [Step 3.1 — Verify local prerequisites](#step-31--verify-local-prerequisites)
+  - [Step 3.2 — Restore files](#step-32--restore-files)
+  - [Step 3.3 — Restore schema](#step-33--restore-schema)
+  - [Step 3.4 — Make snapshot visible to restore:db](#step-34--make-snapshot-visible-to-restoredb)
+  - [Step 3.5 — Restore data](#step-35--restore-data)
+- [Phase 4 — Verification](#phase-4--verification)
+- [Phase 5 — Clean up](#phase-5--clean-up)
+
+---
+
 ## Context
 
 Drills the "Test server wiped" recovery path against `www.hpovlsen.dk`. Both files and DB are

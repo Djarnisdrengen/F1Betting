@@ -1,5 +1,25 @@
 # Test Strategy & Architecture — F1Betting
 
+## Contents
+
+- [Strategy Principles](#strategy-principles)
+- [The Two Stacks](#the-two-stacks)
+- [Architecture Layers (Stack A only)](#architecture-layers-stack-a-only)
+  - [Layer 1 — Config](#layer-1--config)
+  - [Layer 2 — Helpers](#layer-2--helpers)
+  - [Layer 3 — Fixtures](#layer-3--fixtures)
+- [Mailsac Inboxes](#mailsac-inboxes)
+- [Adding a New Test](#adding-a-new-test)
+  - [Which stack?](#which-stack)
+  - [New user-facing feature (Stack A)](#new-user-facing-feature-stack-a)
+  - [New admin feature (Stack A)](#new-admin-feature-stack-a)
+  - [New email type (Stack A)](#new-email-type-stack-a)
+  - [New security check (Stack B)](#new-security-check-stack-b)
+  - [New standalone script (Stack B)](#new-standalone-script-stack-b)
+- [CWE Top 25 Coverage](#cwe-top-25-coverage)
+
+---
+
 Answers the question: *How do we think about testing, and how do I add a new test?*
 
 For commands and what each spec covers, see [testing.md](testing.md).

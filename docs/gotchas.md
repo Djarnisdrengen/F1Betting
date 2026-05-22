@@ -1,5 +1,25 @@
 # Common Gotchas
 
+## Contents
+
+- [1. config.test.php and config.live.php are not in the repo](#1-configtestphp-and-configlivephp-are-not-in-the-repo)
+- [2. config.shared.php must be deployed](#2-configsharedphp-must-be-deployed)
+- [3. BASE_URL_LIVE in GitHub must be a variable, not a secret](#3-base_url_live-in-github-must-be-a-variable-not-a-secret)
+- [4. Integration tests destroy the test database](#4-integration-tests-destroy-the-test-database)
+- [5. db-restore.php is excluded from live by default](#5-db-restorephp-is-excluded-from-live-by-default)
+- [6. trim() vs sanitizeString() in admin forms — an intentional asymmetry](#6-trim-vs-sanitizestring-in-admin-forms--an-intentional-asymmetry)
+- [7. php-config.js only reads string defines](#7-php-configjs-only-reads-string-defines)
+- [8. Always use www in URLs](#8-always-use-www-in-urls)
+- [9. Cron scripts require a token — 403 Forbidden is not a server error](#9-cron-scripts-require-a-token--403-forbidden-is-not-a-server-error)
+- [10. Session regenerate_id() is called on login](#10-session-regenerate_id-is-called-on-login)
+- [11. Log directory must be writable](#11-log-directory-must-be-writable)
+- [12. in_competition = 0 for the admin user](#12-in_competition--0-for-the-admin-user)
+- [13. quali_p1/p2/p3 must match exact bet validation](#13-quali_p1p2p3-must-match-exact-bet-validation)
+- [14. Nightly report emails appear twice when SMTP_FROM and REPORT_TO share the same Proton account](#14-nightly-report-emails-appear-twice-when-smtp_from-and-report_to-share-the-same-proton-account)
+- [15. sync:live rewrites all user emails to @mailsac.com](#15-synclive-rewrites-all-user-emails-to-mailsaccom)
+
+---
+
 Issues that tend to catch new developers. Read this before your first deploy.
 
 ---

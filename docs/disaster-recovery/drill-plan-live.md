@@ -1,5 +1,27 @@
 # DR Drill Plan — LIVE environment, "Bad deploy / data corruption" scope
 
+## Contents
+
+- [Context](#context)
+- [Key facts](#key-facts)
+- [Prerequisites — check before starting](#prerequisites--check-before-starting)
+- [Phase 1 — Pre-drill: establish known-good state](#phase-1--pre-drill-establish-known-good-state)
+  - [Step 1.1 — Take a fresh backup](#step-11--take-a-fresh-backup)
+  - [Step 1.2 — Record live row counts](#step-12--record-live-row-counts)
+  - [Step 1.3 — Smoke-test live](#step-13--smoke-test-live)
+  - [Step 1.4 — Verify admin login](#step-14--verify-admin-login)
+- [Phase 2 — Simulate "bad deploy / data corruption"](#phase-2--simulate-bad-deploy--data-corruption)
+  - [Step 2.1 — Wipe live DB data only (keep schema)](#step-21--wipe-live-db-data-only-keep-schema)
+  - [Step 2.2 — Confirm live site is broken](#step-22--confirm-live-site-is-broken)
+- [Phase 3 — Recovery (Option A — phpMyAdmin import)](#phase-3--recovery-option-a--phpmyadmin-import)
+  - [Step 3.1 — Generate SQL from the pre-drill backup](#step-31--generate-sql-from-the-pre-drill-backup)
+  - [Step 3.2 — Import via phpMyAdmin](#step-32--import-via-phpmyadmin)
+- [Phase 4 — Verification](#phase-4--verification)
+- [Phase 5 — Clean up and record](#phase-5--clean-up-and-record)
+- [Abort criteria](#abort-criteria)
+
+---
+
 ## Context
 
 Drills the "Bad deploy / data corruption — files OK" recovery path against `www.formula-1.dk`.

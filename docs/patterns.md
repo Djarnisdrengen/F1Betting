@@ -1,5 +1,26 @@
 # Patterns & Best Practices
 
+## Contents
+
+- [PHP Page Structure](#php-page-structure)
+- [Input Sanitization and Output Escaping](#input-sanitization-and-output-escaping)
+- [CSRF Protection](#csrf-protection)
+- [Auth Guards](#auth-guards)
+- [Reusable Include Pattern (qualifying-display.php)](#reusable-include-pattern-qualifying-displayphp)
+- [Config Constants](#config-constants)
+- [php-config.js Bridge](#php-configjs-bridge)
+- [Translation](#translation)
+- [Preferred Language (authenticated users)](#preferred-language-authenticated-users)
+- [Helper Functions for Common Queries](#helper-functions-for-common-queries)
+- [UUID Primary Keys](#uuid-primary-keys)
+- [Betting Status](#betting-status)
+- [Password Handling](#password-handling)
+- [Logging](#logging)
+- [Security Headers](#security-headers)
+- [Code Style](#code-style)
+
+---
+
 Conventions used throughout the codebase. Follow these when adding new features.
 
 ---

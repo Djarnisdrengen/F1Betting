@@ -1,5 +1,32 @@
 # Testing
 
+## Contents
+
+- [Overview](#overview)
+- [Smoke Tests](#smoke-tests)
+- [E2E Tests (Playwright)](#e2e-tests-playwright)
+  - [Mailsac mode](#mailsac-mode-email_backendmailsac)
+  - [Architecture layers](#architecture-layers)
+  - [01-smoke.spec.js](#01-smokespecjs)
+  - [02-auth.spec.js](#02-authspecjs)
+  - [03-registration.spec.js](#03-registrationspecjs)
+  - [04-betting.spec.js](#04-bettingspecjs)
+  - [05-profile.spec.js](#05-profilespecjs)
+  - [06-emails.spec.js](#06-emailsspecjs)
+  - [07-cron.spec.js](#07-cronspecjs)
+  - [admin/10-content.spec.js](#admin10-contentspecjs)
+  - [admin/11-invites.spec.js](#admin11-invitesspecjs)
+  - [admin/12-users.spec.js](#admin12-usersspecjs)
+  - [admin/13-scoring.spec.js](#admin13-scoringspecjs)
+- [Email Preview](#email-preview)
+- [Security Tests](#security-tests)
+- [Test Email Addresses](#test-email-addresses)
+  - [Inboxes asserted in test:e2e:test:mailsac](#inboxes-asserted-in-teste2etestmailsac)
+  - [All seeded inbox addresses](#all-seeded-inbox-addresses)
+- [How tests find credentials](#how-tests-find-credentials)
+
+---
+
 All tests run against the deployed site over HTTP — there is no local test server.
 
 ---
@@ -22,7 +49,7 @@ Stack B = standalone Node scripts (read config directly from `php-config.js`, fa
 
 ---
 
-## Smoke Tests (`tests/smoke.js`)
+## Smoke Tests
 
 ```bash
 npm run test:smoke
@@ -315,7 +342,7 @@ Race B: day after Race A, no result yet — test enters it via admin UI.
 
 ---
 
-## Email Preview (`tests/email-preview.js`)
+## Email Preview
 
 ```bash
 npm run test:email:preview
@@ -327,7 +354,7 @@ Open `MAILSAC_INBOX` (`f1betting-preview@mailsac.com`) in the Mailsac web UI to 
 
 ---
 
-## Security Tests (`tests/security/security.js`)
+## Security Tests
 
 ```bash
 npm run test:security                    # basic (test env)
@@ -414,42 +441,49 @@ Reports saved to `build-deploy/security-reports/` as `.md` and `.json` (two most
 
 ## Test Email Addresses
 
-All seeded test users use `@mailsac.com` addresses. Emails triggered during tests land in readable Mailsac inboxes rather than disappearing.
+All seeded test users use `@mailsac.com` addresses so that any email accidentally triggered on the test site never reaches real inboxes.
 
-| Address | Used by |
+**Which commands send real emails to Mailsac:**
+
+| Command | Mailsac delivery |
 |---|---|
-| `e2e_auth_f1@mailsac.com` | `02-auth.spec.js` — forgot-password reset email |
-| `e2e_register_f1@mailsac.com` | `03-registration.spec.js` |
-| `e2e_bet_user_f1@mailsac.com` | `04-betting.spec.js` |
-| `e2e_testing_testuser_f1@mailsac.com` | `admin/12-users.spec.js` — admin password reset |
-| `e2e_testing_invite_f1@mailsac.com` | `admin/11-invites.spec.js` — invite email |
-| `e2e_bet_delete_f1@mailsac.com` | `admin/12-users.spec.js` — bet deletion notification |
-| `e2e_score_alice_f1@mailsac.com` | `admin/13-scoring.spec.js` |
-| `e2e_score_bob_f1@mailsac.com` | `admin/13-scoring.spec.js` |
-| `e2e_score_charlie_f1@mailsac.com` | `admin/13-scoring.spec.js` |
-| `e2e_notify_open_in_f1@mailsac.com` | `07-cron.spec.js` — in-competition user |
-| `e2e_notify_open_out_f1@mailsac.com` | `07-cron.spec.js` — non-competing user |
-| `e2e_notify_open_invite_f1@mailsac.com` | `07-cron.spec.js` — pending invite |
-| `e2e_notify_close_a_f1@mailsac.com` | `07-cron.spec.js` — unbetted user |
-| `e2e_notify_close_b_f1@mailsac.com` | `07-cron.spec.js` — betted user |
+| `test:e2e:test` | None — intercept mode captures emails server-side |
+| `test:e2e:test:mailsac` | Yes — real SMTP; owned inboxes purged before suite |
+| `test:security` | None — HTTP scanner only, no emails triggered |
+
+### Inboxes asserted in test:e2e:test:mailsac
+
+The 5 owned inboxes (★) are purged by `global-setup.js` before the suite runs. The 2 non-owned inboxes use a baseline-snapshot approach (`waitForNewMessages`).
+
+| Inbox | Triggered by | Email type | Count |
+|---|---|---|---|
+| ★ `e2e_auth_f1@mailsac.com` | `02-auth.spec.js` | Password reset link | 1 |
+| ★ `e2e_testing_invite_f1@mailsac.com` | `admin/11-invites.spec.js` | Invite to register | 1 |
+| ★ `e2e_testing_testuser_f1@mailsac.com` | `admin/12-users.spec.js` | Admin-issued password reset | 1 |
+| ★ `e2e_bet_delete_f1@mailsac.com` | `admin/12-users.spec.js` | Bet deletion notification | 1 |
+| `e2e_notify_open_in_f1@mailsac.com` | `07-cron.spec.js` | Betting window open | 1 |
+| `e2e_notify_close_a_f1@mailsac.com` | `07-cron.spec.js` | Betting window closing soon | 1 |
+
+`f1betting-preview@mailsac.com` (★ owned) is purged by `global-setup.js` at E2E suite start, then populated by `npm run test:email:preview` (Stack B, run separately). No E2E spec asserts delivery to it.
+
+The Mailsac Indie Plan allows 5 owned inboxes — the limit is reached. Any future owned inbox requires a plan upgrade; design new tests to use `waitForNewMessages` (baseline-snapshot approach) on non-owned inboxes.
+
+### All seeded inbox addresses
+
+These addresses are assigned to seeded test users. They are `@mailsac.com` so accidental emails are visible, but the suite does not assert Mailsac delivery for them.
+
+| Inbox | Spec | Role |
+|---|---|---|
+| `e2e_register_f1@mailsac.com` | `03-registration.spec.js` | Invite recipient / registering user |
+| `e2e_bet_user_f1@mailsac.com` | `04-betting.spec.js` | Betting user |
+| `e2e_score_alice_f1@mailsac.com` | `admin/13-scoring.spec.js` | Alice (perfect-bet user) |
+| `e2e_score_bob_f1@mailsac.com` | `admin/13-scoring.spec.js` | Bob |
+| `e2e_score_charlie_f1@mailsac.com` | `admin/13-scoring.spec.js` | Charlie |
+| `e2e_notify_open_out_f1@mailsac.com` | `07-cron.spec.js` | Non-competing user (pool reminder) |
+| `e2e_notify_open_invite_f1@mailsac.com` | `07-cron.spec.js` | Pending invite (pool reminder) |
+| `e2e_notify_close_b_f1@mailsac.com` | `07-cron.spec.js` | Already-bet user (notification skipped) |
 
 Users synced from live via `sync:live` have their email addresses rewritten to `@mailsac.com`. The admin account (`F1_ADMIN_EMAIL`) is restored unchanged.
-
-### Owned Mailsac inboxes
-
-Five inboxes are owned on the Mailsac Indie Plan, enabling inbox purge and reliable message retention. All five are purged in parallel at suite start by `global-setup.js`.
-
-| Owned inbox | Asserted by |
-|---|---|
-| `f1betting-preview@mailsac.com` | `test:email:preview` — 16 email types |
-| `e2e_auth_f1@mailsac.com` | `02-auth.spec.js` — forgot-password reset email |
-| `e2e_testing_invite_f1@mailsac.com` | `admin/11-invites.spec.js` — invite email |
-| `e2e_bet_delete_f1@mailsac.com` | `admin/12-users.spec.js` — bet deletion email |
-| `e2e_testing_testuser_f1@mailsac.com` | `admin/12-users.spec.js` — admin password reset |
-
-The two real-send cron inboxes (`e2e_notify_open_in_f1`, `e2e_notify_close_a_f1`) are **non-owned**. They use `waitForNewMessages` with a pre-run baseline snapshot instead of purge.
-
-The Mailsac Indie Plan allows 5 owned inboxes — the limit is reached. Any future owned inbox requires a plan upgrade; design new tests to use the baseline-snapshot approach on non-owned inboxes.
 
 ---
 

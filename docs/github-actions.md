@@ -1,5 +1,18 @@
 # GitHub Actions
 
+## Contents
+
+- [Nightly Workflow](#nightly-workflow)
+  - [What it does](#what-it-does)
+- [Required Configuration](#required-configuration)
+  - [Variables tab](#variables-tab)
+  - [Secrets tab](#secrets-tab)
+- [Variables vs Secrets — migration](#variables-vs-secrets--migration)
+- [Artifacts](#artifacts)
+- [Debugging a failed run](#debugging-a-failed-run)
+
+---
+
 ## Nightly Workflow
 
 **File:** `.github/workflows/nightly.yml`  

@@ -1,5 +1,19 @@
 # Command Reference
 
+## Contents
+
+- [Setup (run once)](#setup-run-once)
+- [Deploy](#deploy)
+- [Test](#test)
+  - [Security tests](#security-tests)
+- [Database](#database)
+- [Backup & Rollback](#backup--rollback)
+- [Cron (manual trigger)](#cron-manual-trigger)
+- [Git](#git)
+- [Utilities](#utilities)
+
+---
+
 All terminal commands for the F1 Betting project.
 
 ---

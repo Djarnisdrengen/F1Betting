@@ -1,5 +1,12 @@
 # DR Drill Log
 
+## Contents
+
+- [2026-05-22 17:30 CET — Test server wiped drill (verification run)](#2026-05-22-1730-cet--test-server-wiped-drill-verification-run)
+- [2026-05-22 15:00 CET — Test server wiped drill](#2026-05-22-1500-cet--test-server-wiped-drill)
+
+---
+
 Record each disaster recovery drill here. Run the drill once per season or after any significant infrastructure change.
 
 ---

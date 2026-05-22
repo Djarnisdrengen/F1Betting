@@ -1,5 +1,21 @@
 # Deploy from Scratch
 
+## Contents
+
+- [Server Requirements](#server-requirements)
+- [Step 1 — Create the database](#step-1--create-the-database)
+- [Step 2 — Create config files locally](#step-2--create-config-files-locally)
+- [Step 3 — Set up FTP credentials](#step-3--set-up-ftp-credentials)
+- [Step 4 — First deploy](#step-4--first-deploy)
+- [Step 5 — Set the admin password](#step-5--set-the-admin-password)
+- [Step 6 — Set up cron jobs](#step-6--set-up-cron-jobs)
+- [Step 7 — Verify](#step-7--verify)
+- [Step 8 — GitHub Actions (live only)](#step-8--github-actions-live-only)
+- [File permissions](#file-permissions)
+- [Upgrading an existing installation](#upgrading-an-existing-installation)
+
+---
+
 Use this guide when setting up the application on a brand-new server or database for the first time.
 
 ---

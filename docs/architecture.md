@@ -1,5 +1,23 @@
 # Architecture
 
+## Contents
+
+- [Repository Layout](#repository-layout)
+- [Database Schema](#database-schema)
+  - [users](#users)
+  - [drivers](#drivers)
+  - [races](#races)
+  - [bets](#bets)
+  - [settings (singleton: id=1)](#settings-singleton-id1)
+  - [password_resets, login_attempts, invites](#password_resets-login_attempts-invites)
+- [Config System](#config-system)
+  - [What each file contains](#what-each-file-contains)
+- [Request Lifecycle](#request-lifecycle)
+- [Security Model](#security-model)
+- [Localisation & Theme](#localisation--theme)
+
+---
+
 ## Repository Layout
 
 ```

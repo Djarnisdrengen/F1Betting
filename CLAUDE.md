@@ -1,5 +1,28 @@
 # CLAUDE.md
 
+## Contents
+
+- [What this project is](#what-this-project-is)
+- [Infrastructure at a glance](#infrastructure-at-a-glance)
+- [Commands](#commands)
+  - [Deploy](#deploy)
+  - [Test](#test)
+- [Architecture](#architecture)
+  - [Stack](#stack)
+  - [Config pattern](#config-pattern)
+  - [Request lifecycle](#request-lifecycle)
+  - [Translation](#translation)
+  - [Scoring (public/includes/scoring.php)](#scoring-publicincludesscoringphp)
+  - [Admin panel (public/admin.php + public/includes/admin/)](#admin-panel-publicadminphp--publicincludesadmin)
+  - [Cron jobs (public/cron/)](#cron-jobs-publiccron)
+  - [E2E test seeding (public/tools/test-seed.php)](#e2e-test-seeding-publictoolstest-seedphp)
+- [PHP conventions](#php-conventions)
+- [Key gotchas](#key-gotchas)
+- [GitHub Actions (nightly.yml)](#github-actions-nightlyyml)
+- [Email testing (Mailsac)](#email-testing-mailsac)
+
+---
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What this project is

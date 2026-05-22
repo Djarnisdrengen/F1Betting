@@ -1,5 +1,24 @@
 # Getting Started
 
+## Contents
+
+- [Prerequisites](#prerequisites)
+- [1. Clone the repository](#1-clone-the-repository)
+- [2. Create your config files](#2-create-your-config-files)
+- [3. Set up FTP credentials](#3-set-up-ftp-credentials)
+- [4. Deploy to the test server](#4-deploy-to-the-test-server)
+- [5. Run the tests](#5-run-the-tests)
+- [Day-to-day workflow](#day-to-day-workflow)
+- [VSCode Setup](#vscode-setup)
+  - [Recommended extensions](#recommended-extensions)
+  - [PHP CS Fixer](#php-cs-fixer)
+  - [Playwright test runner](#playwright-test-runner)
+  - [Recommended settings.json additions](#recommended-settingsjson-additions)
+  - [PHP path](#php-path)
+- [What you can skip](#what-you-can-skip)
+
+---
+
 Everything you need to go from a fresh clone to a working test environment.
 
 ## Prerequisites

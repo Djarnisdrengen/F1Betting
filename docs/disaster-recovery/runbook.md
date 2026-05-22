@@ -1,5 +1,30 @@
 # Disaster Recovery
 
+## Contents
+
+- [Backup tiers](#backup-tiers)
+- [Recovery scope — decide before starting](#recovery-scope--decide-before-starting)
+- [Full-loss recovery runbook](#full-loss-recovery-runbook)
+  - [Step 1 — Get latest backup](#step-1--get-latest-backup)
+  - [Step 2 — Reconstruct build-deploy/.env](#step-2--reconstruct-build-deployenv)
+  - [Step 3 — Reconstruct config.live.php](#step-3--reconstruct-configlivephp)
+  - [Step 3a — Reconstruct config.test.php](#step-3a--reconstruct-configtestphp)
+  - [Step 4 — Deploy files](#step-4--deploy-files)
+  - [Step 5 — Restore schema](#step-5--restore-schema)
+  - [Step 6 — Restore data](#step-6--restore-data)
+  - [Step 7 — Verify admin login](#step-7--verify-admin-login)
+  - [Step 8 — Verify](#step-8--verify)
+  - [Step 9 — Re-provision Simply.com cron jobs](#step-9--re-provision-simplycom-cron-jobs)
+- [GitHub Secrets and Variables — re-provisioning checklist](#github-secrets-and-variables--re-provisioning-checklist)
+  - [Secrets (Settings → Secrets and variables → Actions → Secrets)](#secrets-settings--secrets-and-variables--actions--secrets)
+  - [Variables (Settings → Secrets and variables → Actions → Variables)](#variables-settings--secrets-and-variables--actions--variables)
+- [DR Drill procedure (test environment)](#dr-drill-procedure-test-environment)
+  - [Prerequisites](#prerequisites)
+  - [Drill steps](#drill-steps)
+  - [Acceptance criteria](#acceptance-criteria)
+
+---
+
 ## Backup tiers
 
 | Tier | Location | Retention | Trigger |
