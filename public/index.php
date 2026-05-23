@@ -228,9 +228,9 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                     ?>
                         <div class="hf-row<?= $isSelf ? ' self' : '' ?>">
                             <div class="<?= $rankCls ?>"><?= $i + 1 ?></div>
-                            <div class="hf-avatar"><?= escape(userInitial($entry)) ?></div>
+                            <div class="hf-avatar"><?= userInitial($entry) ?></div>
                             <div class="hf-who">
-                                <div class="hf-who-name"><?= escape(displayUserName($entry)) ?></div>
+                                <div class="hf-who-name"><?= displayUserName($entry) ?></div>
                                 <div class="hf-who-sub"><?= $entry['bets_count'] ?> <?= t('bets') ?></div>
                             </div>
                             <div class="hf-stars"><?= $entry['stars'] > 0 ? '★'.$entry['stars'] : '' ?></div>

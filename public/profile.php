@@ -17,12 +17,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'update_profile') {
         $displayName = sanitizeString($_POST['display_name'] ?? '');
         $newLang     = in_array($_POST['language'] ?? '', ['da', 'en']) ? $_POST['language'] : 'da';
-        $stmt = $db->prepare("UPDATE users SET display_name = ?, language = ? WHERE id = ?");
-        $stmt->execute([$displayName, $newLang, $currentUser['id']]);
-        setLang($newLang);
-        $success = t('profile_updated');
-        $currentUser['display_name'] = $displayName;
-        $currentUser['language']     = $newLang;
+        if (mb_strlen($displayName) > 100) {
+            $error = t('display_name_too_long');
+        } else {
+            $stmt = $db->prepare("UPDATE users SET display_name = ? WHERE id = ?");
+            $stmt->execute([$displayName, $currentUser['id']]);
+            setLang($newLang);
+            $_SESSION['flash_success'] = t('profile_updated');
+            header('Location: profile.php');
+            exit;
+        }
 
     } elseif ($action === 'change_password') {
         $currentPw = $_POST['current_password'] ?? '';
@@ -44,7 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $stmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
                 $stmt->execute([hashPassword($newPw), $currentUser['id']]);
-                $success = t('password_changed');
+                $_SESSION['flash_success'] = t('password_changed');
+                header('Location: profile.php');
+                exit;
             }
         }
 
@@ -82,9 +88,9 @@ include __DIR__ . '/includes/header.php';
 
     <!-- Profile head -->
     <div class="hf-profile-head">
-        <div class="hf-profile-avatar"><?= escape(userInitial($currentUser)) ?></div>
+        <div class="hf-profile-avatar"><?= userInitial($currentUser) ?></div>
         <div class="hf-profile-id">
-            <div class="hf-profile-name"><?= escape(displayUserName($currentUser)) ?></div>
+            <div class="hf-profile-name"><?= displayUserName($currentUser) ?></div>
             <div class="hf-profile-sub"><?= escape($currentUser['email']) ?></div>
         </div>
     </div>

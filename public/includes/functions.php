@@ -8,7 +8,7 @@
 // INPUT VALIDERING
 // ============================================
 function sanitizeString($str) {
-    return trim(htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'));
+    return trim(strip_tags($str ?? ''));
 }
 
 function sanitizeEmail($email) {
@@ -144,14 +144,6 @@ function setFont($font) {
     }
 }
 
-
-function getPalette() {
-    return $_SESSION['palette'] ?? 'broadcast';
-}
-
-function setPalette($palette) {
-    $_SESSION['palette'] = in_array($palette, ['broadcast', 'clubhouse']) ? $palette : 'broadcast';
-}
 
 // ============================================
 // HJÆLPEFUNKTIONER - BETTING & SETTINGS

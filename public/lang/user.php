@@ -121,6 +121,7 @@ return [
 
         // Profile
         'profile_updated'           => 'Profil opdateret!',
+        'display_name_too_long'     => 'Visningsnavn må højst være 100 tegn.',
         'change_password_title'     => 'Skift Adgangskode',
         'current_password'          => 'Nuværende adgangskode',
         'password_changed'          => 'Adgangskode ændret!',
@@ -313,6 +314,7 @@ return [
 
         // Profile
         'profile_updated'           => 'Profile updated!',
+        'display_name_too_long'     => 'Display name must be 100 characters or fewer.',
         'change_password_title'     => 'Change Password',
         'current_password'          => 'Current password',
         'password_changed'          => 'Password changed!',

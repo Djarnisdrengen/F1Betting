@@ -48,7 +48,7 @@ include __DIR__ . '/includes/header.php';
         <div class="hf-stat" style="align-items:center;text-align:center;background:<?= $podiumBg[$i] ?>;border-color:<?= $podiumBorder[$i] ?>;">
             <div class="hf-rank r<?= $i+1 ?>" style="width:40px;height:40px;margin-bottom:8px;font-size:16px;"><?= $i+1 ?></div>
             <div class="hf-stat-n" style="font-size:36px;"><?= $entry['points'] ?>p</div>
-            <div style="font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--text-primary);margin-top:6px;"><?= escape(displayUserName($entry)) ?></div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--text-primary);margin-top:6px;"><?= displayUserName($entry) ?></div>
             <?php if ($entry['stars'] > 0): ?>
             <div style="color:var(--gold);font-family:var(--font-display);font-size:12px;font-weight:700;margin-top:2px;">★<?= $entry['stars'] ?></div>
             <?php endif; ?>
@@ -108,9 +108,9 @@ include __DIR__ . '/includes/header.php';
                 ?>
                 <div class="hf-row<?= $isSelf ? ' self' : '' ?>">
                     <div class="<?= $rankCls ?>"><?= $i+1 ?></div>
-                    <div class="hf-avatar"><?= escape(userInitial($entry)) ?></div>
+                    <div class="hf-avatar"><?= userInitial($entry) ?></div>
                     <div class="hf-who">
-                        <div class="hf-who-name"><?= escape(displayUserName($entry)) ?></div>
+                        <div class="hf-who-name"><?= displayUserName($entry) ?></div>
                         <div class="hf-who-sub"><?= $entry['bets_count'] ?> <?= t('bets') ?></div>
                     </div>
                     <div class="hf-stars"><?= $entry['stars'] > 0 ? '<span class="star">★'.$entry['stars'].'</span>' : '' ?></div>
