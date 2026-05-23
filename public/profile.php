@@ -6,8 +6,9 @@ requireLogin();
 
 $currentUser = getCurrentUser();
 $db = getDB();
-$success = '';
-$error = '';
+$success = $_SESSION['flash_success'] ?? '';
+$error   = '';
+unset($_SESSION['flash_success']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
@@ -46,6 +47,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = t('password_changed');
             }
         }
+
+    } elseif ($action === 'update_preferences') {
+        $newTheme = in_array($_POST['pref_theme'] ?? '', ['dark', 'light'])       ? $_POST['pref_theme'] : 'dark';
+        $newFont  = in_array($_POST['pref_font']  ?? '', ['system', 'editorial']) ? $_POST['pref_font']  : 'system';
+        setTheme($newTheme);
+        setFont($newFont);
+        $_SESSION['flash_success'] = t('preferences_updated');
+        header('Location: profile.php');
+        exit;
     }
 }
 
@@ -162,6 +172,34 @@ include __DIR__ . '/includes/header.php';
                         </div>
                         <button type="submit" class="btn btn-secondary" style="width:100%;">
                             <i class="fas fa-key"></i> <?= t('change_password_title') ?>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preferences -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 style="margin-bottom:16px;"><i class="fas fa-sliders-h text-accent"></i> <?= t('preferences') ?></h3>
+                    <form method="POST">
+                        <?= csrfField() ?>
+                        <input type="hidden" name="action" value="update_preferences">
+                        <div class="form-group">
+                            <label class="form-label"><?= t('theme') ?></label>
+                            <select name="pref_theme" class="form-input">
+                                <option value="dark"  <?= getTheme() === 'dark'  ? 'selected' : '' ?>><?= t('theme_dark') ?></option>
+                                <option value="light" <?= getTheme() === 'light' ? 'selected' : '' ?>><?= t('theme_light') ?></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><?= t('font_label') ?></label>
+                            <select name="pref_font" class="form-input">
+                                <option value="system"    <?= getFont() === 'system'    ? 'selected' : '' ?>><?= t('font_system') ?></option>
+                                <option value="editorial" <?= getFont() === 'editorial' ? 'selected' : '' ?>><?= t('font_editorial') ?></option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">
+                            <i class="fas fa-save"></i> <?= t('save') ?>
                         </button>
                     </form>
                 </div>

@@ -40,9 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $anonTheme = $_SESSION['theme']      ?? $_COOKIE['f1_theme'] ?? 'dark';
             $anonFont  = $_SESSION['font_stack'] ?? $_COOKIE['f1_font']  ?? 'system';
             $_SESSION['user_id'] = $user['id'];
-            $_SESSION['lang']    = in_array($user['language'] ?? '', ['da', 'en']) ? $user['language'] : 'da';
             session_regenerate_id(true);
             $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
+            setLang($user['language']    ?? 'da');
             setTheme($user['theme']      ?? $anonTheme);
             setFont($user['font_stack']  ?? $anonFont);
             header("Location: index.php");

@@ -127,6 +127,13 @@ return [
         'current_password_wrong'    => 'Nuværende adgangskode er forkert',
         'betting_history'           => 'Din Betting Historik',
         'no_bets_yet'               => 'Du har ikke placeret nogen bets endnu.',
+        'preferences'               => 'Præferencer',
+        'preferences_updated'       => 'Indstillinger gemt!',
+        'theme_dark'                => 'Mørk',
+        'theme_light'               => 'Lys',
+        'font_label'                => 'Skrifttype',
+        'font_system'               => 'System',
+        'font_editorial'            => 'Editorial',
 
         // Forgot / reset password
         'forgot_password_title' => 'Glemt adgangskode',
@@ -312,6 +319,13 @@ return [
         'current_password_wrong'    => 'Current password is incorrect',
         'betting_history'           => 'Your Betting History',
         'no_bets_yet'               => 'You have not placed any bets yet.',
+        'preferences'               => 'Preferences',
+        'preferences_updated'       => 'Preferences saved!',
+        'theme_dark'                => 'Dark',
+        'theme_light'               => 'Light',
+        'font_label'                => 'Font',
+        'font_system'               => 'System',
+        'font_editorial'            => 'Editorial',
 
         // Forgot / reset password
         'forgot_password_title' => 'Forgot Password',

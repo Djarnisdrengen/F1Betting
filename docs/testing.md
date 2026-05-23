@@ -15,6 +15,7 @@
   - [06-emails.spec.js](#06-emailsspecjs)
   - [07-cron.spec.js](#07-cronspecjs)
   - [08-preferences.spec.js](#08-preferencesspecjs)
+  - [09-profile-preferences.spec.js](#09-profile-preferencesspecjs)
   - [admin/10-content.spec.js](#admin10-contentspecjs)
   - [admin/11-invites.spec.js](#admin11-invitesspecjs)
   - [admin/12-users.spec.js](#admin12-usersspecjs)
@@ -309,6 +310,29 @@ Test env only. Covers the full preference lifecycle: new-visitor defaults (AC1),
 | AC11 — theme icon current state | Dark → `fa-moon`; light → `fa-sun` in theme toggle |
 
 **Test-seed action used:** `get_prefs` — returns `{theme, font_stack, language}` from the DB for a given email. Used to assert server-side state without re-logging in.
+
+---
+
+### `09-profile-preferences.spec.js`
+
+Test env only. Covers the Profile Page Preferences Management feature: bottom nav hidden on profile page, Preferences card visible and pre-populated, saving theme+font via form updates body class/cookies/DB immediately, and full regression coverage confirming the bottom nav remains functional on all other pages.
+
+`beforeAll` (serial group) triggers the global seed to reset Alice to NULL prefs before the state-dependent tests.
+
+| Test | Asserts |
+|---|---|
+| PP1 — bottom nav hidden on profile | `.hf-bottom` not attached on `/profile.php` (authenticated) |
+| PP2 — preferences card visible | Heading matches `/Preferences\|Præferencer/`; `pref_theme` and `pref_font` selects visible |
+| PP3 — save light+editorial | Body class `light font-editorial`; flash message visible; selects show updated values |
+| PP4 — DB updated | `get_prefs(alice)` → `theme='light'`, `font_stack='editorial'` |
+| PP5 — cookies updated | `f1_theme=light`, `f1_font=editorial` after save |
+| PP6 — survives re-login | Fresh login as Alice → body class still `light` |
+| PP7 — bottom nav on / | `.hf-bottom` visible on `/` (regression) |
+| PP8 — bottom nav on races | `.hf-bottom` visible on `/races.php` (regression) |
+| PP9 — theme toggle on / | `?toggle_theme=1` changes body class on non-profile page (regression) |
+| PP10 — unauthenticated visitor | `.hf-bottom` visible on `/`; contains login link |
+
+**Test-seed action used:** `get_prefs` (same as `08-preferences.spec.js`).
 
 ```
 GET /tools/test-seed.php?token=...&action=get_prefs&email=alice@test.local

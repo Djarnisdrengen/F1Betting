@@ -66,10 +66,13 @@ $fontStack = getFont();
 
 // AC1: write preference cookies on first visit so device storage is always populated
 if (!isset($_COOKIE['f1_theme'])) {
-    setcookie('f1_theme', $theme, ['expires' => time() + 31536000, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
+    setcookie('f1_theme', $theme,     ['expires' => time() + 31536000, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
 }
 if (!isset($_COOKIE['f1_font'])) {
-    setcookie('f1_font', $fontStack, ['expires' => time() + 31536000, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
+    setcookie('f1_font',  $fontStack, ['expires' => time() + 31536000, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
+}
+if (!isset($_COOKIE['f1_lang'])) {
+    setcookie('f1_lang',  $lang,      ['expires' => time() + 31536000, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
 }
 
 $currentUser = getCurrentUser();

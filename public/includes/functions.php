@@ -63,12 +63,19 @@ function logToFile($file, $message) {
 // SPROG FUNKTIONER
 // ============================================
 function getLang() {
-    return $_SESSION['lang'] ?? 'da';
+    return $_SESSION['lang'] ?? $_COOKIE['f1_lang'] ?? 'da';
 }
 
 function setLang($lang) {
     $valid = in_array($lang, ['da', 'en']) ? $lang : 'da';
     $_SESSION['lang'] = $valid;
+    setcookie('f1_lang', $valid, [
+        'expires'  => time() + 31536000,
+        'path'     => '/',
+        'secure'   => true,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     if (!empty($_SESSION['user_id'])) {
         getDB()->prepare("UPDATE users SET language = ? WHERE id = ?")
                ->execute([$valid, $_SESSION['user_id']]);

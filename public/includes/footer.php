@@ -1,6 +1,6 @@
     </main>
 
-    <?php if ($currentPage !== 'admin'): ?>
+    <?php if (!in_array($currentPage, ['admin', 'profile'])): ?>
     <?php include __DIR__ . '/bottom_bar.php'; ?>
     <?php endif; ?>
 
