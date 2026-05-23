@@ -13,12 +13,10 @@ $csp_policy =
     "script-src 'self' 'nonce-$nonce' " .
         "'sha256-g7fzz0TV6GRE7YO5Psf4wohzOVdQHxCLJMkJ1eUqZIk=' " .
         "'sha256-5ofhTBu470bVNSfmSODufleilOm4vGBr+Ysw7pxWXsQ=' " .
-        "'sha256-q9FEvsEcv32ce7lbHps7PEYb4/B1N/0+rYZYTTdgF0U=' " .
-        "https://www.googletagmanager.com " .
-        "https://www.google-analytics.com; " .
+        "'sha256-q9FEvsEcv32ce7lbHps7PEYb4/B1N/0+rYZYTTdgF0U='; " .
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " .
-    "img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com; " .
-    "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; " .
+    "img-src 'self' data:; " .
+    "connect-src 'self'; " .
     "font-src 'self' https://fonts.gstatic.com; " .
     "report-uri /csp-report.php";
 
@@ -91,19 +89,6 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             <link rel="apple-touch-icon" href="assets/favicon.png">
             <link rel="stylesheet" href="assets/css/style.css?v=<?= filemtime(__DIR__ . '/../assets/css/style.css') ?>">
             <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-            
-    <?php if (defined('APP_ENV') && APP_ENV === 'live'): ?>
-            <!-- Google tag (gtag.js) -->
-            <script  nonce="<?php echo $nonce; ?>" async src="https://www.googletagmanager.com/gtag/js?id=G-BFRVL7RX1N"></script>
-            <script  nonce="<?php echo $nonce; ?>">
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-
-                gtag('config', 'G-BFRVL7RX1N');
-
-            </script>
-    <?php endif; ?>
 </head>
 <body class="<?= escape($theme) ?> font-<?= escape($fontStack) ?>">
 <header class="hf-top">
