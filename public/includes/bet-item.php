@@ -9,9 +9,6 @@ $_bi_mine = $currentUser && $bet['user_id'] === $currentUser['id'];
         <div style="flex: 1; min-width: 0;">
             <strong class="flex items-center gap-1">
                 <?= displayUserName($bet) ?>
-                <?php if ($_bi_mine): ?>
-                    <span class="badge" style="background: var(--f1-red); color: white; font-size: 0.7rem; padding: 2px 6px;"><?= t('you_badge') ?></span>
-                <?php endif; ?>
                 <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
             </strong>
             <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>

@@ -268,12 +268,26 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                                 <div class="hf-racename"><?= escape($race['name']) ?></div>
                                 <div class="hf-racemeta"><?= escape($race['location']) ?> · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></div>
                             </div>
-                            <?php if ($status['status'] === 'open' && $currentUser && !$userBet && $currentUser['in_competition']): ?>
-                                <a href="bet.php?race=<?= $race['id'] ?>&return=index" class="hf-badge open"><?= t('place_bet') ?> →</a>
-                            <?php elseif ($status['status'] === 'open' && $currentUser && $userBet && $currentUser['in_competition']): ?>
-                                <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="hf-badge open"><?= t('edit') ?> →</a>
-                            <?php else: ?>
-                                <span class="hf-badge <?= $badgeMap[$status['class']] ?? 'done' ?>"><?= $status['label'] ?></span>
+                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                                <?php if ($status['status'] === 'open' && $currentUser && !$userBet && $currentUser['in_competition']): ?>
+                                    <a href="bet.php?race=<?= $race['id'] ?>&return=index" class="hf-badge open"><?= t('place_bet') ?> →</a>
+                                <?php elseif ($status['status'] === 'open' && $currentUser && $userBet && $currentUser['in_competition']): ?>
+                                    <a href="edit_bet.php?id=<?= $userBet['id'] ?>" class="hf-badge open"><?= t('edit') ?> →</a>
+                                <?php else: ?>
+                                    <span class="hf-badge <?= $badgeMap[$status['class']] ?? 'done' ?>"><?= $status['label'] ?></span>
+                                <?php endif; ?>
+                                <?php if ($status['status'] === 'open' && count($raceBets) > 0): ?>
+                                    <button class="btn btn-ghost btn-sm toggle-bets" data-target="race-bets-<?= $race['id'] ?>">
+                                        <?= t('all_bets') ?> <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ($status['status'] === 'open' && count($raceBets) > 0): ?>
+                                <div id="race-bets-<?= $race['id'] ?>" class="bets-section hidden" style="grid-column:1/-1;margin-top:4px;padding-top:8px;">
+                                    <?php foreach ($raceBets as $bet): ?>
+                                        <?php include __DIR__ . '/includes/bet-item.php'; ?>
+                                    <?php endforeach; ?>
+                                </div>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>

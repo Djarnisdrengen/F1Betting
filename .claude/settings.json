@@ -1,6 +1,8 @@
 {
   "permissions": {
     "allow": [
+      "Edit",
+      "Write",
       "Bash(grep -n 'nonce\\\\|$nonce' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/functions.php)",
       "Bash(grep -rn '$nonce' /home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/functions.php)",
       "Bash(php -l public/includes/admin/races.php)",
@@ -151,7 +153,10 @@
       "Bash(php -l /home/thomas-helveg-povlsen/github/F1Betting/public/bet.php)",
       "Bash(find /home/thomas-helveg-povlsen -maxdepth 3 -name \"*.md\" | grep -i \"setup\\\\|ubuntu\\\\|install\" 2>/dev/null | head -20)",
       "Read(//home/thomas-helveg-povlsen/**)",
-      "Bash(grep -n '^if \\($action ===' /home/thomas-helveg-povlsen/github/F1Betting/public/tools/test-seed.php)"
+      "Bash(grep -n '^if \\($action ===' /home/thomas-helveg-povlsen/github/F1Betting/public/tools/test-seed.php)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(php -l /home/thomas-helveg-povlsen/github/F1Betting/public/edit_bet.php)"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",

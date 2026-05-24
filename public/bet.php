@@ -45,9 +45,15 @@ if ($stmt->fetch()) {
 
 [$drivers, $driversById] = fetchDrivers($db);
 
-$stmt = $db->prepare("SELECT p1, p2, p3 FROM bets WHERE race_id = ?");
+$stmt = $db->prepare("
+    SELECT b.*, u.display_name, u.email
+    FROM bets b JOIN users u ON b.user_id = u.id
+    WHERE b.race_id = ?
+    ORDER BY b.placed_at DESC
+");
 $stmt->execute([$raceId]);
 $existingBets = $stmt->fetchAll();
+$betCount = count($existingBets);
 
 $error = '';
 $lang  = getLang();
@@ -70,15 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Build JS driver map (surname only, JSON-safe)
-$driversForJs = [];
-foreach ($driversById as $id => $d) {
-    $parts = explode(' ', $d['name'] ?? '');
-    $driversForJs[$id] = ['surname' => array_pop($parts)];
-}
-
 $raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
-$locAbbr      = mb_strtoupper(mb_substr($race['location'], 0, 3));
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -98,21 +96,10 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-<script nonce="<?= $nonce ?>">
-window.driversById = <?= json_encode($driversForJs) ?>;
-window.betPostBack = {
-    p1: <?= json_encode($_POST['p1'] ?? '') ?>,
-    p2: <?= json_encode($_POST['p2'] ?? '') ?>,
-    p3: <?= json_encode($_POST['p3'] ?? '') ?>
-};
-window.betL10n = { pickDriver: <?= json_encode(t('select_driver')) ?> };
-</script>
-
 <div class="hf-modal-overlay" data-link="closeBetModal" data-return="<?= escape($returnTo) ?>" role="presentation">
     <div class="hf-modal-card" role="dialog" aria-modal="true" aria-labelledby="bet-modal-title">
 
         <section class="hf-bet-header">
-            <div class="hf-bet-avatar"><?= escape($locAbbr) ?></div>
             <div class="hf-bet-meta">
                 <h2 id="bet-modal-title" class="hf-bet-title"><?= escape($race['name']) ?></h2>
                 <div class="hf-bet-submeta">
@@ -128,47 +115,58 @@ window.betL10n = { pickDriver: <?= json_encode(t('select_driver')) ?> };
             <a href="<?= escape($returnTo) ?>" class="hf-bet-close" aria-label="<?= t('close') ?>">✕</a>
         </section>
 
-        <section class="hf-bet-controls">
+        <?php if ($betCount > 0): ?>
+        <div class="hf-all-bets-panel">
+            <button type="button" class="hf-all-bets-toggle toggle-bets"
+                    data-target="hf-all-bets-list">
+                <i class="fas fa-eye"></i>
+                <?= t('all_bets') ?> (<?= $betCount ?>)
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div id="hf-all-bets-list" class="hf-all-bets-body hidden">
+                <?php foreach ($existingBets as $bet): ?>
+                    <?php include __DIR__ . '/includes/bet-item.php'; ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <form class="hf-bet-controls" method="POST" action="bet.php?race=<?= urlencode($raceId) ?>&return=<?= urlencode($returnParam) ?>">
+            <?= csrfField() ?>
+
             <?php if ($error): ?>
                 <div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> <?= escape($error) ?></div>
             <?php endif; ?>
 
-            <div class="hf-slots">
-                <?php foreach ([1 => [$pts['p1']], 2 => [$pts['p2']], 3 => [$pts['p3']]] as $pos => [$p]): ?>
-                <button class="hf-slot is-empty" data-link="activateSlot" data-pos="<?= $pos ?>" type="button">
+            <div class="hf-bet-selects">
+                <?php foreach ([1 => 'p1', 2 => 'p2', 3 => 'p3'] as $pos => $key): ?>
+                <div class="hf-bet-select-row">
                     <span class="hf-slot-badge pos-<?= $pos ?>">P<?= $pos ?></span>
-                    <span class="hf-slot-name"><?= t('select_driver') ?></span>
-                    <span class="hf-slot-pts"><?= $p ?> pts</span>
-                </button>
-                <?php endforeach; ?>
-            </div>
-
-            <div class="hf-driver-list">
-                <?php foreach ($drivers as $d): ?>
-                <button class="hf-driver-row" data-link="pickDriver" data-driver-id="<?= $d['id'] ?>" type="button">
-                    <span class="hf-driver-num">#<?= intval($d['number']) ?></span>
-                    <span class="hf-driver-name"><?= driverLastName($d) ?></span>
-                </button>
+                    <select name="<?= $key ?>" class="form-select hf-bet-select" required
+                            aria-label="P<?= $pos ?> — <?= $pts[$key] ?> pts">
+                        <option value=""><?= t('select_driver') ?></option>
+                        <?php foreach ($drivers as $d): ?>
+                        <option value="<?= escape($d['id']) ?>"
+                            <?= (($_POST[$key] ?? '') === $d['id']) ? 'selected' : '' ?>>
+                            <?= driverLastName($d) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <span class="hf-slot-pts"><?= $pts[$key] ?> pts</span>
+                </div>
                 <?php endforeach; ?>
             </div>
 
             <footer class="hf-bet-actions">
                 <a href="<?= escape($returnTo) ?>" class="hf-btn-ghost"><?= t('cancel') ?></a>
-                <button class="hf-btn-primary is-disabled" data-link="saveBet" aria-disabled="true" type="button">
+                <button type="submit" class="hf-btn-primary" id="save-btn" disabled>
                     <i class="fas fa-floppy-disk"></i> <?= t('save') ?>
                 </button>
             </footer>
-        </section>
+        </form>
 
     </div>
 </div>
-
-<form id="bet-form" method="POST" action="bet.php?race=<?= urlencode($raceId) ?>&return=<?= urlencode($returnParam) ?>" hidden>
-    <?= csrfField() ?>
-    <input type="hidden" name="p1" id="form-p1">
-    <input type="hidden" name="p2" id="form-p2">
-    <input type="hidden" name="p3" id="form-p3">
-</form>
 
 <script nonce="<?= $nonce ?>" src="assets/js/bet-modal.js"></script>
 
