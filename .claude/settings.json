@@ -161,13 +161,15 @@
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting log --oneline --all -- public/admin.php)",
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting show b9b3450:public/admin.php)",
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting diff)",
-      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add public/admin.php public/assets/css/style.css public/includes/admin/settings.php public/includes/functions.php public/index.php public/lang/admin.php public/lang/user.php public/leaderboard.php .claude/settings.json)"
+      "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add public/admin.php public/assets/css/style.css public/includes/admin/settings.php public/includes/functions.php public/index.php public/lang/admin.php public/lang/user.php public/leaderboard.php .claude/settings.json)",
+      "Bash(cp /home/thomas-helveg-povlsen/.claude/plans/feature-improved-profile-page-velvet-origami.md \"/home/thomas-helveg-povlsen/github/F1Betting/epics/intuitive profile preferecen management/plan.md\")"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",
       "/tmp",
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/docs/superpowers",
-      "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public"
+      "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public",
+      "/home/thomas-helveg-povlsen/github/F1Betting/epics/intuitive profile preferecen management"
     ]
   }
 }
