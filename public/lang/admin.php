@@ -86,6 +86,12 @@ return [
         'bet_size_section'          => 'Betting Størrelse',
         'bet_size_desc'             => 'Standardstørrelse for hver indsats.',
         'bet_size_label'            => 'Indsatsstørrelse',
+
+        // Leaderboard maintenance
+        'backfill_snapshots_section' => 'Rangordning Vedligehold',
+        'backfill_snapshots_desc'    => 'Gendan historiske rangordnings-snapshots for alle afsluttede løb. Kræves for at vis rangordningsændringer (▲/▼) på leaderboardet. Kan køres sikkert flere gange.',
+        'backfill_snapshots_btn'     => 'Gendan rangordnings-snapshots',
+        'backfill_snapshots_done'    => 'Rangordnings-snapshots gendannet for %d løb.',
     ],
     'en' => [
         // Tab labels
@@ -173,5 +179,11 @@ return [
         'bet_size_section'          => 'Bet Size',
         'bet_size_desc'             => 'Default size for each bet.',
         'bet_size_label'            => 'Bet Size',
+
+        // Leaderboard maintenance
+        'backfill_snapshots_section' => 'Leaderboard Maintenance',
+        'backfill_snapshots_desc'    => 'Backfill historical rank snapshots for all scored races. Required to show rank movement (▲/▼) on the leaderboard. Safe to run multiple times.',
+        'backfill_snapshots_btn'     => 'Backfill rank snapshots',
+        'backfill_snapshots_done'    => 'Rank snapshots backfilled for %d races.',
     ],
 ];

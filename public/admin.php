@@ -443,6 +443,48 @@ if (isset($_POST['resend_invite'])) {
     exit;
 }
 
+// ============ LEADERBOARD MAINTENANCE ============
+if (isset($_POST['backfill_snapshots'])) {
+    $scoredRaces = $db->query(
+        "SELECT id, race_date, race_time FROM races
+         WHERE result_p1 IS NOT NULL
+         ORDER BY race_date ASC, race_time ASC"
+    )->fetchAll();
+
+    $insert = $db->prepare(
+        "INSERT INTO leaderboard_snapshots (user_id, race_id, `rank`, points)
+         VALUES (?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE `rank` = VALUES(`rank`), points = VALUES(points)"
+    );
+
+    foreach ($scoredRaces as $race) {
+        $standings = $db->prepare(
+            "SELECT u.id AS user_id,
+                    COALESCE(SUM(sb.points), 0)     AS cum_points,
+                    COALESCE(SUM(sb.is_perfect), 0) AS cum_stars
+             FROM users u
+             LEFT JOIN (
+                 SELECT b.user_id, b.points, b.is_perfect
+                 FROM bets b
+                 JOIN races r ON b.race_id = r.id
+                 WHERE r.result_p1 IS NOT NULL
+                   AND (r.race_date < ? OR (r.race_date = ? AND r.race_time <= ?))
+             ) sb ON sb.user_id = u.id
+             WHERE u.in_competition = 1
+             GROUP BY u.id
+             ORDER BY cum_stars DESC, cum_points DESC"
+        );
+        $standings->execute([$race['race_date'], $race['race_date'], $race['race_time']]);
+        $rows = $standings->fetchAll();
+
+        foreach ($rows as $i => $row) {
+            $insert->execute([$row['user_id'], $race['id'], $i + 1, $row['cum_points']]);
+        }
+    }
+
+    $message = sprintf(t('backfill_snapshots_done'), count($scoredRaces));
+}
+
 // ============ SETTINGS ============
 if (isset($_POST['update_settings'])) {
     $appTitle = trim($_POST['app_title'] ?? '');

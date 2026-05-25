@@ -235,6 +235,19 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                             </div>
                             <div class="hf-stars"><?= $entry['stars'] > 0 ? '★'.$entry['stars'] : '' ?></div>
                             <div class="hf-pts"><?= $entry['points'] ?>p</div>
+                            <?php if ($entry['last_bet_points'] !== null): ?>
+                            <div class="hf-last-picks">
+                                <span class="hf-last-bet-label"><?= t('last_bet_label') ?></span>
+                                <span class="hf-last-bet-pts <?= $entry['last_bet_points'] > 0 ? 'has-pts' : 'zero-pts' ?>">+<?= (int)$entry['last_bet_points'] ?>p</span>
+                            </div>
+                            <?php endif; ?>
+                            <div class="hf-rank-delta"><?php
+                                $d = $entry['rank_delta'];
+                                if ($d === null)   echo '<span class="nc">—</span>';
+                                elseif ($d > 0)   echo '<span class="up">▲'.$d.'</span>';
+                                elseif ($d < 0)   echo '<span class="dn">▼'.abs($d).'</span>';
+                                else              echo '<span class="nc">—</span>';
+                            ?></div>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>

@@ -276,24 +276,52 @@ function getLeaderboard(PDO $db, ?int $limit = null): array {
         UNIQUE KEY uniq_user_race (user_id, race_id)
     ) DEFAULT CHARSET=utf8mb4");
 
-    $sql = "
-        SELECT u.*, COUNT(b.id) AS bets_count,
-            (SELECT snap.`rank`
-             FROM leaderboard_snapshots snap
-             JOIN races r2 ON snap.race_id = r2.id
-             WHERE snap.user_id = u.id
-             ORDER BY r2.race_date DESC, r2.race_time DESC
-             LIMIT 1 OFFSET 1) AS prev_rank
-        FROM users u
-        LEFT JOIN bets b ON u.id = b.user_id
-        WHERE u.in_competition = 1
-        GROUP BY u.id
-        ORDER BY u.stars DESC, u.points DESC
-    ";
-    if ($limit !== null) {
-        $sql .= ' LIMIT ' . $limit;
+    $latestScored = $db->query(
+        "SELECT id FROM races WHERE result_p1 IS NOT NULL
+         ORDER BY race_date DESC, race_time DESC LIMIT 1"
+    )->fetch();
+    $latestRaceId = $latestScored ? $latestScored['id'] : null;
+
+    if ($latestRaceId) {
+        $sql = "
+            SELECT u.*, COUNT(b.id) AS bets_count,
+                (SELECT snap.`rank`
+                 FROM leaderboard_snapshots snap
+                 JOIN races r2 ON snap.race_id = r2.id
+                 WHERE snap.user_id = u.id
+                 ORDER BY r2.race_date DESC, r2.race_time DESC
+                 LIMIT 1 OFFSET 1) AS prev_rank,
+                lb.points AS last_bet_points
+            FROM users u
+            LEFT JOIN bets b  ON b.user_id = u.id
+            LEFT JOIN bets lb ON lb.user_id = u.id AND lb.race_id = :latestRaceId
+            WHERE u.in_competition = 1
+            GROUP BY u.id, lb.points
+            ORDER BY u.stars DESC, u.points DESC
+        ";
+        if ($limit !== null) {
+            $sql .= ' LIMIT ' . $limit;
+        }
+        $stmt = $db->prepare($sql);
+        $stmt->execute(['latestRaceId' => $latestRaceId]);
+        $rows = $stmt->fetchAll();
+    } else {
+        $sql = "
+            SELECT u.*, COUNT(b.id) AS bets_count,
+                NULL AS prev_rank,
+                NULL AS last_bet_points
+            FROM users u
+            LEFT JOIN bets b ON b.user_id = u.id
+            WHERE u.in_competition = 1
+            GROUP BY u.id
+            ORDER BY u.stars DESC, u.points DESC
+        ";
+        if ($limit !== null) {
+            $sql .= ' LIMIT ' . $limit;
+        }
+        $rows = $db->query($sql)->fetchAll();
     }
-    $rows = $db->query($sql)->fetchAll();
+
     foreach ($rows as $i => &$row) {
         $prev = $row['prev_rank'];
         $row['rank_delta'] = ($prev !== null) ? (int)$prev - ($i + 1) : null;

@@ -2744,10 +2744,40 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-rank-delta {
     font-family: var(--font-display); font-size: 11px; font-weight: 700;
     min-width: 32px; text-align: right; flex-shrink: 0;
+    grid-column: 5; grid-row: 2;
 }
 .hf-rank-delta .up { color: var(--status-success); }
 .hf-rank-delta .dn { color: var(--f1-red); }
 .hf-rank-delta .nc { color: var(--text-muted); }
+
+.hf-last-picks {
+    grid-column: 1 / 5;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.hf-last-bet-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.hf-last-bet-pts {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.hf-last-bet-pts.has-pts {
+    background: rgba(16,185,129,0.12);
+    color: var(--status-success);
+}
+.hf-last-bet-pts.zero-pts {
+    background: var(--bg-hover);
+    color: var(--text-muted);
+}
 
 /* ── Font toggle Stack B — zero Google Fonts (AC-FONT-01) ────── */
 body.font-system {

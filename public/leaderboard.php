@@ -115,6 +115,12 @@ include __DIR__ . '/includes/header.php';
                     </div>
                     <div class="hf-stars"><?= $entry['stars'] > 0 ? '<span class="star">★'.$entry['stars'].'</span>' : '' ?></div>
                     <div class="hf-pts"><?= $entry['points'] ?>p</div>
+                    <?php if ($entry['last_bet_points'] !== null): ?>
+                    <div class="hf-last-picks">
+                        <span class="hf-last-bet-label"><?= t('last_bet_label') ?></span>
+                        <span class="hf-last-bet-pts <?= $entry['last_bet_points'] > 0 ? 'has-pts' : 'zero-pts' ?>">+<?= (int)$entry['last_bet_points'] ?>p</span>
+                    </div>
+                    <?php endif; ?>
                     <div class="hf-rank-delta"><?php
                         $d = $entry['rank_delta'];
                         if ($d === null)    echo '<span class="nc">—</span>';

@@ -92,3 +92,16 @@
         </form>
     </div>
 </div>
+
+<div class="card mt-3">
+    <div class="card-header"><h3><i class="fas fa-tools text-accent"></i> <?= t('backfill_snapshots_section') ?></h3></div>
+    <div class="card-body">
+        <p class="text-muted mb-2" style="font-size:0.875rem;"><?= t('backfill_snapshots_desc') ?></p>
+        <form method="POST">
+            <?= csrfField() ?>
+            <button type="submit" name="backfill_snapshots" class="btn btn-secondary">
+                <i class="fas fa-history"></i> <?= t('backfill_snapshots_btn') ?>
+            </button>
+        </form>
+    </div>
+</div>

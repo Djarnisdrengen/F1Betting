@@ -63,6 +63,7 @@ return [
         'your_position'         => 'DIN POSITION',
         'rank_delta_places'     => 'pladser siden sidste runde',
         'rank_no_change'        => 'Ingen ændring siden sidste runde',
+        'last_bet_label'        => 'Sidste bet:',
 
 
         // Betting status
@@ -257,6 +258,7 @@ return [
         'your_position'         => 'YOUR POSITION',
         'rank_delta_places'     => 'places since last race',
         'rank_no_change'        => 'No change since last race',
+        'last_bet_label'        => 'Last bet:',
 
         // Betting status
         'betting_open'          => 'Betting Open',
