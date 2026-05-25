@@ -92,8 +92,9 @@ test.describe("Protected pages", () => {
 
     test("profile page shows all section headings", async ({ page }) => {
         await page.goto("/profile.php");
-        await expect(page.locator("h3").filter({ hasText: /Edit Profile|Rediger Profil/ })).toBeVisible();
-        await expect(page.locator("h3").filter({ hasText: /Change Password|Skift Adgangskode/ })).toBeVisible();
+        await expect(page.locator('[data-testid="tab-profile-btn"]')).toBeVisible();
+        await expect(page.locator('[data-testid="tab-security-btn"]')).toBeVisible();
+        await expect(page.locator('[data-testid="tab-preferences-btn"]')).toBeVisible();
         await expect(page.locator("h3").filter({ hasText: /Betting History|Din Betting Historik/ })).toBeVisible();
     });
 

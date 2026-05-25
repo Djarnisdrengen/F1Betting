@@ -7,8 +7,8 @@ requireLogin();
 $currentUser = getCurrentUser();
 $db = getDB();
 $success = $_SESSION['flash_success'] ?? '';
-$error   = '';
-unset($_SESSION['flash_success']);
+$error   = $_SESSION['flash_error']   ?? '';
+unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
@@ -16,13 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'update_profile') {
         $displayName = sanitizeString($_POST['display_name'] ?? '');
-        $newLang     = in_array($_POST['language'] ?? '', ['da', 'en']) ? $_POST['language'] : 'da';
         if (mb_strlen($displayName) > 100) {
             $error = t('display_name_too_long');
         } else {
             $stmt = $db->prepare("UPDATE users SET display_name = ? WHERE id = ?");
             $stmt->execute([$displayName, $currentUser['id']]);
-            setLang($newLang);
             $_SESSION['flash_success'] = t('profile_updated');
             header('Location: profile.php');
             exit;
@@ -38,29 +36,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hash = $stmt->fetchColumn();
 
         if (!verifyPassword($currentPw, $hash)) {
-            $error = t('current_password_wrong');
+            $_SESSION['flash_error'] = t('current_password_wrong');
+        } elseif (strlen($newPw) < 6) {
+            $_SESSION['flash_error'] = t('passwords_min_6');
+        } elseif ($newPw !== $confirmPw) {
+            $_SESSION['flash_error'] = t('passwords_no_match');
+        } else {
+            $stmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt->execute([hashPassword($newPw), $currentUser['id']]);
+            $_SESSION['flash_success'] = t('password_changed');
         }
-        if (!$error) {
-            if (strlen($newPw) < 6) {
-                $error = t('passwords_min_6');
-            } elseif ($newPw !== $confirmPw) {
-                $error = t('passwords_no_match');
-            } else {
-                $stmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
-                $stmt->execute([hashPassword($newPw), $currentUser['id']]);
-                $_SESSION['flash_success'] = t('password_changed');
-                header('Location: profile.php');
-                exit;
-            }
-        }
+        header('Location: profile.php?tab=tab-security');
+        exit;
 
     } elseif ($action === 'update_preferences') {
         $newTheme = in_array($_POST['pref_theme'] ?? '', ['dark', 'light'])       ? $_POST['pref_theme'] : 'dark';
         $newFont  = in_array($_POST['pref_font']  ?? '', ['system', 'editorial']) ? $_POST['pref_font']  : 'system';
+        $newLang  = in_array($_POST['language']   ?? '', ['da', 'en'])            ? $_POST['language']   : 'da';
         setTheme($newTheme);
         setFont($newFont);
+        setLang($newLang);
         $_SESSION['flash_success'] = t('preferences_updated');
-        header('Location: profile.php');
+        header('Location: profile.php?tab=tab-preferences');
         exit;
     }
 }
@@ -96,7 +93,7 @@ include __DIR__ . '/includes/header.php';
     </div>
 
     <!-- Stats strip -->
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:24px;">
+    <div class="hf-profile-stats">
         <div class="hf-stat">
             <div class="hf-stat-n"><?= $currentUser['points'] ?></div>
             <div class="hf-stat-l"><?= t('points') ?></div>
@@ -125,92 +122,110 @@ include __DIR__ . '/includes/header.php';
     <!-- 2-col grid -->
     <div class="hf-profile-grid">
 
-        <!-- Left: forms -->
+        <!-- Left: tabbed forms -->
         <div class="hf-profile-forms">
+            <div class="hf-tabs" data-testid="profile-tabs">
 
-            <!-- Edit Profile -->
-            <div class="card">
-                <div class="card-body">
-                    <h3 style="margin-bottom:16px;"><?= t('edit_profile') ?></h3>
-                    <form method="POST">
-                        <?= csrfField() ?>
-                        <input type="hidden" name="action" value="update_profile">
-                        <div class="form-group">
-                            <label class="form-label"><?= t('email') ?></label>
-                            <input type="email" class="form-input" value="<?= escape($currentUser['email']) ?>" disabled style="opacity: 0.7;">
+                <nav class="hf-tab-nav">
+                    <button class="hf-tab-btn" data-target="tab-profile" data-testid="tab-profile-btn"><?= t('tab_profile') ?></button>
+                    <button class="hf-tab-btn" data-target="tab-security" data-testid="tab-security-btn"><?= t('tab_security') ?></button>
+                    <button class="hf-tab-btn" data-target="tab-preferences" data-testid="tab-preferences-btn"><?= t('tab_preferences') ?></button>
+                </nav>
+
+                <!-- Profile tab -->
+                <div class="hf-tab-panel" id="tab-profile" data-testid="tab-profile-panel" hidden>
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="POST">
+                                <?= csrfField() ?>
+                                <input type="hidden" name="action" value="update_profile">
+                                <div class="form-group">
+                                    <label class="form-label"><?= t('email') ?></label>
+                                    <input type="email" class="form-input" value="<?= escape($currentUser['email']) ?>" disabled style="opacity: 0.7;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><?= t('display_name') ?></label>
+                                    <input type="text" name="display_name" class="form-input" value="<?= escape($currentUser['display_name']) ?>" maxlength="100" data-testid="display-name-input">
+                                    <span class="hf-char-counter" data-testid="char-counter">0/100</span>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="width:100%;">
+                                    <i class="fas fa-save"></i> <?= t('save') ?>
+                                </button>
+                            </form>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label"><?= t('display_name') ?></label>
-                            <input type="text" name="display_name" class="form-input" value="<?= escape($currentUser['display_name']) ?>">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label"><?= t('language_label') ?></label>
-                            <select name="language" class="form-input">
-                                <option value="da" <?= ($currentUser['language'] ?? 'da') === 'da' ? 'selected' : '' ?>>🇩🇰 Dansk</option>
-                                <option value="en" <?= ($currentUser['language'] ?? 'da') === 'en' ? 'selected' : '' ?>>🇬🇧 English</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width:100%;">
-                            <i class="fas fa-save"></i> <?= t('save') ?>
-                        </button>
-                    </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Change Password -->
-            <div class="card">
-                <div class="card-body">
-                    <h3 style="margin-bottom:16px;"><i class="fas fa-lock text-accent"></i> <?= t('change_password_title') ?></h3>
-                    <form method="POST">
-                        <?= csrfField() ?>
-                        <input type="hidden" name="action" value="change_password">
-                        <div class="form-group">
-                            <label class="form-label"><?= t('current_password') ?></label>
-                            <input type="password" name="current_password" class="form-input" required autocomplete="current-password">
+                <!-- Security tab -->
+                <div class="hf-tab-panel" id="tab-security" data-testid="tab-security-panel" hidden>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 style="margin-bottom:16px;"><i class="fas fa-lock text-accent"></i> <?= t('change_password_title') ?></h3>
+                            <form method="POST">
+                                <?= csrfField() ?>
+                                <input type="hidden" name="action" value="change_password">
+                                <div class="form-group">
+                                    <label class="form-label"><?= t('current_password') ?></label>
+                                    <input type="password" name="current_password" class="form-input" required autocomplete="current-password">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><?= t('new_password') ?></label>
+                                    <input type="password" name="new_password" class="form-input" required autocomplete="new-password" minlength="6" data-testid="new-password-input">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><?= t('confirm_password') ?></label>
+                                    <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password" minlength="6" data-testid="confirm-password-input">
+                                    <span class="hf-pw-match" aria-live="polite" data-testid="pw-match-indicator"></span>
+                                </div>
+                                <button type="submit" class="btn btn-secondary" style="width:100%;">
+                                    <i class="fas fa-key"></i> <?= t('change_password_title') ?>
+                                </button>
+                            </form>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label"><?= t('new_password') ?></label>
-                            <input type="password" name="new_password" class="form-input" required autocomplete="new-password" minlength="6">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label"><?= t('confirm_password') ?></label>
-                            <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password" minlength="6">
-                        </div>
-                        <button type="submit" class="btn btn-secondary" style="width:100%;">
-                            <i class="fas fa-key"></i> <?= t('change_password_title') ?>
-                        </button>
-                    </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Preferences -->
-            <div class="card">
-                <div class="card-body">
-                    <h3 style="margin-bottom:16px;"><i class="fas fa-sliders-h text-accent"></i> <?= t('preferences') ?></h3>
-                    <form method="POST">
-                        <?= csrfField() ?>
-                        <input type="hidden" name="action" value="update_preferences">
-                        <div class="form-group">
-                            <label class="form-label"><?= t('theme') ?></label>
-                            <select name="pref_theme" class="form-input">
-                                <option value="dark"  <?= getTheme() === 'dark'  ? 'selected' : '' ?>><?= t('theme_dark') ?></option>
-                                <option value="light" <?= getTheme() === 'light' ? 'selected' : '' ?>><?= t('theme_light') ?></option>
-                            </select>
+                <!-- Preferences tab -->
+                <div class="hf-tab-panel" id="tab-preferences" data-testid="tab-preferences-panel" hidden>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 style="margin-bottom:16px;"><i class="fas fa-sliders-h text-accent"></i> <?= t('preferences') ?></h3>
+                            <form method="POST">
+                                <?= csrfField() ?>
+                                <input type="hidden" name="action" value="update_preferences">
+                                <div class="form-group">
+                                    <label class="form-label"><?= t('theme') ?></label>
+                                    <div class="hf-pref-toggle" role="group" aria-label="<?= t('theme') ?>">
+                                        <button type="button" class="hf-pref-btn<?= getTheme() === 'dark'  ? ' active' : '' ?>" data-target="pref_theme" data-value="dark"><?= t('theme_dark') ?></button>
+                                        <button type="button" class="hf-pref-btn<?= getTheme() === 'light' ? ' active' : '' ?>" data-target="pref_theme" data-value="light"><?= t('theme_light') ?></button>
+                                    </div>
+                                    <input type="hidden" name="pref_theme" id="pref_theme" value="<?= getTheme() ?>">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><?= t('font_label') ?></label>
+                                    <div class="hf-pref-toggle" role="group" aria-label="<?= t('font_label') ?>">
+                                        <button type="button" class="hf-pref-btn<?= getFont() === 'system'    ? ' active' : '' ?>" data-target="pref_font" data-value="system"><?= t('font_system') ?></button>
+                                        <button type="button" class="hf-pref-btn<?= getFont() === 'editorial' ? ' active' : '' ?>" data-target="pref_font" data-value="editorial"><?= t('font_editorial') ?></button>
+                                    </div>
+                                    <input type="hidden" name="pref_font" id="pref_font" value="<?= getFont() ?>">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label"><?= t('language_label') ?></label>
+                                    <div class="hf-pref-toggle" role="group" aria-label="<?= t('language_label') ?>">
+                                        <button type="button" class="hf-pref-btn<?= ($currentUser['language'] ?? 'da') === 'da' ? ' active' : '' ?>" data-target="language" data-value="da">🇩🇰 Dansk</button>
+                                        <button type="button" class="hf-pref-btn<?= ($currentUser['language'] ?? 'da') === 'en' ? ' active' : '' ?>" data-target="language" data-value="en">🇬🇧 English</button>
+                                    </div>
+                                    <input type="hidden" name="language" id="language" value="<?= escape($currentUser['language'] ?? 'da') ?>">
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="width:100%;">
+                                    <i class="fas fa-save"></i> <?= t('save') ?>
+                                </button>
+                            </form>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label"><?= t('font_label') ?></label>
-                            <select name="pref_font" class="form-input">
-                                <option value="system"    <?= getFont() === 'system'    ? 'selected' : '' ?>><?= t('font_system') ?></option>
-                                <option value="editorial" <?= getFont() === 'editorial' ? 'selected' : '' ?>><?= t('font_editorial') ?></option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width:100%;">
-                            <i class="fas fa-save"></i> <?= t('save') ?>
-                        </button>
-                    </form>
+                    </div>
                 </div>
-            </div>
 
+            </div>
         </div>
 
         <!-- Right: bet history -->

@@ -98,6 +98,7 @@ test.describe('Auth flows', () => {
         test('wrong current password shows error', async ({ page }) => {
             await loginAs(page, seedData.email, seedData.password);
             await page.goto('/profile.php');
+            await page.click('[data-testid="tab-security-btn"]');
             await page.fill('input[name="current_password"]', 'wrongpassword');
             await page.fill('input[name="new_password"]', 'NewPassword2026!');
             await page.fill('input[name="confirm_password"]', 'NewPassword2026!');
@@ -108,6 +109,7 @@ test.describe('Auth flows', () => {
         test('mismatched confirm password shows error', async ({ page }) => {
             await loginAs(page, seedData.email, seedData.password);
             await page.goto('/profile.php');
+            await page.click('[data-testid="tab-security-btn"]');
             await page.fill('input[name="current_password"]', seedData.password);
             await page.fill('input[name="new_password"]', 'NewPassword2026!');
             await page.fill('input[name="confirm_password"]', 'DifferentPassword2026!');
@@ -118,6 +120,7 @@ test.describe('Auth flows', () => {
         test('correct credentials change password successfully', async ({ page }) => {
             await loginAs(page, seedData.email, seedData.password);
             await page.goto('/profile.php');
+            await page.click('[data-testid="tab-security-btn"]');
             await page.fill('input[name="current_password"]', seedData.password);
             await page.fill('input[name="new_password"]', 'UpdatedPassword2026!');
             await page.fill('input[name="confirm_password"]', 'UpdatedPassword2026!');

@@ -237,3 +237,82 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ── Profile page tabs, counters & toggles ────────────────────────────────────
+(function () {
+    const tabs = document.querySelector('[data-testid="profile-tabs"]');
+    if (!tabs) return;
+
+    const buttons = Array.from(tabs.querySelectorAll('.hf-tab-btn'));
+    const panels  = Array.from(tabs.querySelectorAll('.hf-tab-panel'));
+
+    function activateTab(target) {
+        buttons.forEach(b => b.classList.toggle('active', b.dataset.target === target));
+        panels.forEach(p => {
+            if (p.id === target) {
+                p.removeAttribute('hidden');
+            } else {
+                p.setAttribute('hidden', '');
+            }
+        });
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', target);
+        history.replaceState(null, '', url);
+    }
+
+    // Init from URL or default to first tab
+    const initialTab = new URL(window.location.href).searchParams.get('tab') || buttons[0]?.dataset.target;
+    if (initialTab) activateTab(initialTab);
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => activateTab(btn.dataset.target));
+    });
+
+    // Character counter for display name
+    const nameInput   = document.querySelector('[data-testid="display-name-input"]');
+    const charCounter = document.querySelector('[data-testid="char-counter"]');
+    if (nameInput && charCounter) {
+        function updateCounter() {
+            const len = nameInput.value.length;
+            const max = parseInt(nameInput.getAttribute('maxlength') || '100', 10);
+            charCounter.textContent = len + '/' + max;
+            charCounter.classList.toggle('warn', len >= max - 10);
+        }
+        updateCounter();
+        nameInput.addEventListener('input', updateCounter);
+    }
+
+    // Password match indicator
+    const newPw     = document.querySelector('[data-testid="new-password-input"]');
+    const confirmPw = document.querySelector('[data-testid="confirm-password-input"]');
+    const matchSpan = document.querySelector('[data-testid="pw-match-indicator"]');
+    if (newPw && confirmPw && matchSpan) {
+        function updateMatch() {
+            if (!confirmPw.value) {
+                matchSpan.textContent = '';
+                matchSpan.className = 'hf-pw-match';
+                return;
+            }
+            const match = newPw.value === confirmPw.value;
+            const lang  = document.documentElement.lang === 'da';
+            matchSpan.textContent = match
+                ? '✓ ' + (lang ? 'Adgangskoderne matcher'       : 'Passwords match')
+                : '✗ ' + (lang ? 'Adgangskoderne matcher ikke'  : 'Passwords do not match');
+            matchSpan.className = 'hf-pw-match ' + (match ? 'ok' : 'err');
+        }
+        newPw.addEventListener('input', updateMatch);
+        confirmPw.addEventListener('input', updateMatch);
+    }
+
+    // Preference segmented toggles
+    tabs.querySelectorAll('.hf-pref-toggle').forEach(function (group) {
+        const hiddenInput = group.nextElementSibling;
+        group.querySelectorAll('.hf-pref-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                group.querySelectorAll('.hf-pref-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                if (hiddenInput) hiddenInput.value = btn.dataset.value;
+            });
+        });
+    });
+}());
+

@@ -218,16 +218,18 @@ Test env only. Serial. Seeds a race and in-competition user (`seed.bettingRace()
 
 Test env only. Serial. Seeds a dedicated user (`seed.e2eUser()`).
 
+Password tests click the Security tab before filling fields (tab panel is hidden by default). Language tests use the Preferences tab toggle; language is no longer a select in the Profile form. All password-change redirects land on `?tab=tab-security` so the correct tab is active after submit.
+
 | Test | Asserts |
 |---|---|
 | Empty bet history | No-bets card visible |
-| Wrong current password | Error alert |
-| Mismatched new passwords | Error alert |
-| Correct password change | Success alert |
+| Wrong current password | Security tab → error alert |
+| Mismatched new passwords | Security tab → error alert |
+| Correct password change | Security tab → success alert |
 | Login with new password | Logout link visible |
-| Language — switch to English | "Edit Profile" heading visible |
-| Language — survives re-login | Profile still in English after logout/login |
-| Language — switch back to Danish | "Rediger Profil" heading visible |
+| Language — switch to English | Preferences tab → English toggle → `html[lang]="en"` |
+| Language — survives re-login | After logout/login `html[lang]="en"` |
+| Language — switch back to Danish | Preferences tab → Danish toggle → `html[lang]="da"` |
 
 ---
 
@@ -315,15 +317,17 @@ Test env only. Covers the full preference lifecycle: new-visitor defaults (AC1),
 
 ### `09-profile-preferences.spec.js`
 
-Test env only. Covers the Profile Page Preferences Management feature: bottom nav hidden on profile page, Preferences card visible and pre-populated, saving theme+font via form updates body class/cookies/DB immediately, and full regression coverage confirming the bottom nav remains functional on all other pages.
+Test env only. Covers the Profile Page Preferences Management feature: bottom nav hidden on profile page, Preferences tab visible and pre-populated with toggle buttons, saving theme+font+language via form updates body class/cookies/DB immediately, and full regression coverage confirming the bottom nav remains functional on all other pages.
+
+Profile page uses a tabbed layout (Profile / Security / Preferences). Tests that interact with form fields first click the relevant tab button to reveal the hidden panel. Preference selects have been replaced with segmented toggle buttons backed by hidden inputs; tests click toggles and assert `#pref_theme` / `#pref_font` hidden input values post-redirect. Language is now saved via the Preferences tab (same form as theme+font), not the Profile tab. Saving preferences redirects to `?tab=tab-preferences`; saving on Security tab redirects to `?tab=tab-security`.
 
 `beforeAll` (serial group) triggers the global seed to reset Alice to NULL prefs before the state-dependent tests.
 
 | Test | Asserts |
 |---|---|
 | PP1 — bottom nav hidden on profile | `.hf-bottom` not attached on `/profile.php` (authenticated) |
-| PP2 — preferences card visible | Heading matches `/Preferences\|Præferencer/`; `pref_theme` and `pref_font` selects visible |
-| PP3 — save light+editorial | Body class `light font-editorial`; flash message visible; selects show updated values |
+| PP2 — preferences tab visible | Click Preferences tab → panel visible; theme and font toggle buttons visible |
+| PP3 — save light+editorial | Click Preferences tab → toggle light+editorial → body class `light font-editorial`; flash visible; `#pref_theme` / `#pref_font` hidden inputs show updated values |
 | PP4 — DB updated | `get_prefs(alice)` → `theme='light'`, `font_stack='editorial'` |
 | PP5 — cookies updated | `f1_theme=light`, `f1_font=editorial` after save |
 | PP6 — survives re-login | Fresh login as Alice → body class still `light` |
@@ -331,6 +335,11 @@ Test env only. Covers the Profile Page Preferences Management feature: bottom na
 | PP8 — bottom nav on races | `.hf-bottom` visible on `/races.php` (regression) |
 | PP9 — theme toggle on / | `?toggle_theme=1` changes body class on non-profile page (regression) |
 | PP10 — unauthenticated visitor | `.hf-bottom` visible on `/`; contains login link |
+| PP-NEW-1 — special chars in display name | Click Profile tab → fill name → stored and rendered without double-encoding |
+| PP-NEW-2 — PRG: no resubmit on reload | Click Profile tab → save → reload → no success flash |
+| PP-NEW-3 — tampered pref_theme rejected | Click Preferences tab → tamper `#pref_theme` hidden input → body class is `dark` or `light`, not `malicious` |
+| PP-NEW-4 — display name max-length | Click Profile tab → 101-char name → error alert, no success alert |
+| PP-NEW-5 — language via preferences toggle | Click Preferences tab → English toggle → `html[lang]="en"`; DB `language='en'` |
 
 **Test-seed action used:** `get_prefs` (same as `08-preferences.spec.js`).
 

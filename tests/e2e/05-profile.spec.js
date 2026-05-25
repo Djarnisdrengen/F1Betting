@@ -49,6 +49,7 @@ test.describe.serial("Profile", () => {
 
     test("change password — wrong current password shows error", async () => {
         await sharedPage.goto("/profile.php");
+        await sharedPage.click('[data-testid="tab-security-btn"]');
 
         await pwForm(sharedPage).locator('input[name="current_password"]').fill("wrong-password");
         await pwForm(sharedPage).locator('input[name="new_password"]').fill(NEW_PW);
@@ -60,6 +61,7 @@ test.describe.serial("Profile", () => {
 
     test("change password — mismatched new passwords shows error", async () => {
         await sharedPage.goto("/profile.php");
+        await sharedPage.click('[data-testid="tab-security-btn"]');
 
         await pwForm(sharedPage).locator('input[name="current_password"]').fill(INITIAL_PW);
         await pwForm(sharedPage).locator('input[name="new_password"]').fill(NEW_PW);
@@ -71,6 +73,7 @@ test.describe.serial("Profile", () => {
 
     test("change password — success with correct inputs", async () => {
         await sharedPage.goto("/profile.php");
+        await sharedPage.click('[data-testid="tab-security-btn"]');
 
         await pwForm(sharedPage).locator('input[name="current_password"]').fill(INITIAL_PW);
         await pwForm(sharedPage).locator('input[name="new_password"]').fill(NEW_PW);
@@ -96,11 +99,11 @@ test.describe.serial("Profile", () => {
 
     test("language — switch to English updates the UI immediately", async () => {
         await sharedPage.goto("/profile.php");
-        const profileForm = sharedPage.locator('form').filter({ has: sharedPage.locator('select[name="language"]') });
-        await profileForm.locator('select[name="language"]').selectOption('en');
-        await profileForm.locator('button[type="submit"]').click();
+        await sharedPage.click('[data-testid="tab-preferences-btn"]');
+        await sharedPage.click('.hf-pref-btn[data-value="en"]');
+        await sharedPage.locator('form:has(input[value="update_preferences"]) button[type="submit"]').click();
         await expect(sharedPage.locator(".alert-success")).toBeVisible();
-        await expect(sharedPage.locator("h3").filter({ hasText: "Edit Profile" })).toBeVisible();
+        await expect(sharedPage.locator("html")).toHaveAttribute("lang", "en");
     });
 
     test("language — preference survives re-login", async () => {
@@ -111,14 +114,15 @@ test.describe.serial("Profile", () => {
         await sharedPage.click('button[type="submit"]');
         await sharedPage.waitForURL(/index\.php/, { timeout: 5000 });
         await sharedPage.goto("/profile.php");
-        await expect(sharedPage.locator("h3").filter({ hasText: "Edit Profile" })).toBeVisible();
+        await expect(sharedPage.locator("html")).toHaveAttribute("lang", "en");
     });
 
     test("language — switch back to Danish", async () => {
-        const profileForm = sharedPage.locator('form').filter({ has: sharedPage.locator('select[name="language"]') });
-        await profileForm.locator('select[name="language"]').selectOption('da');
-        await profileForm.locator('button[type="submit"]').click();
+        await sharedPage.goto("/profile.php");
+        await sharedPage.click('[data-testid="tab-preferences-btn"]');
+        await sharedPage.click('.hf-pref-btn[data-value="da"]');
+        await sharedPage.locator('form:has(input[value="update_preferences"]) button[type="submit"]').click();
         await expect(sharedPage.locator(".alert-success")).toBeVisible();
-        await expect(sharedPage.locator("h3").filter({ hasText: "Rediger Profil" })).toBeVisible();
+        await expect(sharedPage.locator("html")).toHaveAttribute("lang", "da");
     });
 });

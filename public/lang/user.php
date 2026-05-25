@@ -136,6 +136,13 @@ return [
         'font_label'                => 'Skrifttype',
         'font_system'               => 'System',
         'font_editorial'            => 'Editorial',
+        'tab_profile'               => 'Profil',
+        'tab_security'              => 'Sikkerhed',
+        'tab_preferences'           => 'Præferencer',
+        'passwords_match'           => 'Adgangskoderne matcher',
+        'pw_strength_weak'          => 'Svag',
+        'pw_strength_medium'        => 'Middel',
+        'pw_strength_strong'        => 'Stærk',
 
         // Forgot / reset password
         'forgot_password_title' => 'Glemt adgangskode',
@@ -330,6 +337,13 @@ return [
         'font_label'                => 'Font',
         'font_system'               => 'System',
         'font_editorial'            => 'Editorial',
+        'tab_profile'               => 'Profile',
+        'tab_security'              => 'Security',
+        'tab_preferences'           => 'Preferences',
+        'passwords_match'           => 'Passwords match',
+        'pw_strength_weak'          => 'Weak',
+        'pw_strength_medium'        => 'Medium',
+        'pw_strength_strong'        => 'Strong',
 
         // Forgot / reset password
         'forgot_password_title' => 'Forgot Password',

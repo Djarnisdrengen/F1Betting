@@ -35,12 +35,13 @@ test.describe('Profile preferences — layout', () => {
         await expect(page.locator('.hf-bottom')).not.toBeAttached();
     });
 
-    // PP2 — preferences card visible
-    test('PP2 — preferences card visible with selects pre-populated', async ({ page }) => {
+    // PP2 — preferences tab visible with toggles
+    test('PP2 — preferences tab visible with toggles pre-populated', async ({ page }) => {
         await page.goto('/profile.php');
-        await expect(page.locator('h3').filter({ hasText: /Preferences|Præferencer/ })).toBeVisible();
-        await expect(page.locator('select[name="pref_theme"]')).toBeVisible();
-        await expect(page.locator('select[name="pref_font"]')).toBeVisible();
+        await page.click('[data-testid="tab-preferences-btn"]');
+        await expect(page.locator('[data-testid="tab-preferences-panel"]')).toBeVisible();
+        await expect(page.locator('.hf-pref-btn[data-target="pref_theme"]').first()).toBeVisible();
+        await expect(page.locator('.hf-pref-btn[data-target="pref_font"]').first()).toBeVisible();
     });
 });
 
@@ -54,21 +55,22 @@ test.describe.serial('Profile preferences — state', () => {
         await fetch(url.toString());
     });
 
-    // PP3 — submit light+editorial: body classes, flash message, selects updated
+    // PP3 — submit light+editorial: body classes, flash message, hidden inputs updated
     test('PP3 — saving light+editorial updates page immediately', async ({ browser }) => {
         const ctx  = await browser.newContext();
         const page = await ctx.newPage();
         await login(page, ALICE_EMAIL, PW);
         await page.goto('/profile.php');
-        await page.selectOption('select[name="pref_theme"]', 'light');
-        await page.selectOption('select[name="pref_font"]', 'editorial');
+        await page.click('[data-testid="tab-preferences-btn"]');
+        await page.click('.hf-pref-btn[data-value="light"]');
+        await page.click('.hf-pref-btn[data-value="editorial"]');
         await page.locator('form:has(input[value="update_preferences"]) button[type="submit"]').click();
         await page.waitForURL(/profile\.php/);
         await expect(page.locator('body')).toHaveClass(/\blight\b/);
         await expect(page.locator('body')).toHaveClass(/\bfont-editorial\b/);
         await expect(page.locator('.alert-success')).toBeVisible();
-        await expect(page.locator('select[name="pref_theme"]')).toHaveValue('light');
-        await expect(page.locator('select[name="pref_font"]')).toHaveValue('editorial');
+        await expect(page.locator('#pref_theme')).toHaveValue('light');
+        await expect(page.locator('#pref_font')).toHaveValue('editorial');
         await ctx.close();
     });
 
@@ -146,6 +148,7 @@ test.describe.serial('Profile preferences — defect regression', () => {
         const page = await ctx.newPage();
         await login(page, ALICE_EMAIL, PW);
         await page.goto('/profile.php');
+        await page.click('[data-testid="tab-profile-btn"]');
         await page.fill('input[name="display_name"]', "O'Brien & Co.");
         await page.locator('form:has(input[value="update_profile"]) button[type="submit"]').click();
         await page.waitForURL(/profile\.php/);
@@ -162,6 +165,7 @@ test.describe.serial('Profile preferences — defect regression', () => {
         const page = await ctx.newPage();
         await login(page, ALICE_EMAIL, PW);
         await page.goto('/profile.php');
+        await page.click('[data-testid="tab-profile-btn"]');
         await page.fill('input[name="display_name"]', 'Alice Refresh');
         await page.locator('form:has(input[value="update_profile"]) button[type="submit"]').click();
         await page.waitForURL(/profile\.php/);
@@ -176,12 +180,9 @@ test.describe.serial('Profile preferences — defect regression', () => {
         const page = await ctx.newPage();
         await login(page, ALICE_EMAIL, PW);
         await page.goto('/profile.php');
+        await page.click('[data-testid="tab-preferences-btn"]');
         await page.evaluate(() => {
-            const sel = document.querySelector('select[name="pref_theme"]');
-            const opt = document.createElement('option');
-            opt.value = 'malicious<script>alert(1)</script>';
-            opt.selected = true;
-            sel.appendChild(opt);
+            document.querySelector('#pref_theme').value = 'malicious<script>alert(1)</script>';
         });
         await page.locator('form:has(input[value="update_preferences"]) button[type="submit"]').click();
         await page.waitForURL(/profile\.php/);
@@ -197,21 +198,23 @@ test.describe.serial('Profile preferences — defect regression', () => {
         const page = await ctx.newPage();
         await login(page, ALICE_EMAIL, PW);
         await page.goto('/profile.php');
-        await page.fill('input[name="display_name"]', 'A'.repeat(101));
+        await page.click('[data-testid="tab-profile-btn"]');
+        await page.locator('[data-testid="display-name-input"]').evaluate((el) => { el.value = 'A'.repeat(101); });
         await page.locator('form:has(input[value="update_profile"]) button[type="submit"]').click();
         await expect(page.locator('.alert-error')).toBeVisible();
         await expect(page.locator('.alert-success')).not.toBeVisible();
         await ctx.close();
     });
 
-    // PP-NEW-5 — language change via profile form updates UI and DB
-    test('PP-NEW-5 — language change via profile form updates html[lang] and DB', async ({ browser }) => {
+    // PP-NEW-5 — language change via preferences toggles updates UI and DB
+    test('PP-NEW-5 — language toggle updates html[lang] and DB', async ({ browser }) => {
         const ctx  = await browser.newContext();
         const page = await ctx.newPage();
         await login(page, ALICE_EMAIL, PW);
         await page.goto('/profile.php');
-        await page.selectOption('select[name="language"]', 'en');
-        await page.locator('form:has(input[value="update_profile"]) button[type="submit"]').click();
+        await page.click('[data-testid="tab-preferences-btn"]');
+        await page.click('.hf-pref-btn[data-value="en"]');
+        await page.locator('form:has(input[value="update_preferences"]) button[type="submit"]').click();
         await page.waitForURL(/profile\.php/);
         await expect(page.locator('html')).toHaveAttribute('lang', 'en');
         const prefs = await getPrefs(ALICE_EMAIL);

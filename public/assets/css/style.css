@@ -2829,3 +2829,102 @@ body.font-system {
     color: var(--text-secondary);
     letter-spacing: 0.02em;
 }
+
+/* ── Profile stats strip ─────────────────────────────────── */
+.hf-profile-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+/* ── Profile tabs ────────────────────────────────────────── */
+.hf-tabs {
+    display: flex;
+    flex-direction: column;
+}
+.hf-tab-nav {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+.hf-tab-btn {
+    padding: 9px 20px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+.hf-tab-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--f1-red);
+}
+.hf-tab-btn.active {
+    background: var(--f1-red);
+    color: #fff;
+    border-color: var(--f1-red);
+}
+
+/* ── Preference segmented toggles ───────────────────────── */
+.hf-pref-toggle {
+    display: flex;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    width: 100%;
+}
+.hf-pref-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-right: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-align: center;
+}
+.hf-pref-btn:last-child {
+    border-right: none;
+}
+.hf-pref-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+.hf-pref-btn.active {
+    background: var(--f1-red);
+    color: #fff;
+}
+
+/* ── Display name character counter ─────────────────────── */
+.hf-char-counter {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+.hf-char-counter.warn {
+    color: var(--status-warning);
+}
+
+/* ── Password match indicator ───────────────────────────── */
+.hf-pw-match {
+    display: block;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    min-height: 1.2em;
+}
+.hf-pw-match.ok  { color: var(--status-success); }
+.hf-pw-match.err { color: var(--f1-red-light); }
