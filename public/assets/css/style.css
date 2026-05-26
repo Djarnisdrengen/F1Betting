@@ -1363,13 +1363,10 @@ body.light .logo-light { display: block; }
 /* Scrollable pill nav — works at every viewport width */
 .admin-nav {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 2px;
     margin-bottom: 20px;
-    scrollbar-width: none;
 }
-.admin-nav::-webkit-scrollbar { display: none; }
 
 .admin-nav-tab {
     display: flex;
@@ -1401,6 +1398,15 @@ body.light .logo-light { display: block; }
     font-size: 0.75rem;
     color: var(--text-muted);
     font-weight: 500;
+}
+.admin-user-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.admin-user-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+@media (min-width: 600px) {
+    .admin-user-card-body { flex-direction: row; align-items: center; justify-content: space-between; }
 }
 /* ============================================================
    Hi-fi design tokens · broadcast palette (dark + light)

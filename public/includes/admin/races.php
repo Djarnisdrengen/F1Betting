@@ -209,7 +209,6 @@
                     include __DIR__ . '/../qualifying-display.php';
                     ?>
                     <?php if ($race['result_p1']): ?></div><?php endif; ?>
-                    ?>
                 </div>
             </div>
             <?php endforeach; ?>

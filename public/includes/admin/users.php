@@ -1,7 +1,7 @@
 <?php foreach ($users as $user): ?>
     <div class="card mb-1">
-        <div class="card-body flex items-center justify-between">
-            <div class="flex items-center gap-2">
+        <div class="card-body admin-user-card-body">
+            <div class="admin-user-info">
                 <div class="user-avatar"><?= escape(strtoupper(substr($user['display_name'] ?: $user['email'], 0, 1))) ?></div>
                 <div>
                     <strong><?= escape($user['display_name'] ?: $user['email']) ?></strong>
@@ -16,7 +16,7 @@
                 <?php endif; ?>
                 <span class="text-accent"><?= intval($user['points']) ?> pts</span>
             </div>
-            <div class="flex gap-1">
+            <div class="flex gap-1" style="flex-wrap:wrap;">
                 <form method="POST" style="display:inline">
                     <?= csrfField() ?>
                     <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
