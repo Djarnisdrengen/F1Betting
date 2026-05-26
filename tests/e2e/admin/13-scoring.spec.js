@@ -14,7 +14,7 @@ const DISPLAY_NAMES = {
 
 // Find a race card on the admin races tab by the race's displayed name
 function adminRaceCard(page, name) {
-    return page.locator('.card').filter({ has: page.locator('strong', { hasText: name }) });
+    return page.locator('.hf-racefull').filter({ has: page.locator('.hf-racename', { hasText: name }) });
 }
 
 // Find a race card on the public races page by raceId
@@ -150,12 +150,12 @@ test.describe.serial('Scoring', () => {
 
         // Race B: result label gone, reset button gone
         const raceBCardAfter = adminRaceCard(page, RACE_B_NAME);
-        await expect(raceBCardAfter.locator('small.text-accent')).toHaveCount(0);
+        await expect(raceBCardAfter.locator('[data-testid="admin-race-result"]')).toHaveCount(0);
         await expect(raceBCardAfter.locator('button[name="reset_race_result"]')).toHaveCount(0);
 
         // Race A: result label still present (unchanged by the reset)
         const raceACard = adminRaceCard(page, RACE_A_NAME);
-        await expect(raceACard.locator('small.text-accent')).toBeVisible();
+        await expect(raceACard.locator('[data-testid="admin-race-result"]')).toBeVisible();
 
         // Leaderboard: each user's points rolled back to Race A baseline (ptsAfterReset)
         await page.goto('/leaderboard.php');

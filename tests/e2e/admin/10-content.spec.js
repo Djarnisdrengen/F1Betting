@@ -22,8 +22,8 @@ test.describe('Race management', () => {
 
         await expect(page.locator('.alert-success')).toBeVisible();
         const card = page
-            .locator('.card')
-            .filter({ has: page.locator('strong', { hasText: 'E2E Test Race' }) });
+            .locator('.hf-racefull')
+            .filter({ has: page.locator('.hf-racename', { hasText: 'E2E Test Race' }) });
         await expect(card).toBeVisible();
 
         await card.locator('button.btn-delete').click();

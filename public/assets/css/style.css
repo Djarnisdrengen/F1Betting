@@ -1360,59 +1360,47 @@ body.light .logo-light { display: block; }
     container-name: admin-vp;
 }
 
-/* Mobile dropdown — hidden on desktop, shown below 720px */
-.admin-dropdown { display: none; }
-.admin-dropdown summary {
-    list-style: none;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.75rem 1rem;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: var(--font-display);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 12px;
+/* Scrollable pill nav — works at every viewport width */
+.admin-nav {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    margin-bottom: 20px;
+    scrollbar-width: none;
 }
-.admin-dropdown summary::-webkit-details-marker { display: none; }
-.admin-dropdown summary .label { display: flex; align-items: center; gap: 0.6rem; }
-.admin-dropdown summary .label > i:first-child { color: var(--f1-red); }
-.admin-dropdown summary .chev { transition: transform 0.2s; color: var(--text-muted); }
-.admin-dropdown[open] summary .chev { transform: rotate(180deg); }
-.admin-dropdown .menu {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 4px;
-    margin-bottom: 16px;
-    display: flex; flex-direction: column;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-}
-.admin-dropdown .menu a {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.75rem 0.85rem;
-    color: var(--text-secondary);
+.admin-nav::-webkit-scrollbar { display: none; }
+
+.admin-nav-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
     text-decoration: none;
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 0.9rem;
-    border-radius: 6px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
 }
-.admin-dropdown .menu a .l { display: flex; align-items: center; gap: 0.65rem; }
-.admin-dropdown .menu a:hover { background: var(--bg-hover); color: var(--text-primary); }
-.admin-dropdown .menu a.active { background: var(--bg-hover); color: var(--f1-red); }
-
-@container admin-vp (max-width: 720px) {
-    .tabs { display: none; }
-    .admin-dropdown { display: block; }
+.admin-nav-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
 }
-
-/* Viewport-media-query fallback — fires even if the page hasn't been
-   wrapped in .admin-shell yet. Container query above wins where it applies. */
-@media (max-width: 720px) {
-    .tabs { display: none; }
-    .admin-dropdown { display: block; }
+.admin-nav-tab.active {
+    color: var(--f1-red);
+    background: var(--bg-hover);
+    border-color: var(--f1-red);
+}
+.admin-nav-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
 }
 /* ============================================================
    Hi-fi design tokens · broadcast palette (dark + light)

@@ -398,17 +398,16 @@ if (($_GET['action'] ?? '') === 'seed_reset_result') {
     $db->prepare("INSERT INTO users (id, email, password, display_name, in_competition, points, stars) VALUES (?, ?, ?, 'E2E Reset User', 1, 0, 0)")
        ->execute([$userId, $e2eResetUser, $hash]);
 
-    // Past race (2026-05-15) with pool 30 — will become the last completed race
-    // Results are set in the INSERT so result_p1 IS NOT NULL, matching how admin.php saves them
+    // Far-future date so this is always the last completed race regardless of live data.
+    // Results are set in the INSERT so result_p1 IS NOT NULL, matching how admin.php saves them.
     $raceId = seed_uuid();
-    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size, result_p1, result_p2, result_p3) VALUES (?, 'E2E Reset Race', 'Test', '2026-05-15', '14:00:00', 30, ?, ?, ?)")
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size, result_p1, result_p2, result_p3) VALUES (?, 'E2E Reset Race', 'Test', '2099-12-01', '14:00:00', 30, ?, ?, ?)")
        ->execute([$raceId, $hamId, $verId, $lecId]);
 
-    // Next day (2026-05-16) — acts as next race for pool rollover.
-    // Must sort before any real upcoming race so scoring targets this throwaway
-    // race instead of modifying the real next race's pool size.
+    // Day after E2E Reset Race — acts as next race for pool rollover.
+    // Both dates are in 2099 so no real race falls between them.
     $nextRaceId = seed_uuid();
-    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Next Race', 'Test', '2026-05-16', '14:00:00', 0)")
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size) VALUES (?, 'E2E Next Race', 'Test', '2099-12-02', '14:00:00', 0)")
        ->execute([$nextRaceId]);
 
     // Bet: p1=Hamilton (correct), p2=Leclerc (wrong pos), p3=Verstappen (wrong pos) → 35 pts, 0 stars, no perfect

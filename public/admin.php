@@ -348,7 +348,8 @@ if (isset($_POST['delete_bet'])) {
         }
     }
 
-    $redirectExtra = ($testMode && !empty($betMarkers ?? ''))
+    $betMarkers ??= '';
+    $redirectExtra = ($testMode && !empty($betMarkers))
         ? '&e2e_token=' . urlencode($_GET['e2e_token']) . '&e2e_markers=' . urlencode(base64_encode($betMarkers))
         : '';
     header("Location: admin.php?tab=bets&msg=" . urlencode($message) . $redirectExtra);
@@ -530,7 +531,9 @@ $tabCounts = [
 
 switch ($currentTab) {
     case 'races':
-        $races = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
+        $allRaces = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
+        $upcomingRaces  = array_values(array_filter($allRaces, fn($r) => $r['result_p1'] === null));
+        $completedRaces = array_values(array_reverse(array_filter($allRaces, fn($r) => $r['result_p1'] !== null)));
         $lastCompletedRaceId = $db->query("SELECT id FROM races WHERE result_p1 IS NOT NULL ORDER BY race_date DESC LIMIT 1")->fetchColumn() ?: null;
         break;
     case 'users':
@@ -567,40 +570,17 @@ include __DIR__ . '/includes/header.php';
 <!-- Tabs -->
 <div class="admin-shell">
 
-    <!-- Mobile dropdown -->
-    <details class="admin-dropdown">
-        <summary>
-            <span class="label">
-                <i class="fas fa-<?= $tabIcons[$currentTab] ?>"></i>
-                <?= t($currentTab) ?>
-            </span>
-            <i class="fas fa-chevron-down chev"></i>
-        </summary>
-        <div class="menu">
-            <?php foreach ($tabIcons as $key => $icon): ?>
-                <a href="?tab=<?= $key ?>" class="<?= $currentTab === $key ? 'active' : '' ?>">
-                    <span class="l">
-                        <i class="fas fa-<?= $icon ?>"></i> <?= t($key) ?>
-                    </span>
-                    <?php if (!empty($tabCounts[$key])): ?>
-                        <span class="tab-count">(<?= $tabCounts[$key] ?>)</span>
-                    <?php endif; ?>
-                </a>
-            <?php endforeach; ?>
-        </div>
-    </details>
-
-    <!-- Desktop tabs -->
-    <div class="tabs">
+    <nav class="admin-nav" aria-label="<?= t('admin') ?>">
         <?php foreach ($tabIcons as $key => $icon): ?>
-            <a href="?tab=<?= $key ?>" class="tab <?= $currentTab === $key ? 'active' : '' ?>">
-                <i class="fas fa-<?= $icon ?>"></i> <?= t($key) ?>
+            <a href="?tab=<?= $key ?>" class="admin-nav-tab <?= $currentTab === $key ? 'active' : '' ?>">
+                <i class="fas fa-<?= $icon ?>"></i>
+                <span><?= t($key) ?></span>
                 <?php if (!empty($tabCounts[$key])): ?>
-                    <span class="tab-count">(<?= $tabCounts[$key] ?>)</span>
+                    <span class="admin-nav-count"><?= $tabCounts[$key] ?></span>
                 <?php endif; ?>
             </a>
         <?php endforeach; ?>
-    </div>
+    </nav>
     
     
     <?php

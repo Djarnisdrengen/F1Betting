@@ -40,8 +40,8 @@ test.describe.serial('Reset race result', () => {
         await page.goto('/admin.php?tab=races');
 
         const raceCard = page
-            .locator('.card')
-            .filter({ has: page.locator('strong', { hasText: 'E2E Reset Race' }) });
+            .locator('.hf-racefull')
+            .filter({ has: page.locator('.hf-racename', { hasText: 'E2E Reset Race' }) });
         await expect(raceCard.locator('button[name="reset_race_result"]')).toBeVisible();
     });
 
@@ -49,17 +49,17 @@ test.describe.serial('Reset race result', () => {
         await page.goto('/admin.php?tab=races');
 
         const raceCard = page
-            .locator('.card')
-            .filter({ has: page.locator('strong', { hasText: 'E2E Reset Race' }) });
+            .locator('.hf-racefull')
+            .filter({ has: page.locator('.hf-racename', { hasText: 'E2E Reset Race' }) });
 
         await raceCard.locator('button[name="reset_race_result"]').click();
         await page.locator('.btn-user-delete-confirm').click();
         await page.waitForURL(/msg=/);
 
         const raceCardAfter = page
-            .locator('.card')
-            .filter({ has: page.locator('strong', { hasText: 'E2E Reset Race' }) });
-        await expect(raceCardAfter.locator('small.text-accent')).toHaveCount(0);
+            .locator('.hf-racefull')
+            .filter({ has: page.locator('.hf-racename', { hasText: 'E2E Reset Race' }) });
+        await expect(raceCardAfter.locator('[data-testid="admin-race-result"]')).toHaveCount(0);
         await expect(raceCardAfter.locator('button[name="reset_race_result"]')).toHaveCount(0);
 
         await page.goto('/admin.php?tab=users');
