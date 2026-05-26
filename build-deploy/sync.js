@@ -49,13 +49,15 @@ async function sync() {
         process.exit(1);
     }
 
-    const { dropped_old_tables: dropped, copied } = body;
+    const { dropped_old_tables: dropped, copied, passwords_reset } = body;
     const parts = [];
     if (dropped > 0) parts.push(`${dropped} old_ tables dropped`);
     parts.push(`${copied.drivers} drivers`);
     parts.push(`${copied.users} users`);
     parts.push(`${copied.races} races`);
     parts.push(`${copied.bets} bets copied`);
+    if (passwords_reset) parts.push("passwords reset to SYNC_TEST_PASSWORD");
+    else                 parts.push("⚠️  SYNC_TEST_PASSWORD not set — passwords unverifiable on test");
     console.log("✅ Sync complete:", parts.join(", "));
 }
 

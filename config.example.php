@@ -16,7 +16,8 @@ define('DB_HOST', 'myhost');
 define('DB_NAME', 'mydb');
 define('DB_USER', 'myuser');
 define('DB_PASS', 'secret');
-// define('LIVE_DB_NAME', 'mydb_live');             // test only — needed by sync-from-live.php
+// define('LIVE_DB_NAME',       'mydb_live');        // test only — needed by sync-from-live.php
+// define('SYNC_TEST_PASSWORD', 'change-me');        // test only — all user passwords reset to this after sync:live
 
 // ── SITE ──────────────────────────────────────────────────────────────
 // Always use www — non-www may 301-redirect and strip POST bodies.

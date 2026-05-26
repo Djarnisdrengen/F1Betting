@@ -94,6 +94,8 @@ try {
         }
     }
 
+    $db->commit();
+
     // Restore f1_admin — ensures the service account exists even if absent from live
     if ($adminRow) {
         $cols = array_keys($adminRow);
@@ -104,7 +106,19 @@ try {
            ->execute(array_values($adminRow));
     }
 
-    $db->commit();
+    // Reset all passwords to known test values. Live and test use different
+    // PASSWORD_PEPPER values, so all live hashes (including the preserved f1_admin
+    // row) are unverifiable on test — rehash everything with the test pepper.
+    $passwordsReset = false;
+    if (defined('SYNC_TEST_PASSWORD') && SYNC_TEST_PASSWORD !== '') {
+        $testHash = hashPassword(SYNC_TEST_PASSWORD);
+        $db->prepare("UPDATE users SET password = ?")->execute([$testHash]);
+        $passwordsReset = true;
+    }
+    // Always rehash f1_admin with its configured password so smoke tests and
+    // admin tooling keep working regardless of which env the hash came from.
+    $db->prepare("UPDATE users SET password = ? WHERE email = ?")
+       ->execute([hashPassword(F1_ADMIN_PASSWORD), F1_ADMIN_EMAIL]);
 
     // Clean up test-only rows in tables the sync intentionally skips.
     // invites are not synced (session-scoped), but e2e tests may leave
@@ -118,9 +132,10 @@ try {
     $db->prepare("DELETE FROM invites WHERE email IN ($placeholders)")->execute($testEmails);
 
     echo json_encode([
-        'ok' => true,
+        'ok'                 => true,
         'dropped_old_tables' => $droppedCount,
-        'copied' => $copied,
+        'copied'             => $copied,
+        'passwords_reset'    => $passwordsReset,
     ]);
 } catch (PDOException $e) {
     if ($db->inTransaction()) {
