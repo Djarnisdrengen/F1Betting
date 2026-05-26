@@ -92,25 +92,7 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <!-- Stats strip -->
-    <div class="hf-profile-stats">
-        <div class="hf-stat">
-            <div class="hf-stat-n"><?= $currentUser['points'] ?></div>
-            <div class="hf-stat-l"><?= t('points') ?></div>
-        </div>
-        <div class="hf-stat">
-            <div class="hf-stat-n"><?= $currentUser['stars'] ?></div>
-            <div class="hf-stat-l"><?= t('stars') ?></div>
-        </div>
-        <div class="hf-stat">
-            <div class="hf-stat-n"><?= $currentUser['role'] === 'admin' ? 'Admin' : t('user') ?></div>
-            <div class="hf-stat-l"><?= t('role') ?></div>
-        </div>
-        <div class="hf-stat">
-            <div class="hf-stat-n"><?= $currentUser['in_competition'] ? t('yes') : t('no') ?></div>
-            <div class="hf-stat-l"><?= t('in_competition') ?></div>
-        </div>
-    </div>
+    <?php $user = $currentUser; include 'partials/profile_stats.php'; ?>
 
     <?php if ($success): ?>
         <div class="alert alert-success mb-3"><?= escape($success) ?></div>
@@ -177,7 +159,7 @@ include __DIR__ . '/includes/header.php';
                                     <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password" minlength="6" data-testid="confirm-password-input">
                                     <span class="hf-pw-match" aria-live="polite" data-testid="pw-match-indicator"></span>
                                 </div>
-                                <button type="submit" class="btn btn-secondary" style="width:100%;">
+                                <button type="submit" class="btn btn-primary" style="width:100%;">
                                     <i class="fas fa-key"></i> <?= t('change_password_title') ?>
                                 </button>
                             </form>

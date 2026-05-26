@@ -6,8 +6,8 @@
 
     <footer class="hf-footer">
         <span class="name"><?= escape($settings['app_title']) ?></span>
-        &middot; <?= APP_VERSION ?>
         &middot; <?= escape($settings['app_year']) ?>
+        &middot; <?= APP_VERSION ?>
     </footer>
     
     <!--  APP.JS INCLUDE -->

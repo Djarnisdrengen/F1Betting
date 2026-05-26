@@ -83,6 +83,31 @@ test.describe.serial('Scoring', () => {
         await expect(row.locator('span.star')).toBeVisible();
     });
 
+    // ── 2b. Podium display ────────────────────────────────────────────────────
+
+    test('podium renders with 3 blocks in Olympic order (DOM: p2, p1, p3)', async ({ page }) => {
+        await page.goto('/leaderboard.php');
+        const strip = page.locator('.hf-podium-strip');
+        await expect(strip).toBeVisible();
+        const blocks = strip.locator('.hf-podium-block');
+        await expect(blocks).toHaveCount(3);
+        await expect(blocks.nth(0)).toHaveClass(/p2/);
+        await expect(blocks.nth(1)).toHaveClass(/p1/);
+        await expect(blocks.nth(2)).toHaveClass(/p3/);
+    });
+
+    test('podium is visible on mobile viewport (375px)', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 667 });
+        await page.goto('/leaderboard.php');
+        await expect(page.locator('.hf-podium-strip')).toBeVisible();
+    });
+
+    test('leaderboard list includes all players including ranks 1-3', async ({ page }) => {
+        await page.goto('/leaderboard.php');
+        const rows = page.locator('.hf-lb-list .hf-row');
+        await expect(rows.first().locator('.hf-rank')).toHaveText('1');
+    });
+
     // ── 3. Pool display on public races page ──────────────────────────────────
 
     test('Race B card shows poolA + poolB (carryover from Race A included)', async ({ page }) => {

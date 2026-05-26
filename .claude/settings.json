@@ -162,7 +162,11 @@
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting show b9b3450:public/admin.php)",
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting diff)",
       "Bash(git -C /home/thomas-helveg-povlsen/github/F1Betting add public/admin.php public/assets/css/style.css public/includes/admin/settings.php public/includes/functions.php public/index.php public/lang/admin.php public/lang/user.php public/leaderboard.php .claude/settings.json)",
-      "Bash(cp /home/thomas-helveg-povlsen/.claude/plans/feature-improved-profile-page-velvet-origami.md \"/home/thomas-helveg-povlsen/github/F1Betting/epics/intuitive profile preferecen management/plan.md\")"
+      "Bash(cp /home/thomas-helveg-povlsen/.claude/plans/feature-improved-profile-page-velvet-origami.md \"/home/thomas-helveg-povlsen/github/F1Betting/epics/intuitive profile preferecen management/plan.md\")",
+      "Bash(awk 'NR>=2360 && NR<=2450' /home/thomas-helveg-povlsen/github/F1Betting/public/assets/css/style.css)",
+      "Bash(awk 'NR>=2360 && NR<=2365' /home/thomas-helveg-povlsen/github/F1Betting/public/assets/css/style.css)",
+      "Bash(php -l /home/thomas-helveg-povlsen/github/F1Betting/public/leaderboard.php)",
+      "Bash(DEPLOY_ENV=test npx playwright test --grep \"AC-PROF\" --config tests/playwright.config.js)"
     ],
     "additionalDirectories": [
       "/home/thomas-helveg-povlsen/Documents/Websites/github/F1Betting/public/includes",

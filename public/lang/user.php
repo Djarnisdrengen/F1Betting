@@ -52,6 +52,8 @@ return [
         'in_competition'        => 'I konkurrence',
         'yes'                   => 'Ja',
         'no'                    => 'Nej',
+        'competing'             => 'Konkurrence',
+        'your_stats'            => 'Dine tal',
 
         // Countdown labels
         'cd_days'               => 'DAG',
@@ -254,6 +256,8 @@ return [
         'in_competition'        => 'In competition',
         'yes'                   => 'Yes',
         'no'                    => 'No',
+        'competing'             => 'Competing',
+        'your_stats'            => 'Your stats',
 
         // Countdown labels
         'cd_days'               => 'DAYS',
