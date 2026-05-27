@@ -2376,13 +2376,13 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     overflow: hidden;
 }
 
-.hf-podium-block.p1 { order: 2; height: 140px; background: linear-gradient(160deg, rgba(251,191,36,0.18), var(--bg-card) 70%); border-color: rgba(251,191,36,0.4); }
-.hf-podium-block.p2 { order: 1; height: 110px; background: linear-gradient(160deg, rgba(156,163,175,0.14), var(--bg-card) 70%); border-color: rgba(156,163,175,0.3); }
-.hf-podium-block.p3 { order: 3; height: 90px;  background: linear-gradient(160deg, rgba(205,127,50,0.14), var(--bg-card) 70%); border-color: rgba(205,127,50,0.3); }
+.hf-podium-block.p1 { order: 2; height: 150px; background: linear-gradient(160deg, rgba(251,191,36,0.18), var(--bg-card) 70%); border-color: rgba(251,191,36,0.4); }
+.hf-podium-block.p2 { order: 1; height: 130px; background: linear-gradient(160deg, rgba(156,163,175,0.14), var(--bg-card) 70%); border-color: rgba(156,163,175,0.3); }
+.hf-podium-block.p3 { order: 3; height: 110px; background: linear-gradient(160deg, rgba(205,127,50,0.14), var(--bg-card) 70%); border-color: rgba(205,127,50,0.3); }
 
 .hf-podium-icon { font-size: 18px; line-height: 1; margin-bottom: 4px; }
 .hf-podium-pts  { font-family: var(--display); font-weight: 900; font-size: 17px; line-height: 1; color: var(--text-primary); }
-.hf-podium-name { font-family: var(--display); font-weight: 700; font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin-top: 3px; }
+.hf-podium-name { font-family: var(--display); font-weight: 700; font-size: 11px; line-height: 1; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin-top: 3px; }
 
 .hf-podium-name .full-name  { display: none; }
 .hf-podium-name .first-name { display: inline; }
@@ -2393,9 +2393,9 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 }
 
 @media (min-width: 600px) {
-    .hf-podium-block.p1 { height: 180px; }
-    .hf-podium-block.p2 { height: 140px; }
-    .hf-podium-block.p3 { height: 115px; }
+    .hf-podium-block.p1 { height: 185px; }
+    .hf-podium-block.p2 { height: 155px; }
+    .hf-podium-block.p3 { height: 130px; }
     .hf-podium-icon { font-size: 24px; }
     .hf-podium-pts  { font-size: 22px; }
     .hf-podium-name { font-size: 13px; }
