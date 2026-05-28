@@ -1,0 +1,52 @@
+[
+  {
+    "id": "monaco-2023",
+    "title": "Monaco Grand Prix 2023 - Race Results",
+    "content": "The 2023 Monaco Grand Prix saw Max Verstappen win from pole position. Verstappen led all 78 laps in dominant fashion. Fernando Alonso finished second for Aston Martin, with Esteban Ocon completing the podium in third for Alpine. Notable: Monaco is a track where overtaking is nearly impossible - only 3 on-track overtakes occurred in the entire race. The pole position winner has won 50% of Monaco races in the last decade."
+  },
+  {
+    "id": "verstappen-monaco-history",
+    "title": "Max Verstappen's Monaco Track Record",
+    "content": "Max Verstappen at Monaco: 2017 (DNF - gearbox), 2018 (P1 - victory), 2019 (P4), 2020 (race cancelled), 2021 (P2), 2022 (P3), 2023 (P1 - victory). Win rate: 28.6%. Average finish when completing: 2.2. Verstappen has won from pole 2 out of 2 times at Monaco. Street circuits generally suit his precise driving style."
+  },
+  {
+    "id": "silverstone-stats",
+    "title": "Silverstone Circuit Statistics",
+    "content": "Silverstone (British GP): High-speed circuit with 18 corners. Average race winner starting position: 2.1 (last 10 years). Most overtakes occur at Turn 1 (Wellington Straight), Turn 6 (Brooklands), and Turn 15 (Stowe). Weather is highly variable - rain affects 40% of races. Mercedes has won 8 of the last 10 British GPs. Tyre strategy is critical - typically a two-stop race with medium-hard compounds."
+  },
+  {
+    "id": "red-bull-reliability-2023",
+    "title": "Red Bull Racing 2023 Reliability Statistics",
+    "content": "Red Bull 2023 reliability: 19 races completed out of 20 (95% completion rate). Only 1 DNF for Verstappen (Australian GP - brake failure). Sergio Perez had 3 DNFs. The RB19 has been the most reliable car on the grid. Street circuits: 100% completion rate. Power-sensitive circuits (Monza, Spa): 100% completion rate. The team's reliability is a key factor in championship success."
+  },
+  {
+    "id": "spa-overtaking",
+    "title": "Spa-Francorchamps Overtaking Analysis",
+    "content": "Spa-Francorchamps is one of the best overtaking circuits. Average overtakes per race: 42 (highest on calendar). Key overtaking zones: (1) Kemmel Straight into Les Combes - DRS enabled, 70% of overtakes occur here, (2) Rivage hairpin, (3) Bus Stop chicane on final lap. Starting position matters less at Spa - drivers starting P10 have finished on podium 6 times in last decade. Long straights favor DRS and slipstream effects."
+  },
+  {
+    "id": "pole-position-stats",
+    "title": "Pole Position Conversion Rates by Circuit Type",
+    "content": "Pole position win rate by circuit type: Street circuits (Monaco, Singapore, Baku): 65% - overtaking is extremely difficult. High-speed circuits (Monza, Spa, Silverstone): 45% - overtaking is more common. Technical circuits (Suzuka, Catalunya): 55%. Mixed circuits (Austin, Interlagos): 50%. Overall average: 52%. Historically, qualifying well is crucial, but circuit characteristics heavily influence race outcomes."
+  },
+  {
+    "id": "hamilton-podium-rate",
+    "title": "Lewis Hamilton Podium Statistics 2020-2023",
+    "content": "Lewis Hamilton podium rate (2020-2023): 62% (52 podiums in 84 races). 2020: 94% (17/18), 2021: 77% (17/22), 2022: 50% (11/22), 2023: 32% (7/22). Mercedes struggled with the 2022-2023 ground effect regulations. Hamilton's historical podium rate (career): 72%. At specific circuits - Monaco: 60%, Silverstone: 85%, Spa: 70%. Hamilton remains highly consistent at traditional circuits."
+  },
+  {
+    "id": "leclerc-ferrari-2023",
+    "title": "Charles Leclerc and Ferrari 2023 Performance",
+    "content": "Charles Leclerc 2023 season: 5 podiums, 0 wins. Average finishing position: 4.8. Ferrari SF-23 suffered from tire degradation issues and poor race pace despite good qualifying. Leclerc's qualifying average position: 3.2. Race day average: 5.1 (drop of 1.9 positions). Strategy errors by Ferrari cost Leclerc at least 3 potential podiums. Street circuits were Ferrari's weakest - 0 podiums at Monaco, Baku, Singapore."
+  },
+  {
+    "id": "weather-impact",
+    "title": "Weather Impact on Race Predictions",
+    "content": "Wet weather races drastically change outcomes. Rain probability by circuit: Spa (45%), Silverstone (40%), Suzuka (35%), Singapore (30%), Monaco (15%), Baku (5%). In wet conditions: Pole position win rate drops to 28% (vs 52% in dry). Drivers with best wet weather performance (2020-2023): Verstappen (4 wet wins), Hamilton (2 wet wins), Leclerc (1 wet win). Grid position matters less in rain - average winner starting position in wet: 4.2 vs 1.8 in dry."
+  },
+  {
+    "id": "strategy-two-stop",
+    "title": "Two-Stop vs One-Stop Strategy Success Rates",
+    "content": "Tire strategy analysis (2023 season): One-stop races: 8 (40% of season). Two-stop races: 12 (60% of season). One-stop strategy wins: 35%. Two-stop strategy wins: 65%. Circuits favoring one-stop: Monaco, Singapore, Hungary (low degradation). Circuits favoring two-stop: Bahrain, Saudi Arabia, Austin (high degradation). Undercuts are successful 70% of the time when executed within the pit window. Track position is more valuable than tire advantage at street circuits."
+  }
+]
