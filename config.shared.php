@@ -36,4 +36,9 @@ header('Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
 header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
 // CSP is set in header.php where the per-request nonce is available.
 
+// ── F1 INTELLIGENCE ───────────────────────────────────────────────────
+define('F1_INTELLIGENCE_API_URL', 'https://api-chi-nine-25.vercel.app');
+define('F1_INTELLIGENCE_TIMEOUT', 30);
+// F1_INTELLIGENCE_DEBUG is defined per-env in config.test.php / config.live.php
+
 require_once __DIR__ . '/public/includes/functions.php';

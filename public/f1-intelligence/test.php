@@ -13,8 +13,8 @@
  * IMPORTANT: Update F1_INTELLIGENCE_API_URL below or in your config.php
  */
 
-// Try to load existing config (adjust path if needed)
-$configPath = __DIR__ . '/../config.php';
+// Try to load existing config
+$configPath = __DIR__ . '/../../config.php';
 if (file_exists($configPath)) {
     require_once $configPath;
 }
