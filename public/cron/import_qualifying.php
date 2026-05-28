@@ -241,10 +241,7 @@ function fetchF1Api($endpoint) {
         ];
     }
 
-    // Live mode: fetch from actual API
-    $url = F1_API_BASE . $endpoint . '.json';
-    logMessage("[DEBUG] Fetching URL: $url");
-
+    // Live mode: paginate through all results (API caps limit at 100 per page)
     $context = stream_context_create([
         'http' => [
             'timeout' => F1_API_TIMEOUT,
@@ -252,21 +249,52 @@ function fetchF1Api($endpoint) {
         ]
     ]);
 
-    $response = @file_get_contents($url, false, $context);
+    $allRaces  = [];
+    $offset    = 0;
+    $pageLimit = 100;
 
-    if ($response === false) {
-        logMessage("[ERROR] Failed to fetch from API: $url");
-        return null;
-    }
+    do {
+        $url = F1_API_BASE . $endpoint . '.json?limit=' . $pageLimit . '&offset=' . $offset;
+        logMessage("[DEBUG] Fetching URL: $url");
 
-    $data = json_decode($response, true);
+        $response = @file_get_contents($url, false, $context);
+        if ($response === false) {
+            logMessage("[ERROR] Failed to fetch from API: $url");
+            return null;
+        }
 
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        logMessage("[ERROR] Invalid JSON response: " . json_last_error_msg());
-        return null;
-    }
+        $page = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            logMessage("[ERROR] Invalid JSON response: " . json_last_error_msg());
+            return null;
+        }
 
-    logMessage("[DEBUG] API fetch successful for endpoint: $endpoint");
+        $total     = (int)($page['MRData']['total']  ?? 0);
+        $pageRaces = $page['MRData']['RaceTable']['Races'] ?? [];
+        logMessage("[DEBUG] Page offset=$offset: got " . count($pageRaces) . " races, total=$total");
+
+        // Merge races — a race at a page boundary may have its QualifyingResults split
+        foreach ($pageRaces as $race) {
+            $round = $race['round'];
+            if (!isset($allRaces[$round])) {
+                $allRaces[$round] = $race;
+            } else {
+                // Append any additional qualifying rows for an already-seen race
+                $existing  = &$allRaces[$round]['QualifyingResults'];
+                $incoming  = $race['QualifyingResults'] ?? [];
+                $existing  = array_merge($existing ?? [], $incoming);
+            }
+        }
+
+        $offset += $pageLimit;
+    } while ($offset < $total);
+
+    // Re-index as plain array, sorted by round
+    ksort($allRaces);
+    $data = $page; // reuse last page as envelope
+    $data['MRData']['RaceTable']['Races'] = array_values($allRaces);
+
+    logMessage("[DEBUG] Pagination complete: " . count($allRaces) . " races total");
     return $data;
 }
 

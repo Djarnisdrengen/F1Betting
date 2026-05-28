@@ -17,7 +17,7 @@
       "Bash(gh workflow *)",
       "Bash(gh repo *)",
       "Bash(npm install *)",
-      "Bash(node --check tests/security/security.js)",
+      "Bash(node --check tests/security/security.js)", 
       "Bash(node build-deploy/security-review.js)",
       "Bash(node build-deploy/backup-to-sql.js)",
       "Bash(DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js)",
@@ -26,7 +26,18 @@
       "Bash(EMAIL_BACKEND=mailsac PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js)",
       "Bash(DEPLOY_ENV=test node -e ' *)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "Bash(find /tmp -name \"*.pdf\" 2>/dev/null | head -10; find /home/thomas-helveg-povlsen -name \"*.pdf\" -maxdepth 5 2>/dev/null | head -10)",
+      "Read(//home/thomas-helveg-povlsen/**)",
+      "WebFetch(domain:api.jolpi.ca)",
+      "Bash(vercel deploy *)",
+      "Bash(curl -sv https://api-chi-nine-25.vercel.app/api/intelligence)",
+      "Bash(vercel inspect *)",
+      "Bash(vercel project *)",
+      "Bash(vercel env *)",
+      "Bash(curl -sv https://api-d053fsoqr-thomas-helveg-povlsen-s-projects.vercel.app/api/intelligence)",
+      "Bash(curl -sv https://www.formula-1.dk/f1-intelligence/test.php)",
+      "Bash(curl -sv https://www.hpovlsen.dk/f1-intelligence/query.php)"
     ],
     "additionalDirectories": [
       "/tmp"

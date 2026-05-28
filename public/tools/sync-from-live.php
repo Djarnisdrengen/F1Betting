@@ -64,9 +64,17 @@ try {
     $db->query("DELETE FROM races");
     $db->query("DELETE FROM drivers");
 
-    // settings, password_resets, and invites are intentionally excluded:
-    // settings — test server keeps its own settings
-    // password_resets, invites — session-scoped, not meaningful to sync
+    // password_resets and invites are intentionally excluded (session-scoped).
+    // settings IS synced so scoring rules match live — divergent points_p2 etc.
+    // would silently produce wrong totals during recalculation testing.
+
+    // Sync game-rule settings from live so scoring matches (test keeps its own
+    // content: app_title, app_year, hero texts).
+    $liveSett = $live->query("SELECT points_p1, points_p2, points_p3, points_wrong_pos, bet_size, betting_window_hours FROM settings WHERE id = 1")->fetch();
+    if ($liveSett) {
+        $db->prepare("UPDATE settings SET points_p1=?, points_p2=?, points_p3=?, points_wrong_pos=?, bet_size=?, betting_window_hours=? WHERE id=1")
+           ->execute(array_values($liveSett));
+    }
 
     // Copy in FK-safe order (parents first)
     $copied = [];

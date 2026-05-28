@@ -111,3 +111,8 @@ tests/email-previews/
 # Added by ggshield
 .cache_ggshield
 test-output.log
+
+
+# F1 Intelligence
+f1-intelligence/api/node_modules/
+f1-intelligence/api/.vercel
