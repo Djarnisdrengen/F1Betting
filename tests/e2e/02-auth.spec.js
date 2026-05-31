@@ -4,7 +4,7 @@ const seed = require('../helpers/seed');
 const { parseMarkers, expectMarker } = require('../helpers/markers');
 const { assertDelivered } = require('../helpers/email');
 
-const AUTH_INBOX = 'e2e_auth_f1@mailsac.com';
+const AUTH_INBOX = 'e2e_auth_f1@test.localhost';
 
 async function loginAs(page, email, password) {
     await page.goto('/login.php');
@@ -80,13 +80,12 @@ test.describe('Auth flows', () => {
             expect(parseMarkers(body)['forgot-pwd-link']).toContain('/reset_password.php?token=');
         });
 
-        test('real reset email delivered to Mailsac', async ({ page }) => {
-            test.setTimeout(90000);
+        test('reset email captured by intercept', async ({ page }) => {
             await page.goto('/forgot_password.php');
             await page.fill('input[name="email"]', seedData.email);
             await page.click('button[type="submit"]');
             await expect(page.locator('.alert-success')).toBeVisible();
-            await assertDelivered(AUTH_INBOX, process.env.MAILSAC_API_KEY);
+            await assertDelivered(AUTH_INBOX);
         });
     });
 

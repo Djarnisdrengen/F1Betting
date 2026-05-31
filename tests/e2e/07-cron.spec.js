@@ -4,7 +4,6 @@ const { getMessages, waitForNewMessages } = require('../helpers/email');
 
 const SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN;
 const CRON_SECRET = process.env.CRON_SECRET;
-const MAILSAC_API_KEY = process.env.MAILSAC_API_KEY;
 
 // ─── Cron jobs ────────────────────────────────────────────────────────────────
 
@@ -172,9 +171,8 @@ test.describe("Cron jobs", () => {
     });
 
     // ─── Notifications — betting just opened (real send) ─────────────────────
-    // Runs the cron without ?test=true so a real email is sent to the Mailsac
-    // inbox of the seeded in-competition user. Skips if MAILSAC_API_KEY is absent.
-    // Uses waitForNewMessages (baseline approach) — inbox is non-owned, cannot purge.
+    // Runs the cron without ?test=true. Emails are captured by SMTP_INTERCEPT.
+    // Uses waitForNewMessages (baseline approach) so prior test-mode emails are excluded.
 
     test.describe.serial('notifications — betting just opened (real send)', () => {
         test.beforeAll(async () => {
@@ -186,20 +184,17 @@ test.describe("Cron jobs", () => {
             await seed.cleanup.notifyOpen();
         });
 
-        test('betting-open email delivered to in-competition inbox', async ({ page }) => {
-            test.setTimeout(90000);
-
-            const inbox = 'e2e_notify_open_in_f1@mailsac.com';
+        test('betting-open email captured by intercept for in-competition inbox', async ({ page }) => {
+            const inbox = 'e2e_notify_open_in_f1@test.localhost';
             const baseline = new Set(
-                (await getMessages(inbox, MAILSAC_API_KEY)).map(m => m._id)
+                (await getMessages(inbox)).map(m => m._id)
             );
 
             await page.goto(`/cron/notifications.php?token=${CRON_SECRET}`);
             const cronText = await page.textContent('body');
-            // Confirm the cron actually dispatched the email before polling Mailsac
             expect(cronText, `Cron output:\n${cronText}`).toContain(`Sent open notification to: ${inbox}`);
 
-            const msgs = await waitForNewMessages(inbox, baseline, 1, MAILSAC_API_KEY, { timeout: 45000 });
+            const msgs = await waitForNewMessages(inbox, baseline, 1, null, { timeout: 20000 });
             const from = (msgs[0].from ?? []).map(f => f.address).join(' ');
             expect(from).toContain('formula-1.dk');
         });
@@ -217,17 +212,15 @@ test.describe("Cron jobs", () => {
             await seed.cleanup.notifyClose();
         });
 
-        test('betting-close email delivered to unbetted inbox', async ({ page }) => {
-            test.setTimeout(60000);
-
-            const inbox = 'e2e_notify_close_a_f1@mailsac.com';
+        test('betting-close email captured by intercept for unbetted inbox', async ({ page }) => {
+            const inbox = 'e2e_notify_close_a_f1@test.localhost';
             const baseline = new Set(
-                (await getMessages(inbox, MAILSAC_API_KEY)).map(m => m._id)
+                (await getMessages(inbox)).map(m => m._id)
             );
 
             await page.goto(`/cron/notifications.php?token=${CRON_SECRET}`);
 
-            const msgs = await waitForNewMessages(inbox, baseline, 1, MAILSAC_API_KEY, { timeout: 30000 });
+            const msgs = await waitForNewMessages(inbox, baseline, 1, null, { timeout: 20000 });
             const from = (msgs[0].from ?? []).map(f => f.address).join(' ');
             expect(from).toContain('formula-1.dk');
         });

@@ -5,7 +5,6 @@
 - [Overview](#overview)
 - [Smoke Tests](#smoke-tests)
 - [E2E Tests (Playwright)](#e2e-tests-playwright)
-  - [Mailsac mode](#mailsac-mode-email_backendmailsac)
   - [Architecture layers](#architecture-layers)
   - [01-smoke.spec.js](#01-smokespecjs)
   - [02-auth.spec.js](#02-authspecjs)
@@ -24,8 +23,6 @@
 - [Resend Health Check](#resend-health-check)
 - [Security Tests](#security-tests)
 - [Test Email Addresses](#test-email-addresses)
-  - [Inboxes asserted in test:e2e:test:mailsac](#inboxes-asserted-in-teste2etestmailsac)
-  - [All seeded inbox addresses](#all-seeded-inbox-addresses)
 - [How tests find credentials](#how-tests-find-credentials)
 
 ---
@@ -41,10 +38,9 @@ All tests run against the deployed site over HTTP — there is no local test ser
 | `npm run test:smoke` | B | Key pages return 200 and contain expected content | test or live | ~5s |
 | `npm run test:unit` | B | Mailer transport logic (no network) | local | ~1s |
 | `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery | test | ~5–10 min |
-| `npm run test:e2e:test:mailsac` | A | Same as above, but sends real emails via SMTP and asserts delivery in Mailsac | test | ~10–15 min |
 | `npm run test:e2e:live` | A | `01-smoke.spec.js` only — read-only live health check | live | ~30s |
 | `npm run test:resend` | B | Sends one email directly via Resend API; verifies backup transport is operational | live | ~5s |
-| `npm run test:email:preview` | B | Sends all 16 email types to Mailsac for manual visual review | test | ~2 min |
+| `npm run test:email:preview` | B | Renders all 16 email types locally as HTML files for manual visual review | test | ~30s |
 | `npm run test:security` | B | OWASP headers, cookies, access control, CWE Top 25 | test or live | ~30s |
 | `npm run test:all` | B+A | smoke + unit + e2e:test | test | ~10 min |
 
@@ -84,23 +80,15 @@ Runs automatically at the end of every `deploy:test` and `deploy:live`.
 ## E2E Tests (Playwright)
 
 ```bash
-npm run test:e2e:test           # full suite against test env (intercept mode)
-npm run test:e2e:test:mailsac   # same suite, real SMTP + Mailsac delivery assertions
-npm run test:e2e:live           # 01-smoke.spec.js only, against live
+npm run test:e2e:test     # full suite against test env (intercept mode)
+npm run test:e2e:live     # 01-smoke.spec.js only, against live
 ```
 
 Config: `tests/playwright.config.js`. Screenshots on failure: `build-deploy/screenshots/`.
 
-### Mailsac mode (`EMAIL_BACKEND=mailsac`)
+**Email interception** — all E2E tests run with `SMTP_INTERCEPT=true` (set in `config.test.php`). Emails are captured to `/tmp/f1betting_test_emails.jsonl` on the test server instead of being sent via SMTP. Tests read them back via `test-seed.php?action=get_test_emails`. No real emails are ever sent during the test suite.
 
-Sets `EMAIL_BACKEND=mailsac`, which activates real SMTP delivery during the suite:
-
-1. `global-setup.js` purges the 4 owned Mailsac inboxes used by the suite, then calls `test-seed.php?action=smtp_live_on` to create a flag file (`/tmp/f1betting_smtp_live`) on the test server.
-2. `smtp.php` detects the flag file and bypasses the normal intercept — emails are sent via real SMTP (Proton Mail → Resend fallback).
-3. Tests that assert email delivery poll Mailsac via the API instead of reading the local intercept log.
-4. `global-teardown.js` calls `smtp_live_off` to remove the flag file, restoring intercept mode for the next regular run.
-
-Requires `MAILSAC_API_KEY` in `config.test.php`. Run this mode before a production deploy or after changes to email templates, SMTP configuration, or the Resend fallback path.
+To enable real SMTP temporarily during manual testing (e.g., verifying the Proton → Resend chain): SSH into the test server and `touch /tmp/f1betting_smtp_live`. Remove it when done.
 
 **On test:** all `tests/e2e/**/*.spec.js` and `tests/e2e/admin/**/*.spec.js` files matching the numbered glob are run.
 **On live:** `01-smoke.spec.js` only.
@@ -108,10 +96,10 @@ Requires `MAILSAC_API_KEY` in `config.test.php`. Run this mode before a producti
 ### Architecture layers
 
 ```
-tests/fixtures/index.js      — Playwright fixture: adminPage (applies admin storageState)
-tests/helpers/seed.js        — typed wrappers for all test-seed.php actions (Node fetch, no browser)
-tests/helpers/mailsac.js     — Mailsac polling: waitForMessages, waitForNewMessages, assertDelivered
-tests/helpers/markers.js     — parses e2e_markers strings emitted by admin.php in test mode
+tests/fixtures/index.js           — Playwright fixture: adminPage (applies admin storageState)
+tests/helpers/seed.js             — typed wrappers for all test-seed.php actions (Node fetch, no browser)
+tests/helpers/intercepted-mail.js — email helper: waitForMessages, waitForNewMessages, assertDelivered (intercept mode)
+tests/helpers/markers.js          — parses e2e_markers strings emitted by admin.php in test mode
 ```
 
 `seed.js` is Stack A only — it reads `process.env.BASE_URL` set by `playwright.config.js`. Do not import it from standalone scripts.
@@ -154,7 +142,7 @@ Runs on both test and live. No seeds.
 
 ### `02-auth.spec.js`
 
-Test env only. Serial. Seeds a dedicated user (`seed.authUser()` / `seed.cleanup.authUser()`). Real forgot-password email sent and asserted via Mailsac.
+Test env only. Serial. Seeds a dedicated user (`seed.authUser()` / `seed.cleanup.authUser()`). Forgot-password email captured via intercept and asserted in-suite.
 
 **Login**
 
@@ -169,7 +157,7 @@ Test env only. Serial. Seeds a dedicated user (`seed.authUser()` / `seed.cleanup
 |---|---|
 | Form renders | Forgot-password form visible |
 | Unknown email | Success message shown; no user enumeration |
-| Known email | `[reset-sent] true` marker; Mailsac delivery asserted |
+| Known email | `[reset-sent] true` marker; email delivery asserted via intercept |
 | Reset via token link | Navigate to reset link from marker; set new password; login succeeds |
 
 **Password change via profile**
@@ -280,17 +268,17 @@ Test env only.
 
 **Notifications — betting just opened (real send)** (serial, seeded)
 
-Runs real cron without `?test=true`. Skips if `MAILSAC_API_KEY` absent.
+Runs real cron without `?test=true`. Asserts intercepted email delivery.
 
 | Test | Asserts |
 |---|---|
-| Betting-open email delivered to in-competition inbox | Cron output confirms send; Mailsac `e2e_notify_open_in_f1@mailsac.com` receives 1 message from `formula-1.dk` |
+| Betting-open email delivered to in-competition inbox | Cron output confirms send; `e2e_notify_open_in_f1@test.localhost` receives 1 intercepted message |
 
 **Notifications — betting closing soon (real send)** (serial, seeded)
 
 | Test | Asserts |
 |---|---|
-| Betting-close email delivered to unbetted inbox | Cron output confirms send; Mailsac `e2e_notify_close_a_f1@mailsac.com` receives 1 message from `formula-1.dk` |
+| Betting-close email delivered to unbetted inbox | Cron output confirms send; `e2e_notify_close_a_f1@test.localhost` receives 1 intercepted message |
 
 ---
 
@@ -365,23 +353,23 @@ Test env only. Admin auth applied via fixture.
 
 ### `admin/11-invites.spec.js`
 
-Test env only. Real invite email sent and asserted via Mailsac.
+Test env only. Invite email captured via intercept and asserted in-suite.
 
 | Test | Asserts |
 |---|---|
-| Invite a user and delete | Success alert; `[invite-sent] true`; Mailsac delivery asserted; delete → invite gone |
+| Invite a user and delete | Success alert; `[invite-sent] true`; intercepted email delivery asserted; delete → invite gone |
 
 ---
 
 ### `admin/12-users.spec.js`
 
-Test env only. Serial. Seeds a user (`seed.e2eUser(language=en)`). Real emails sent for password reset.
+Test env only. Serial. Seeds a user (`seed.e2eUser(language=en)`). Password reset email captured via intercept and asserted in-suite.
 
 | Test | Asserts |
 |---|---|
 | Toggle in competition | Button state flips |
 | Toggle admin role | Badge cycles `user → admin → user` |
-| Set password | Success alert; `[admin-reset-lang] en`; `[admin-reset-sent] true`; Mailsac delivery asserted |
+| Set password | Success alert; `[admin-reset-lang] en`; `[admin-reset-sent] true`; intercepted email delivery asserted |
 | Update display name | User logs in, updates name → success alert; input reflects new name |
 | Delete user | Confirm-modal delete → user card gone |
 
@@ -412,9 +400,13 @@ Race B: day after Race A, no result yet — test enters it via admin UI.
 npm run test:email:preview
 ```
 
-Standalone Stack B script. Calls `test-seed.php?action=send_email_preview` which sends all 8 email types in DA + EN (16 total) to `MAILSAC_INBOX`. Prints a formatted summary of every email (name, to, subject, extra fields). Not pass/fail — exit 0 always. Use it for manual visual review of email templates after copy or layout changes.
+Standalone Stack B script. Calls `test-seed.php?action=send_email_preview` which renders all 8 email types in DA + EN (16 total) via the SMTP intercept. Prints a formatted summary (name, to, subject, extra fields) and writes HTML files to `tests/email-previews/{timestamp}/`. Not pass/fail — exit 0 always. Use it for manual visual review of email templates after copy or layout changes.
 
-Open `MAILSAC_INBOX` (`f1betting-preview@mailsac.com`) in the Mailsac web UI to inspect the rendered emails.
+Open the generated HTML files in a browser to inspect the rendered emails:
+
+```bash
+xdg-open tests/email-previews/$(ls tests/email-previews | tail -1)/1_password_reset_en.html
+```
 
 ---
 
@@ -526,49 +518,44 @@ Reports saved to `build-deploy/security-reports/` as `.md` and `.json` (two most
 
 ## Test Email Addresses
 
-All seeded test users use `@mailsac.com` addresses so that any email accidentally triggered on the test site never reaches real inboxes.
+All seeded test users use `@test.localhost` addresses. Since `SMTP_INTERCEPT=true` on the test server, emails are captured server-side and never sent via SMTP — the domain is a placeholder that prevents accidental real delivery if intercept were ever disabled.
 
-**Which commands send real emails to Mailsac:**
+**Email delivery by command:**
 
-| Command | Mailsac delivery |
+| Command | Email delivery |
 |---|---|
-| `test:e2e:test` | None — intercept mode captures emails server-side |
-| `test:e2e:test:mailsac` | Yes — real SMTP; owned inboxes purged before suite |
+| `test:e2e:test` | Captured to JSONL — no real send |
 | `test:security` | None — HTTP scanner only, no emails triggered |
+| `test:email:preview` | Captured to JSONL — HTML files written locally |
+| `test:resend` | Real Resend API send to `REPORT_TO` (verifies backup transport) |
 
-### Inboxes asserted in test:e2e:test:mailsac
+### Inboxes asserted in E2E tests
 
-The 4 owned inboxes (★) are purged by `global-setup.js` before the suite runs. The 2 non-owned inboxes use a baseline-snapshot approach (`waitForNewMessages`).
+`global-setup.js` clears the entire intercept log before the suite runs. Tests use `waitForMessages` (absolute count) or `waitForNewMessages` (baseline-snapshot) to assert delivery.
 
-| Inbox | Triggered by | Email type | Count |
-|---|---|---|---|
-| ★ `e2e_auth_f1@mailsac.com` | `02-auth.spec.js` | Password reset link | 1 |
-| ★ `e2e_testing_invite_f1@mailsac.com` | `admin/11-invites.spec.js` | Invite to register | 1 |
-| ★ `e2e_testing_testuser_f1@mailsac.com` | `admin/12-users.spec.js` | Admin-issued password reset | 1 |
-| ★ `e2e_bet_delete_f1@mailsac.com` | `admin/12-users.spec.js` | Bet deletion notification | 1 |
-| `e2e_notify_open_in_f1@mailsac.com` | `07-cron.spec.js` | Betting window open | 1 |
-| `e2e_notify_close_a_f1@mailsac.com` | `07-cron.spec.js` | Betting window closing soon | 1 |
-
-`f1betting-preview@mailsac.com` (★ owned) is populated by `npm run test:email:preview` (Stack B, run separately). No E2E spec asserts delivery to it and it is not purged at suite start.
-
-The Mailsac Indie Plan allows 5 owned inboxes — 4 are used by the suite. Any new assertion requiring a purged inbox can use the 5th (`f1betting-preview`) or a plan upgrade; new tests that tolerate non-purged inboxes should use `waitForNewMessages` (baseline-snapshot approach) on non-owned inboxes.
+| Inbox | Triggered by | Email type |
+|---|---|---|
+| `e2e_auth_f1@test.localhost` | `02-auth.spec.js` | Password reset link |
+| `e2e_testing_invite_f1@test.localhost` | `admin/11-invites.spec.js` | Invite to register |
+| `e2e_testing_testuser_f1@test.localhost` | `admin/12-users.spec.js` | Admin-issued password reset |
+| `e2e_bet_delete_f1@test.localhost` | `admin/12-users.spec.js` | Bet deletion notification |
+| `e2e_notify_open_in_f1@test.localhost` | `07-cron.spec.js` | Betting window open |
+| `e2e_notify_close_a_f1@test.localhost` | `07-cron.spec.js` | Betting window closing soon |
 
 ### All seeded inbox addresses
 
-These addresses are assigned to seeded test users. They are `@mailsac.com` so accidental emails are visible, but the suite does not assert Mailsac delivery for them.
-
 | Inbox | Spec | Role |
 |---|---|---|
-| `e2e_register_f1@mailsac.com` | `03-registration.spec.js` | Invite recipient / registering user |
-| `e2e_bet_user_f1@mailsac.com` | `04-betting.spec.js` | Betting user |
-| `e2e_score_alice_f1@mailsac.com` | `admin/13-scoring.spec.js` | Alice (perfect-bet user) |
-| `e2e_score_bob_f1@mailsac.com` | `admin/13-scoring.spec.js` | Bob |
-| `e2e_score_charlie_f1@mailsac.com` | `admin/13-scoring.spec.js` | Charlie |
-| `e2e_notify_open_out_f1@mailsac.com` | `07-cron.spec.js` | Non-competing user (pool reminder) |
-| `e2e_notify_open_invite_f1@mailsac.com` | `07-cron.spec.js` | Pending invite (pool reminder) |
-| `e2e_notify_close_b_f1@mailsac.com` | `07-cron.spec.js` | Already-bet user (notification skipped) |
+| `e2e_register_f1@test.localhost` | `03-registration.spec.js` | Invite recipient / registering user |
+| `e2e_bet_user_f1@test.localhost` | `04-betting.spec.js` | Betting user |
+| `e2e_score_alice_f1@test.localhost` | `admin/13-scoring.spec.js` | Alice (perfect-bet user) |
+| `e2e_score_bob_f1@test.localhost` | `admin/13-scoring.spec.js` | Bob |
+| `e2e_score_charlie_f1@test.localhost` | `admin/13-scoring.spec.js` | Charlie |
+| `e2e_notify_open_out_f1@test.localhost` | `07-cron.spec.js` | Non-competing user (pool reminder) |
+| `e2e_notify_open_invite_f1@test.localhost` | `07-cron.spec.js` | Pending invite (pool reminder) |
+| `e2e_notify_close_b_f1@test.localhost` | `07-cron.spec.js` | Already-bet user (notification skipped) |
 
-Users synced from live via `sync:live` have their email addresses rewritten to `@mailsac.com`. The admin account (`F1_ADMIN_EMAIL`) is restored unchanged.
+Users synced from live via `sync:live` have their email addresses rewritten to `@test.localhost`. The admin account (`F1_ADMIN_EMAIL`) is restored unchanged.
 
 ---
 

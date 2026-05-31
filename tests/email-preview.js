@@ -13,18 +13,16 @@ require('dotenv').config({ path: path.join(__dirname, '../build-deploy/.env') })
 const PREVIEW_DIR = path.join(__dirname, 'email-previews');
 const KEEP_RUNS   = 2;
 
-let siteUrl, seedToken, mailsacInbox;
+let siteUrl, seedToken;
 try {
     const { readPhpConfig } = require('../build-deploy/php-config');
     const cfg = readPhpConfig(process.env.DEPLOY_ENV || 'test');
-    siteUrl      = cfg.siteUrl;
-    seedToken    = cfg.integrationSeedToken;
-    mailsacInbox = cfg.mailsacInbox;
+    siteUrl   = cfg.siteUrl;
+    seedToken = cfg.integrationSeedToken;
 } catch {
     // GitHub Actions / machines without PHP config — fall back to env vars
-    siteUrl      = process.env.SITE_URL;
-    seedToken    = process.env.INTEGRATION_SEED_TOKEN;
-    mailsacInbox = process.env.MAILSAC_INBOX;
+    siteUrl   = process.env.SITE_URL;
+    seedToken = process.env.INTEGRATION_SEED_TOKEN;
 }
 
 if (!siteUrl || !seedToken) {
@@ -46,8 +44,7 @@ function pruneOldRuns() {
 
 async function main() {
     const url = `${siteUrl}/tools/test-seed.php?token=${encodeURIComponent(seedToken)}&action=send_email_preview`;
-    console.log(`\nSending email preview to: ${mailsacInbox ?? '(MAILSAC_INBOX not set)'}`);
-    console.log(`Endpoint: ${url}\n`);
+    console.log(`\nEndpoint: ${url}\n`);
 
     const res = await fetch(url, { signal: AbortSignal.timeout(120_000) });
     if (!res.ok) {

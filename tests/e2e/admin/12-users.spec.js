@@ -5,11 +5,10 @@ const { assertDelivered } = require('../../helpers/email');
 const { expectMarker } = require('../../helpers/markers');
 
 const SEED_TOKEN           = process.env.INTEGRATION_SEED_TOKEN;
-const MAILSAC_API_KEY      = process.env.MAILSAC_API_KEY;
-const E2E_USER_EMAIL       = 'e2e_testing_testuser_f1@mailsac.com';
+const E2E_USER_EMAIL       = 'e2e_testing_testuser_f1@test.localhost';
 const E2E_USER_INITIAL_PW  = 'E2ETestPassword2026!';
 const E2E_USER_NEW_PW      = 'E2ENewPassword456!';
-const E2E_BET_DELETE_EMAIL = 'e2e_bet_delete_f1@mailsac.com';
+const E2E_BET_DELETE_EMAIL = 'e2e_bet_delete_f1@test.localhost';
 
 async function confirmDeleteModal(page) {
     await page.locator('.btn-user-delete-confirm').click();
@@ -65,7 +64,7 @@ test.describe.serial('Reset race result', () => {
         await page.goto('/admin.php?tab=users');
         const card = page
             .locator('.card')
-            .filter({ has: page.locator('small', { hasText: 'e2e_reset_race_f1@mailsac.com' }) });
+            .filter({ has: page.locator('small', { hasText: 'e2e_reset_race_f1@test.localhost' }) });
         await expect(card.locator('.text-accent')).toContainText('0 pts');
     });
 });
@@ -101,7 +100,7 @@ test.describe.serial('Bet deleted notification', () => {
         expectMarker(body, 'bet-deleted-lang', 'en');
         expectMarker(body, 'bet-deleted-sent', 'true');
 
-        await assertDelivered(E2E_BET_DELETE_EMAIL, MAILSAC_API_KEY);
+        await assertDelivered(E2E_BET_DELETE_EMAIL);
     });
 });
 
@@ -152,7 +151,6 @@ test.describe('User management', () => {
         await pwInput.fill(E2E_USER_NEW_PW);
         await userCard(page).locator('button[name="reset_user_password"]').click();
 
-        // Password reset sends a real email then redirects — SMTP may take up to 30s.
         await page.waitForURL(/tab=users/, { timeout: 50000 });
         await expect(page.locator('.alert-success')).toBeVisible({ timeout: 5000 });
 
@@ -162,7 +160,7 @@ test.describe('User management', () => {
         expectMarker(body, 'admin-reset-lang', 'en');
         expectMarker(body, 'admin-reset-sent', 'true');
 
-        await assertDelivered(E2E_USER_EMAIL, MAILSAC_API_KEY);
+        await assertDelivered(E2E_USER_EMAIL);
     });
 
     // Needs a fresh context: login.php redirects already-authenticated users.

@@ -7,9 +7,9 @@ const RACE_B_NAME = 'E2E Score Race B';
 
 // Maps seeded email → display_name as set in test-seed.php
 const DISPLAY_NAMES = {
-    'e2e_score_alice_f1@mailsac.com':   'E2E Score Alice',
-    'e2e_score_bob_f1@mailsac.com':     'E2E Score Bob',
-    'e2e_score_charlie_f1@mailsac.com': 'E2E Score Charlie',
+    'e2e_score_alice_f1@test.localhost':   'E2E Score Alice',
+    'e2e_score_bob_f1@test.localhost':     'E2E Score Bob',
+    'e2e_score_charlie_f1@test.localhost': 'E2E Score Charlie',
 };
 
 // Find a race card on the admin races tab by the race's displayed name

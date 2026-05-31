@@ -6,7 +6,6 @@
     "test:smoke": "node tests/smoke.js",
     "test:e2e:live": "node build-deploy/confirm-live.js && PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=live npx playwright test --config tests/playwright.config.js",
     "test:e2e:test": "EMAIL_BACKEND=intercept PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js",
-    "test:e2e:test:mailsac": "EMAIL_BACKEND=mailsac PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --config tests/playwright.config.js",
     "test:security": "node tests/security/security.js",
     "test:security:ratelimit": "node tests/security/security.js --ratelimit",
     "test:security:ssllabs": "node tests/security/security.js --ssllabs",

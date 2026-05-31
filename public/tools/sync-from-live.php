@@ -94,8 +94,8 @@ try {
             }
             if ($table === 'users' && isset($row['email'])) {
                 $at = strpos($row['email'], '@');
-                if ($at !== false && substr($row['email'], $at + 1) !== 'mailsac.com') {
-                    $row['email'] = substr($row['email'], 0, $at + 1) . 'mailsac.com';
+                if ($at !== false && substr($row['email'], $at + 1) !== 'test.localhost') {
+                    $row['email'] = substr($row['email'], 0, $at + 1) . 'test.localhost';
                 }
             }
             $stmt->execute(array_values($row));
@@ -132,9 +132,9 @@ try {
     // invites are not synced (session-scoped), but e2e tests may leave
     // stale rows if a run fails before its own teardown.
     $testEmails = [
-        'e2e_testing_invite_f1@mailsac.com',
-        'e2e_testing_testuser_f1@mailsac.com',
-        'e2e_reset_race_f1@mailsac.com',
+        'e2e_testing_invite_f1@test.localhost',
+        'e2e_testing_testuser_f1@test.localhost',
+        'e2e_reset_race_f1@test.localhost',
     ];
     $placeholders = implode(', ', array_fill(0, count($testEmails), '?'));
     $db->prepare("DELETE FROM invites WHERE email IN ($placeholders)")->execute($testEmails);
