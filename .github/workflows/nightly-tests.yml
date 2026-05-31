@@ -11,6 +11,20 @@ jobs:
     timeout-minutes: 30
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      # Site
+      DEPLOY_ENV: live
+      BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
+      # Test credentials (repo Secrets)
+      TEST_USER_EMAIL_LIVE: f1_admin@helvegpovlsen.dk
+      TEST_USER_PASSWORD_LIVE: ${{ secrets.TEST_USER_PASSWORD_LIVE }}
+      # SMTP — non-sensitive config as repo Variables, credentials as repo Secrets
+      SMTP_HOST: ${{ vars.SMTP_HOST }}
+      SMTP_PORT: ${{ vars.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      SMTP_FROM: ${{ vars.SMTP_FROM }}
+      REPORT_TO: ${{ vars.REPORT_TO }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -33,24 +47,10 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Run nightly report
-        env:
-          # Site
-          DEPLOY_ENV: live
-          BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
-
-          # Test credentials (repo Secrets)
-          TEST_USER_EMAIL_LIVE: f1_admin@helvegpovlsen.dk
-          TEST_USER_PASSWORD_LIVE: ${{ secrets.TEST_USER_PASSWORD_LIVE }}
-          # SMTP — non-sensitive config as repo Variables, credentials as repo Secrets
-          SMTP_HOST: ${{ vars.SMTP_HOST }}
-          SMTP_PORT: ${{ vars.SMTP_PORT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          SMTP_FROM: ${{ vars.SMTP_FROM }}
-          REPORT_TO: ${{ vars.REPORT_TO }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-
         run: node build-deploy/nightly-report.js
+
+      - name: Verify Resend backup transport
+        run: node build-deploy/verify-resend.js
 
       - name: Upload nightly report
         if: always()

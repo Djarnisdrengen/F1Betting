@@ -21,6 +21,7 @@
   - [admin/12-users.spec.js](#admin12-usersspecjs)
   - [admin/13-scoring.spec.js](#admin13-scoringspecjs)
 - [Email Preview](#email-preview)
+- [Resend Health Check](#resend-health-check)
 - [Security Tests](#security-tests)
 - [Test Email Addresses](#test-email-addresses)
   - [Inboxes asserted in test:e2e:test:mailsac](#inboxes-asserted-in-teste2etestmailsac)
@@ -42,6 +43,7 @@ All tests run against the deployed site over HTTP — there is no local test ser
 | `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery | test | ~5–10 min |
 | `npm run test:e2e:test:mailsac` | A | Same as above, but sends real emails via SMTP and asserts delivery in Mailsac | test | ~10–15 min |
 | `npm run test:e2e:live` | A | `01-smoke.spec.js` only — read-only live health check | live | ~30s |
+| `npm run test:resend` | B | Sends one email directly via Resend API; verifies backup transport is operational | live | ~5s |
 | `npm run test:email:preview` | B | Sends all 16 email types to Mailsac for manual visual review | test | ~2 min |
 | `npm run test:security` | B | OWASP headers, cookies, access control, CWE Top 25 | test or live | ~30s |
 | `npm run test:all` | B+A | smoke + unit + e2e:test | test | ~10 min |
@@ -413,6 +415,27 @@ npm run test:email:preview
 Standalone Stack B script. Calls `test-seed.php?action=send_email_preview` which sends all 8 email types in DA + EN (16 total) to `MAILSAC_INBOX`. Prints a formatted summary of every email (name, to, subject, extra fields). Not pass/fail — exit 0 always. Use it for manual visual review of email templates after copy or layout changes.
 
 Open `MAILSAC_INBOX` (`f1betting-preview@mailsac.com`) in the Mailsac web UI to inspect the rendered emails.
+
+---
+
+## Resend Health Check
+
+```bash
+npm run test:resend
+# requires: RESEND_API_KEY=re_xxx SMTP_FROM=noreply@... REPORT_TO=you@... npm run test:resend
+```
+
+Standalone Stack B script (`build-deploy/verify-resend.js`). Calls `makeResendSender()` from `mailer.js` directly — no SMTP involved — and sends a single test email via the Resend API. Exits 0 on success, 1 on failure.
+
+**Purpose:** verify the Resend backup transport is operational before it is ever needed as a fallback. The nightly CI job runs this as a dedicated step after the main nightly report, so a broken Resend configuration (revoked key, account issue, API change) is caught daily rather than discovered during an SMTP outage.
+
+**CI:** runs automatically as the `Verify Resend backup transport` step in `.github/workflows/nightly-tests.yml`. All required env vars (`RESEND_API_KEY`, `SMTP_FROM`, `REPORT_TO`) are available at job level in that workflow.
+
+| Scenario | Outcome |
+| --- | --- |
+| Valid key + reachable API | Logs `[verify-resend] OK`; exits 0; email delivered to `REPORT_TO` |
+| Invalid key / API error | Logs `[verify-resend] FAILED: ...`; exits 1 |
+| Missing env vars | Logs which vars are absent; exits 1 |
 
 ---
 

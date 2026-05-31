@@ -17,6 +17,7 @@
     "test:security:live:full": "node build-deploy/confirm-live.js && DEPLOY_ENV=live node tests/security/security.js --ssllabs --ratelimit",
     "test:email:preview": "node tests/email-preview.js",
     "test:unit": "node --test tests/unit/mailer.test.js",
+    "test:resend": "node build-deploy/verify-resend.js",
     "test:all": "npm run test:smoke && npm run test:unit && npm run test:e2e:test",
     "sync:live": "node build-deploy/sync.js",
     "backup:live": "node build-deploy/backup.js",
