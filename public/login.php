@@ -3,9 +3,19 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
 
 if (getCurrentUser()) {
-    header("Location: index.php");
+    header("Location: /index.php");
     exit;
 }
+
+// Validate redirect: same-origin relative paths only (starts with / but not //)
+function sanitizeLoginRedirect(string $url): string {
+    if ($url !== '' && $url[0] === '/' && (strlen($url) < 2 || $url[1] !== '/')) {
+        return $url;
+    }
+    return '/index.php';
+}
+
+$redirect = sanitizeLoginRedirect($_POST['redirect'] ?? $_GET['redirect'] ?? '');
 
 $error = '';
 
@@ -45,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setLang($user['language']    ?? 'da');
             setTheme($user['theme']      ?? $anonTheme);
             setFont($user['font_stack']  ?? $anonFont);
-            header("Location: index.php");
+            header("Location: " . $redirect);
             exit;
         } else {
             try { recordLoginAttempt($db, $ip); } catch (Exception $e) {}
@@ -74,6 +84,7 @@ include __DIR__ . '/includes/header.php';
             </div>
             <form method="POST" style="display:flex;flex-direction:column;gap:14px;">
                 <?= csrfField() ?>
+                <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>">
                 <div>
                     <label class="form-label"><?= t('email') ?></label>
                     <input type="email" name="email" class="form-input" required placeholder="name@example.com">

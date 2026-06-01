@@ -204,7 +204,8 @@ function getCurrentUser() {
 
 function requireLogin() {
     if (!getCurrentUser()) {
-        header("Location: login.php");
+        $redirect = urlencode($_SERVER['REQUEST_URI'] ?? '');
+        header("Location: /login.php?redirect=" . $redirect);
         exit;
     }
 }
@@ -212,11 +213,12 @@ function requireLogin() {
 function requireAdmin() {
     $user = getCurrentUser();
     if (!$user) {
-        header("Location: login.php");
+        $redirect = urlencode($_SERVER['REQUEST_URI'] ?? '');
+        header("Location: /login.php?redirect=" . $redirect);
         exit;
     }
     if ($user['role'] !== 'admin') {
-        header("Location: index.php");
+        header("Location: /index.php");
         exit;
     }
 }

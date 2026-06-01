@@ -1,25 +1,8 @@
 <?php
-/**
- * F1 Intelligence Test Page
- * 
- * Standalone test page to verify the F1 Intelligence integration is working.
- * Place this in your public root or in /f1-intelligence/ subdirectory.
- * 
- * Access via:
- *   https://hpovslen.dk/f1-intelligence/test.php
- *   or
- *   https://hpovslen.dk/test-f1-intelligence.php
- * 
- * IMPORTANT: Update F1_INTELLIGENCE_API_URL below or in your config.php
- */
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../includes/functions.php';
+requireAdmin();
 
-// Try to load existing config
-$configPath = __DIR__ . '/../../config.php';
-if (file_exists($configPath)) {
-    require_once $configPath;
-}
-
-// Fallback configuration - REPLACE WITH YOUR VERCEL URL
 if (!defined('F1_INTELLIGENCE_API_URL')) {
     define('F1_INTELLIGENCE_API_URL', 'https://YOUR-VERCEL-APP.vercel.app');
 }
