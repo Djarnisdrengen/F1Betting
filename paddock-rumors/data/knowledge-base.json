@@ -296,5 +296,299 @@
     "source_url": "https://en.wikipedia.org/wiki/2026_Canadian_Grand_Prix",
     "updated_at": "2026-06-02T20:47:21.205Z",
     "content_hash": "9ae345ca6ee2dea2"
+  },
+  {
+    "id": "analysis-2026-r03-f1tech-f1maths-does-the-boxplot-from-suzuka-continue-to-c",
+    "title": "F1MATHS: Does the boxplot from Suzuka continue to confirm Mercedes' dominant form? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: Does the boxplot from Suzuka continue to confirm Mercedes' dominant form?. At Suzuka, Mercedes held a measurable pace advantage over the entire field. Andrea Kimi Antonelli's mean race lap of 93.87 seconds was 0.24 seconds per lap faster than Oscar Piastri (94.11s) and 0.29 seconds faster than George Russell (94.16s), confirming Mercedes as the fastest package on race pace. Ferrari trailed by +0.29 seconds on team average, placing the top three constructors within 0.33 seconds per lap — a narrow but consistent gap. Alpine outpaced Red Bull in race trim, with Pierre Gasly averaging 94.85 seconds versus Max Verstappen's 95.84 seconds, a deficit of +1.59 seconds for Red Bull. Williams showed significant weakness at +2.13 seconds. Cadillac and Aston Martin were the slowest, 4.0 seconds per lap off the pace. Pirelli C1 Hard tyres dominated strategy, accounting for 55% of race laps; the C3 Soft was effectively unused, signalling strong durability requirements favouring cars with low tyre stress.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 3
+    },
+    "source_url": "https://www.f1technical.net/news/28414",
+    "updated_at": "2026-06-02T21:41:02.885Z",
+    "content_hash": "b386d0476cd4f4be"
+  },
+  {
+    "id": "analysis-2026-r03-f1tech-f1tech-ferrari-bring-aerodynamic-tweaks-to-suzuka-",
+    "title": "F1TECH: Ferrari bring aerodynamic tweaks to Suzuka as they chase stability (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: Ferrari bring aerodynamic tweaks to Suzuka as they chase stability. Ferrari introduced two aerodynamic updates to the SF-26 at Suzuka for the 2026 Japanese Grand Prix. First, the inboard exit area of the front brake duct was reduced — a circuit-specific trade-off viable at Suzuka due to its moderate braking demands, trading cooling capacity for cleaner airflow around the front wheels. The improvement is expected to reduce turbulence feeding the floor and sidepod undercuts, supporting more predictable front-end behaviour through Suzuka's high-speed direction changes in sector one, with downstream benefits for tyre management. Second, a reprofiled front floor stay fairing was introduced as part of Ferrari's ongoing SF-26 development programme rather than a track-specific measure. The revised geometry targets improved local flow structures at the front floor, aiming to generate more consistent underbody downforce load across varying aerodynamic conditions.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 3
+    },
+    "source_url": "https://www.f1technical.net/news/28381",
+    "updated_at": "2026-06-02T21:41:14.658Z",
+    "content_hash": "7aba026d3eed2738"
+  },
+  {
+    "id": "analysis-2026-r01-f1tech-f1maths-race-pace-data-from-melbourne-reveals-a-cl",
+    "title": "F1MATHS: Race‑pace data from Melbourne reveals a clear front‑running quartet (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: Race‑pace data from Melbourne reveals a clear front‑running quartet. Race-pace boxplot analysis from the 2026 Australian Grand Prix identifies Mercedes and Ferrari as a distinct front-running group, separated from the rest of the field by a substantial margin. Andrea Kimi Antonelli led all drivers with a mean race lap of 83.30 seconds; George Russell followed at 83.41 seconds, a 0.11-second intra-team delta indicating high chassis and power-unit consistency across race distance. Lewis Hamilton recorded 83.43 seconds and Charles Leclerc 83.51 seconds; Ferrari's tight interquartile ranges confirm stable tyre management and low degradation, with lap-time distributions overlapping the Mercedes pair. Max Verstappen averaged 83.83 seconds but showed wider lap-time spread attributable to a two-stop strategy and traffic. Lando Norris averaged 83.86 seconds, remaining within one second of the leaders but clearly separated. Gabriel Bortoleto (84.83s) and Oliver Bearman (84.98s) led the midfield, suggesting Audi and Haas carry competitive long-run baselines. Leclerc's smoothed pace curve showed elevated variation in the race's final stages, indicating a grip-loss issue late in the stint.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 1
+    },
+    "source_url": "https://www.f1technical.net/news/28301",
+    "updated_at": "2026-06-02T21:48:13.912Z",
+    "content_hash": "b949e7854dabc2ff"
+  },
+  {
+    "id": "analysis-2026-r01-f1tech-f1maths-what-do-the-sector-times-reveal-about-the-",
+    "title": "F1MATHS: What do the sector times reveal about the pecking order in Melbourne? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: What do the sector times reveal about the pecking order in Melbourne?. FP2 sector time analysis from the 2026 Australian Grand Prix at Albert Park indicates McLaren and Mercedes as the leading group. Oscar Piastri led Sector 1 (27.803), with Lewis Hamilton second (27.902) and George Russell third (28.037), suggesting Mercedes strong in high-speed sections. Kimi Antonelli topped Sector 3 (34.345), demonstrating Mercedes competitiveness in braking and traction zones. Charles Leclerc led Sector 2 (17.642), indicating Ferrari's strength in the technical middle sector. Max Verstappen's Sector 3 time (34.675, seventh) suggests Red Bull requires further setup refinement in the final sector. Arvid Lindblad showed notable pace for Red Bull in Sector 2. Isack Hadjar placed competitively for Racing Bulls across multiple sectors. Aston Martin's Fernando Alonso and Lance Stroll were consistently outside the top performers. Sergio Pérez recorded anomalous sector times attributable to confirmed technical issues rather than representative car pace.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 1
+    },
+    "source_url": "https://www.f1technical.net/news/28291",
+    "updated_at": "2026-06-02T21:48:31.889Z",
+    "content_hash": "35c10735663ea81c"
+  },
+  {
+    "id": "analysis-2026-r02-f1tech-f1maths-how-did-russell-contribute-to-a-perfect-do",
+    "title": "F1MATHS: How did Russell contribute to a perfect double stack pit stop at Shanghai? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How did Russell contribute to a perfect double stack pit stop at Shanghai?. At the 2026 Chinese Grand Prix, Mercedes executed a double-stack pit stop during a Lap 10 Safety Car triggered by Lance Stroll's retirement at Turn 2. With Andrea Kimi Antonelli and George Russell running first and second separated by only 1.5 seconds — insufficient for a clean sequential stop — George Russell deliberately managed the gap on the approach to Turn 14. Telemetry confirms Russell reduced throttle application to 0% versus Antonelli's 60%, with additional braking applied, expanding the inter-car gap from 1.5 seconds to 4.7 seconds by the pit entry line. This margin was sufficient for Mercedes to complete both tyre changes without a stationary delay for Russell. Both drivers retained their track positions, with Antonelli rejoining in the lead and Russell in second, ahead of the Ferrari runners.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 2
+    },
+    "source_url": "https://www.f1technical.net/news/28347",
+    "updated_at": "2026-06-02T21:48:40.517Z",
+    "content_hash": "e256a212f837a938"
+  },
+  {
+    "id": "analysis-2026-r02-f1tech-f1-maths-what-does-the-boxplot-diagram-reveal-abou",
+    "title": "F1 MATHS: What does the boxplot diagram reveal about the pecking order in Shanghai? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1 MATHS: What does the boxplot diagram reveal about the pecking order in Shanghai?. Based on the Shanghai Sprint boxplot analysis under 2026 regulations, Mercedes held the strongest race pace with George Russell setting the field reference, his lap-time distribution showing the tightest interquartile range and median consistently below 100 seconds. Ferrari's Charles Leclerc and Lewis Hamilton trailed by approximately 0.24 seconds per lap on average but exhibited wider tyre degradation signatures — larger whisker spreads indicating pace drop-off over stint length. Red Bull's Max Verstappen sat roughly 1.80 seconds per lap off Russell's benchmark, with a consistently elevated lap-time curve above 101 seconds. Liam Lawson demonstrated strong stint efficiency on one fewer tyre set, nearly matching Verstappen's mean pace with superior consistency. McLaren ranked third among two-stop runners at +0.68 seconds. The one-stop midfield — Racing Bulls, Haas, Williams, Audi, and Aston Martin — was separated by under one second, indicating closely matched underlying pace in that strategic group.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 2
+    },
+    "source_url": "https://www.f1technical.net/news/28328",
+    "updated_at": "2026-06-02T21:48:51.058Z",
+    "content_hash": "00a5470d929f1fa9"
+  },
+  {
+    "id": "analysis-2026-r02-f1tech-f1-maths-how-does-the-telemetry-from-the-shanghai-",
+    "title": "F1 MATHS: How does the telemetry from the Shanghai qualifying confirm Ferrari's superior chassis performance? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1 MATHS: How does the telemetry from the Shanghai qualifying confirm Ferrari's superior chassis performance?. Shanghai Q3 telemetry comparison between Andrea Kimi Antonelli (Mercedes, pole, 1:32.064) and Lewis Hamilton (Ferrari SF-26, 1:32.415) reveals a 0.351-second deficit driven primarily by power-unit and straight-line performance gaps. Antonelli recorded 55.4% full-throttle time versus Hamilton's lower figure, with a top speed of 332 km/h against Hamilton's 329 km/h; Mercedes' energy deployment produced a smoother speed trace with higher minimum speeds through power-sensitive sections. Ferrari's SF-26 demonstrates superior chassis performance in medium- and low-speed corners: Hamilton outpaced Antonelli through Turns 2–3, Turn 6 hairpin, Turns 7–9, and the final sector's slow-speed complex, with a higher cornering time share of 26.6% versus 22.1%. Ferrari's braking phase occupied only 18.7% of the lap, indicating the SF-26 setup prioritises rotation and mid-corner commitment over late braking. The decisive time loss for Hamilton concentrates on the back straight and full-throttle zones, confirming Ferrari's power-unit deficit as the primary performance limiter relative to Mercedes.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 2
+    },
+    "source_url": "https://www.f1technical.net/news/28325",
+    "updated_at": "2026-06-02T21:49:02.339Z",
+    "content_hash": "79ed72ad2043d6cc"
+  },
+  {
+    "id": "analysis-2026-r02-f1tech-f1-maths-what-do-the-best-sector-times-from-the-sh",
+    "title": "F1 MATHS: What do the best sector times from the Shanghai GP qualifying disclose? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1 MATHS: What do the best sector times from the Shanghai GP qualifying disclose?. Shanghai qualifying sector analysis reveals McLaren and Mercedes as the strongest all-around packages. Lando Norris set the Sector 1 benchmark (23.995), the sole sub-24-second time, indicating superior front-end stability and turn-in confidence from the McLaren chassis through medium-speed direction changes. Kimi Antonelli (Mercedes) was eight thousandths behind but showed front-end grip limitations exiting Turn 3 under acceleration. Charles Leclerc led Sector 2 (27.660), reflecting Ferrari's aerodynamic efficiency and energy harvesting capability through long-radius corners under 2026 power-unit regulations — a setup-sensitive finding for race energy deployment. Antonelli dominated Sector 3 (40.387), demonstrating Mercedes' straight-line speed and traction advantage, reversing his sprint-day deficit to George Russell in that segment. Max Verstappen's inability to match Mercedes and McLaren in Sector 3 flags a Red Bull deficit in traction and top-end pace. Ferrari's Leclerc lost significant time in Sector 3, suggesting a setup or power-unit trade-off favouring mid-sector efficiency over final-corner exit and straight-line speed.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 2
+    },
+    "source_url": "https://www.f1technical.net/news/28323",
+    "updated_at": "2026-06-02T21:49:14.876Z",
+    "content_hash": "c65dab285c1bbd34"
+  },
+  {
+    "id": "analysis-2026-r02-f1tech-f1maths-what-do-top-speeds-reveal-about-mercedes-d",
+    "title": "F1MATHS: What do top speeds reveal about Mercedes' dominance in Shanghai? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: What do top speeds reveal about Mercedes' dominance in Shanghai?. During Chinese Grand Prix Sprint Qualifying, Mercedes-powered teams recorded the highest average top speed across all power-unit groups at 335.5 km/h, with Williams reaching 337 km/h and the Mercedes works cars hitting 335 km/h. George Russell and Kimi Antonelli secured the front row, with straight-line efficiency a decisive factor on Shanghai's back straight. Alpine recorded the session's single highest top speed at 339 km/h on the start-finish straight, attributed to an aggressive low-drag aerodynamic setup compensating for power deficits. Audi averaged 334 km/h, indicating meaningful power-unit development progress. Ferrari-powered teams averaged 330.3 km/h, with Lewis Hamilton acknowledging a straight-line power deficit. Cadillac, also Ferrari-powered, reached only 328 km/h. Aston Martin, the sole Honda-powered team, recorded the lowest figures at 326 km/h, limiting their qualifying competitiveness despite cornering strengths.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 2
+    },
+    "source_url": "https://www.f1technical.net/news/28313",
+    "updated_at": "2026-06-02T21:49:24.480Z",
+    "content_hash": "c25c376e27b87599"
+  },
+  {
+    "id": "analysis-2026-r03-f1tech-f1maths-how-did-pirelli-s-tyre-perform-at-suzuka",
+    "title": "F1MATHS: How did Pirelli's tyre perform at Suzuka? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How did Pirelli's tyre perform at Suzuka?. At Suzuka, 19 of 20 drivers started on the Pirelli C2 Medium, converting to the C1 Hard in a universal one-stop strategy. The C1 Hard accumulated 609 laps (55% of total race distance), confirming it as the dominant race compound with low measured degradation. Lando Norris ran the longest Hard stint at 37 laps, sustaining consistent pace and supporting McLaren's late-race competitiveness. Valtteri Bottas covered the longest Medium stint at 33 laps, reflecting Cadillac's offset strategy given limited outright pace. The C3 Soft was effectively irrelevant in race trim — Alex Albon completed four laps on it solely for data collection. No team judged a Soft-compound gamble worthwhile, despite Pirelli confirming it remained thermally viable. Tyre compounds imposed no material restriction on race pace for any team. Red Bull and Racing Bulls are scheduled for two days of 2027 dry-weather tyre development testing at Suzuka post-race.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 3
+    },
+    "source_url": "https://www.f1technical.net/news/28413",
+    "updated_at": "2026-06-02T21:49:35.377Z",
+    "content_hash": "a03d47875b92211b"
+  },
+  {
+    "id": "analysis-2026-r03-f1tech-f1maths-how-does-superclipping-highlight-mercedes-",
+    "title": "F1MATHS: How does superclipping highlight Mercedes' advantage and Ferrari's weakness in Suzuka? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How does superclipping highlight Mercedes' advantage and Ferrari's weakness in Suzuka?. Suzuka qualifying speed-trace analysis via the 130R corner reveals stark divergence in 2026-regulation hybrid behaviour across power-unit suppliers. Mercedes-powered cars demonstrated the most stable energy management: Alpine recorded a 333–278 km/h profile (55 km/h superclipping delta) and the works Mercedes team a 329–271 km/h profile (53 km/h delta), indicating efficient ICE output combined with balanced MGU-K deployment. Audi posted the smallest delta of the session at 51 km/h (329–278 km/h), suggesting a conservative but electrically stable strategy. RBPT leads in peak straight-line speed (333 km/h average) but shows earlier harvest onset, with Red Bull Racing and Racing Bulls logging 56–57 km/h deltas. Honda-powered Aston Martin suffered the largest clipping loss — 327 to 267 km/h, a 60 km/h drop — implying aggressive early-lap deployment hitting the 250 kW harvest ceiling late in the lap. Ferrari recorded the lowest top speed of any power-unit group (320 km/h average), trailing even Honda-supplied cars, pointing to a combination of high drag, weaker electrical efficiency, or overly conservative deployment maps — a structural performance deficit rather than a setup artefact.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 3
+    },
+    "source_url": "https://www.f1technical.net/news/28392",
+    "updated_at": "2026-06-02T21:49:48.367Z",
+    "content_hash": "8ab3cfa9949b9a35"
+  },
+  {
+    "id": "analysis-2026-r03-f1tech-f1tech-things-to-know-about-red-bull-s-comprehensi",
+    "title": "F1TECH: Things to know about Red Bull's comprehensive upgrade package for Suzuka (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: Things to know about Red Bull's comprehensive upgrade package for Suzuka. Red Bull introduced an interconnected aerodynamic and cooling upgrade package on the RB22 at Suzuka, targeting platform instability and thermal inefficiency identified during the early 2026 season. The reworked sidepod inlet geometry is designed to ingest higher-pressure air, reducing airflow separation that early-season data flagged as a problem in medium-speed sections. The revised inlet cascaded into a reshaped coke and engine cover area to improve flow quality toward the beam wing and diffuser. The floor upper surface was also updated to integrate with the new bodywork, with Red Bull's engineers projecting more consistent downforce generation through Suzuka's high-speed first sector. A circuit-specific rear-corner cooling modification revised brake duct inlet and exit geometry to manage brake temperatures across long runs — an area where Red Bull have shown uncharacteristic vulnerability in 2026.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 3
+    },
+    "source_url": "https://www.f1technical.net/news/28382",
+    "updated_at": "2026-06-02T21:49:58.571Z",
+    "content_hash": "d0f29ab107af6e4c"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1maths-how-did-the-field-closed-on-mercedes-after",
+    "title": "F1MATHS: How did the field closed on Mercedes after upgrade festival at the Miami Grand Prix? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How did the field closed on Mercedes after upgrade festival at the Miami Grand Prix?. At the Miami Grand Prix, Mercedes remained the long-run pace benchmark against which all competitors were measured, having led the field across the opening three rounds in Australia, China, and Japan. Multiple teams introduced significant upgrade packages at Miami, and per-lap race-pace deficit data shows the midfield closed meaningfully, with some teams reducing their gap by multiple tenths per lap. A general correlation existed between upgrade volume and pace improvement, though not universally: some teams with large packages showed smaller-than-expected gains, implying further setup optimisation is required, while others with modest upgrade lists still improved through tyre management and operational refinement. The 2026 technical regulations appear to be enabling faster performance unlocking compared to prior seasons, accelerating field compression and increasing pressure on Mercedes from both direct rivals and the tightening midfield.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28517",
+    "updated_at": "2026-06-02T21:50:07.491Z",
+    "content_hash": "72b2f49190b21976"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1analysis-why-did-leclerc-suffer-a-final-lap-spin",
+    "title": "F1ANALYSIS: Why did Leclerc suffer a final‑lap spin at the Miami Grand Prix? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1ANALYSIS: Why did Leclerc suffer a final‑lap spin at the Miami Grand Prix?. Telemetry from Charles Leclerc's Ferrari SF-26 at the Miami Grand Prix confirms his lap-57 spin at Turn 3 resulted from a deliberate entry-speed reduction into Turn 2, intended to widen the radius and maximise exit acceleration onto the following straight to attack Oscar Piastri. The throttle trace shows Leclerc applied throttle earlier and more aggressively at the Turn 3 apex compared to the preceding lap. Rear tyres, heavily degraded after 57 laps in high-temperature Miami conditions, lacked sufficient mechanical grip to absorb the torque demand, causing immediate rear snap. Minor wall contact damaged the left side of the SF-26, preventing Leclerc from defending against George Russell and Max Verstappen; he finished sixth. No setup imbalance or external factors were identified as contributing causes.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28516",
+    "updated_at": "2026-06-02T21:50:16.638Z",
+    "content_hash": "cbc4853a200e1dd7"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1maths-what-does-the-boxplot-tell-about-teams-hig",
+    "title": "F1MATHS: What does the boxplot tell about teams' high-fuel performance in Miami? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: What does the boxplot tell about teams' high-fuel performance in Miami?. In the 2026 Miami Sprint, McLaren's heavily-upgraded MCL40 set the high-fuel pace benchmark: Lando Norris averaged 92.28s and Oscar Piastri 92.44s, with tight lap-time distributions indicating consistent tyre management. Ferrari were closest at –0.24s, anchored by Charles Leclerc (92.52s), though Lewis Hamilton's 93.25s mean widened the team's boxplot spread, suggesting setup or tyre-handling inconsistency. Mercedes followed at –0.35s; Andrea Kimi Antonelli (92.63s) showed a narrow, stable distribution, while George Russell (92.82s) exhibited higher degradation on Miami's hot surface. Red Bull showed significant intra-team divergence: Max Verstappen (92.80s) remained competitive, but Isack Hadjar (93.80s) dragged the team average to –0.52s. Nico Hülkenberg (Audi) and Arvid Lindblad (RB) both suffered technical failures preventing Sprint starts. Aston Martin remained severely off-pace at –3.55s despite reported upgrade progress; Cadillac's Valtteri Bottas and Sergio Perez were last at –3.72s, consistent in distribution but lacking raw pace despite qualifying improvements.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28497",
+    "updated_at": "2026-06-02T21:50:28.725Z",
+    "content_hash": "1b50d65b32a6ef7b"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1maths-what-the-sq2-sq3-delta-reveals-about-the-s",
+    "title": "F1MATHS: What the SQ2–SQ3 delta reveals about the SF‑26 in Miami (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: What the SQ2–SQ3 delta reveals about the SF‑26 in Miami. Ferrari SF-26 in Miami Sprint Qualifying showed a pronounced compound-specific performance deficit. SQ2-to-SQ3 lap-time improvements for Charles Leclerc (0.094s) and Lewis Hamilton (0.223s) were the smallest among front-runners, compared to Lando Norris (0.854s), Kimi Antonelli (1.118s), and Max Verstappen (0.632s). On the Pirelli medium compound the SF-26 displayed strong balance and rotation; switching to the soft compound narrowed the operating window sharply, with the rear axle becoming sensitive to temperature spikes and losing traction through Miami's long, loaded final-sector corners due to soft-tyre overheating. Charles Leclerc's SQ2 benchmark of 68.333s ranked competitively, confirming medium-tyre pace is genuine. Ferrari brought upgrades to Miami but competitors matched them. Long-run simulations remained encouraging, suggesting race-pace competitiveness is more credible than single-lap soft-tyre performance, though soft-compound thermal management requires further setup and analysis work before qualifying optimisation can be achieved.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28482",
+    "updated_at": "2026-06-02T21:50:44.133Z",
+    "content_hash": "ae7280ff3035db94"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1maths-racing-bulls-crew-executes-the-fastest-pit",
+    "title": "F1MATHS: Racing Bulls' crew executes the fastest pit stop in Montreal (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: Racing Bulls' crew executes the fastest pit stop in Montreal. Racing Bulls recorded the fastest pit stop of the 2025 Canadian Grand Prix, servicing Liam Lawson in 2.20 seconds, extending their back-to-back fastest-stop streak and signalling strong pit crew execution consistency. Lawson converted a grid position gain — resulting from Arvid Lindblad's clutch-related stall — into a seventh-place finish, demonstrating effective tyre management across a medium-to-soft one-stop strategy under mixed conditions. Arvid Lindblad's clutch failure on the formation lap represents a reliability concern for Racing Bulls. McLaren's Lando Norris posted the second-fastest stop at 2.26 seconds, though an intermediate tyre call for both Norris and Oscar Piastri compromised their race. Audi completed Gabriel Bortoleto's stop in 2.57 seconds and Nico Hülkenberg's in 2.74 seconds. Ferrari's season-best stop remains Lewis Hamilton's 2.00-second service from an earlier round.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28596",
+    "updated_at": "2026-06-02T21:51:14.301Z",
+    "content_hash": "1741bfe9ac0d25cf"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1-tech-who-has-taken-fresh-power-unit-components-",
+    "title": "F1 TECH: Who has taken fresh power unit components for Montreal? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1 TECH: Who has taken fresh power unit components for Montreal?. For the Canadian Grand Prix at Circuit Gilles Villeneuve, multiple drivers across several teams fitted fresh 2026-specification power unit components. Isack Hadjar, Arvid Lindblad, Sergio Pérez, Oliver Bearman, Esteban Ocon, and Valtteri Bottas each took new Internal Combustion Engine, Turbocharger, and Exhaust assemblies. Liam Lawson added a fresh ICE and TC. Lance Stroll, Fernando Alonso, Esteban Ocon, Oliver Bearman, Valtteri Bottas, Sergio Pérez, and Alexander Albon each installed a new MGU-K. Charles Leclerc and Lewis Hamilton took fresh Energy Stores, alongside Franco Colapinto, who also received new Control Electronics alongside Gabriel Bortoleto. Lewis Hamilton and Alexander Albon joined several others in fitting new ancillary components. The volume of changes reflects the elevated thermal and electrical stress of the 2026 MGU-H-less architecture and teams actively building reliability baselines through early-season component cycling.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28562",
+    "updated_at": "2026-06-02T21:51:24.157Z",
+    "content_hash": "42eba0f69c6a6c25"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1maths-telemetry-confirms-ferrari-lose-four-tenth",
+    "title": "F1MATHS: Telemetry confirms Ferrari lose four tenths compared to Mercedes on the Montreal straights (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: Telemetry confirms Ferrari lose four tenths compared to Mercedes on the Montreal straights. Telemetry from the Montreal qualifying comparison between George Russell (Mercedes W17) and Lewis Hamilton (Ferrari SF26) confirms Ferrari loses approximately four tenths across the circuit's straight-line sections. The SF26 demonstrates competitive mechanical grip and front-end rotation through slow and medium-speed corners — Turns 3–4, 6–7, and the final chicane — where Hamilton briefly matches or exceeds Russell's minimum cornering speed. However, Ferrari surrenders these gains immediately upon corner exit: Russell's acceleration traces rise more steeply and sustain higher top speeds on every major straight. A key finding is electrical deployment fade on the Ferrari power unit — Hamilton's speed curve plateaus earlier than Russell's in the full-throttle sections, consistent with the MGU-K depleting sooner. Down the final short straight to the finish, Hamilton loses over a tenth due to exhausted electrical energy. On power-unit-sensitive circuits, the Mercedes W17 holds a structural straight-line advantage over the Ferrari SF26 that chassis performance alone cannot offset.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28557",
+    "updated_at": "2026-06-02T21:51:34.510Z",
+    "content_hash": "8b446c1dc619fd24"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1maths-how-does-the-montreal-telemetry-confirm-me",
+    "title": "F1MATHS: How does the Montreal telemetry confirm Mercedes’ superior engine performance over Ferrari’s? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How does the Montreal telemetry confirm Mercedes’ superior engine performance over Ferrari’s?. Montreal sprint qualifying telemetry comparing George Russell (Mercedes, 1:12.965) and Lewis Hamilton (Ferrari, 1:13.326) reveals a 0.361-second gap driven primarily by power-unit and hybrid system differences rather than aerodynamic setup. Mercedes delivered more consistent hybrid deployment throughout the lap, gaining 2–3 km/h on every acceleration phase from Turns 5–7. Russell reached 333 km/h on the back straight versus Hamilton's 330 km/h, with that straight alone accounting for 0.16 seconds. Critically, Hamilton's end-of-lap speed was 11 km/h lower than his entry speed, indicating full battery depletion, while Russell finished 1 km/h faster than he started, confirming Mercedes maintained hybrid deployment to the line. Ferrari showed compensating strengths in medium-speed cornering stability, carrying 4 km/h more through Turns 3–4, suggesting a high-downforce setup direction that trades straight-line deficit for mechanical grip. Hamilton also spent more time at full throttle (60.2% vs 59.1%), underscoring that Ferrari's power-unit output, not throttle application, is the limiting factor relative to Mercedes.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28545",
+    "updated_at": "2026-06-02T21:51:46.814Z",
+    "content_hash": "c410521e7c21dc3f"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1maths-how-do-the-fastest-cars-compare-to-each-ot",
+    "title": "F1MATHS: How do the fastest cars compare to each other in Montreal? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How do the fastest cars compare to each other in Montreal?. Sprint qualifying telemetry at Circuit Gilles Villeneuve revealed distinct performance profiles across the four leading packages. George Russell's Mercedes W15 recorded the session's highest top speed at 333 km/h, enabling sprint pole (1:12.965), though the car was slowest through the fastest chicane, indicating a high-speed direction-change weakness. Lando Norris's McLaren MCL38 carried higher downforce but spent less time at full throttle and required energy conservation on the main straight, limiting top speed to 326 km/h and resulting in a 1:13.280 lap. Lewis Hamilton's Ferrari SF-26 was fastest through the quickest corner at 141 km/h — 4 km/h clear of Mercedes — demonstrating superior high-speed grip, but ERS depletion before the finish line cost 11 km/h of straight-line speed, leaving Hamilton at 1:13.326. Max Verstappen's Red Bull RB20 (1:13.504) matched rivals in minimum cornering speed but exhibited a clear traction deficit exiting slow corners, identified as the primary source of his 0.5-second gap to Russell rather than aerodynamic or deployment limitations.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28543",
+    "updated_at": "2026-06-02T21:51:57.725Z",
+    "content_hash": "f99454a8aeac1eb8"
   }
 ]
