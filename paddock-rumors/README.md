@@ -87,7 +87,7 @@ Idempotent: re-running with no new round and no analysis-window work exits in un
 
 ## How it relates to f1-intelligence
 
-`f1-intelligence/` already exists in this repo and runs the live RAG API (the test page on hpovslen.dk and formula-1.dk is fed by it). It uses an older, untagged knowledge base format.
+`f1-intelligence/` already exists in this repo and runs the live RAG API (the test page on hpovlsen.dk and formula-1.dk is fed by it). It uses an older, untagged knowledge base format.
 
 Paddock Rumors generates a **richer, tagged** knowledge base. It can:
 

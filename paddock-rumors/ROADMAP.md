@@ -1,6 +1,6 @@
 # ROADMAP — From Paddock Rumors to Live API
 
-How Paddock Rumors comes together with the Phase 1 `f1-intelligence/` setup that's already serving traffic on hpovslen.dk and formula-1.dk.
+How Paddock Rumors comes together with the Phase 1 `f1-intelligence/` setup that's already serving traffic on hpovlsen.dk and formula-1.dk.
 
 ## Where things stand
 
@@ -84,7 +84,7 @@ Now ─────────────► Stay isolated (Path A)
   ▼
 After 2-3 races ─► Integrated (Path B)
                    Apply upgrades. Backfill Tier 1. Redeploy. Verify with
-                   public/f1-intelligence/test.php on hpovslen.dk that
+                   public/f1-intelligence/test.php on hpovlsen.dk that
                    queries about 2026 now pull current-season context.
                    Then promote to formula-1.dk.
 ```

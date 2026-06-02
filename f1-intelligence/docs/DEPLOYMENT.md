@@ -6,7 +6,7 @@ Deployment workflow for F1 Intelligence in the Paddock Picks (f1betting) project
 
 You don't have a local PHP environment, only:
 - **Your computer** (Ubuntu with VS Code + Claude Code) → Used for Node.js/Vercel work
-- **Test server**: hpovslen.dk → Test PHP integration here first
+- **Test server**: hpovlsen.dk → Test PHP integration here first
 - **Live server**: formula-1.dk → Deploy when tested
 
 ## Deployment Steps
@@ -88,16 +88,16 @@ define('F1_INTELLIGENCE_TIMEOUT', 30);
 define('F1_INTELLIGENCE_DEBUG', true); // false on formula-1.dk
 ```
 
-### Step 7: Deploy to Test Server (hpovslen.dk)
+### Step 7: Deploy to Test Server (hpovlsen.dk)
 
 Upload via FTP:
 - `public/f1-intelligence/F1Intelligence.php`
 - `public/f1-intelligence/test.php`
 - `public/config.php` (updated with Vercel URL)
 
-### Step 8: Test on hpovslen.dk
+### Step 8: Test on hpovlsen.dk
 
-Visit: `https://hpovslen.dk/f1-intelligence/test.php`
+Visit: `https://hpovlsen.dk/f1-intelligence/test.php`
 
 Should see:
 - ✅ API is reachable!
@@ -152,7 +152,7 @@ vercel rollback
 
 ## Troubleshooting
 
-### "Cannot reach API" on hpovslen.dk
+### "Cannot reach API" on hpovlsen.dk
 - Verify `F1_INTELLIGENCE_API_URL` matches your Vercel URL
 - Test Vercel API directly with curl
 - Check Vercel deployment status

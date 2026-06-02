@@ -1,6 +1,6 @@
 # Testing Guide
 
-Testing strategy for F1 Intelligence (no local dev, test on hpovslen.dk).
+Testing strategy for F1 Intelligence (no local dev, test on hpovlsen.dk).
 
 ## Testing Layers
 
@@ -11,7 +11,7 @@ Testing strategy for F1 Intelligence (no local dev, test on hpovslen.dk).
    ↓
 3. Test Vercel API with curl (your computer)
    ↓
-4. Test PHP on hpovslen.dk (test server)
+4. Test PHP on hpovlsen.dk (test server)
    ↓
 5. Deploy to formula-1.dk (live server)
 ```
@@ -57,14 +57,14 @@ curl -X POST https://your-app.vercel.app/api/intelligence \
 
 **Expected:** JSON response with `answer` and `sources` fields.
 
-## Test 4: PHP on hpovslen.dk
+## Test 4: PHP on hpovlsen.dk
 
 Upload test files via FTP:
 - `public/f1-intelligence/F1Intelligence.php`
 - `public/f1-intelligence/test.php`
 - `public/config.php` (with correct Vercel URL)
 
-Visit: `https://hpovslen.dk/f1-intelligence/test.php`
+Visit: `https://hpovlsen.dk/f1-intelligence/test.php`
 
 **Expected:**
 - Green ✅ for API health check
@@ -73,7 +73,7 @@ Visit: `https://hpovslen.dk/f1-intelligence/test.php`
 
 ## Test 5: Production on formula-1.dk
 
-After hpovslen.dk works:
+After hpovlsen.dk works:
 1. Set `F1_INTELLIGENCE_DEBUG = false` in config
 2. Upload to formula-1.dk
 3. Verify: `https://formula-1.dk/f1-intelligence/test.php`
@@ -121,7 +121,7 @@ vercel logs
 ```
 
 ### Check PHP Errors
-On hpovslen.dk, check error logs:
+On hpovlsen.dk, check error logs:
 - Via cPanel error log viewer
 - Or via FTP: `/logs/error.log`
 
@@ -134,7 +134,7 @@ define('F1_INTELLIGENCE_DEBUG', true);
 This logs detailed info via `error_log()`.
 
 ### Test Connectivity
-From hpovslen.dk's PHP, check it can reach Vercel:
+From hpovlsen.dk's PHP, check it can reach Vercel:
 ```php
 $ch = curl_init('https://your-app.vercel.app/api/intelligence');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -147,7 +147,7 @@ echo "HTTP $code"; // Should be 405 (POST required) - means reachable
 ## Pre-Deployment Checklist
 
 Before deploying to formula-1.dk:
-- [ ] All tests pass on hpovslen.dk
+- [ ] All tests pass on hpovlsen.dk
 - [ ] `F1_INTELLIGENCE_DEBUG = false` in production config
 - [ ] Vercel URL is correct in config
 - [ ] API keys are set in Vercel dashboard

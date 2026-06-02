@@ -11,7 +11,7 @@
 │   ▼                                                          │
 │  ┌──────────────────────────────────┐                       │
 │  │  Paddock Picks (PHP)             │                       │
-│  │  hpovslen.dk / formula-1.dk      │                       │
+│  │  hpovlsen.dk / formula-1.dk      │                       │
 │  │                                  │                       │
 │  │  public/f1-intelligence/         │                       │
 │  │  └── F1Intelligence.php          │                       │

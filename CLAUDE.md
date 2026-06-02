@@ -175,7 +175,7 @@ f1betting/
 ### Deployment Workflow
 
 **Servers:**
-- Test: hpovslen.dk (PHP)
+- Test: hpovlsen.dk (PHP)
 - Live: formula-1.dk (PHP)
 - API: Vercel (Node.js)
 
@@ -184,8 +184,8 @@ f1betting/
 2. Deploy API: `vercel deploy --prod`
 3. Set Vercel env vars: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`
 4. Update `public/config.php` with Vercel URL
-5. Upload `public/f1-intelligence/` to hpovslen.dk via FTP
-6. Test at `https://hpovslen.dk/f1-intelligence/test.php`
+5. Upload `public/f1-intelligence/` to hpovlsen.dk via FTP
+6. Test at `https://hpovlsen.dk/f1-intelligence/test.php`
 7. Deploy to formula-1.dk when verified
 
 ### Configuration
@@ -194,7 +194,7 @@ In `public/config.php`:
 ```php
 define('F1_INTELLIGENCE_API_URL', 'https://your-app.vercel.app');
 define('F1_INTELLIGENCE_TIMEOUT', 30);
-define('F1_INTELLIGENCE_DEBUG', false); // true only on hpovslen.dk
+define('F1_INTELLIGENCE_DEBUG', false); // true only on hpovlsen.dk
 ```
 
 ### Usage in Paddock Picks
@@ -260,7 +260,7 @@ Auto-updating F1 race knowledge, distilled from the paddock's analysis sources. 
 
 ### Relationship to f1-intelligence/
 
-- **`f1-intelligence/`** — existing live RAG (Vercel API + PHP client on hpovslen.dk / formula-1.dk). Already working. Untouched by Paddock Rumors.
+- **`f1-intelligence/`** — existing live RAG (Vercel API + PHP client on hpovlsen.dk / formula-1.dk). Already working. Untouched by Paddock Rumors.
 - **`paddock-rumors/`** — content-generation layer. Produces a richer, tagged knowledge base. Default mode: writes to `paddock-rumors/data/knowledge-base.json` (fully isolated). Integrated mode: writes directly to the live KB. See `paddock-rumors/ROADMAP.md` for the migration paths.
 
 **IMPORTANT RULE:** never modify anything inside `f1-intelligence/` or `public/f1-intelligence/` based on Paddock Rumors documentation unless the user explicitly approves a specific change. The `paddock-rumors/upgrades/` folder holds two files that *would* upgrade Phase 1, but applying them requires user sign-off.
