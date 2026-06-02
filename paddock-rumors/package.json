@@ -1,0 +1,18 @@
+{
+  "name": "paddock-rumors",
+  "version": "1.0.0",
+  "description": "Auto-updating F1 race knowledge, distilled from the paddock's analysis sources.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "update": "node update-kb.js",
+    "update:tier1-only": "F1TECH_ENRICH=0 node update-kb.js",
+    "update:integrated": "KB_OUTPUT_PATH=../f1-intelligence/api/data/f1-knowledge-base.json node update-kb.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

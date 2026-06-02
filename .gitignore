@@ -116,3 +116,5 @@ test-output.log
 # F1 Intelligence
 f1-intelligence/api/node_modules/
 f1-intelligence/api/.vercel
+
+paddock-rumors/node_modules/

@@ -1,0 +1,300 @@
+[
+  {
+    "id": "race-2026-r01-albert-grand-prix",
+    "title": "Australian Grand Prix 2026 — Race Result & Analysis",
+    "content": "Season 2026, Round 1: Australian Grand Prix. George Russell took victory at the 2026 Australian Grand Prix at Albert Park Grand Prix Circuit, converting pole position into a race win with a total time of 1:23:06.801. Mercedes teammate Andrea Kimi Antonelli, who also started from his grid position of second, finished 2.974 seconds behind to complete a Mercedes one-two. Charles Leclerc claimed third for Ferrari, gaining one place from his fourth-place grid slot and finishing 15.519 seconds off the lead. Lewis Hamilton delivered the most notable grid-to-finish improvement in the top four, advancing three positions from seventh to fourth for Ferrari. Max Verstappen produced the standout recovery drive of the race, climbing fourteen places from twentieth on the grid to sixth at the flag.\n\nGeorge Russell also held pole with a lap of 1:18.518. The fastest lap was set by Max Verstappen on lap 43 with a time of 1:22.091, consistent with his late-race charge through the field from the back of the grid.\n\nTwo drivers did not start: Oscar Piastri of McLaren and Nico Hülkenberg of Audi. Fernando Alonso retired on lap 21 for Aston Martin, Valtteri Bottas of Cadillac F1 Team on lap 15, and Red Bull's Isack Hadjar on lap 10.\n\nAs this was the opening round of the 2026 season, all championship positions were established from scratch. Russell leads with 25 points, Antonelli holds second with 18, and Leclerc sits third with 15. Verstappen trails the lead by 17 points after his recovery to sixth.",
+    "tags": {
+      "season": 2026,
+      "type": "race",
+      "round": 1,
+      "circuit": "albert-park-grand-prix-circuit",
+      "drivers_top10": [
+        "george-russell",
+        "andrea-kimi-antonelli",
+        "charles-leclerc",
+        "lewis-hamilton",
+        "lando-norris",
+        "max-verstappen",
+        "oliver-bearman",
+        "arvid-lindblad",
+        "gabriel-bortoleto",
+        "pierre-gasly"
+      ]
+    },
+    "source_url": "https://en.wikipedia.org/wiki/2026_Australian_Grand_Prix",
+    "updated_at": "2026-06-02T20:42:04.067Z",
+    "content_hash": "86b2d8fc4328247e"
+  },
+  {
+    "id": "driver-russell-2026",
+    "title": "George Russell — 2026 Season Form",
+    "content": "Season 2026 driver form — George Russell (Mercedes). George Russell sits second in the 2026 Formula One Drivers' Championship with 88 points after five rounds, trailing the championship leader. Russell has recorded one victory and two podiums across the opening phase of the season, with his standout result being a dominant pole-to-win conversion at the Australian Grand Prix in round one. His Chinese Grand Prix second-place finish further demonstrated consistent front-running pace. The grid-versus-finish delta across all five races averages minus 0.25 positions, indicating a marginally net-losing trend overall; however, this figure is heavily distorted by a single outlier. At the Canadian Grand Prix, Russell retired from nineteenth position having started from pole, representing an eighteen-place grid delta loss. Excluding that retirement, his conversion of starting positions into race results has been broadly neutral to positive. The Canadian Grand Prix represents Russell's sole DNF of the season, caused by a mechanical retirement rather than any discernible recurring fault. Mercedes has otherwise demonstrated competitive reliability, supporting Russell through four classified finishes in the remaining rounds.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "russell",
+      "team": "mercedes"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:47:36.497Z",
+    "content_hash": "4ea6f1e1bf8ec29a"
+  },
+  {
+    "id": "driver-antonelli-2026",
+    "title": "Andrea Kimi Antonelli — 2026 Season Form",
+    "content": "Season 2026 driver form — Andrea Kimi Antonelli (Mercedes). Andrea Kimi Antonelli leads the 2026 Formula One Drivers' Championship with 131 points after five rounds, holding a commanding position at the top of the standings. The Mercedes driver has recorded four victories and five podium finishes across the opening races, with a run of three consecutive wins at the Chinese, Japanese, and Miami Grands Prix representing the standout sequence of the campaign. His Canadian Grand Prix victory, achieved from second on the grid, demonstrated an ability to recover starting position when not leading from pole.\n\nAndrea Kimi Antonelli's grid-to-finish delta averages a positive 0.2 positions across the five rounds, indicating a marginal net gain overall and consistent race execution relative to qualifying. Reliability has been flawless, with zero retirements recorded and all five entries resulting in classified finishes. Mercedes has provided a mechanically dependable platform throughout, and the combination of the constructor's technical output and Andrea Kimi Antonelli's conversion rate has produced an average finishing position of 1.2 through the opening fifth of the season.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "antonelli",
+      "team": "mercedes"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:47:29.058Z",
+    "content_hash": "2dcec34847b8982c"
+  },
+  {
+    "id": "driver-leclerc-2026",
+    "title": "Charles Leclerc — 2026 Season Form",
+    "content": "Season 2026 driver form — Charles Leclerc (Ferrari). Through five rounds of the 2026 Formula 1 World Championship, Charles Leclerc sits third in the Drivers' standings with 75 points, trailing the top two without yet securing a race victory. Leclerc has recorded two podium finishes this season, both third-place results at the Australian Grand Prix and the Japanese Grand Prix, the latter representing his strongest single-race return of 15 points alongside Australia. His grid-to-finish conversion is broadly neutral, averaging a gain of 0.2 positions per race across the five rounds, though this masks notable variance. A five-place loss at the Miami Grand Prix, where Leclerc dropped from third on the grid to eighth at the flag, stands as the clear low point, while a four-place recovery from eighth to fourth in Canada partially offset that deficit. Reliability has been a non-factor to date, with zero DNFs recorded across all five entries. Within Ferrari, Leclerc is the team's lead points scorer, underlining his central role in the Scuderia's 2026 constructors' campaign.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "leclerc",
+      "team": "ferrari"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:47:43.637Z",
+    "content_hash": "0fe0a72c317267c1"
+  },
+  {
+    "id": "driver-hamilton-2026",
+    "title": "Lewis Hamilton — 2026 Season Form",
+    "content": "Season 2026 driver form — Lewis Hamilton (Ferrari). Lewis Hamilton sits fourth in the 2026 Drivers' Championship with 72 points accumulated across five races. He has recorded no victories to date but has secured two podium finishes. The standout result of his season so far came at the Canadian Grand Prix, where Hamilton converted a fifth-place grid position into second place, earning 18 points — his highest single-race haul of the campaign. Across all five rounds, Hamilton has been a net positions gainer, posting an average grid delta of +1.2 places per race. His most consistent forward movement occurred at the Australian Grand Prix, where he advanced three positions from seventh to fourth. Reliability has not been a concern: Hamilton has finished all five races without a single mechanical or incident-related retirement. Within Ferrari, this debut season represents the Scuderia's integration of Hamilton following his high-profile move from Mercedes, with the team fielding him as a primary championship contender alongside their broader 2026 technical programme.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "hamilton",
+      "team": "ferrari"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:47:50.428Z",
+    "content_hash": "5b98ce5e5379cf38"
+  },
+  {
+    "id": "driver-norris-2026",
+    "title": "Lando Norris — 2026 Season Form",
+    "content": "Season 2026 driver form — Lando Norris (McLaren). Lando Norris sits fifth in the 2026 Formula One Drivers' Championship with 58 points across five rounds entered. He has yet to record a race victory this season, though a second-place finish at the Miami Grand Prix represents his sole podium and the clearest highlight of his campaign to date. Across completed races, Norris carries an average finishing position of fourth, and his grid-to-finish delta averages plus-one position, indicating a marginal net gainer overall. However, that aggregate is heavily distorted by two significant non-scores: a did-not-start at the Chinese Grand Prix and a retirement at the Canadian Grand Prix, the latter classified as a mechanical retirement. Those two incidents have together cost Norris a substantial points haul and account for the majority of his deficit to the championship leaders. Within McLaren, the reliability pattern across both drivers warrants monitoring, as the Canadian Grand Prix retirement suggests a possible mechanical concern yet to be fully resolved at the team level.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "norris",
+      "team": "mclaren"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:47:57.115Z",
+    "content_hash": "0295717f70ae81b6"
+  },
+  {
+    "id": "driver-max_verstappen-2026",
+    "title": "Max Verstappen — 2026 Season Form",
+    "content": "Season 2026 driver form — Max Verstappen (Red Bull). Through five rounds of the 2026 Formula One World Championship, Max Verstappen sits seventh in the Drivers' standings with 43 points, yet to record a victory. His sole podium came at the Canadian Grand Prix, where he finished third from sixth on the grid. That result represented his strongest points return of the campaign with 15 points scored. Across all five entries, Verstappen has demonstrated a net positive grid-to-finish trend, averaging a gain of 4.25 positions per race — notably driven by a 14-place recovery from 20th to sixth at the Australian Grand Prix. However, the data is not uniformly positive; he dropped eight places at the Chinese Grand Prix, where he retired, accounting for the season's single DNF. The retirement in China is his only mechanical or incident-related withdrawal so far, with no discernible recurring failure pattern yet established. Red Bull has shown inconsistent pace across varying circuit characteristics, reflected in Verstappen's average finishing position of 5.5 over the opening five rounds.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "max_verstappen",
+      "team": "red-bull"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:48:12.367Z",
+    "content_hash": "101827fdf112f563"
+  },
+  {
+    "id": "driver-bearman-2026",
+    "title": "Oliver Bearman — 2026 Season Form",
+    "content": "Season 2026 driver form — Oliver Bearman (Haas F1 Team). Oliver Bearman sits ninth in the 2026 Formula 1 Drivers' Championship with 18 points accumulated across five rounds. The Haas F1 Team driver has yet to record a win or podium finish this season, with his most productive result being a fifth-place finish at the Chinese Grand Prix, which contributed 10 of his 18 total points. On a grid-versus-finish basis, Bearman has generally been a net gainer, averaging a positive delta of five positions across the season when accounting for all classified results, indicating consistent racecraft in converting starting positions into stronger finishes. However, reliability has been a significant concern: four DNFs are recorded from five entries, with a retirement at the Japanese Grand Prix representing the only on-track mechanical exit among otherwise lapped but classified finishes — suggesting the DNF count may reflect data classification methodology rather than purely mechanical failure. Within the Haas F1 Team context, Bearman is operating as a developing frontline driver entering his second full season with the American constructor.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "bearman",
+      "team": "haas-f1-team"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:48:25.702Z",
+    "content_hash": "b0f1bcc7442483ee"
+  },
+  {
+    "id": "driver-arvid_lindblad-2026",
+    "title": "Arvid Lindblad — 2026 Season Form",
+    "content": "Season 2026 driver form — Arvid Lindblad (RB F1 Team). Arvid Lindblad sits tenth in the 2026 Formula 1 Drivers' Championship with four points accumulated across two rounds. The RB F1 Team driver has yet to register a win or podium finish this season, with his best result being eighth place at the Australian Grand Prix, where he collected all four of his current points. At the Chinese Grand Prix, Lindblad finished twelfth and scored no additional points.\n\nIn terms of grid-to-finish movement, Lindblad has consistently advanced through the field in both races, gaining one position in Australia and three in China, indicating a pattern of modest but positive race-day progression relative to qualifying. Both results were recorded as lapped finishes, suggesting a pace deficit to the frontrunners rather than outright mechanical failures. Notably, the structured data records two DNFs against only two races entered, which represents an internal data inconsistency and should be verified before drawing reliability conclusions. Lindblad is competing as part of the RB F1 Team, the Red Bull-affiliated junior constructor.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "arvid_lindblad",
+      "team": "rb-f1-team"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:44:29.026Z",
+    "content_hash": "47c6d9d18114aea7"
+  },
+  {
+    "id": "driver-bortoleto-2026",
+    "title": "Gabriel Bortoleto — 2026 Season Form",
+    "content": "Season 2026 driver form — Gabriel Bortoleto (Audi). Gabriel Bortoleto sits ninth in the 2026 Formula 1 Drivers' Championship with 2 points accumulated from one race contested. The Brazilian driver has yet to register a win or podium finish across the opening round of the season.\n\nAt the Australian Grand Prix, Gabriel Bortoleto started tenth on the grid and crossed the line ninth, recording a net gain of one position over the course of the race. He finished one lap down on the race leader, indicating a pace deficit relative to the frontrunners, though the single-race sample size limits broader trend analysis. No average grid delta or average finish figure can be meaningfully calculated at this stage.\n\nGabriel Bortoleto has recorded one DNF-equivalent classified finish noted as lapped, though no mechanical retirement has been logged through the opening round. Reliability patterns remain inconclusive with only one race completed.\n\nGabriel Bortoleto is competing for Audi in their Formula 1 programme, a manufacturer-backed operation still in its early competitive development phase.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "bortoleto",
+      "team": "audi"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:43:03.524Z",
+    "content_hash": "3daa8bfc4e82e6a6"
+  },
+  {
+    "id": "driver-gasly-2026",
+    "title": "Pierre Gasly — 2026 Season Form",
+    "content": "Season 2026 driver form — Pierre Gasly (Alpine F1 Team). Pierre Gasly sits eighth in the 2026 Formula One Drivers' Championship with 20 points from five races entered. He has recorded no wins or podiums to date, with his strongest result being a sixth-place finish at the Chinese Grand Prix, where he advanced one position from seventh on the grid. His grid-to-finish performance has been marginally positive overall, averaging a gain of 0.5 positions per race, though this figure is heavily influenced by swings in either direction across individual rounds. Pierre Gasly gained four places in Australia and six in Canada, but suffered a net loss of twelve positions at the Miami Grand Prix following a retirement. Reliability represents a significant concern: Pierre Gasly has recorded three DNFs across five rounds, a rate that has materially suppressed his points total. The retirements do not yet show a clearly documented single-cause pattern. Alpine F1 Team has demonstrated mid-field pace on clean weekends but requires substantial improvement in mechanical consistency to support a stronger championship challenge.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "gasly",
+      "team": "alpine-f1-team"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:48:18.746Z",
+    "content_hash": "d3e5dc4ff42cb64e"
+  },
+  {
+    "id": "race-2026-r02-shanghai",
+    "title": "Chinese Grand Prix 2026 — Race Result & Analysis",
+    "content": "Season 2026, Round 2: Chinese Grand Prix. Andrea Kimi Antonelli converted pole position into victory at the 2026 Chinese Grand Prix, leading throughout at Shanghai International Circuit to take the win in 1:33:15.607. George Russell finished second for Mercedes, 5.515 seconds adrift, completing a dominant one-two for the team. Lewis Hamilton took third for Ferrari, crossing the line 25.267 seconds behind the winner. The top four finishers all held their grid positions, indicating a clean opening phase. Oliver Bearman was the standout mover in the points, advancing five places from tenth on the grid to finish fifth for Haas F1 Team. Liam Lawson also made significant progress, climbing seven positions from fourteenth to seventh for RB F1 Team. Carlos Sainz recovered from seventeenth on the grid to ninth for Williams, though he was classified as lapped.\n\nAntonelli secured pole with a 1:32.064 and also set the fastest lap on lap 52 with a 1:35.275, completing a clean sweep of performance metrics for the weekend.\n\nFour drivers retired from the race: Lance Stroll departed on lap 9, Fernando Alonso on lap 32, and Max Verstappen on lap 45, all classified as retired. Oscar Piastri, Lando Norris, Gabriel Bortoleto, and Alexander Albon did not start, representing a significant loss of points opportunities for McLaren in particular.\n\nIn the championship, George Russell leads on 51 points, with Antonelli second on 47. Verstappen dropped to eighth with no points scored, while Oliver Bearman and Pierre Gasly both rose in the standings through strong points hauls.",
+    "tags": {
+      "season": 2026,
+      "type": "race",
+      "round": 2,
+      "circuit": "shanghai-international-circuit",
+      "drivers_top10": [
+        "andrea-kimi-antonelli",
+        "george-russell",
+        "lewis-hamilton",
+        "charles-leclerc",
+        "oliver-bearman",
+        "pierre-gasly",
+        "liam-lawson",
+        "isack-hadjar",
+        "carlos-sainz",
+        "franco-colapinto"
+      ]
+    },
+    "source_url": "https://en.wikipedia.org/wiki/2026_Chinese_Grand_Prix",
+    "updated_at": "2026-06-02T20:43:20.909Z",
+    "content_hash": "135a459205e835f7"
+  },
+  {
+    "id": "driver-lawson-2026",
+    "title": "Liam Lawson — 2026 Season Form",
+    "content": "Season 2026 driver form — Liam Lawson (RB F1 Team). Liam Lawson sits tenth in the 2026 Drivers' Championship with 16 points accumulated across five rounds, representing a mid-table position for the RB F1 Team. Lawson has recorded no wins or podiums to date, with his best results being a pair of seventh-place finishes at the Chinese Grand Prix and Canadian Grand Prix, each yielding six points.\n\nThe grid-versus-finish trend presents a mixed picture. Across the five rounds, Lawson averages a gain of six positions per race, driven primarily by strong recoveries in China, Japan, and Canada. However, this aggregate masks two significant position losses — notably a nine-place drop in Miami, where he retired — distorting the overall figure.\n\nReliability has been a notable concern, with three incidents classified as non-finishes or lapped retirements from five entries; the Miami retirement stands out as the most damaging. The Australian Grand Prix also saw Lawson lapped and scoreless from eighth on the grid.\n\nWithin the RB F1 Team, these results reflect a car operating outside the leading midfield tier, with Lawson generally qualifying in the eleventh-to-fourteenth range.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "lawson",
+      "team": "rb-f1-team"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:48:33.302Z",
+    "content_hash": "7a5049f47c31aaff"
+  },
+  {
+    "id": "race-2026-r03-suzuka",
+    "title": "Japanese Grand Prix 2026 — Race Result & Analysis",
+    "content": "Season 2026, Round 3: Japanese Grand Prix. Andrea Kimi Antonelli converted pole position into victory at the 2026 Japanese Grand Prix at Suzuka Circuit, completing the race in 1:28:03.403 and leading from start to finish without a grid position change. Oscar Piastri finished second for McLaren, gaining one place from his third grid slot to cross the line 13.722 seconds behind Antonelli. Charles Leclerc completed the podium for Ferrari, also advancing one position from fourth on the grid, finishing 15.270 seconds adrift of the winner. The most notable grid-to-finish movement came from George Russell, who dropped two places from second on the grid to fourth at the flag. Max Verstappen recovered from eleventh on the grid to eighth, while Liam Lawson climbed five positions from fourteenth to ninth for RB F1 Team.\n\nAntonelli also claimed pole with a lap of 1:28.778 and set the fastest lap on lap 49 with a 1:32.432, completing a dominant weekend sweep for Mercedes. Lance Stroll retired for Aston Martin on lap 30, and Oliver Bearman left the race on lap 20 for Haas F1 Team, both classified as retirements. Fernando Alonso, Valtteri Bottas, and Alexander Albon were classified as lapped finishers.\n\nIn the championship, Antonelli's 25-point haul moved him to first overall with 72 points, displacing George Russell, who fell to second on 63 points despite scoring 12. Oscar Piastri made the largest standings gain, rising six positions to sixth on 21 points following his podium result.",
+    "tags": {
+      "season": 2026,
+      "type": "race",
+      "round": 3,
+      "circuit": "suzuka-circuit",
+      "drivers_top10": [
+        "andrea-kimi-antonelli",
+        "oscar-piastri",
+        "charles-leclerc",
+        "george-russell",
+        "lando-norris",
+        "lewis-hamilton",
+        "pierre-gasly",
+        "max-verstappen",
+        "liam-lawson",
+        "esteban-ocon"
+      ]
+    },
+    "source_url": "https://en.wikipedia.org/wiki/2026_Japanese_Grand_Prix",
+    "updated_at": "2026-06-02T20:44:38.857Z",
+    "content_hash": "e393c42195043348"
+  },
+  {
+    "id": "driver-piastri-2026",
+    "title": "Oscar Piastri — 2026 Season Form",
+    "content": "Season 2026 driver form — Oscar Piastri (McLaren). Oscar Piastri sits sixth in the 2026 Formula One Drivers' Championship with 48 points accumulated across five race entries. He has yet to secure a victory this season but has recorded two podium finishes, with a second-place result at the Japanese Grand Prix representing his strongest individual performance to date, followed by third at the Miami Grand Prix. The grid-versus-finish picture is heavily distorted by reliability. Excluding non-starts, Oscar Piastri has shown a positive trend in classified races, gaining positions relative to his qualifying slot; however, the overall average grid delta of +2.5 is skewed by two did-not-start retirements in Australia and China alongside a lapped finish in Canada, giving him three DNFs from five entries. The pattern of early-season mechanical failures suggests a recurring issue affecting race-day participation rather than pace. Within McLaren, these reliability losses have compounded championship damage at a critical stage of the campaign.",
+    "tags": {
+      "season": 2026,
+      "type": "driver",
+      "driver": "piastri",
+      "team": "mclaren"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-02T20:48:03.636Z",
+    "content_hash": "9b7fabda63a22aff"
+  },
+  {
+    "id": "race-2026-r04-miami-autodrome",
+    "title": "Miami Grand Prix 2026 — Race Result & Analysis",
+    "content": "Season 2026, Round 4: Miami Grand Prix. Andrea Kimi Antonelli converted pole position into victory at the Miami Grand Prix, completing the race in 1:33:19.273 to take a dominant win for Mercedes. Lando Norris finished second for McLaren 3.264 seconds behind, having gained two positions from his fourth-place grid slot. Oscar Piastri completed a McLaren double podium in third, advancing four places from seventh on the grid to finish 27.092 seconds off the lead. George Russell brought the second Mercedes home fourth, while Max Verstappen slipped three positions from second on the grid to finish fifth for Red Bull. Charles Leclerc was the most notable mover in reverse, dropping five places from third on the grid to eighth. Carlos Sainz and Alexander Albon recorded strong results for Williams, gaining four and five positions respectively to claim ninth and tenth.\n\nAndrea Kimi Antonelli also held pole with a lap of 1:27.798, and Lando Norris set the fastest lap on lap 35 with a 1:31.869. Three drivers retired early: Pierre Gasly of Alpine F1 Team on lap four, Isack Hadjar of Red Bull on lap four, and Liam Lawson of RB F1 Team on lap six, with Nico Hülkenberg of Audi also retiring on lap seven.\n\nIn the championship, Antonelli extended his lead to 100 points, with George Russell remaining second on 80 points. Lando Norris gained one championship position to fourth, displacing Lewis Hamilton to fifth despite both holding 51 points. Max Verstappen moved up two positions to seventh with 26 points accumulated.",
+    "tags": {
+      "season": 2026,
+      "type": "race",
+      "round": 4,
+      "circuit": "miami-international-autodrome",
+      "drivers_top10": [
+        "andrea-kimi-antonelli",
+        "lando-norris",
+        "oscar-piastri",
+        "george-russell",
+        "max-verstappen",
+        "lewis-hamilton",
+        "franco-colapinto",
+        "charles-leclerc",
+        "carlos-sainz",
+        "alexander-albon"
+      ]
+    },
+    "source_url": "https://en.wikipedia.org/wiki/2026_Miami_Grand_Prix",
+    "updated_at": "2026-06-02T20:46:00.538Z",
+    "content_hash": "ec155efe68181c32"
+  },
+  {
+    "id": "race-2026-r05-gilles-villeneuve",
+    "title": "Canadian Grand Prix 2026 — Race Result & Analysis",
+    "content": "Season 2026, Round 5: Canadian Grand Prix. Andrea Kimi Antonelli won the 2026 Canadian Grand Prix at Circuit Gilles Villeneuve, completing the race in 1:28:15.758 after starting from second on the grid. Lewis Hamilton finished second for Ferrari, 10.768 seconds behind, having advanced three places from his fifth grid position. Max Verstappen completed the podium for Red Bull, a further 0.508 seconds back, also gaining three places from sixth on the grid. Charles Leclerc was a notable mover in fourth, climbing four positions from eighth, while Franco Colapinto, Liam Lawson, Pierre Gasly, Carlos Sainz, and Oliver Bearman all gained significant ground through the field, each advancing between five and six positions to score points.\n\nPole position was taken by George Russell of Mercedes with a lap of 1:12.578, however Russell retired on lap 29, surrendering any points contribution and ceding the strategic advantage for Mercedes to Antonelli. Antonelli also set the fastest lap on lap 68 with a 1:14.210, earning the additional point. Among true retirements, Fernando Alonso exited on lap 23, Alexander Albon on lap 11, Lando Norris on lap 38, and Arvid Lindblad did not start.\n\nIn the championship, Antonelli extended his lead to 131 points, gaining 31 on the weekend including the fastest lap bonus. Lewis Hamilton moved up one place to fourth with 72 points, while Lando Norris dropped one position to fifth as his retirement limited him to 58 points. Max Verstappen collected 17 points to reach 43, narrowing the gap to the leading group modestly.",
+    "tags": {
+      "season": 2026,
+      "type": "race",
+      "round": 5,
+      "circuit": "circuit-gilles-villeneuve",
+      "drivers_top10": [
+        "andrea-kimi-antonelli",
+        "lewis-hamilton",
+        "max-verstappen",
+        "charles-leclerc",
+        "isack-hadjar",
+        "franco-colapinto",
+        "liam-lawson",
+        "pierre-gasly",
+        "carlos-sainz",
+        "oliver-bearman"
+      ]
+    },
+    "source_url": "https://en.wikipedia.org/wiki/2026_Canadian_Grand_Prix",
+    "updated_at": "2026-06-02T20:47:21.205Z",
+    "content_hash": "9ae345ca6ee2dea2"
+  }
+]

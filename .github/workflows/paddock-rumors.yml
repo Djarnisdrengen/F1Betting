@@ -1,0 +1,161 @@
+# Paddock Rumors — KB Update
+#
+# Runs the auto-update pipeline on a cron that covers both the post-race
+# results window (Sun–Mon) and the analysis publishing window (Tue–Thu).
+# The script decides what work is needed each run, so off-week crons cost
+# nothing.
+#
+# ─────────────────────────────────────────────────────────────────────
+# MODE — IMPORTANT
+# ─────────────────────────────────────────────────────────────────────
+#
+# Two modes are documented below. The workflow ships in MODE 1 (safe).
+#
+#   MODE 1  Generate-only (default, safe for Phase 1 coexistence).
+#           - Pipeline writes to paddock-rumors/data/knowledge-base.json.
+#           - Commits state + KB content if anything changed.
+#           - Does NOT touch f1-intelligence/.
+#           - Does NOT rebuild the vector index.
+#           - Does NOT trigger Vercel redeploy.
+#           Use this until you're confident the content is good.
+#
+#   MODE 2  Integrated.
+#           - Pipeline writes directly to f1-intelligence/api/data/f1-knowledge-base.json.
+#           - Rebuilds the vector index in-place.
+#           - Triggers Vercel deploy hook.
+#           - REQUIRES the upgrades in paddock-rumors/upgrades/ to be applied
+#             to f1-intelligence/api/ first. See paddock-rumors/ROADMAP.md.
+#
+# To switch from MODE 1 to MODE 2:
+#   - Comment out the "MODE 1" step below.
+#   - Uncomment the three "MODE 2" steps.
+#   - Add a VERCEL_DEPLOY_HOOK_URL secret to the repo.
+#
+# ─────────────────────────────────────────────────────────────────────
+
+name: Paddock Rumors — KB Update
+
+on:
+  schedule:
+    # Results window (Sun afternoon → Mon afternoon UTC)
+    - cron: '0 16,18,20,22 * * 0'
+    - cron: '0 0,2,4,6,8,10,12,14 * * 1'
+    # Analysis publishing window (Tue, Wed, Thu UTC)
+    - cron: '0 18 * * 2'
+    - cron: '0 18 * * 3'
+    - cron: '0 12 * * 4'
+  workflow_dispatch:
+    inputs:
+      force_season:
+        description: 'Override F1_SEASON (default uses repo default)'
+        required: false
+        default: ''
+      tier1_only:
+        description: 'Skip enrichment (useful for backfill)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+env:
+  F1_SEASON: ${{ github.event.inputs.force_season || '2026' }}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install paddock-rumors dependencies
+        working-directory: paddock-rumors
+        run: npm install --no-audit --no-fund
+
+      # ── MODE 1: generate-only (default, safe) ───────────────────────
+      - name: Run KB update (generate-only)
+        working-directory: paddock-rumors
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          F1TECH_ENRICH: ${{ github.event.inputs.tier1_only == 'true' && '0' || '1' }}
+        run: node update-kb.js
+
+      - name: Validate KB output
+        working-directory: paddock-rumors
+        run: |
+          if [ -f data/knowledge-base.json ]; then
+            node -e "
+              const d = JSON.parse(require('fs').readFileSync('./data/knowledge-base.json'));
+              if (!Array.isArray(d) || d.length === 0) throw new Error('KB empty or wrong shape');
+              console.log('KB valid:', d.length, 'docs');
+            "
+          fi
+
+      - name: Sync KB to public/paddock-rumors/
+        run: |
+          mkdir -p public/paddock-rumors
+          if [ -f paddock-rumors/data/knowledge-base.json ]; then
+            cp paddock-rumors/data/knowledge-base.json public/paddock-rumors/knowledge-base.json
+          fi
+
+      # ── MODE 2: integrated — UNCOMMENT WHEN READY ───────────────────
+      #
+      # - name: Run KB update (integrated)
+      #   working-directory: paddock-rumors
+      #   env:
+      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      #     KB_OUTPUT_PATH: ../f1-intelligence/api/data/f1-knowledge-base.json
+      #     F1TECH_ENRICH: ${{ github.event.inputs.tier1_only == 'true' && '0' || '1' }}
+      #   run: node update-kb.js
+      #
+      # - name: Install f1-intelligence/api dependencies
+      #   working-directory: f1-intelligence/api
+      #   run: npm install --no-audit --no-fund
+      #
+      # - name: Build vector index (incremental)
+      #   working-directory: f1-intelligence/api
+      #   env:
+      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      #   run: npm run build-index
+      # ─────────────────────────────────────────────────────────────────
+
+      - name: Commit & push if anything changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # MODE 1 paths (always staged — committing 0 changes is a no-op)
+          git add paddock-rumors/data/knowledge-base.json          2>/dev/null || true
+          git add paddock-rumors/state/last_processed_round.json   2>/dev/null || true
+          git add public/paddock-rumors/knowledge-base.json        2>/dev/null || true
+
+          # MODE 2 paths — uncomment when switching modes:
+          # git add f1-intelligence/api/data/f1-knowledge-base.json     2>/dev/null || true
+          # git add f1-intelligence/api/data/f1-vector-index.json       2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "no changes — nothing to commit"
+            echo "vercel_redeploy=false" >> "$GITHUB_ENV"
+          else
+            git commit -m "paddock-rumors: KB update ($(date -u +%Y-%m-%d))"
+            git push
+            echo "vercel_redeploy=true" >> "$GITHUB_ENV"
+          fi
+
+      # ── MODE 2 ONLY: redeploy Vercel — UNCOMMENT WHEN READY ─────────
+      #
+      # - name: Trigger Vercel redeploy
+      #   if: env.vercel_redeploy == 'true'
+      #   env:
+      #     VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+      #   run: |
+      #     if [ -z "$VERCEL_DEPLOY_HOOK_URL" ]; then
+      #       echo "VERCEL_DEPLOY_HOOK_URL secret not set — skipping redeploy"
+      #       exit 0
+      #     fi
+      #     curl -fsSL -X POST "$VERCEL_DEPLOY_HOOK_URL" && echo "deploy hook fired"
