@@ -20,7 +20,8 @@ import {
   getLatestFinishedRound,
   getRaceResults,
   getQualifyingResults,
-  getDriverStandings
+  getDriverStandings,
+  getPitStops
 } from './fetch-results.js';
 import { synthesiseRaceDoc } from './synthesise.js';
 import { migrateState } from './schedule.js';
@@ -103,15 +104,16 @@ async function main() {
   for (const { round, raceName } of toProcess) {
     console.log(`\n[backfill-races] R${round} ${raceName}`);
     try {
-      const [race, quali, standingsBefore, standingsAfter] = await Promise.all([
+      const [race, quali, pitStops, standingsBefore, standingsAfter] = await Promise.all([
         getRaceResults(CURRENT_SEASON, round),
         getQualifyingResults(CURRENT_SEASON, round),
+        getPitStops(CURRENT_SEASON, round),
         getStandings(round - 1),
         getStandings(round),
       ]);
 
-      console.log(`[backfill-races]   synthesising race doc`);
-      const doc = await synthesiseRaceDoc(race, quali, standingsBefore, standingsAfter);
+      console.log(`[backfill-races]   synthesising race doc (${pitStops.length} pit stops)`);
+      const doc = await synthesiseRaceDoc(race, quali, standingsBefore, standingsAfter, pitStops);
 
       const idx = kb.findIndex(d => d.id === doc.id);
       if (idx >= 0) kb[idx] = doc; else kb.push(doc);
