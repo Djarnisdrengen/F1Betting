@@ -19,12 +19,14 @@ Lives alongside (not inside) the existing `f1-intelligence/` RAG setup. See **`R
 | `update-kb.js`           | Main orchestrator. Run this. |
 | `schedule.js`            | Pure logic — decides per-round what work is needed. |
 | `fetch-results.js`       | Jolpica-F1 API client. |
-| `synthesise.js`          | Claude → race doc + per-driver docs from structured data. |
+| `synthesise.js`          | Claude → qualifying doc + race doc + per-driver docs from structured data. |
 | `enrich-f1technical.js`  | Optional, non-blocking F1Technical summarisation. |
 | `state/last_processed_round.json` | Per-round state (schema v2). Commit it. |
 | `data/knowledge-base.json` | Default KB output (generated). |
 | `upgrades/`              | Phase 1 file upgrades — see `upgrades/README.md`. |
 | `package.json`           | Dependencies (node-fetch) for CI installs. |
+| `query.js`               | CLI keyword search tool for inspecting `knowledge-base.json` locally. |
+| `backfill-enrichment.js` | One-off backfill of F1Technical enrichment from monthly archive pages. |
 | `SCHEDULING.md`          | Per-source timing and cron pattern. |
 | `ROADMAP.md`             | How to integrate with the live f1-intelligence API. |
 
@@ -50,7 +52,7 @@ Every doc carries season/type tags so a retrieval layer can weight current-seaso
 }
 ```
 
-`type` is one of: `race`, `driver`, `analysis`, `testing`, `evergreen`.
+`type` is one of: `qualifying`, `race`, `driver`, `analysis`, `testing`, `evergreen`.
 
 ## Running it
 
@@ -81,8 +83,9 @@ Idempotent: re-running with no new round and no analysis-window work exits in un
 | `TOP_N_DRIVERS` | `10` | How many drivers get a maintained per-season doc. |
 | `F1TECH_ENRICH` | `1` | Set to `0` to disable enrichment (useful for backfill). |
 | `F1TECH_MAX_ARTICLES` | `5` | Cap on F1Tech articles summarised per round. |
-| `CLAUDE_MODEL` | `claude-sonnet-4-20250514` | Model used for synthesis. |
+| `CLAUDE_MODEL` | `claude-sonnet-4-6` | Model used for synthesis. |
 | `KB_OUTPUT_PATH` | `./data/knowledge-base.json` | Where to write the KB. Override to integrate. |
+| `FORCE_QUALI` | `false` | Set to `true` to re-synthesise the qualifying doc even if already done. |
 | `ANTHROPIC_API_KEY` | — | Required. |
 
 ## How it relates to f1-intelligence
@@ -103,6 +106,6 @@ Paddock Rumors generates a **richer, tagged** knowledge base. It can:
 
 ## Scheduled in production
 
-`.github/workflows/paddock-rumors.yml` runs this on a cron covering both the results window (Sun–Mon) and the analysis publishing window (Tue–Thu). Default mode is **content-only** — generates and commits, no integration with the live API.
+`.github/workflows/paddock-rumors.yml` runs this on a cron covering the qualifying window (Sat), results window (Sun–Mon), and analysis publishing window (Tue–Thu). Default mode is **content-only** — generates and commits, no integration with the live API.
 
 See `SCHEDULING.md` for the cron pattern and `ROADMAP.md` for switching the workflow to integrated mode.

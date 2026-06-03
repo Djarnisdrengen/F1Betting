@@ -284,8 +284,10 @@ f1betting/
     ├── update-kb.js                main orchestrator
     ├── schedule.js                 per-round work-decider (pure logic)
     ├── fetch-results.js            Jolpica-F1 client
-    ├── synthesise.js               Claude → race + driver docs
+    ├── synthesise.js               Claude → qualifying + race + driver docs
     ├── enrich-f1technical.js       optional F1Tech enrichment (non-blocking)
+    ├── query.js                    CLI keyword search for local KB inspection
+    ├── backfill-enrichment.js      one-off F1Technical backfill from monthly archives
     ├── data/
     │   └── knowledge-base.json     generated content (default output)
     ├── state/
@@ -305,7 +307,7 @@ f1betting/
   "content": "Season 2026, Round 5: ...",
   "tags": {
     "season": 2026,
-    "type": "race",          // race | driver | analysis | testing | evergreen
+    "type": "race",          // qualifying | race | driver | analysis | testing | evergreen
     "round": 5,
     "circuit": "...",
     "drivers_top10": ["..."]
@@ -318,7 +320,7 @@ f1betting/
 
 ### Scheduling
 
-`paddock-rumors/` runs on a GitHub Actions cron (`.github/workflows/paddock-rumors.yml`) covering both the post-race results window (Sun–Mon) and the analysis publishing window (Tue–Thu). Per-source timing in `paddock-rumors/SCHEDULING.md`.
+`paddock-rumors/` runs on a GitHub Actions cron (`.github/workflows/paddock-rumors.yml`) covering the qualifying window (Sat), post-race results window (Sun–Mon), and analysis publishing window (Tue–Thu). Per-source timing in `paddock-rumors/SCHEDULING.md`.
 
 The workflow ships in **Mode 1 (generate-only)** — commits content to `paddock-rumors/data/`, does NOT touch `f1-intelligence/`, does NOT trigger Vercel deploys. To switch to Mode 2 (integrated), follow the comments at the top of the workflow file and ROADMAP Path B.
 
@@ -345,6 +347,7 @@ KB_OUTPUT_PATH=../f1-intelligence/api/data/f1-knowledge-base.json node update-kb
 | `KB_OUTPUT_PATH` | `./data/knowledge-base.json` | Where to write the KB. |
 | `F1TECH_ENRICH` | `1` | `0` disables F1Tech enrichment. |
 | `TOP_N_DRIVERS` | `10` | Per-driver doc count. |
+| `FORCE_QUALI` | `false` | `true` re-synthesises the qualifying doc even if already done. |
 | `ANTHROPIC_API_KEY` | — | Required. |
 
 ### Cost

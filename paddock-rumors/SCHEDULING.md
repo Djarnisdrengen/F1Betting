@@ -13,10 +13,20 @@ F1 sources publish on different timelines:
   Thursday after the race**.
 
 A single Sunday-night fetch would miss everything except the result. So
-the pipeline is built around two phases per race, with re-runnable
+the pipeline is built around three phases per race, with re-runnable
 enrichment.
 
-## The Two Phases
+## The Three Phases
+
+### Phase 0 — Qualifying (pre-race grid snapshot)
+
+| | |
+|---|---|
+| **Runs** | Once per round, as soon as Jolpica has qualifying data (typically ~1h after the session ends Saturday) |
+| **Output** | One qualifying document: pole, top-10 grid, key gaps, race-pace context — tagged `type: qualifying` |
+| **Source** | Jolpica-F1 qualifying endpoint |
+| **Idempotency** | `state.rounds.N.qualifying_at` set on completion; won't repeat unless `FORCE_QUALI=true` |
+| **Trigger** | Saturday crons (14:00, 16:00, 18:00 UTC) or manual `force_quali` dispatch |
 
 ### Phase 1 — Tier 1 (results + driver synthesis)
 
@@ -48,7 +58,7 @@ are typical and approximate.
 | Source | Window after race end | Captured by phase |
 |--------|----------------------|-------------------|
 | Jolpica results | T+0:30 to T+2h | Tier 1 |
-| Jolpica qualifying | T-22h (Saturday evening) | Tier 1 (fetched at race time) |
+| **Jolpica qualifying** | **T-22h (Saturday afternoon)** | **Phase 0 — dedicated qualifying doc** |
 | F1Technical race-day reports | T+2h to T+12h | Not captured (too quick — caller waits for T+36h) |
 | **F1Technical F1MATHS series** | **T+36h to T+96h** | **Enrichment** |
 | **F1Technical F1 TECH deep-dives** | **T+48h to T+96h** | **Enrichment** |
@@ -62,10 +72,11 @@ Tune in one place if a source's cadence changes.
 
 ## The Cron Pattern
 
-The GitHub Actions workflow (`.github/workflows/update-kb.yml`) fires
+The GitHub Actions workflow (`.github/workflows/paddock-rumors.yml`) fires
 the pipeline at these times (all UTC):
 
 ```
+Sat  14, 16, 18                    ← qualifying-window crons
 Sun  16, 18, 20, 22                ← results-window crons
 Mon   0,  2,  4,  6,  8, 10, 12, 14
 Tue   18                           ← analysis-window crons
