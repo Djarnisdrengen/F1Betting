@@ -2,13 +2,13 @@
   {
     "id": "race-2026-r01-albert-grand-prix",
     "title": "Australian Grand Prix 2026 — Race Result & Analysis",
-    "content": "Season 2026, Round 1: Australian Grand Prix. George Russell took victory at the 2026 Australian Grand Prix at Albert Park Grand Prix Circuit, converting pole position into a race win with a total time of 1:23:06.801. Mercedes teammate Andrea Kimi Antonelli, who also started from his grid position of second, finished 2.974 seconds behind to complete a Mercedes one-two. Charles Leclerc claimed third for Ferrari, gaining one place from his fourth-place grid slot and finishing 15.519 seconds off the lead. Lewis Hamilton delivered the most notable grid-to-finish improvement in the top four, advancing three positions from seventh to fourth for Ferrari. Max Verstappen produced the standout recovery drive of the race, climbing fourteen places from twentieth on the grid to sixth at the flag.\n\nGeorge Russell also held pole with a lap of 1:18.518. The fastest lap was set by Max Verstappen on lap 43 with a time of 1:22.091, consistent with his late-race charge through the field from the back of the grid.\n\nTwo drivers did not start: Oscar Piastri of McLaren and Nico Hülkenberg of Audi. Fernando Alonso retired on lap 21 for Aston Martin, Valtteri Bottas of Cadillac F1 Team on lap 15, and Red Bull's Isack Hadjar on lap 10.\n\nAs this was the opening round of the 2026 season, all championship positions were established from scratch. Russell leads with 25 points, Antonelli holds second with 18, and Leclerc sits third with 15. Verstappen trails the lead by 17 points after his recovery to sixth.",
+    "content": "Season 2026, Round 1: Australian Grand Prix. George Russell converted pole position into victory at the 2026 Australian Grand Prix at Albert Park, completing the race in 1:23:06.801 and holding off Mercedes teammate Andrea Kimi Antonelli by 2.974 seconds. Charles Leclerc completed the podium for Ferrari, finishing 15.519 seconds behind the leader after gaining one place from his grid position of fourth. Lewis Hamilton was the most notable forward mover among the top finishers, advancing three places from seventh on the grid to fourth at the flag. Max Verstappen produced the most dramatic recovery of the race, climbing fourteen positions from twentieth on the grid to sixth place. Oliver Bearman also gained five positions for Haas F1 Team, finishing seventh.\n\nGeorge Russell took pole position with a lap of 1:18.518, converting it cleanly into the race lead. Max Verstappen set the fastest lap on lap 43 with a 1:22.091, a notable achievement given his rearward starting position.\n\nSeveral significant retirements shaped the outcome. Isack Hadjar retired from third on the grid on lap 10, representing a loss of seventeen positions. Oscar Piastri and Nico Hülkenberg did not start the race. Fernando Alonso retired on lap 21 and Valtteri Bottas on lap 15.\n\nAs this was the opening round of the 2026 season, all standings changes reflect first-scored points. George Russell leads the Drivers' Championship with 25 points, with Antonelli seven points behind. Max Verstappen sits sixth on eight points, already seventeen adrift of Russell, while both Piastri and Hülkenberg begin the season without points scored.",
     "tags": {
       "season": 2026,
       "type": "race",
       "round": 1,
       "circuit": "albert-park-grand-prix-circuit",
-      "drivers_top10": [
+      "drivers_classified": [
         "george-russell",
         "andrea-kimi-antonelli",
         "charles-leclerc",
@@ -18,12 +18,24 @@
         "oliver-bearman",
         "arvid-lindblad",
         "gabriel-bortoleto",
-        "pierre-gasly"
+        "pierre-gasly",
+        "esteban-ocon",
+        "alexander-albon",
+        "liam-lawson",
+        "franco-colapinto",
+        "carlos-sainz",
+        "sergio-p-rez",
+        "lance-stroll",
+        "fernando-alonso",
+        "valtteri-bottas",
+        "isack-hadjar",
+        "oscar-piastri",
+        "nico-h-lkenberg"
       ]
     },
     "source_url": "https://en.wikipedia.org/wiki/2026_Australian_Grand_Prix",
-    "updated_at": "2026-06-02T20:42:04.067Z",
-    "content_hash": "86b2d8fc4328247e"
+    "updated_at": "2026-06-03T16:19:02.518Z",
+    "content_hash": "e673aa12b7c9105f"
   },
   {
     "id": "driver-russell-2026",
@@ -168,13 +180,13 @@
   {
     "id": "race-2026-r02-shanghai",
     "title": "Chinese Grand Prix 2026 — Race Result & Analysis",
-    "content": "Season 2026, Round 2: Chinese Grand Prix. Andrea Kimi Antonelli converted pole position into victory at the 2026 Chinese Grand Prix, leading throughout at Shanghai International Circuit to take the win in 1:33:15.607. George Russell finished second for Mercedes, 5.515 seconds adrift, completing a dominant one-two for the team. Lewis Hamilton took third for Ferrari, crossing the line 25.267 seconds behind the winner. The top four finishers all held their grid positions, indicating a clean opening phase. Oliver Bearman was the standout mover in the points, advancing five places from tenth on the grid to finish fifth for Haas F1 Team. Liam Lawson also made significant progress, climbing seven positions from fourteenth to seventh for RB F1 Team. Carlos Sainz recovered from seventeenth on the grid to ninth for Williams, though he was classified as lapped.\n\nAntonelli secured pole with a 1:32.064 and also set the fastest lap on lap 52 with a 1:35.275, completing a clean sweep of performance metrics for the weekend.\n\nFour drivers retired from the race: Lance Stroll departed on lap 9, Fernando Alonso on lap 32, and Max Verstappen on lap 45, all classified as retired. Oscar Piastri, Lando Norris, Gabriel Bortoleto, and Alexander Albon did not start, representing a significant loss of points opportunities for McLaren in particular.\n\nIn the championship, George Russell leads on 51 points, with Antonelli second on 47. Verstappen dropped to eighth with no points scored, while Oliver Bearman and Pierre Gasly both rose in the standings through strong points hauls.",
+    "content": "Season 2026, Round 2: Chinese Grand Prix. Andrea Kimi Antonelli converted pole position into victory at the 2026 Chinese Grand Prix, leading the full race distance at Shanghai International Circuit to win in 1:33:15.607. George Russell completed a Mercedes one-two finish 5.515 seconds behind, while Lewis Hamilton brought his Ferrari home third, 25.267 seconds adrift. The top four — including Charles Leclerc in fourth — held their grid positions throughout. The most notable gainers across the field were Carlos Sainz, who advanced eight places from seventeenth to ninth for Williams, Liam Lawson who climbed seven places from fourteenth to seventh for RB F1 Team, and Oliver Bearman who rose five positions from tenth to fifth for Haas F1 Team. Valtteri Bottas and Sergio Pérez both gained six places for Cadillac F1 Team, finishing fifteenth and fourteenth respectively. Max Verstappen suffered the most significant regression, retiring from eighth on lap 45. Both McLaren drivers — Oscar Piastri and Lando Norris — as well as Gabriel Bortoleto and Alexander Albon did not start the race. Fernando Alonso retired on lap 32 and Lance Stroll on lap nine for Aston Martin. Antonelli also set the fastest lap on lap 52 with a 1:35.275, completing a dominant individual performance. In the championship, George Russell leads on 51 points with Antonelli four behind on 47. Oliver Bearman, Pierre Gasly, and Liam Lawson made notable gains, while Verstappen dropped to eighth having scored no points.",
     "tags": {
       "season": 2026,
       "type": "race",
       "round": 2,
       "circuit": "shanghai-international-circuit",
-      "drivers_top10": [
+      "drivers_classified": [
         "andrea-kimi-antonelli",
         "george-russell",
         "lewis-hamilton",
@@ -184,12 +196,24 @@
         "liam-lawson",
         "isack-hadjar",
         "carlos-sainz",
-        "franco-colapinto"
+        "franco-colapinto",
+        "nico-h-lkenberg",
+        "arvid-lindblad",
+        "valtteri-bottas",
+        "esteban-ocon",
+        "sergio-p-rez",
+        "max-verstappen",
+        "fernando-alonso",
+        "lance-stroll",
+        "oscar-piastri",
+        "lando-norris",
+        "gabriel-bortoleto",
+        "alexander-albon"
       ]
     },
     "source_url": "https://en.wikipedia.org/wiki/2026_Chinese_Grand_Prix",
-    "updated_at": "2026-06-02T20:43:20.909Z",
-    "content_hash": "135a459205e835f7"
+    "updated_at": "2026-06-03T16:19:15.681Z",
+    "content_hash": "0855b37905b395f5"
   },
   {
     "id": "driver-lawson-2026",
@@ -208,13 +232,13 @@
   {
     "id": "race-2026-r03-suzuka",
     "title": "Japanese Grand Prix 2026 — Race Result & Analysis",
-    "content": "Season 2026, Round 3: Japanese Grand Prix. Andrea Kimi Antonelli converted pole position into victory at the 2026 Japanese Grand Prix at Suzuka Circuit, completing the race in 1:28:03.403 and leading from start to finish without a grid position change. Oscar Piastri finished second for McLaren, gaining one place from his third grid slot to cross the line 13.722 seconds behind Antonelli. Charles Leclerc completed the podium for Ferrari, also advancing one position from fourth on the grid, finishing 15.270 seconds adrift of the winner. The most notable grid-to-finish movement came from George Russell, who dropped two places from second on the grid to fourth at the flag. Max Verstappen recovered from eleventh on the grid to eighth, while Liam Lawson climbed five positions from fourteenth to ninth for RB F1 Team.\n\nAntonelli also claimed pole with a lap of 1:28.778 and set the fastest lap on lap 49 with a 1:32.432, completing a dominant weekend sweep for Mercedes. Lance Stroll retired for Aston Martin on lap 30, and Oliver Bearman left the race on lap 20 for Haas F1 Team, both classified as retirements. Fernando Alonso, Valtteri Bottas, and Alexander Albon were classified as lapped finishers.\n\nIn the championship, Antonelli's 25-point haul moved him to first overall with 72 points, displacing George Russell, who fell to second on 63 points despite scoring 12. Oscar Piastri made the largest standings gain, rising six positions to sixth on 21 points following his podium result.",
+    "content": "Season 2026, Round 3: Japanese Grand Prix. Andrea Kimi Antonelli won the 2026 Japanese Grand Prix at Suzuka Circuit, converting pole position into a controlled victory with a race time of 1:28:03.403. Oscar Piastri finished second for McLaren, 13.722 seconds adrift after gaining one position from his grid slot of third. Charles Leclerc completed the podium for Ferrari, a further 1.548 seconds behind, also advancing one place from fourth on the grid. George Russell, who started second, dropped two positions to finish fourth, representing the most notable regression among the front runners. Max Verstappen recovered strongly from 11th on the grid to eighth, while Liam Lawson gained five places from 14th to ninth. Conversely, Isack Hadjar, Gabriel Bortoleto, and Arvid Lindblad each lost four positions from their respective starting slots, finishing 12th, 13th, and 14th.\n\nAndrea Kimi Antonelli also claimed pole position with a lap of 1:28.778 and set the fastest lap on lap 49 with a 1:32.432, completing a clean sweep of individual honours. Oliver Bearman retired from the race on lap 20, and Lance Stroll followed him into retirement on lap 30, both classified at the rear. Alexander Albon, Fernando Alonso, and Valtteri Bottas were classified as lapped finishers.\n\nIn the championship, Antonelli's maximum haul moved him to first with 72 points, displacing George Russell, who dropped to second on 63 points. Charles Leclerc holds third on 49 points. Oscar Piastri's 18-point score propelled him six positions up the standings to sixth, representing the most significant positional gain among the top ten drivers.",
     "tags": {
       "season": 2026,
       "type": "race",
       "round": 3,
       "circuit": "suzuka-circuit",
-      "drivers_top10": [
+      "drivers_classified": [
         "andrea-kimi-antonelli",
         "oscar-piastri",
         "charles-leclerc",
@@ -224,12 +248,24 @@
         "pierre-gasly",
         "max-verstappen",
         "liam-lawson",
-        "esteban-ocon"
+        "esteban-ocon",
+        "nico-h-lkenberg",
+        "isack-hadjar",
+        "gabriel-bortoleto",
+        "arvid-lindblad",
+        "carlos-sainz",
+        "franco-colapinto",
+        "sergio-p-rez",
+        "fernando-alonso",
+        "valtteri-bottas",
+        "alexander-albon",
+        "lance-stroll",
+        "oliver-bearman"
       ]
     },
     "source_url": "https://en.wikipedia.org/wiki/2026_Japanese_Grand_Prix",
-    "updated_at": "2026-06-02T20:44:38.857Z",
-    "content_hash": "e393c42195043348"
+    "updated_at": "2026-06-03T16:19:29.475Z",
+    "content_hash": "57fab51d9843b93c"
   },
   {
     "id": "driver-piastri-2026",
@@ -248,13 +284,13 @@
   {
     "id": "race-2026-r04-miami-autodrome",
     "title": "Miami Grand Prix 2026 — Race Result & Analysis",
-    "content": "Season 2026, Round 4: Miami Grand Prix. Andrea Kimi Antonelli converted pole position into victory at the Miami Grand Prix, completing the race in 1:33:19.273 to take a dominant win for Mercedes. Lando Norris finished second for McLaren 3.264 seconds behind, having gained two positions from his fourth-place grid slot. Oscar Piastri completed a McLaren double podium in third, advancing four places from seventh on the grid to finish 27.092 seconds off the lead. George Russell brought the second Mercedes home fourth, while Max Verstappen slipped three positions from second on the grid to finish fifth for Red Bull. Charles Leclerc was the most notable mover in reverse, dropping five places from third on the grid to eighth. Carlos Sainz and Alexander Albon recorded strong results for Williams, gaining four and five positions respectively to claim ninth and tenth.\n\nAndrea Kimi Antonelli also held pole with a lap of 1:27.798, and Lando Norris set the fastest lap on lap 35 with a 1:31.869. Three drivers retired early: Pierre Gasly of Alpine F1 Team on lap four, Isack Hadjar of Red Bull on lap four, and Liam Lawson of RB F1 Team on lap six, with Nico Hülkenberg of Audi also retiring on lap seven.\n\nIn the championship, Antonelli extended his lead to 100 points, with George Russell remaining second on 80 points. Lando Norris gained one championship position to fourth, displacing Lewis Hamilton to fifth despite both holding 51 points. Max Verstappen moved up two positions to seventh with 26 points accumulated.",
+    "content": "Season 2026, Round 4: Miami Grand Prix. Andrea Kimi Antonelli converted pole position into victory at the Miami Grand Prix, leading throughout to win in 1:33:19.273 for Mercedes. Lando Norris closed to within 3.264 seconds for McLaren, having advanced two positions from fourth on the grid, while Oscar Piastri completed the podium 27.092 seconds back, gaining four places from seventh. George Russell finished fourth for Mercedes, moving up one place from fifth on the grid. Max Verstappen dropped three positions from second to fifth for Red Bull, with Charles Leclerc losing five places from third to eighth for Ferrari — one of the more notable regressions across the field. Gabriel Bortoleto gained nine places from twenty-first to twelfth for Audi, the largest positive grid delta of the race. Carlos Sainz and Alexander Albon both advanced for Williams, gaining four and five positions respectively to score points from thirteenth and fifteenth on the grid.\n\nAndrea Kimi Antonelli took pole with a 1:27.798, and Lando Norris set the fastest lap on lap 35 with a 1:31.869. Pierre Gasly, Isack Hadjar, Liam Lawson, and Nico Hülkenberg all retired early, with Gasly and Hadjar exiting on lap four and Lawson and Hülkenberg on laps six and seven respectively, reducing the effective field significantly.\n\nIn the championship, Antonelli extended his lead to 100 points, twenty ahead of George Russell. Norris moved above Lewis Hamilton into fourth on countback, both on 51 points. Max Verstappen climbed two positions to seventh with 26 points, while Franco Colapinto's seventh-place finish lifted him five places in the standings to eleventh.",
     "tags": {
       "season": 2026,
       "type": "race",
       "round": 4,
       "circuit": "miami-international-autodrome",
-      "drivers_top10": [
+      "drivers_classified": [
         "andrea-kimi-antonelli",
         "lando-norris",
         "oscar-piastri",
@@ -264,23 +300,35 @@
         "franco-colapinto",
         "charles-leclerc",
         "carlos-sainz",
-        "alexander-albon"
+        "alexander-albon",
+        "oliver-bearman",
+        "gabriel-bortoleto",
+        "esteban-ocon",
+        "arvid-lindblad",
+        "fernando-alonso",
+        "sergio-p-rez",
+        "lance-stroll",
+        "valtteri-bottas",
+        "nico-h-lkenberg",
+        "liam-lawson",
+        "pierre-gasly",
+        "isack-hadjar"
       ]
     },
     "source_url": "https://en.wikipedia.org/wiki/2026_Miami_Grand_Prix",
-    "updated_at": "2026-06-02T20:46:00.538Z",
-    "content_hash": "ec155efe68181c32"
+    "updated_at": "2026-06-03T16:19:42.514Z",
+    "content_hash": "6d3200cc4958ebca"
   },
   {
     "id": "race-2026-r05-gilles-villeneuve",
     "title": "Canadian Grand Prix 2026 — Race Result & Analysis",
-    "content": "Season 2026, Round 5: Canadian Grand Prix. Andrea Kimi Antonelli won the 2026 Canadian Grand Prix at Circuit Gilles Villeneuve, completing the race in 1:28:15.758 after starting from second on the grid. Lewis Hamilton finished second for Ferrari, 10.768 seconds behind, having advanced three places from his fifth grid position. Max Verstappen completed the podium for Red Bull, a further 0.508 seconds back, also gaining three places from sixth on the grid. Charles Leclerc was a notable mover in fourth, climbing four positions from eighth, while Franco Colapinto, Liam Lawson, Pierre Gasly, Carlos Sainz, and Oliver Bearman all gained significant ground through the field, each advancing between five and six positions to score points.\n\nPole position was taken by George Russell of Mercedes with a lap of 1:12.578, however Russell retired on lap 29, surrendering any points contribution and ceding the strategic advantage for Mercedes to Antonelli. Antonelli also set the fastest lap on lap 68 with a 1:14.210, earning the additional point. Among true retirements, Fernando Alonso exited on lap 23, Alexander Albon on lap 11, Lando Norris on lap 38, and Arvid Lindblad did not start.\n\nIn the championship, Antonelli extended his lead to 131 points, gaining 31 on the weekend including the fastest lap bonus. Lewis Hamilton moved up one place to fourth with 72 points, while Lando Norris dropped one position to fifth as his retirement limited him to 58 points. Max Verstappen collected 17 points to reach 43, narrowing the gap to the leading group modestly.",
+    "content": "Season 2026, Round 5: Canadian Grand Prix. Andrea Kimi Antonelli won the Canadian Grand Prix at Circuit Gilles Villeneuve, completing the race in 1:28:15.758 and advancing one position from his grid slot of second. Lewis Hamilton finished 10.768 seconds behind in second for Ferrari, having gained three places from fifth on the grid, with Max Verstappen a further 0.508 seconds back in third for Red Bull, also recovering three positions from sixth. Charles Leclerc was the strongest mover in the top five, climbing four places from eighth to fourth. Further down the order, Pierre Gasly and Carlos Sainz each gained six positions, while Liam Lawson advanced five places to seventh. Oscar Piastri was the most significant negative mover among finishers, dropping seven places to eleventh.\n\nGeorge Russell claimed pole position with a 1:12.578 for Mercedes but retired on lap 29, making his pole irrelevant to the race outcome. Andrea Kimi Antonelli recorded the fastest lap on lap 68 with a 1:14.210, contributing a bonus point to his total. Lando Norris retired on lap 38 and Arvid Lindblad did not start the race for RB F1 Team.\n\nIn the championship, Antonelli extended his lead to 131 points, 43 ahead of George Russell. Lewis Hamilton moved up one position to fourth with 72 points, displacing Lando Norris to fifth on 58. Max Verstappen gained 17 points to reach 43, consolidating seventh overall.",
     "tags": {
       "season": 2026,
       "type": "race",
       "round": 5,
       "circuit": "circuit-gilles-villeneuve",
-      "drivers_top10": [
+      "drivers_classified": [
         "andrea-kimi-antonelli",
         "lewis-hamilton",
         "max-verstappen",
@@ -290,12 +338,24 @@
         "liam-lawson",
         "pierre-gasly",
         "carlos-sainz",
-        "oliver-bearman"
+        "oliver-bearman",
+        "oscar-piastri",
+        "nico-h-lkenberg",
+        "gabriel-bortoleto",
+        "esteban-ocon",
+        "lance-stroll",
+        "valtteri-bottas",
+        "sergio-p-rez",
+        "lando-norris",
+        "george-russell",
+        "fernando-alonso",
+        "alexander-albon",
+        "arvid-lindblad"
       ]
     },
     "source_url": "https://en.wikipedia.org/wiki/2026_Canadian_Grand_Prix",
-    "updated_at": "2026-06-02T20:47:21.205Z",
-    "content_hash": "9ae345ca6ee2dea2"
+    "updated_at": "2026-06-03T16:19:54.353Z",
+    "content_hash": "d34a64386aad4b59"
   },
   {
     "id": "analysis-2026-r03-f1tech-f1maths-does-the-boxplot-from-suzuka-continue-to-c",
@@ -594,7 +654,7 @@
   {
     "id": "quali-2026-r01-albert-grand-prix",
     "title": "Australian Grand Prix 2026 — Qualifying",
-    "content": "Season 2026, Round 1 Qualifying: Australian Grand Prix. George Russell claimed pole position for the 2026 Australian Grand Prix at Albert Park Grand Prix Circuit with a Q3 lap of 1:18.518, giving Mercedes a front-row lockout. Andrea Kimi Antonelli qualified second for Mercedes, 0.293 seconds adrift. Isack Hadjar secured third for Red Bull at 1:19.303, a gap of 0.785 seconds to pole, with Charles Leclerc fourth for Ferrari just 0.024 seconds further back. Oscar Piastri and Lando Norris placed fifth and sixth for McLaren, separated by 0.095 seconds, suggesting strong but not dominant single-lap pace from the Woking-based constructor. Notably, Arvid Lindblad of RB F1 Team set a competitive Q2 time of 1:19.971 but recorded a significantly slower Q3 lap of 1:21.247, indicating a possible issue during the final session. Gabriel Bortoleto reaching Q3 for Audi represents a noteworthy result for a returning manufacturer. Mercedes' qualifying margin over rivals suggests a meaningful advantage in race pace, though the closely grouped midfield from third through seventh indicates a competitive battle is likely through the opening stint.",
+    "content": "Season 2026, Round 1 Qualifying: Australian Grand Prix. George Russell claimed pole position for the 2026 Australian Grand Prix at Albert Park Grand Prix Circuit, setting a Q3 best of 1:18.518 for Mercedes. Andrea Kimi Antonelli completed a Mercedes front-row lockout in second place, 0.293 seconds adrift. Isack Hadjar qualified third for Red Bull Racing at 1:19.303, representing a strong debut season performance, while Charles Leclerc and Oscar Piastri were separated by just 0.053 seconds in fourth and fifth for Ferrari and McLaren respectively. Lando Norris and Lewis Hamilton were closely matched in sixth and seventh, with Hamilton's 1:19.478 marking a notable first qualifying appearance for Ferrari.\n\nGabriel Bortoleto reached Q3 for Audi in tenth, a notable result for the new manufacturer. Fernando Alonso was eliminated in Q1 at 17th, which represents an underperformance relative to Aston Martin's historical pace at this circuit. The Cadillac F1 Team, making its debut, occupied 18th and 19th with Sergio Pérez and Valtteri Bottas.\n\nMercedes' clear pace advantage at the front suggests strong race competitiveness for Russell and Antonelli, though the tight midfield cluster from third through seventh indicates potential for strategic variation to influence final positions significantly during the race.",
     "tags": {
       "season": 2026,
       "type": "qualifying",
@@ -603,13 +663,13 @@
       "pole_driver": "george-russell"
     },
     "source_url": null,
-    "updated_at": "2026-06-03T16:05:45.434Z",
-    "content_hash": "efbf879973af5e53"
+    "updated_at": "2026-06-03T16:17:59.688Z",
+    "content_hash": "e4e14d07cae28d77"
   },
   {
     "id": "quali-2026-r02-shanghai",
     "title": "Chinese Grand Prix 2026 — Qualifying",
-    "content": "Season 2026, Round 2 Qualifying: Chinese Grand Prix. Andrea Kimi Antonelli claimed pole position for the Chinese Grand Prix at Shanghai International Circuit, setting a Q3 lap time of 1:32.064 for Mercedes. George Russell qualified second for Mercedes, 0.222 seconds adrift, giving the team a front-row lockout. Lewis Hamilton qualified third for Ferrari at 1:32.415, with Charles Leclerc fourth just 0.013 seconds behind his teammate, placing both Ferrari cars within 0.351 seconds of pole. Oscar Piastri and Lando Norris qualified fifth and sixth for McLaren, separated by 0.058 seconds but 0.486 seconds off the pole time, suggesting a modest deficit to the leading teams.\n\nPierre Gasly's seventh-place finish for Alpine F1 Team is a notable result, outqualifying both Red Bull Racing drivers. Max Verstappen managed only eighth at 1:33.002, with Isack Hadjar ninth, indicating a significant underperformance from Red Bull relative to expectations. Oliver Bearman secured tenth for Haas F1 Team.\n\nThe qualifying order points to Mercedes holding a clear pace advantage, with Ferrari representing the closest challenge. Red Bull's deficit of nearly a full second to pole raises questions about their race competitiveness, while Alpine's strong showing indicates genuine single-lap pace improvement.",
+    "content": "Season 2026, Round 2 Qualifying: Chinese Grand Prix. Andrea Kimi Antonelli claimed pole position for the Chinese Grand Prix at Shanghai International Circuit, setting a Q3 lap of 1:32.064 for Mercedes. George Russell qualified second for Mercedes at 1:32.286, placing the two Mercedes cars at the front with a gap of 0.222 seconds between them. Lewis Hamilton qualified third for Ferrari at 1:32.415, just 0.013 seconds ahead of Ferrari teammate Charles Leclerc in fourth. Oscar Piastri and Lando Norris completed the top six for McLaren, with Piastri 0.486 seconds off pole and Norris a further 0.058 seconds back.\n\nPierre Gasly delivered a notable performance qualifying seventh for Alpine F1 Team, outpacing Max Verstappen, who managed only eighth for Red Bull at 1:33.002 — a significant underperformance relative to expectations. Rookie Isack Hadjar qualified ninth for Red Bull, while Oliver Bearman rounded out Q3 in tenth for Haas F1 Team. Fernando Alonso and both Aston Martin drivers were eliminated in Q1, with Alonso 19th — a considerable result for a former champion. The qualifying order indicates clear Mercedes pace advantage, with Ferrari and McLaren closely matched behind them and Red Bull notably off their usual competitive level.",
     "tags": {
       "season": 2026,
       "type": "qualifying",
@@ -618,13 +678,13 @@
       "pole_driver": "andrea-kimi-antonelli"
     },
     "source_url": null,
-    "updated_at": "2026-06-03T16:05:54.779Z",
-    "content_hash": "78d36fd99d3d97be"
+    "updated_at": "2026-06-03T16:18:09.731Z",
+    "content_hash": "0d245f1353863958"
   },
   {
     "id": "quali-2026-r03-suzuka",
     "title": "Japanese Grand Prix 2026 — Qualifying",
-    "content": "Season 2026, Round 3 Qualifying: Japanese Grand Prix. Andrea Kimi Antonelli claimed pole position for the Japanese Grand Prix at Suzuka Circuit, setting a Q3 lap time of 1:28.778 for Mercedes. George Russell qualified second for Mercedes with a 1:29.076, leaving a gap of 0.298 seconds to his teammate. Oscar Piastri qualified third for McLaren at 1:29.132, just 0.056 seconds behind Russell, with Charles Leclerc taking fourth for Ferrari at 1:29.405. The front four are covered by 0.627 seconds.\n\nNotable performances include Pierre Gasly qualifying seventh for Alpine F1 Team, representing a strong result for a midfield constructor at a technically demanding circuit. Gabriel Bortoleto reached Q3 in ninth place for Audi, a noteworthy achievement given the team's status as a returning manufacturer. Isack Hadjar qualified eighth for Red Bull, while the absence of a second Red Bull driver in the top ten is a notable underperformance for that team.\n\nThe qualifying order indicates Mercedes holds a meaningful pace advantage in single-lap trim, with McLaren and Ferrari closely matched behind. The strong midfield representation from Alpine and Audi in Q3 suggests the competitive order may be tighter than usual through the pack during race conditions at Suzuka.",
+    "content": "Season 2026, Round 3 Qualifying: Japanese Grand Prix. Andrea Kimi Antonelli took pole position for the Japanese Grand Prix at Suzuka Circuit, setting a lap time of 1:28.778 for Mercedes. George Russell completed a Mercedes front-row lockout in second, 0.298 seconds adrift. Oscar Piastri qualified third for McLaren at 1:29.132, just 0.056 seconds behind Russell, while Charles Leclerc placed fourth for Ferrari at 1:29.405. Lando Norris rounded out the top five, 0.004 seconds behind his Ferrari rival, indicating an extremely tight midfield cluster from third through fifth.\n\nPierre Gasly delivered a notable seventh-place result for Alpine F1 Team, outqualifying both Red Bull drivers. Max Verstappen's elimination in Q2 in eleventh represents a significant underperformance for the reigning-class constructor, with Isack Hadjar advancing to Q8 as the sole Red Bull in Q3. Gabriel Bortoleto qualified ninth for Audi, a strong showing for that programme. Aston Martin's Fernando Alonso and Lance Stroll were eliminated early in Q1, finishing twenty-first and twenty-second respectively, suggesting a considerable pace deficit for that team.\n\nThe qualifying gap between Mercedes and the chasing pack, combined with McLaren and Ferrari's proximity to one another, suggests a competitive race among the top four, while Red Bull's grid positions indicate potential strategic recovery will be required from Verstappen.",
     "tags": {
       "season": 2026,
       "type": "qualifying",
@@ -633,13 +693,13 @@
       "pole_driver": "andrea-kimi-antonelli"
     },
     "source_url": null,
-    "updated_at": "2026-06-03T16:06:04.057Z",
-    "content_hash": "e4657de285532c9d"
+    "updated_at": "2026-06-03T16:18:20.064Z",
+    "content_hash": "b8d1a50fb5e6bfee"
   },
   {
     "id": "quali-2026-r04-miami-autodrome",
     "title": "Miami Grand Prix 2026 — Qualifying",
-    "content": "Season 2026, Round 4 Qualifying: Miami Grand Prix. Andrea Kimi Antonelli claimed pole position for the Miami Grand Prix at Miami International Autodrome, setting a best lap of 1:27.798 for Mercedes. Max Verstappen qualified second for Red Bull Racing, 0.166 seconds adrift, while Charles Leclerc placed third for Ferrari at 1:28.143, a further 0.179 seconds back. Lando Norris qualified fourth for McLaren at 1:28.183, separated from Leclerc by just 0.040 seconds, indicating a tightly contested midfield of the top four. George Russell in fifth and Lewis Hamilton in sixth demonstrate strong pace from both Mercedes and Ferrari across their driver lineups. A notable result came from Franco Colapinto, who placed Alpine F1 Team eighth, representing a strong qualifying outcome for that constructor alongside teammate Pierre Gasly in ninth. Nico Hülkenberg secured tenth for Audi, suggesting continued competitiveness from that program. The qualifying distribution indicates Mercedes holds a marginal single-lap advantage, with Red Bull, Ferrari, and McLaren closely grouped and likely to apply sustained race pressure from the opening laps.",
+    "content": "Season 2026, Round 4 Qualifying: Miami Grand Prix. Andrea Kimi Antonelli secured pole position for the Miami Grand Prix at Miami International Autodrome, setting a Q3 best of 1:27.798 for Mercedes. Max Verstappen qualified second for Red Bull, 0.166 seconds behind, with Charles Leclerc third for Ferrari at 1:28.143, a gap of 0.345 seconds to pole. Lando Norris and George Russell completed the top five for McLaren and Mercedes respectively, separated by just 0.014 seconds at 1:28.183 and 1:28.197.\n\nLewis Hamilton placed sixth for Ferrari, with Oscar Piastri seventh for McLaren, meaning the lead McLaren driver finished behind his teammate. Franco Colapinto and Pierre Gasly delivered a strong double Q3 appearance for Alpine F1 Team in eighth and ninth. Isack Hadjar's Q1 time is listed as null, suggesting a session disruption or administrative anomaly, yet he recorded a Q3 time of 1:28.789, placing him 22nd on the data grid. Both Aston Martin drivers, Fernando Alonso and Lance Stroll, were eliminated in Q1 with times over 1:31, indicating a significant performance deficit. Gabriel Bortoleto's 1:33.737 for Audi contrasts sharply with teammate Nico Hülkenberg's Q3 appearance, highlighting a notable intra-team split.\n\nThe qualifying distribution suggests Mercedes and Red Bull hold a marginal pace advantage, with Ferrari and McLaren closely competitive across the remainder of the top six.",
     "tags": {
       "season": 2026,
       "type": "qualifying",
@@ -648,13 +708,13 @@
       "pole_driver": "andrea-kimi-antonelli"
     },
     "source_url": null,
-    "updated_at": "2026-06-03T16:06:13.132Z",
-    "content_hash": "297d44d7efca62ce"
+    "updated_at": "2026-06-03T16:18:30.807Z",
+    "content_hash": "7aa0eb013ad0e909"
   },
   {
     "id": "quali-2026-r05-gilles-villeneuve",
     "title": "Canadian Grand Prix 2026 — Qualifying",
-    "content": "Season 2026, Round 5 Qualifying: Canadian Grand Prix. George Russell took pole position for the Canadian Grand Prix at Circuit Gilles Villeneuve, setting a best lap of 1:12.578 for Mercedes. Andrea Kimi Antonelli qualified second, just 0.068 seconds adrift, giving Mercedes a front-row lockout. Lando Norris qualified third for McLaren at 1:12.729, with teammate Oscar Piastri fourth at 1:12.781, the two McLarens covered by 0.052 seconds and separated from the Mercedes pair by around 0.151 seconds. Lewis Hamilton qualified fifth for Ferrari at 1:12.868, outpacing Ferrari teammate Charles Leclerc, who could manage only eighth at 1:12.976. Max Verstappen qualified sixth for Red Bull at 1:12.907, a notable result given Red Bull's recent form deficits. Isack Hadjar impressed in seventh for Red Bull at 1:12.935. Arvid Lindblad delivered a strong performance for RB F1 Team in ninth, while Franco Colapinto secured tenth for Alpine F1 Team. The qualifying order suggests Mercedes holds a genuine single-lap pace advantage at this circuit, with McLaren well-positioned to challenge on race pace and Ferrari's split grid positions indicating potential strategic flexibility.",
+    "content": "Season 2026, Round 5 Qualifying: Canadian Grand Prix. George Russell claimed pole position for the Canadian Grand Prix at Circuit Gilles Villeneuve, setting a Q3 best of 1:12.578 for Mercedes. Andrea Kimi Antonelli qualified second in the sister Mercedes, just 0.068 seconds behind, giving Mercedes a front-row lockout. Lando Norris placed third for McLaren at 1:12.729, with teammate Oscar Piastri fourth at 1:12.781, the two McLarens separated by 0.052 seconds. Lewis Hamilton qualified fifth for Ferrari at 1:12.868, 0.290 seconds off pole.\n\nMax Verstappen could manage only sixth for Red Bull at 1:12.907, notably outqualified by teammate Isack Hadjar in seventh, who posted 1:12.935 in what represents a strong performance from the rookie. Charles Leclerc qualified eighth, suggesting Ferrari's car suited Hamilton's driving style more at this circuit. Arvid Lindblad reached Q3 for RB F1 Team in ninth, while Franco Colapinto delivered a notable result for Alpine in tenth. Fernando Alonso's elimination in Q1 for Aston Martin stands as a significant underperformance. The qualifying pace distribution indicates Mercedes and McLaren hold a meaningful advantage over their rivals in race trim, with Red Bull and Ferrari likely contending for the second tier of race pace.",
     "tags": {
       "season": 2026,
       "type": "qualifying",
@@ -663,8 +723,8 @@
       "pole_driver": "george-russell"
     },
     "source_url": null,
-    "updated_at": "2026-06-03T16:06:22.142Z",
-    "content_hash": "9cc8aa3ab6c76d4b"
+    "updated_at": "2026-06-03T16:18:40.847Z",
+    "content_hash": "3a91a6578066ec25"
   },
   {
     "id": "driver-colapinto-2026",

@@ -79,8 +79,8 @@ export async function synthesiseRaceDoc(raceResults, qualifying, standingsBefore
     time: r.time,
     status: r.status
   }));
-  const top10 = results
-    .filter(r => r.position <= 10)
+  const fullGrid = results
+    .filter(r => r.position > 0)
     .map(r => ({
       pos: r.position,
       driver: r.driverName,
@@ -97,9 +97,9 @@ export async function synthesiseRaceDoc(raceResults, qualifying, standingsBefore
   const fastest = results.find(r => r.fastestLap?.rank === 1);
   const pole = qualifying?.qualifying?.[0] || null;
 
-  // Standings deltas for top 10 drivers (championship impact)
+  // Standings deltas for all classified drivers (championship impact)
   const beforeById = new Map(standingsBefore.map(s => [s.driverId, s]));
-  const deltas = standingsAfter.slice(0, 10).map(after => {
+  const deltas = standingsAfter.map(after => {
     const before = beforeById.get(after.driverId);
     return {
       driver: after.driverName,
@@ -113,7 +113,7 @@ export async function synthesiseRaceDoc(raceResults, qualifying, standingsBefore
   const facts = {
     race: { season, round, name: raceName, circuit: circuitName, date },
     podium,
-    top10,
+    full_grid: fullGrid,
     pole: pole
       ? { driver: pole.driverName, team: pole.constructor, time: pole.q3 || pole.q2 || pole.q1 }
       : null,
@@ -131,8 +131,8 @@ export async function synthesiseRaceDoc(raceResults, qualifying, standingsBefore
 
   const prompt = `You are generating ONE Knowledge Base entry for an F1 prediction app.
 
-Below is the structured result data for one Grand Prix. Write a neutral, factual KB document body of 180–220 words covering, in this order:
-1. Podium and result (winner, key gaps, grid-vs-finish notable cases)
+Below is the full race result data for one Grand Prix. Write a neutral, factual KB document body of 180–220 words covering, in this order:
+1. Podium and result (winner, key gaps, notable grid-vs-finish movers across the full field)
 2. Pole and fastest lap (who, brief context if it changed strategy)
 3. Notable DNFs/penalties implied by the data
 4. Championship implications using the standings delta (who gained, who lost ground)
@@ -160,7 +160,7 @@ ${JSON.stringify(facts, null, 2)}`;
       type: 'race',
       round,
       circuit: slugify(circuitName),
-      drivers_top10: top10.map(r => slugify(r.driver))
+      drivers_classified: fullGrid.map(r => slugify(r.driver))
     },
     source_url: raceResults.url || null,
     updated_at: new Date().toISOString(),
@@ -178,7 +178,7 @@ ${JSON.stringify(facts, null, 2)}`;
 export async function synthesiseQualiDoc(qualifying) {
   const { season, round, raceName, circuitName, qualifying: quali } = qualifying;
 
-  const grid = quali.slice(0, 10).map(q => ({
+  const grid = quali.map(q => ({
     pos:    q.position,
     driver: q.driverName,
     team:   q.constructor,
@@ -191,18 +191,18 @@ export async function synthesiseQualiDoc(qualifying) {
   const p2   = grid[1] || null;
 
   const facts = {
-    race:       { season, round, name: raceName, circuit: circuitName },
-    grid_top10: grid,
-    pole:       pole ? { driver: pole.driver, team: pole.team, time: pole.q3 || pole.q2 } : null,
-    p2:         p2   ? { driver: p2.driver,   team: p2.team,   time: p2.q3   || p2.q2   } : null,
+    race:     { season, round, name: raceName, circuit: circuitName },
+    grid_all: grid,
+    pole:     pole ? { driver: pole.driver, team: pole.team, time: pole.q3 || pole.q2 } : null,
+    p2:       p2   ? { driver: p2.driver,   team: p2.team,   time: p2.q3   || p2.q2   } : null,
   };
 
   const prompt = `You are generating ONE Knowledge Base entry for an F1 prediction app.
 
-Below is the qualifying result data for a Grand Prix. Write a neutral, factual KB document body of 120–150 words covering, in this order:
+Below is the full qualifying result data for a Grand Prix. Write a neutral, factual KB document body of 150–180 words covering, in this order:
 1. Pole position (driver, team, lap time)
-2. Top 3–4 grid positions and key gaps between them
-3. Notable qualifying performances — surprises, underperformers, or grid penalties that change the expected grid
+2. Top 4–5 grid positions and key gaps between them
+3. Notable qualifying performances across the full grid — surprises, underperformers, or grid penalties that change the expected race grid
 4. What the qualifying order suggests about likely race pace
 
 Tone: analytical, factual. No opinion-as-fact, no quotes, no speculation. Use full driver names and team names. Do not add a heading. Output ONLY the prose body — no markdown, no preamble.
