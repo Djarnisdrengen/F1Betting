@@ -56,6 +56,10 @@ on:
         description: 'Skip enrichment (useful for backfill)'
         required: false
         default: 'false'
+      force_quali:
+        description: 'Force re-synthesise qualifying doc even if already done'
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -85,6 +89,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           F1TECH_ENRICH: ${{ github.event.inputs.tier1_only == 'true' && '0' || '1' }}
+          FORCE_QUALI: ${{ github.event.inputs.force_quali || 'false' }}
         run: node update-kb.js
 
       - name: Validate KB output

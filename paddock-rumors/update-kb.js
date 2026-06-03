@@ -57,6 +57,7 @@ const STATE_PATH = path.resolve(__dirname, './state/last_processed_round.json');
 const CURRENT_SEASON = parseInt(process.env.F1_SEASON || '2026', 10);
 const TOP_N = parseInt(process.env.TOP_N_DRIVERS || '10', 10);
 const ENRICH = process.env.F1TECH_ENRICH !== '0';
+const FORCE_QUALI = process.env.FORCE_QUALI === 'true';
 
 // ── State + KB I/O ──────────────────────────────────────────────────
 
@@ -215,7 +216,7 @@ async function main() {
   const nextSched = schedule.find(s => s.round === nextRound && s.season === CURRENT_SEASON);
   if (nextSched) {
     const qRoundState = (state.rounds?.[String(nextRound)] || {});
-    if (!qRoundState.qualifying_at) {
+    if (!qRoundState.qualifying_at || FORCE_QUALI) {
       console.log(`[paddock-rumors] qualifying check: R${nextRound} ${nextSched.raceName}`);
       try {
         const qualiResult = await getQualifyingResults(CURRENT_SEASON, nextRound);
