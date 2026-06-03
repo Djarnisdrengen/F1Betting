@@ -1289,7 +1289,7 @@
   {
     "id": "sprint-2026-r02-shanghai",
     "title": "Chinese Grand Prix 2026 — Sprint Race",
-    "content": "Season 2026, Round 2 Sprint: Chinese Grand Prix. George Russell converted pole position into victory for Mercedes at the 2026 Chinese Grand Prix Sprint at Shanghai International Circuit, leading throughout to claim maximum points. Charles Leclerc finished second for Ferrari after gaining four places from sixth on the grid, with teammate Lewis Hamilton completing the podium in third, advancing one position from fourth. Lando Norris and Oscar Piastri brought McLaren home fourth and sixth respectively, each losing one place from their starting positions. Andrea Kimi Antonelli dropped three places from second to fifth, suggesting Mercedes' pace advantage was more pronounced in the lead car. Liam Lawson was the field's standout mover, gaining six places from thirteenth to seventh for RB F1 Team, matched by Alexander Albon's six-place gain for Williams. Nico Hülkenberg retired after losing nine positions, the sharpest regression of the field. Ferrari's strong race pace relative to grid position, combined with McLaren's minor slippage, indicates tyre management at Shanghai may favour the Ferrari package over a longer Grand Prix stint distance.",
+    "content": "Season 2026, Round 2 Sprint: Chinese Grand Prix. George Russell took sprint qualifying pole at Shanghai International Circuit for the 2026 Chinese Grand Prix, with Andrea Kimi Antonelli completing an all-Mercedes front row. Lando Norris qualified third for McLaren, ahead of Lewis Hamilton and Oscar Piastri.\n\nRussell converted pole into sprint race victory, holding position throughout. Charles Leclerc was the most notable finisher relative to grid position among the frontrunners, advancing four places from sixth to claim second for Ferrari. Lewis Hamilton completed the Ferrari podium in third, gaining one place from fourth. Andrea Kimi Antonelli dropped three positions to fifth despite starting second, suggesting early race difficulties for the Mercedes junior. Liam Lawson recorded the largest net gain among classified finishers, rising six places from thirteenth to seventh for RB F1 Team, mirrored by Alexander Albon's six-place advance from twenty-second. Pierre Gasly fell four places to eleventh, while Isack Hadjar dropped five to fifteenth. Nico Hülkenberg retired from eleventh, losing nine positions. Ferrari's strong race pace relative to single-lap performance and Mercedes' tyre management advantage from the front suggest both constructors merit close attention for the Grand Prix proper.",
     "tags": {
       "season": 2026,
       "type": "sprint",
@@ -1322,13 +1322,13 @@
       ]
     },
     "source_url": null,
-    "updated_at": "2026-06-03T20:42:51.138Z",
-    "content_hash": "6bd2ee859d25f3b4"
+    "updated_at": "2026-06-03T20:48:46.052Z",
+    "content_hash": "50910ff596f91935"
   },
   {
     "id": "sprint-2026-r04-miami-autodrome",
     "title": "Miami Grand Prix 2026 — Sprint Race",
-    "content": "Season 2026, Round 4 Sprint: Miami Grand Prix. Lando Norris converted pole position into victory for McLaren at the Miami International Autodrome, with teammate Oscar Piastri advancing one place from third on the grid to complete a McLaren one-two. Charles Leclerc brought Ferrari home third, also gaining one position from his starting slot. The most notable positive mover was Esteban Ocon of Haas F1 Team, who climbed five places from sixteenth to eleventh, matched by Fernando Alonso of Aston Martin, who rose five positions from twentieth to fifteenth. George Russell gained two places for Mercedes to finish fourth. Conversely, Andrea Kimi Antonelli dropped four positions from second on the sprint grid to sixth, while Gabriel Bortoleto of Audi was disqualified and Nico Hülkenberg did not start, representing a significant setback for that programme. McLaren's ability to manage pace from the front while Piastri recovered through traffic indicates strong tyre durability at this circuit, suggesting the MCL42 is well-suited to Miami's abrasive surface ahead of the Grand Prix. Mercedes' contrasting performances between Russell and Antonelli may indicate tyre management variability within the same package.",
+    "content": "Season 2026, Round 4 Sprint: Miami Grand Prix. Lando Norris claimed sprint qualifying pole at Miami International Autodrome, with Andrea Kimi Antonelli of Mercedes lining up second and Oscar Piastri completing an all-McLaren second row alongside Charles Leclerc of Ferrari in fourth. Norris converted pole into a sprint race victory, leading throughout, while Piastri advanced one position to second, completing a McLaren one-two. Leclerc held third to give Ferrari a podium finish. George Russell was the most notable forward mover among the frontrunners, gaining two places to finish fourth, while Antonelli dropped four positions from second to sixth, suggesting difficulties in race trim relative to qualifying pace. Esteban Ocon and Fernando Alonso each gained five places from deep in the field. Gabriel Bortoleto of Audi was disqualified, and Nico Hülkenberg did not start. McLaren's dominant pace across both sprint sessions indicates strong race-day potential, while Mercedes may face tyre management considerations over the longer grand prix distance.",
     "tags": {
       "season": 2026,
       "type": "sprint",
@@ -1361,13 +1361,13 @@
       ]
     },
     "source_url": null,
-    "updated_at": "2026-06-03T20:43:01.265Z",
-    "content_hash": "1fd3545a76942c9a"
+    "updated_at": "2026-06-03T20:48:55.613Z",
+    "content_hash": "2f00649f82977e7c"
   },
   {
     "id": "sprint-2026-r05-gilles-villeneuve",
     "title": "Canadian Grand Prix 2026 — Sprint Race",
-    "content": "Season 2026, Round 5 Sprint: Canadian Grand Prix. George Russell took victory for Mercedes in the Canadian Grand Prix Sprint at Circuit Gilles Villeneuve, converting pole position into a controlled win. Lando Norris of McLaren advanced one place from third on the grid to finish second, while Mercedes teammate Andrea Kimi Antonelli dropped one position from second to third. Oscar Piastri completed the top four for McLaren, holding his grid slot throughout. Charles Leclerc gained one place to fifth as Lewis Hamilton fell one position to sixth, with both Ferrari drivers swapping within their starting order. Max Verstappen held seventh for Red Bull.\n\nThe most notable movers were Liam Lawson, who gained seven places from eighteenth to eleventh for RB F1 Team, and Franco Colapinto, who advanced four positions to ninth for Alpine F1 Team. Conversely, Isack Hadjar fell thirteen places to twenty-first for Red Bull, and Fernando Alonso retired from fifteenth for Aston Martin.\n\nThe result indicates strong single-lap and race pace from Mercedes and McLaren, suggesting both constructors hold a clear advantage heading into the Grand Prix. The largely stable front-field order implies limited tyre degradation concerns for the leading cars, while the significant midfield position changes point to variable tyre management capability among the lower-order teams.",
+    "content": "Season 2026, Round 5 Sprint: Canadian Grand Prix. George Russell took sprint qualifying pole at Circuit Gilles Villeneuve for the 2026 Canadian Grand Prix, with Andrea Kimi Antonelli completing an all-Mercedes front row. Lando Norris qualified third for McLaren, ahead of teammate Oscar Piastri in fourth, while Lewis Hamilton and Charles Leclerc filled the fifth and sixth positions for Ferrari.\n\nRussell converted pole into sprint race victory, holding position throughout. Norris advanced one place from third to second, with Antonelli dropping to third after failing to defend second. Piastri maintained fourth. The most significant positive movers were Liam Lawson, who gained seven places from eighteenth to eleventh, and Franco Colapinto, who rose four positions from thirteenth to ninth. Isack Hadjar was the sharpest faller, dropping thirteen places to twenty-first, while Fernando Alonso retired from fifteenth. Nico Hülkenberg also lost four positions.\n\nThe sprint outcome indicates Mercedes holds a clear single-lap and race-pace advantage at this circuit, with McLaren competitive over distance. Ferrari's relative positional stagnation and Red Bull's mid-field drift from Hadjar suggest tyre management on the abrasive Montreal surface may present challenges for those teams across the longer grand prix distance.",
     "tags": {
       "season": 2026,
       "type": "sprint",
@@ -1400,7 +1400,7 @@
       ]
     },
     "source_url": null,
-    "updated_at": "2026-06-03T20:43:11.171Z",
-    "content_hash": "360c474aeb8e26d0"
+    "updated_at": "2026-06-03T20:49:06.319Z",
+    "content_hash": "2f9f344cff723ab9"
   }
 ]
