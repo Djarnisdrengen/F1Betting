@@ -8,22 +8,30 @@
  * → { answer, sources, query, kb_size }
  */
 
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const KB_PATH   = join(__dirname, '..', 'data', 'knowledge-base.json');
-
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const CLAUDE_MODEL      = process.env.CLAUDE_MODEL || 'claude-sonnet-4-6';
 const CURRENT_SEASON    = parseInt(process.env.F1_SEASON || '2026', 10);
 const TOP_N             = 6;
 
-// Load once per cold start
+// KB is fetched from GitHub raw at runtime so it stays current with each cron
+// commit — no Vercel redeploy needed. Override with KB_RAW_URL if the repo moves.
+const KB_RAW_URL = process.env.KB_RAW_URL ||
+  'https://raw.githubusercontent.com/Djarnisdrengen/F1Betting/main/paddock-rumors/data/knowledge-base.json';
+const KB_TTL_MS = 5 * 60 * 1000;   // 5-minute cache across warm invocations
+
 let _kb = null;
-function loadKb() {
-  if (!_kb) _kb = JSON.parse(readFileSync(KB_PATH, 'utf-8'));
+let _kbFetchedAt = 0;
+
+async function loadKb() {
+  const now = Date.now();
+  if (_kb && (now - _kbFetchedAt) < KB_TTL_MS) return _kb;
+  const res = await fetch(KB_RAW_URL, { headers: { 'User-Agent': 'paddock-rumors-api' } });
+  if (!res.ok) {
+    if (_kb) return _kb;   // serve stale cache rather than fail
+    throw new Error(`KB fetch failed: HTTP ${res.status}`);
+  }
+  _kb = await res.json();
+  _kbFetchedAt = now;
   return _kb;
 }
 
@@ -110,7 +118,7 @@ export default async function handler(req, res) {
   if (!ANTHROPIC_API_KEY)    return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set in Vercel' });
 
   try {
-    const kb   = loadKb();
+    const kb   = await loadKb();
     const docs = scoreDocs(kb, query.trim());
 
     if (!docs.length) {
