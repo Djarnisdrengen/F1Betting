@@ -1,19 +1,25 @@
 # Paddock Rumors — Session Handover
 
-> **Point-in-time snapshot, last updated 2026-06-03.** This captures session state
-> (what's done vs pending), not permanent architecture. Verify "current status"
-> claims against the actual repo and `git log` before trusting them — this file
-> goes stale. Durable docs live in `README.md`, `SCHEDULING.md`, `ROADMAP.md`, and
-> the Paddock Rumors section of the root `CLAUDE.md`.
+> **Point-in-time snapshot, last updated 2026-06-03 (eve of Monaco R6).** This
+> captures session state (what's done vs pending), not permanent architecture.
+> Verify "current status" claims against the actual repo and `git log` before
+> trusting them — this file goes stale. Durable docs live in `README.md`,
+> `SCHEDULING.md`, `ROADMAP.md`, and the Paddock Rumors section of the root
+> `CLAUDE.md`.
 
 ## What this is
 A content-generation pipeline (`paddock-rumors/`) that auto-builds a tagged F1 knowledge base for the Paddock Picks prediction game. It runs **parallel to and isolated from** the existing live `f1-intelligence/` RAG system — that Phase 1 setup was never touched. Default operating mode is **Mode 1 (generate-only)**: commits content to git, no Vercel/live-API integration.
 
-## Current status: Phase B live, monitoring
-- KB has **~83+ docs** for 2026 R1–R5: race, qualifying, driver (all 20), analysis (F1Technical), sprint docs
-- GitHub Actions cron running in Mode 1, committing to `main`
+## Current status: Phase B live, caught up, monitoring
+- KB has **86 docs** for 2026 R1–R5 (verified): race ×5, qualifying ×5, driver ×22, analysis ×51, sprint ×3 (R2/R4/R5). `data/` ↔ `public/paddock-rumors/` confirmed in sync.
+- Pipeline is **fully caught up**: R5 Canada (2026-05-24) is the last completed round and is fully in the KB. R6 Monaco is 2026-06-07. No backfills outstanding.
+- GitHub Actions cron **active** (workflow ID 288044984) in Mode 1, committing to `main`. Last 3 runs all succeeded; the Tue analysis-window run correctly ran as a no-op.
 - `ANTHROPIC_API_KEY` set as GitHub Actions secret (reused from f1-intelligence)
 - **Phase C (live-API integration via `upgrades/`) NOT started** — requires explicit user sign-off, show diffs first
+
+### Pre-flight verified (2026-06-03, eve of R6)
+- Schedule decider (`schedule.js`) run against real calendar/state: `latestFinishedRound=5`, summary "nothing to do" — correct.
+- R6 fetch probes: quali/sprint/pit return empty gracefully; `getRaceResults(R6)` throws "No race found" **by design**. Safe because `getLatestFinishedRound` is results-driven (`/last/results.json`), so R6 only enters the tier-1 loop once its results publish — the throw is never hit prematurely. Monaco weekend cron is sound.
 
 ## What was built this session
 **Pipeline features:**
@@ -41,6 +47,6 @@ A content-generation pipeline (`paddock-rumors/`) that auto-builds a tagged F1 k
 - All commits end with `Co-Authored-By: Claude ...`
 
 ## Likely next steps
-- Monitor Monaco (R6) weekend — first real cron test
-- Possibly run remaining backfills if not yet done (`backfill-sprints.js`, `backfill-races.js --force` for pit stops on R2/R4/R5), then sync + deploy
+- Monitor Monaco (R6) weekend — first real cron test. Quali window Sat 2026-06-06, results window Sun 2026-06-07 → Mon.
+- ~~Run remaining backfills~~ **Done.** All R1–R5 backfills are complete and committed: sprint docs (R2/R4/R5), pit-stop data, full-grid race/quali/driver docs. Verified 2026-06-03 — every R1–R5 race doc contains pit-stop detail (durations + laps); no `--force` re-run is needed.
 - After 2–3 good weekends: decide on Phase C integration (show `upgrades/` diffs first)
