@@ -186,8 +186,9 @@ async function fetchMonthLinks(month) {
   return links;
 }
 
-// ── Article summariser ────────────────────────────────────────────────
+// ── Article summarisers ───────────────────────────────────────────────
 
+// Used when the article is already matched to a specific race by title.
 async function summarise(article, race) {
   const res = await fetch(article.url, { headers: { 'User-Agent': UA } });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -212,6 +213,62 @@ ${html}`;
 
   return {
     id: `analysis-${season}-r${String(round).padStart(2, '0')}-f1tech-${slugify(article.title)}`,
+    title: `${article.title} (F1Technical)`,
+    content,
+    tags: { season, type: 'analysis', source: 'f1technical', round },
+    source_url: article.url,
+    updated_at: new Date().toISOString(),
+    content_hash: contentHash(content)
+  };
+}
+
+// Used for series articles not matched by title — Claude determines the race
+// from the article content itself.
+async function summariseGeneral(article, races) {
+  const res = await fetch(article.url, { headers: { 'User-Agent': UA } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = stripHtml(await res.text()).slice(0, 22000);
+
+  const raceList = races.map(r => `R${r.round}: ${r.raceName} ${r.season}`).join(', ');
+
+  const prompt = `Below is the HTML of an F1Technical.net article titled: "${article.title}"
+
+Known races: ${raceList}
+
+Your response MUST start with exactly one of these lines:
+  RACE: R[number]   (e.g. RACE: R5 — if the article is primarily about one of the known races)
+  RACE: GENERAL     (if it covers multiple races or the whole season)
+
+Then on the next line, extract the key TECHNICAL and ANALYTICAL conclusions in 100–130 words. Tone: neutral, factual, useful for predicting future race performance — focus on upgrades, reliability, power-unit context, telemetry findings, pace deltas. Use full team and driver names. No quotes, no opinion-as-fact.
+
+If the article is NOT relevant to F1 race performance (e.g. management news, sponsorship, calendar admin, MotoGP), output exactly: SKIP
+
+HTML:
+${html}`;
+
+  const raw = (await claude(prompt, 560)).trim();
+  if (raw === 'SKIP' || raw.length < 60) return null;
+
+  // Parse RACE: line
+  const lines       = raw.split('\n');
+  const raceLine    = lines[0].trim();
+  const summaryBody = lines.slice(1).join('\n').trim();
+  if (summaryBody.length < 60) return null;
+
+  let round  = null;
+  let season = races[0]?.season ?? 2026;
+  const raceMatch = raceLine.match(/^RACE:\s*R(\d+)/i);
+  if (raceMatch) {
+    const rNum = parseInt(raceMatch[1], 10);
+    const matched = races.find(r => r.round === rNum);
+    if (matched) { round = matched.round; season = matched.season; }
+  }
+
+  const roundTag = round != null ? `r${String(round).padStart(2, '0')}` : 'general';
+  const content  = `Season ${season} technical analysis — ${article.title}. ${summaryBody}`;
+
+  return {
+    id: `analysis-${season}-${roundTag}-f1tech-${slugify(article.title)}`,
     title: `${article.title} (F1Technical)`,
     content,
     tags: { season, type: 'analysis', source: 'f1technical', round },
@@ -263,15 +320,26 @@ async function main() {
   console.log(`\n[backfill] ${allLinks.length} unique article(s) across ${MONTHS.length} month(s)`);
 
   // Score and bucket articles per round
-  const byRound = new Map(races.map(r => [r.round, { race: r, candidates: [] }]));
+  const byRound     = new Map(races.map(r => [r.round, { race: r, candidates: [] }]));
+  const coveredIds  = new Set();   // IDs already matched to a specific round
+
   for (const link of allLinks) {
     for (const race of races) {
       const score = scoreRelevance(link.title, race);
-      // Require series pattern + location match (score >= 5) to prevent
-      // e.g. Suzuka F1MATHS articles (score=3) landing on Canadian GP.
-      if (score >= 5) byRound.get(race.round).candidates.push({ ...link, score });
+      // score >= 5: series pattern + location match → attribute to this round
+      if (score >= 5) {
+        byRound.get(race.round).candidates.push({ ...link, score });
+        coveredIds.add(link.id);
+      }
     }
   }
+
+  // Series-only articles (score == 3 for any race): collect once, let Claude
+  // determine the round from content.
+  const generalCandidates = allLinks.filter(l =>
+    !coveredIds.has(l.id) &&
+    SERIES_PATTERNS.some(p => p.test(l.title))
+  );
 
   // Sort and cap per round — show plan
   console.log('\n[backfill] match plan:');
@@ -282,6 +350,8 @@ async function main() {
     console.log(`  R${round} ${race.raceName}: ${top.length} candidate(s)`);
     for (const a of top) console.log(`    [${a.score}] ${a.title}`);
   }
+  console.log(`  General (series-only, Claude determines round): ${generalCandidates.length} candidate(s)`);
+  for (const a of generalCandidates) console.log(`    ${a.title}`);
 
   if (DRY_RUN) {
     console.log('\n[backfill] --dry-run: stopping here. Re-run without --dry-run to summarise.');
@@ -318,6 +388,39 @@ async function main() {
       } catch (err) {
         console.warn(`[backfill] failed ${article.url}: ${err.message}`);
       }
+    }
+  }
+
+  // ── Pass 2: series-only articles — Claude determines round ──────────
+  console.log('\n[backfill] pass 2: series-only articles (Claude determines round)');
+  for (const article of generalCandidates) {
+    const expectedIdPrefix = `analysis-`;
+    // Check any variant of the ID (round unknown, check by title slug)
+    const titleSlug = slugify(article.title);
+    const alreadyIn = kb.some(d => d.id.includes(`f1tech-${titleSlug}`));
+    if (alreadyIn) {
+      console.log(`[backfill] already in KB — skip: ${article.title}`);
+      skipped++;
+      continue;
+    }
+    try {
+      console.log(`[backfill] summarising (general): ${article.title}`);
+      const doc = await summariseGeneral(article, races);
+      if (doc) {
+        const idx = kb.findIndex(d => d.id === doc.id);
+        if (idx >= 0) kb[idx] = doc; else kb.push(doc);
+        existingIds.add(doc.id);
+        fs.writeFileSync(KB_PATH, JSON.stringify(kb, null, 2));
+        const roundLabel = doc.tags.round != null ? `R${doc.tags.round}` : 'general';
+        console.log(`[backfill] + ${doc.id} [${roundLabel}]`);
+        added++;
+      } else {
+        console.log(`[backfill] - SKIP: ${article.title}`);
+        skipped++;
+      }
+      await sleep(2000);
+    } catch (err) {
+      console.warn(`[backfill] failed ${article.url}: ${err.message}`);
     }
   }
 
