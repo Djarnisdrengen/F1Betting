@@ -169,6 +169,73 @@ ${JSON.stringify(facts, null, 2)}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Qualifying document (pre-race grid snapshot)
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * @param {object} qualifying - from getQualifyingResults()
+ */
+export async function synthesiseQualiDoc(qualifying) {
+  const { season, round, raceName, circuitName, qualifying: quali } = qualifying;
+
+  const grid = quali.slice(0, 10).map(q => ({
+    pos:    q.position,
+    driver: q.driverName,
+    team:   q.constructor,
+    q1:     q.q1 || null,
+    q2:     q.q2 || null,
+    q3:     q.q3 || null
+  }));
+
+  const pole = grid[0] || null;
+  const p2   = grid[1] || null;
+
+  const facts = {
+    race:       { season, round, name: raceName, circuit: circuitName },
+    grid_top10: grid,
+    pole:       pole ? { driver: pole.driver, team: pole.team, time: pole.q3 || pole.q2 } : null,
+    p2:         p2   ? { driver: p2.driver,   team: p2.team,   time: p2.q3   || p2.q2   } : null,
+  };
+
+  const prompt = `You are generating ONE Knowledge Base entry for an F1 prediction app.
+
+Below is the qualifying result data for a Grand Prix. Write a neutral, factual KB document body of 120–150 words covering, in this order:
+1. Pole position (driver, team, lap time)
+2. Top 3–4 grid positions and key gaps between them
+3. Notable qualifying performances — surprises, underperformers, or grid penalties that change the expected grid
+4. What the qualifying order suggests about likely race pace
+
+Tone: analytical, factual. No opinion-as-fact, no quotes, no speculation. Use full driver names and team names. Do not add a heading. Output ONLY the prose body — no markdown, no preamble.
+
+STRUCTURED DATA:
+${JSON.stringify(facts, null, 2)}`;
+
+  const body = (await claude(prompt, 700)).trim();
+
+  const id = `quali-${season}-r${String(round).padStart(2, '0')}-${slugify(
+    circuitName.replace(/Circuit|International|Park/gi, '').trim()
+  )}`;
+
+  const content = `Season ${season}, Round ${round} Qualifying: ${raceName}. ${body}`;
+
+  return {
+    id,
+    title: `${raceName} ${season} — Qualifying`,
+    content,
+    tags: {
+      season,
+      type:        'qualifying',
+      round,
+      circuit:     slugify(circuitName),
+      pole_driver: slugify(pole?.driver || '')
+    },
+    source_url:   null,
+    updated_at:   new Date().toISOString(),
+    content_hash: contentHash(content)
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Driver document (per-driver season form, refreshed each round)
 // ─────────────────────────────────────────────────────────────────────
 

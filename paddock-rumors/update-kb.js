@@ -43,7 +43,7 @@ import {
   getQualifyingResults,
   getDriverStandings
 } from './fetch-results.js';
-import { synthesiseRaceDoc, synthesiseDriverDoc } from './synthesise.js';
+import { synthesiseRaceDoc, synthesiseDriverDoc, synthesiseQualiDoc } from './synthesise.js';
 import { enrichFromF1Technical } from './enrich-f1technical.js';
 import { evaluateSchedule, migrateState } from './schedule.js';
 
@@ -206,6 +206,38 @@ async function main() {
     );
   }
   console.log(`[paddock-rumors] summary: ${plan.summary}`);
+
+  // ── Qualifying check: next upcoming round ───────────────────────────
+  // Runs independently of the race/enrichment plan. Checks whether the
+  // round after the latest finished race has qualifying data available
+  // yet (Jolpica publishes it within ~1h of the session ending).
+  const nextRound = latest !== null ? latest + 1 : 1;
+  const nextSched = schedule.find(s => s.round === nextRound && s.season === CURRENT_SEASON);
+  if (nextSched) {
+    const qRoundState = (state.rounds?.[String(nextRound)] || {});
+    if (!qRoundState.qualifying_at) {
+      console.log(`[paddock-rumors] qualifying check: R${nextRound} ${nextSched.raceName}`);
+      try {
+        const qualiResult = await getQualifyingResults(CURRENT_SEASON, nextRound);
+        if (qualiResult?.qualifying?.length) {
+          let kb = loadKb();
+          console.log(`[paddock-rumors] qualifying data found — synthesising doc`);
+          const qualiDoc = await synthesiseQualiDoc(qualiResult);
+          kb = upsert(kb, [qualiDoc]);
+          saveKb(kb);
+          markRound(state, nextRound, 'qualifying');
+          writeState(state);
+          console.log(`[paddock-rumors] qualifying doc committed: ${qualiDoc.id}`);
+        } else {
+          console.log(`[paddock-rumors] no qualifying data yet for R${nextRound}`);
+        }
+      } catch (err) {
+        console.warn(`[paddock-rumors] qualifying check failed (non-blocking): ${err.message}`);
+      }
+    } else {
+      console.log(`[paddock-rumors] R${nextRound} qualifying already processed`);
+    }
+  }
 
   if (!plan.anyWork) {
     console.log('[paddock-rumors] exit — no work');

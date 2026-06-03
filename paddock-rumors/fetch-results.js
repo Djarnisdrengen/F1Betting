@@ -125,6 +125,8 @@ export async function getQualifyingResults(season, round) {
       season: parseInt(race.season, 10),
       round: parseInt(race.round, 10),
       raceName: race.raceName,
+      circuitId: race.Circuit.circuitId,
+      circuitName: race.Circuit.circuitName,
       qualifying: (race.QualifyingResults || []).map(q => ({
         position: parseInt(q.position, 10),
         driverId: q.Driver.driverId,

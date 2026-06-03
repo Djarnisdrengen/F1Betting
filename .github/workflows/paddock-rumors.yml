@@ -37,6 +37,8 @@ name: Paddock Rumors — KB Update
 
 on:
   schedule:
+    # Qualifying window (Sat afternoon UTC — catches most sessions by 16:00 UTC)
+    - cron: '0 14,16,18 * * 6'
     # Results window (Sun afternoon → Mon afternoon UTC)
     - cron: '0 16,18,20,22 * * 0'
     - cron: '0 0,2,4,6,8,10,12,14 * * 1'
