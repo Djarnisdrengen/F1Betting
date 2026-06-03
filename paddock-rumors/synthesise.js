@@ -78,7 +78,16 @@ function isDnf(status) {
 export async function synthesiseSprintDoc(sprintResults) {
   const { season, round, raceName, circuitName, results } = sprintResults;
 
-  const top8 = results.slice(0, 8).map(r => ({
+  // Sprint qualifying grid = starting positions for the sprint race
+  const sprintQualifyingGrid = [...results]
+    .sort((a, b) => a.grid - b.grid)
+    .map(r => ({
+      gridPos: r.grid,
+      driver:  r.driverName,
+      team:    r.constructor
+    }));
+
+  const full = results.map(r => ({
     pos:       r.position,
     driver:    r.driverName,
     team:      r.constructor,
@@ -88,27 +97,19 @@ export async function synthesiseSprintDoc(sprintResults) {
     status:    r.status
   }));
 
-  const full = results.map(r => ({
-    pos:       r.position,
-    driver:    r.driverName,
-    team:      r.constructor,
-    grid:      r.grid,
-    gridDelta: r.gridDelta,
-    status:    r.status
-  }));
-
   const facts = {
-    race:      { season, round, name: raceName, circuit: circuitName },
-    top8,
-    full_grid: full
+    race:                   { season, round, name: raceName, circuit: circuitName },
+    sprint_qualifying_grid: sprintQualifyingGrid,   // sprint qualifying order
+    sprint_race_result:     full                    // sprint race finish order
   };
 
   const prompt = `You are generating ONE Knowledge Base entry for an F1 prediction app.
 
-Below is the sprint race result for a Grand Prix weekend. Write a neutral, factual KB document body of 120–150 words covering:
-1. Sprint winner and top 3
-2. Key grid-vs-finish movers across the full field
-3. What the sprint result suggests about GP race pace and tyre behaviour
+Below is the sprint qualifying grid and sprint race result for a Grand Prix weekend. Write a neutral, factual KB document body of 120–150 words covering:
+1. Sprint qualifying — pole sitter and front row
+2. Sprint race winner and top 3 finish
+3. Key grid-vs-finish movers (who gained/lost places)
+4. What the sprint weekend suggests about GP race pace and tyre behaviour
 
 Tone: analytical, factual. No quotes, no opinion-as-fact. Use full driver and team names. No heading. Output ONLY the prose body.
 
