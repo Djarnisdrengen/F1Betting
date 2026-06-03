@@ -41,4 +41,9 @@ define('F1_INTELLIGENCE_API_URL', 'https://api-chi-nine-25.vercel.app');
 define('F1_INTELLIGENCE_TIMEOUT', 30);
 // F1_INTELLIGENCE_DEBUG is defined per-env in config.test.php / config.live.php
 
+
+//Paddock rumors
+//define('PADDOCK_RUMORS_API_URL', 'https://paddock-rumors-191lxwrth-thomas-helveg-povlsen-s-projects.vercel.app');
+define('PADDOCK_RUMORS_API_URL', 'https://paddock-rumors.vercel.app');
+
 require_once __DIR__ . '/public/includes/functions.php';

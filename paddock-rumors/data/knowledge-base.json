@@ -865,5 +865,425 @@
     "source_url": null,
     "updated_at": "2026-06-03T16:13:10.069Z",
     "content_hash": "78f9faf632d26585"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1tech-how-did-mercedes-upgrade-its-field-leading-",
+    "title": "F1TECH: How did Mercedes upgrade its field-leading W17 in Montreal? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: How did Mercedes upgrade its field-leading W17 in Montreal?. Mercedes introduced its first major aerodynamic upgrade package of the 2026 season at the Canadian Grand Prix, applied to a W17 that had required minimal development across the opening four rounds. The package spans the full aerodynamic chain: front wing outboard elements were lowered and tied into the footplate with added strakes to strengthen vortex generation and stabilise downstream flow; endplate upper-lip camber was reduced to improve flow robustness across yaw and ride-height variation; brake duct inlet and exit sizes were enlarged to increase thermal mass flow for Montreal's high-deceleration demands. The floor received reprofiled elements to reduce separation at operating extremes and additional corner slots to improve diffuser feed. The diffuser roof and sidewall were reprofiled for better pressure recovery and local load gain. Rear caketin winglet chord and position were re-optimised to improve diffuser efficiency. The direction is stability-envelope broadening rather than peak-load chasing, targeting improved consistency in slow-to-medium-speed corners. McLaren and Ferrari are both accelerating development, with Ferrari's major Barcelona package still pending.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28607",
+    "updated_at": "2026-06-03T20:12:54.450Z",
+    "content_hash": "78430f35101ce881"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1tech-how-did-red-bull-upgrade-its-rb22-at-montre",
+    "title": "F1TECH: How did Red Bull upgrade its RB22 at Montreal? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: How did Red Bull upgrade its RB22 at Montreal?. Red Bull's Montreal RB22 package represented a second development wave following Miami's structural aerodynamic changes. Revised second and third front wing flap elements shift the available aerobalance range, targeting circuits with heavy braking and slow-speed rotation, indicating continued instability in the front-end operating window. Enlarged brake duct exit geometry improves thermal management of the brake assembly and indirectly stabilises tyre temperatures, a documented weakness in 2026. Floor updates — a bib edge trim and mildly increased camber on forward floor devices — raise local downforce load and improve diffuser sealing at low ride heights, targeting traction zones where McLaren and Mercedes have gained. A closed radiator exit panel replaces Miami's louvred configuration, reducing drag and improving rear-end flow quality under cooler Canadian conditions. The package collectively addresses balance predictability, rear stability, and straight-line efficiency within Red Bull's ongoing effort to close the development gap to Mercedes and McLaren.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28608",
+    "updated_at": "2026-06-03T20:13:04.390Z",
+    "content_hash": "5e9f72e2c9b4ce23"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1tech-haas-introduced-its-biggest-upgrade-package",
+    "title": "F1TECH: Haas introduced its biggest upgrade package of 2026 in Montreal (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: Haas introduced its biggest upgrade package of 2026 in Montreal. Haas introduced its largest 2026 upgrade package at the Canadian Grand Prix, comprising a new floor body with revised floor board, floor edge splits, and a more aggressive diffuser; redesigned sidepod inlets with a deeper undercut and stronger top-surface downwash to channel higher-energy airflow rearward; a reshaped engine cover to guide flow toward the beam wing and diffuser roof; realigned rear suspension fairings; and revised rear corner winglets. Despite the scope of the package, the VF-26 lacked pace throughout the Montreal weekend. Drivers reported inconsistent rear grip and rear-end nervousness, particularly in slow corners, indicating the new floor is not yet operating within its intended aerodynamic window. The symptoms suggest CFD-to-track correlation issues, with upstream flow from the sidepod and engine cover changes not yet sufficiently stabilising diffuser loading.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28611",
+    "updated_at": "2026-06-03T20:13:16.088Z",
+    "content_hash": "9b88e38bbeb2b5a5"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1tech-how-did-racing-bulls-upgrade-its-car-in-mon",
+    "title": "F1TECH: How did Racing Bulls upgrade its car in Montreal? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: How did Racing Bulls upgrade its car in Montreal?. Racing Bulls introduced a structured four-component aerodynamic upgrade to the VCARB03 at the Canadian Grand Prix. The most significant element was a redesigned main floor — the largest underbody change since early-season updates — targeting consistent downforce generation across a range of operating conditions rather than peak load, directly addressing known low-speed corner instability and corner-exit traction deficits. Rear corner devices were revised to reoptimise wake management around the rear wheels in conjunction with the new floor geometry, improving diffuser feeding efficiency. A reprofiled beam wing works to extract additional rear load from the diffuser pressure recovery zone, aiding stability under braking and through medium-speed corners. A reprofiled exhaust tailpipe bracket cleans centreline wake to support beam wing and diffuser co-functioning. No telemetry deltas or power-unit context were reported.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28609",
+    "updated_at": "2026-06-03T20:13:25.918Z",
+    "content_hash": "4437b79ae196194d"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1tech-what-did-mclaren-montreal-upgrade-package-i",
+    "title": "F1TECH: What did McLaren Montreal upgrade package include? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: What did McLaren Montreal upgrade package include?. McLaren brought the second half of a two-event aerodynamic development cycle to Montréal, completing a rollout initiated at Miami. The MCL40 package comprised seven components: a new front wing, revised engine cover with additional cooling exits, multiple cooling louvre options for ambient temperature range, a halo-mounted winglet, revised rear wing endplates for increased local load and adjusted distribution, modified rear suspension fairings targeting rear-corner and diffuser flow, and updated floor edge devices to improve floor conditioning and diffuser load generation. Critically, the new front wing was abandoned after FP1, with the car reverting to the previous specification for all subsequent sessions — load distribution and downstream flow structures diverged from simulation targets, undermining driver confidence. All other components ran through the full weekend, suggesting the remaining aero changes are retained for future events.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28606",
+    "updated_at": "2026-06-03T20:13:35.543Z",
+    "content_hash": "f3541014b289a893"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1maths-what-do-the-numbers-reveal-about-the-relia",
+    "title": "F1MATHS: What do the numbers reveal about the reliability of the power unit manufacturers? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: What do the numbers reveal about the reliability of the power unit manufacturers?. After two races (Australia and China), most 2026 grid drivers show single-unit usage across all power unit components. Red Bull's Isack Hadjar is the most concerning case, already on his second unit in every category following Melbourne engine trouble. Aston Martin Honda shows early hybrid system stress: Fernando Alonso has used second MGU-K, ES, and CE units, while Lance Stroll has used two ancillary sets — Honda's ICE vibration characteristics flagged as a contributing factor. Mercedes' George Russell moved to a second CE and ancillaries after Australia, likely precautionary. Cadillac Ferrari's Valtteri Bottas leads CE and ancillary usage on his side. Lando Norris is expected to take fresh components following Shanghai technical issues. McLaren, Ferrari, Williams, Haas, Audi, Alpine, and Racing Bulls show clean single-unit profiles.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28359",
+    "updated_at": "2026-06-03T20:13:45.374Z",
+    "content_hash": "aa7dba784daa889e"
+  },
+  {
+    "id": "analysis-2026-r02-f1tech-f1maths-key-stats-and-trivia-after-antonelli-s-mai",
+    "title": "F1MATHS: Key stats and trivia after Antonelli's maiden F1 victory (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: Key stats and trivia after Antonelli's maiden F1 victory. Andrea Kimi Antonelli (Mercedes) secured his maiden Formula 1 victory at the 2026 Chinese Grand Prix, starting from the front row. The win came in his 26th career start, his second season alongside George Russell. Antonelli managed tyre degradation effectively across the race distance and responded to strategic pressure from Russell, indicating strong race-management capability and improved consistency relative to his debut season. Mercedes' dual-driver structure — Russell providing experience, Antonelli contributing raw pace — appears operationally competitive. No specific telemetry data, pace deltas, power-unit details, or upgrade information are provided in the article. The piece is primarily statistical and biographical, confirming Mercedes' competitive resurgence but offering limited technical or analytical detail applicable to predicting future race performance.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 2
+    },
+    "source_url": "https://www.f1technical.net/news/28362",
+    "updated_at": "2026-06-03T20:13:55.144Z",
+    "content_hash": "6f3d50bc6527c7f8"
+  },
+  {
+    "id": "analysis-2026-r02-f1tech-f1tech-mercedes-front-wing-under-scrutiny-after-re",
+    "title": "F1TECH: Mercedes front wing under scrutiny after reports of two‑phase closure system (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: Mercedes front wing under scrutiny after reports of two‑phase closure system. Mercedes W17 front wing is under FIA scrutiny following Ferrari's request for clarification after the Chinese Grand Prix. Telemetry and broadcast footage indicate the wing executes a two-phase closure: an initial rapid movement of approximately 400 milliseconds that satisfies the FIA's control-system sensors, followed by a slower mechanical continuation to a final aerodynamic position outside the monitored time window. Analysis suggests this staged behaviour is linked to braking-phase aerodynamic balance management — the rear active aero deactivates immediately while the front wing settles progressively, reducing abrupt forward load transfer under heavy braking. Potential performance benefits include improved braking stability, smoother aerodynamic balance transitions, better tyre management, and more predictable high-speed corner entry. Regulatory outcome remains unresolved and could materially affect Mercedes' competitiveness at subsequent rounds.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 2
+    },
+    "source_url": "https://www.f1technical.net/news/28366",
+    "updated_at": "2026-06-03T20:14:04.552Z",
+    "content_hash": "4caa1885a2cc5d8c"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1maths-how-have-the-f1-weight-limit-evolved-over-",
+    "title": "F1MATHS: How have the F1 weight limit evolved over the years? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How have the F1 weight limit evolved over the years?. The 2026 regulations reduce the minimum car weight to 768 kg, down approximately 32 kg from the 2022–2023 peak of 796–798 kg. Maximum wheelbase is shortened by 200 mm to 3.4 metres, floor width narrows by 100 mm to 1.9 metres, and Pirelli tyres are 25 mm narrower at the front and 30 mm at the rear. The hybrid system is made more compact. These structural changes affect all constructors equally but reward teams that can engineer aggressively toward the weight limit. Reduced unsprung mass from narrower tyres is expected to improve cornering responsiveness and tyre load sensitivity. No specific team, driver, or pace delta data is provided; analysis applies universally to the 2026 grid.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28346",
+    "updated_at": "2026-06-03T20:14:13.739Z",
+    "content_hash": "b15dec2c553fa884"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1maths-what-do-the-numbers-disclose-after-the-ope",
+    "title": "F1MATHS: What do the numbers disclose after the opening two races? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: What do the numbers disclose after the opening two races?. After two races (Australia and China), Mercedes leads both championships: George Russell holds 51 points via an Australian victory and Chinese runner-up finish; rookie Kimi Antonelli sits on 47 points after winning in Shanghai. Mercedes' combined 98 constructors' points — over 30 ahead of Ferrari — indicates strong adaptation to the 2026 power unit regulations, delivering pace, consistency, and reliability across both drivers. Ferrari (67 points) shows competitive single-lap and race-trim performance from Charles Leclerc and Lewis Hamilton, but lacks the margin to challenge Mercedes. McLaren is compromised by two Oscar Piastri DNS results (18 points total). Red Bull is underperforming severely with Max Verstappen on 8 points and Isack Hadjar on 4. Aston Martin has recorded four retirements and zero points, signalling significant reliability or setup issues entering Japan.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28349",
+    "updated_at": "2026-06-03T20:14:23.676Z",
+    "content_hash": "42ca8e5e0acd5b0a"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1maths-how-could-mercedes-exploit-a-rumoured-10-k",
+    "title": "F1MATHS: How could Mercedes exploit a rumoured 10 kW ICE advantage? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How could Mercedes exploit a rumoured 10 kW ICE advantage?. Mercedes secured victories in both the Australian Grand Prix 2026 and Chinese Grand Prix 2026, with a rumoured 10 kW (approximately 13 hp) internal combustion engine advantage over rivals under 2026 regulations. The 2026 power unit framework splits ICE and electrical output equally at 50:50, with MGU-K output raised to 350 kW and energy recovery increased to 9 MJ per lap; the MGU-H has been eliminated. A sustained ICE advantage provides a permanent power baseline, allowing Mercedes to cycle ERS deployment strategically — conserving energy one lap and deploying a compounded surplus the next. This also enables higher downforce configurations without straight-line speed penalties. Ferrari is identified as a direct benchmark, with their ERS output diminishing while their ICE power remains fixed and potentially inferior.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28356",
+    "updated_at": "2026-06-03T20:14:33.299Z",
+    "content_hash": "e2ea8766fe8b0f83"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1maths-how-each-team-measures-up-under-the-new-ru",
+    "title": "F1MATHS: How each team measures up under the new rules? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How each team measures up under the new rules?. Under the 2026 regulations, the minimum car weight drops to 768 kg (from 800 kg), driven by a shorter 3.4 m wheelbase, narrower floor, slimmer Pirelli tyres, and a reduced hybrid battery. As of the Chinese Grand Prix weekend, McLaren, Alpine, and Audi hit the 768 kg minimum exactly, granting full ballast placement flexibility — a handling and tyre-behaviour advantage. Mercedes and Cadillac sit at 772 kg, Ferrari and Haas at 770 kg — all manageable margins. Red Bull carries a significant 16 kg excess at 784 kg, with VCARB unofficially at 782 kg and Aston Martin at 781 kg, suggesting shared architectural issues. Williams is the heaviest at 795 kg — 27 kg over the limit — representing a substantial lap-time deficit and a critical development priority for the remainder of 2026.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28345",
+    "updated_at": "2026-06-03T20:14:42.915Z",
+    "content_hash": "05aa82a7d24ac7ff"
+  },
+  {
+    "id": "analysis-2026-r02-f1tech-f1maths-how-does-the-boxplot-diagram-confirm-merce",
+    "title": "F1MATHS: How does the boxplot diagram confirm Mercedes's seven-tenth advantage ahead of Ferrari? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How does the boxplot diagram confirm Mercedes's seven-tenth advantage ahead of Ferrari?. Boxplot analysis of the 2026 Chinese Grand Prix confirms Mercedes W17 dominance in race trim. Andrea Kimi Antonelli recorded a mean lap time of 96.66 seconds and median of 96.50, with George Russell at 96.95 mean and 96.91 median. Ferrari's Charles Leclerc and Lewis Hamilton averaged 97.15 and 97.10 respectively, placing them approximately 0.64 seconds per lap behind Mercedes on average. Mercedes demonstrated superior tyre consistency and lower lap-time variance across laps 12–54, with virtually no degradation. Ferrari showed tighter interquartile ranges post-safety car, indicating faster hard-tyre warm-up, but could not sustain pace over long runs. Alpine sits +1.32 and Haas +1.43 behind Mercedes, with Racing Bulls, Audi, and Williams forming a slower cluster around +1.81–2.47. Cadillac trails at +3.51.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 2
+    },
+    "source_url": "https://www.f1technical.net/news/28340",
+    "updated_at": "2026-06-03T20:14:52.788Z",
+    "content_hash": "9710355e924f95ad"
+  },
+  {
+    "id": "analysis-2026-r01-f1tech-f1maths-telemetry-explains-mercedes-qualifying-adv",
+    "title": "F1MATHS: Telemetry explains Mercedes' qualifying advantage (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: Telemetry explains Mercedes' qualifying advantage. Mercedes demonstrated a clear power-unit advantage in Australian Grand Prix 2026 qualifying, reaching a top speed of 327 km/h through the high-speed run into Turn 8 — higher than any competitor. Telemetry shows Mercedes' battery deployment is more efficient, with a smaller and later clipping point compared to rivals, indicating superior MGU-K output duration and energy recovery integration. George Russell's speed trace remained notably smoother and more sustained than all rivals. Red Bull Powertrains and Audi both showed larger clipping deltas with earlier speed loss. Ferrari's data was inconsistent: Charles Leclerc showed a significant drop while Oliver Bearman's Haas-Ferrari displayed a smaller clipping delta, suggesting deployment mode or setup divergence between factory and customer teams. Honda-powered Aston Martin suffered one of the steepest pre-corner speed losses, indicating energy deployment limitations.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 1
+    },
+    "source_url": "https://www.f1technical.net/news/28300",
+    "updated_at": "2026-06-03T20:15:02.387Z",
+    "content_hash": "ece8002e5d4ce91b"
+  },
+  {
+    "id": "analysis-2026-r01-f1tech-f1maths-russell-leads-all-three-sectors-as-qualify",
+    "title": "F1MATHS: Russell leads all three sectors as qualifying data reveals Mercedes’ early 2026 dominance (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: Russell leads all three sectors as qualifying data reveals Mercedes’ early 2026 dominance. George Russell topped all three sectors in Australian Grand Prix qualifying at Albert Park, securing pole position. Mercedes demonstrated a complete lap advantage: Russell's sector times (S1: 27.498s, S2: 17.284s, S3: 33.736s) led the field in every segment. Kimi Antonelli was consistently second-fastest across all sectors, confirming Mercedes' new-generation 2026 car is strong in both high-speed and technical sections. Charles Leclerc and Lewis Hamilton showed Ferrari pace drops in Sector 2, attributed to energy harvesting management under 2026 power-unit regulations. Oscar Piastri delivered McLaren's best performance in Sector 3 (33.936s). Isack Hadjar showed Racing Bulls competitive in Sector 3. Max Verstappen's final lap was severely compromised, producing an anomalous 41.531s Sector 3 time. Midfield compression was notable, with multiple rookies including Arvid Lindblad competitive in Sector 2.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 1
+    },
+    "source_url": "https://www.f1technical.net/news/28297",
+    "updated_at": "2026-06-03T20:15:33.282Z",
+    "content_hash": "0d24c31cbc052612"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1-tech-how-do-ferrari-s-and-red-bull-s-flip-flop-",
+    "title": "F1 TECH: How do Ferrari's and Red Bull's flip-flop rear wing compare to each other? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1 TECH: How do Ferrari's and Red Bull's flip-flop rear wing compare to each other?. Ferrari's \"Macarena\" rotating rear wing, first shown at pre-season testing with Lewis Hamilton driving, uses dual endplate-mounted actuators enabling over 200 degrees of flap rotation, generating lift on straights for significant drag reduction. Reliability issues forced its withdrawal at the Chinese Grand Prix; after five weeks of actuator and structural refinement, the revised version is targeted for competitive debut at Miami. Red Bull tested a rival interpretation at a Silverstone filming day, using a single central pylon actuator rotating the flap approximately 110–120 degrees in the opposite direction. Red Bull's design is simpler and more reliable but creates a gap between flap and endplate, reducing aerodynamic sealing efficiency versus Ferrari's tighter architecture. McLaren is also developing a comparable system, with major aerodynamic upgrades planned for Miami and Canada.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28460",
+    "updated_at": "2026-06-03T20:15:46.497Z",
+    "content_hash": "1e9eccdfe00b38ed"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1tech-how-did-ferrari-take-inspiration-from-merce",
+    "title": "F1TECH: How did Ferrari take inspiration from Mercedes’ front suspension? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: How did Ferrari take inspiration from Mercedes’ front suspension?. Ferrari conducted a 200-km filming day at Monza between races to validate its Miami Grand Prix upgrade package on the SF-26. Charles Leclerc covered the morning session (~100 km) and Lewis Hamilton the afternoon, enabling data collection across two driving styles and track conditions. The package includes a new front wing, rear wing, revised floor, and a previously unreported front suspension revision inspired by the Mercedes W15's adjustable upper wishbone pickup-point concept. Ferrari extended similar anti-dive geometry adjustability to the front axle, widening the setup window for braking stability, pitch control, and aerodynamic platform consistency — critical under 2026 energy-management regulations. Updated hybrid deployment logic was also stress-tested on Monza's straights, with CFD and wind-tunnel correlation validated via onboard sensors and load cells.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28462",
+    "updated_at": "2026-06-03T20:15:56.205Z",
+    "content_hash": "33151cbb10321fde"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1tech-how-has-ferrari-updated-its-macarena-rear-w",
+    "title": "F1TECH: How has Ferrari updated its Macarena rear wing? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1TECH: How has Ferrari updated its Macarena rear wing?. Ferrari conducted a 200 km filming day at Monza with Charles Leclerc and Lewis Hamilton to validate a substantially revised \"Macarena\" rear wing ahead of the Miami Grand Prix. The updated V2 wing features more angular endplates, repositioned pylons for improved load distribution and reduced high-speed flex, smaller and more steeply angled internal endplate accents, and a new vertical flap on the third element for inverted-profile stability. Critically, the actuator housing has been redesigned into the endplate to reduce aerodynamic disturbance in both high-downforce and low-drag states — addressing a key reliability concern that prevented race deployment in the opening three rounds. Ferrari sits 45 points behind Mercedes in the constructors' standings and is targeting Miami as the debut of a comprehensive upgrade package including a new floor and front wing.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28451",
+    "updated_at": "2026-06-03T20:16:05.450Z",
+    "content_hash": "7eb6843abd4d4245"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1maths-what-do-the-constructors-standings-look-li",
+    "title": "F1MATHS: What do the constructors' standings look like after three races? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: What do the constructors' standings look like after three races?. After three races of the 2026 season, Mercedes lead the constructors' championship with 135 points, built on consecutive one-two finishes in Australia and China, plus a further victory in Japan. Andrea Kimi Antonelli and George Russell have operated cohesively across all three rounds. Ferrari sit second on 90 points, showing consistent podium-level pace but lacking the outright speed to challenge Mercedes, with a 45-point deficit already established. McLaren (46 points) showed a significant performance step at Suzuka with a double-podium worth 28 points, suggesting their 2026 package is developing positively. Haas (18 points) showed midfield competitiveness in China. Red Bull (16 points) have been mainly reliant on their Melbourne result. Cadillac and Aston Martin remain pointless.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28431",
+    "updated_at": "2026-06-03T20:16:35.047Z",
+    "content_hash": "f67145351db7e9e4"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1maths-how-much-of-an-advantage-might-mercedes-ha",
+    "title": "F1MATHS: How much of an advantage might Mercedes have? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How much of an advantage might Mercedes have?. Mercedes holds the strongest estimated ICE output at 576 hp under the 2026 ADUO framework, setting the benchmark against which rivals are measured. Red Bull Powertrains is estimated at 565 hp, marginally above the 2% deficit threshold (564 hp), potentially excluding them from any additional homologation upgrades despite a meaningful gap to Mercedes; chassis limitations, not the power unit, are cited as Red Bull's primary performance deficit, with Racing Bulls' relative competitiveness reinforcing this. Ferrari's estimated 547–560 hp output straddles both ADUO thresholds, potentially qualifying for one or two upgrade allowances; Frédéric Vasseur has confirmed additional ICE upgrades are prepared. Audi (~545 hp) and Honda (~519 hp) fall beyond the 4% threshold (~552 hp), qualifying both for two upgrades this season and two next, providing a significant development acceleration opportunity under restricted regulations.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28442",
+    "updated_at": "2026-06-03T20:16:45.239Z",
+    "content_hash": "ffafa313b430bca3"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1maths-what-do-the-drivers-standings-look-like-af",
+    "title": "F1MATHS: What do the drivers' standings look like after three races? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: What do the drivers' standings look like after three races?. After three rounds of the 2026 season, Mercedes leads both championships. Andrea Kimi Antonelli heads the drivers' standings with 72 points, having taken victories in China and Japan, indicating strong single-lap and race pace across high-downforce and medium-speed circuits. George Russell sits second with 63 points, including a Melbourne win, confirming Mercedes' consistent constructors' performance. Charles Leclerc holds third on 49 points with podiums in Australia and Japan but struggled in China. Lewis Hamilton has 41 points with Ferrari, scoring his first Ferrari podium in Shanghai. Lando Norris recovered from a China non-classification to score strongly in Japan, accumulating 25 points. Established names including Max Verstappen, Fernando Alonso, Sergio Pérez, and Nico Hülkenberg have scored minimally or zero points, suggesting significant competitiveness deficits in their respective machinery.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28432",
+    "updated_at": "2026-06-03T20:16:55.239Z",
+    "content_hash": "521e9ca908f525d6"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1maths-how-many-power-unit-compontents-have-drive",
+    "title": "F1MATHS: How many power unit compontents have drivers used so far this season? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How many power unit compontents have drivers used so far this season?. After three races of the 2026 season, most drivers remain on their first ICE, Turbocharger, Exhaust, MGU-K, and Energy Store, indicating strong baseline reliability for the new-specification power units, which remove the MGU-H and elevate MGU-K and battery demands. The primary stress point is Control Electronics and ancillary units, with George Russell, Kimi Antonelli, Lando Norris, Max Verstappen, Isack Hadjar, Carlos Sainz, Lance Stroll, Fernando Alonso, Esteban Ocon, Gabriel Bortoleto, and Valtteri Bottas already on second or third CE units. Red Bull's Isack Hadjar is the most significant outlier, having consumed two ICEs, two Turbochargers, two Exhaust systems, and two MGU-Ks — a rate of attrition that may indicate a thermal-management or reliability issue specific to his car, and warrants monitoring given the 24-race calendar and strict allocation limits.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28433",
+    "updated_at": "2026-06-03T20:17:05.726Z",
+    "content_hash": "e25f24058a23b93b"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1-maths-which-teams-are-battling-against-the-over",
+    "title": "F1 MATHS: Which teams are battling against the overweight of their cars? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1 MATHS: Which teams are battling against the overweight of their cars?. Under the 2026 regulations, the minimum weight dropped from 800 kg to 768 kg. Williams carries the largest reported excess at approximately 26 kg over the limit, equating to roughly 0.9 seconds per lap at an estimated 0.035 s/kg penalty. Red Bull and Aston Martin are reportedly 9–10 kg over (~0.30–0.35 s penalty). Cadillac sits 6–7 kg over, Racing Bulls 4–5 kg, Alpine 2–3 kg, and Haas approximately 1 kg over. McLaren is reported to be exactly at the 768 kg minimum. Ferrari, Audi, and Mercedes are confirmed underweight, enabling low-mounted ballast placement to optimise centre of gravity, weight distribution, and cornering stability — providing a measurable structural and energy-efficiency advantage given the 50/50 ICE-electric power unit architecture.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28419",
+    "updated_at": "2026-06-03T20:17:15.580Z",
+    "content_hash": "3711d73e95b70815"
+  },
+  {
+    "id": "analysis-2026-r05-f1tech-f1-maths-what-do-the-fastest-lap-times-reveal-abou",
+    "title": "F1 MATHS: What do the fastest lap times reveal about the pecking order? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1 MATHS: What do the fastest lap times reveal about the pecking order?. Andrea Kimi Antonelli (Mercedes) won the Canadian Grand Prix, recording the fastest lap of 1:14.210 — over 0.188 seconds quicker than Max Verstappen (Red Bull, 1:14.398), confirming Mercedes W17 holds a race pace advantage of more than three tenths. George Russell retired early with a confirmed power unit failure, limiting full Mercedes pace assessment. Lewis Hamilton (Ferrari, 1:14.573) demonstrated strong medium-tyre pace, outperforming Antonelli on that compound. Isack Hadjar (Racing Bulls, 1:14.578) benefited from fresh-tyre grip on a late stop. Charles Leclerc (Ferrari, 1:15.397) struggled with Pirelli tyre activation throughout. Oscar Piastri and Franco Colapinto (McLaren, 1:15.542/1:15.642) showed competitive midfield pace. Cadillac — Sergio Pérez (1:17.172) and Valtteri Bottas (1:18.273) — showed a significant pace deficit to all rivals.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 5
+    },
+    "source_url": "https://www.f1technical.net/news/28595",
+    "updated_at": "2026-06-03T20:17:25.644Z",
+    "content_hash": "7999082a699aadd3"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1maths-what-does-the-telemetry-reveal-about-the-2",
+    "title": "F1MATHS: What does the telemetry reveal about the 2026 F1 car? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: What does the telemetry reveal about the 2026 F1 car?. Telemetry comparison between Kimi Antonelli's Mercedes 2026 Miami Grand Prix pole lap (1:27.798) and Max Verstappen's Red Bull 2025 Miami pole (1:26.204) reveals a 1.594-second deficit attributable to three structural factors. The 2026 regulations impose lower aerodynamic downforce, reducing sustained high-speed corner velocity. The new hybrid architecture requires reduced energy deployment at lap start to preserve charge, creating an early speed deficit. Initial straight-line acceleration is competitive or superior due to improved low-speed torque and reduced drag, but hybrid deployment depletes mid-straight, causing pronounced top-speed drop-off in the latter half of each straight. By the final sector, energy reserves are exhausted, compressing terminal velocity significantly. These constraints apply across all 2026 teams, suggesting energy management strategy will be a defining performance differentiator at high-speed and long-straight circuits throughout the season.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28518",
+    "updated_at": "2026-06-03T20:17:35.532Z",
+    "content_hash": "446879fc9d3d3f9a"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1maths-sector-data-reveals-a-fragmented-competiti",
+    "title": "F1MATHS: Sector data reveals a fragmented competitive order (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: Sector data reveals a fragmented competitive order. Miami Grand Prix 2026 Sprint Qualifying sector analysis reveals no single driver topped more than one sector. Charles Leclerc led Sector 1 by 0.008s over Lando Norris, indicating Ferrari and McLaren superiority in medium-speed direction changes. Kimi Antonelli topped Sector 2 (mechanical grip, low-speed traction zones), with Lando Norris 0.024s behind and George Russell 0.132s back; Lewis Hamilton's 0.424s deficit in Sector 2 suggests intra-team setup divergence at Mercedes. George Russell led Sector 3 (high-speed, straight-line), with Max Verstappen 0.012s behind, confirming Red Bull's competitive top-speed package despite poor low-speed performance. Red Bull and Aston Martin showed notable deficits in Sector 1 front-end rotation. Fernando Alonso and Aston Martin recorded slowest times in both Sectors 2 and 3, confirming low-speed and high-speed efficiency deficits.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28480",
+    "updated_at": "2026-06-03T20:18:05.674Z",
+    "content_hash": "be992f6a0eeb92bc"
+  },
+  {
+    "id": "analysis-2026-r01-f1tech-f1maths-how-does-the-constructors-championship-loo",
+    "title": "F1MATHS: How does the constructors' championship look like after the season-opening Australian Grand Prix? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How does the constructors' championship look like after the season-opening Australian Grand Prix?. Mercedes demonstrated the strongest overall package at Albert Park, with George Russell taking pole and victory and Andrea Kimi Antonelli finishing second, confirming Bahrain pre-season testing pace translated directly to race conditions under the 2026 regulations. Ferrari secured 27 points via Charles Leclerc third and Lewis Hamilton fourth, indicating competitive adaptation to the new technical framework and positioning the team as Mercedes' closest rival. Red Bull Racing–Red Bull Ford collected only 8 points through Max Verstappen's sixth-place finish and fastest lap, with Isack Hadjar's retirement highlighting reliability concerns during the team's transition to the new Red Bull Ford power unit. Oscar Piastri's failure to start cost McLaren-Mercedes significant points, masking their true pace potential. Aston Martin Aramco-Honda, Williams-Mercedes, and Cadillac-Ferrari all failed to score, with both Aston Martin drivers retiring, suggesting setup or reliability deficits requiring immediate attention.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 1
+    },
+    "source_url": "https://www.f1technical.net/news/28288",
+    "updated_at": "2026-06-03T20:20:45.487Z",
+    "content_hash": "e5696df7071f2e49"
+  },
+  {
+    "id": "analysis-2026-r01-f1tech-f1maths-how-does-the-drivers-championship-look-lik",
+    "title": "F1MATHS: How does the drivers' championship look like after the season-opening Australian Grand Prix? (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: How does the drivers' championship look like after the season-opening Australian Grand Prix?. The article contains no technical or analytical content relevant to upgrades, reliability, setup direction, power-unit context, telemetry findings, or pace deltas. It is a championship standings summary reporting points totals after the 2026 Australian Grand Prix. The only performance-adjacent inferences present are narrative characterizations of relative pace order: Mercedes (George Russell, Andrea Kimi Antonelli) led on outright performance under the new regulations, Ferrari (Charles Leclerc, Lewis Hamilton) showed competitive adaptation, McLaren (Lando Norris) appeared marginally behind on raw pace, and Red Bull (Max Verstappen) faced a more difficult regulation transition. Oscar Piastri did not start following an installation-lap crash; Nico Hülkenberg was sidelined by unspecified technical issues. No quantitative pace deltas, power-unit data, or setup information are provided in the source material.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 1
+    },
+    "source_url": "https://www.f1technical.net/news/28299",
+    "updated_at": "2026-06-03T20:20:54.630Z",
+    "content_hash": "7e9e593d758d2d08"
+  },
+  {
+    "id": "analysis-2026-r04-f1tech-f1maths-key-numbers-stats-and-facts-ahead-of-the-m",
+    "title": "F1MATHS: Key numbers, stats and facts ahead of the Miami Grand Prix (F1Technical)",
+    "content": "Season 2026 technical analysis — F1MATHS: Key numbers, stats and facts ahead of the Miami Grand Prix. The Miami International Autodrome's 5.412 km layout presents three aerodynamically distinct sectors, with Straight Mode deployment zones activated at 165 metres after Turn 18, 90 metres after Turn 16, and at the Turn 19 exit — reference points that will directly test 2026 power unit energy deployment behaviour under revised mid-season regulations. The official speed trap 150 metres before Turn 17 will serve as a primary power unit benchmark across the field. Historically low tyre degradation supports a one-stop strategy, with Oscar Piastri's 2025 McLaren victory built on a C4 Medium-to-C3 Hard switch at lap 29 of 57. Max Verstappen holds the outright lap record at 1:29.708, while Lando Norris set the 2025 fastest race lap at 1:29.746 against Verstappen's pole of 1:26.204, a 2.5-second qualifying-to-race pace delta indicating significant fuel and tyre management trade-offs relevant to 2026 setup calibration.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": 4
+    },
+    "source_url": "https://www.f1technical.net/news/28470",
+    "updated_at": "2026-06-03T20:21:05.117Z",
+    "content_hash": "2e6aad4729cef493"
+  },
+  {
+    "id": "analysis-2026-general-f1tech-f1-analysis-mapping-formula-one-s-long-term-circui",
+    "title": "F1 ANALYSIS: Mapping Formula One’s Long‑Term Circuit Contracts (F1Technical)",
+    "content": "Season 2026 technical analysis — F1 ANALYSIS: Mapping Formula One’s Long‑Term Circuit Contracts. This article covers Formula One Management's long-term circuit contract portfolio and contains no technical, aerodynamic, power-unit, telemetry, or pace-delta content relevant to any specific race or team performance. It maps contract expiry dates across venues including Zandvoort (2026), Las Vegas (2027), Singapore, Mexico City, and Japan (2028–2029), through to ultra-long deals for Miami and Austria (2041). No upgrade information, reliability data, lap time deltas, or constructor-specific technical findings are presented. The article is purely commercial and calendar-strategic in nature, offering no analytical conclusions applicable to predicting race performance for the Australian, Chinese, Japanese, Miami, or Canadian Grands Prix in 2026.",
+    "tags": {
+      "season": 2026,
+      "type": "analysis",
+      "source": "f1technical",
+      "round": null
+    },
+    "source_url": "https://www.f1technical.net/news/28461",
+    "updated_at": "2026-06-03T20:21:13.316Z",
+    "content_hash": "7fda97b9a2ed0102"
   }
 ]
