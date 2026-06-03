@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "functions": {
+    "api/query.js": {
+      "includeFiles": "data/**",
+      "maxDuration": 30
+    },
+    "api/health.js": {
+      "includeFiles": "data/**",
+      "maxDuration": 5
+    }
+  }
+}
