@@ -69,7 +69,7 @@ function scoreDocs(kb, query) {
 
 async function askClaude(query, docs) {
   const context = docs
-    .map((d, i) => `[${i + 1}] ${d.title}\n${d.content.slice(0, 1200)}`)
+    .map((d, i) => `[${i + 1}] ${d.title}\n${d.content.slice(0, 3000)}`)
     .join('\n\n---\n\n');
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
