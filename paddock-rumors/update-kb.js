@@ -41,9 +41,11 @@ import {
   getLatestFinishedRound,
   getRaceResults,
   getQualifyingResults,
-  getDriverStandings
+  getDriverStandings,
+  getSprintResults,
+  getPitStops
 } from './fetch-results.js';
-import { synthesiseRaceDoc, synthesiseDriverDoc, synthesiseQualiDoc } from './synthesise.js';
+import { synthesiseRaceDoc, synthesiseDriverDoc, synthesiseQualiDoc, synthesiseSprintDoc } from './synthesise.js';
 import { enrichFromF1Technical } from './enrich-f1technical.js';
 import { evaluateSchedule, migrateState } from './schedule.js';
 
@@ -116,15 +118,17 @@ async function getStandingsCached(round, cache) {
 async function doTier1(round, raceCache, standingsCache, state) {
   console.log(`[paddock-rumors]   Tier 1: round ${round}`);
   const race = await raceCache.get(round);
-  const quali = await getQualifyingResults(CURRENT_SEASON, round);
-
-  const standingsBefore = await getStandingsCached(round - 1, standingsCache);
-  const standingsAfter = await getStandingsCached(round, standingsCache);
+  const [quali, pitStops, standingsBefore, standingsAfter] = await Promise.all([
+    getQualifyingResults(CURRENT_SEASON, round),
+    getPitStops(CURRENT_SEASON, round),
+    getStandingsCached(round - 1, standingsCache),
+    getStandingsCached(round, standingsCache)
+  ]);
 
   const generated = [];
 
-  console.log(`[paddock-rumors]     race doc: ${race.raceName}`);
-  generated.push(await synthesiseRaceDoc(race, quali, standingsBefore, standingsAfter));
+  console.log(`[paddock-rumors]     race doc: ${race.raceName} (${pitStops.length} pit stops)`);
+  generated.push(await synthesiseRaceDoc(race, quali, standingsBefore, standingsAfter, pitStops));
 
   const allCompletedSoFar = [];
   for (let r = 1; r <= round; r++) allCompletedSoFar.push(await raceCache.get(r));
@@ -208,12 +212,40 @@ async function main() {
   }
   console.log(`[paddock-rumors] summary: ${plan.summary}`);
 
-  // ── Qualifying check: next upcoming round ───────────────────────────
-  // Runs independently of the race/enrichment plan. Checks whether the
-  // round after the latest finished race has qualifying data available
-  // yet (Jolpica publishes it within ~1h of the session ending).
+  // Shared: next upcoming round (used by sprint + qualifying checks)
   const nextRound = latest !== null ? latest + 1 : 1;
   const nextSched = schedule.find(s => s.round === nextRound && s.season === CURRENT_SEASON);
+
+  // ── Sprint check: next upcoming round ───────────────────────────────
+  // Non-blocking. Returns early if the round has no sprint race.
+  if (nextSched) {
+    const sprintRoundState = (state.rounds?.[String(nextRound)] || {});
+    if (!sprintRoundState.sprint_at || FORCE_QUALI) {
+      console.log(`[paddock-rumors] sprint check: R${nextRound} ${nextSched.raceName}`);
+      try {
+        const sprintResult = await getSprintResults(CURRENT_SEASON, nextRound);
+        if (sprintResult?.results?.length) {
+          let kb = loadKb();
+          console.log(`[paddock-rumors] sprint data found — synthesising doc`);
+          const sprintDoc = await synthesiseSprintDoc(sprintResult);
+          kb = upsert(kb, [sprintDoc]);
+          saveKb(kb);
+          markRound(state, nextRound, 'sprint');
+          writeState(state);
+          console.log(`[paddock-rumors] sprint doc committed: ${sprintDoc.id}`);
+        } else {
+          console.log(`[paddock-rumors] no sprint this weekend for R${nextRound}`);
+        }
+      } catch (err) {
+        console.warn(`[paddock-rumors] sprint check failed (non-blocking): ${err.message}`);
+      }
+    } else {
+      console.log(`[paddock-rumors] R${nextRound} sprint already processed`);
+    }
+  }
+
+  // ── Qualifying check: next upcoming round ───────────────────────────
+  // Jolpica publishes GP qualifying within ~1h of the session ending.
   if (nextSched) {
     const qRoundState = (state.rounds?.[String(nextRound)] || {});
     if (!qRoundState.qualifying_at || FORCE_QUALI) {

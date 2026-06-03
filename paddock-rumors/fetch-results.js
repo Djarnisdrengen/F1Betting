@@ -165,6 +165,61 @@ export async function getDriverStandings(season, round = null) {
 }
 
 /**
+ * Sprint race results for one round (null if round has no sprint).
+ */
+export async function getSprintResults(season, round) {
+  try {
+    const mr = await jolpica(`${season}/${round}/sprint.json`);
+    const race = mr.RaceTable?.Races?.[0];
+    if (!race || !race.SprintResults?.length) return null;
+    return {
+      season:      parseInt(race.season, 10),
+      round:       parseInt(race.round, 10),
+      raceName:    race.raceName,
+      circuitId:   race.Circuit.circuitId,
+      circuitName: race.Circuit.circuitName,
+      date:        race.date,
+      results: (race.SprintResults || []).map(r => ({
+        position:    parseInt(r.position, 10),
+        points:      parseFloat(r.points),
+        driverId:    r.Driver.driverId,
+        driverName:  `${r.Driver.givenName} ${r.Driver.familyName}`,
+        constructor: r.Constructor.name,
+        grid:        parseInt(r.grid, 10),
+        laps:        parseInt(r.laps, 10),
+        status:      r.status,
+        time:        r.Time?.time || null,
+        gridDelta:   parseInt(r.grid, 10) - parseInt(r.position, 10)
+      }))
+    };
+  } catch (err) {
+    if (/HTTP 404/.test(err.message)) return null;
+    throw err;
+  }
+}
+
+/**
+ * Pit stop data for one round.
+ * Returns array of stops sorted by lap, or [] if not yet available.
+ */
+export async function getPitStops(season, round) {
+  try {
+    const mr = await jolpica(`${season}/${round}/pitstops.json`);
+    const race = mr.RaceTable?.Races?.[0];
+    if (!race) return [];
+    return (race.PitStops || []).map(p => ({
+      driverId: p.driverId,
+      stop:     parseInt(p.stop, 10),
+      lap:      parseInt(p.lap, 10),
+      duration: p.duration   // string, e.g. "23.004"
+    }));
+  } catch (err) {
+    if (/HTTP 404/.test(err.message)) return [];
+    throw err;
+  }
+}
+
+/**
  * Constructor standings, optionally pinned to "after round N".
  */
 export async function getConstructorStandings(season, round = null) {

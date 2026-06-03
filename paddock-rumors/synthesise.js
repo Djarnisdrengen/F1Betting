@@ -68,7 +68,120 @@ function isDnf(status) {
  * @param {object[]} standingsAfter  - driver standings AFTER this round
  * @returns {Promise<object>} a KB document ready to be upserted
  */
-export async function synthesiseRaceDoc(raceResults, qualifying, standingsBefore, standingsAfter) {
+// ─────────────────────────────────────────────────────────────────────
+// Sprint race document
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * @param {object} sprintResults - from getSprintResults()
+ */
+export async function synthesiseSprintDoc(sprintResults) {
+  const { season, round, raceName, circuitName, results } = sprintResults;
+
+  const top8 = results.slice(0, 8).map(r => ({
+    pos:       r.position,
+    driver:    r.driverName,
+    team:      r.constructor,
+    grid:      r.grid,
+    gridDelta: r.gridDelta,
+    pts:       r.points,
+    status:    r.status
+  }));
+
+  const full = results.map(r => ({
+    pos:       r.position,
+    driver:    r.driverName,
+    team:      r.constructor,
+    grid:      r.grid,
+    gridDelta: r.gridDelta,
+    status:    r.status
+  }));
+
+  const facts = {
+    race:      { season, round, name: raceName, circuit: circuitName },
+    top8,
+    full_grid: full
+  };
+
+  const prompt = `You are generating ONE Knowledge Base entry for an F1 prediction app.
+
+Below is the sprint race result for a Grand Prix weekend. Write a neutral, factual KB document body of 120–150 words covering:
+1. Sprint winner and top 3
+2. Key grid-vs-finish movers across the full field
+3. What the sprint result suggests about GP race pace and tyre behaviour
+
+Tone: analytical, factual. No quotes, no opinion-as-fact. Use full driver and team names. No heading. Output ONLY the prose body.
+
+STRUCTURED DATA:
+${JSON.stringify(facts, null, 2)}`;
+
+  const body = (await claude(prompt, 600)).trim();
+
+  const id      = `sprint-${season}-r${String(round).padStart(2, '0')}-${slugify(
+    circuitName.replace(/Circuit|International|Park/gi, '').trim()
+  )}`;
+  const content = `Season ${season}, Round ${round} Sprint: ${raceName}. ${body}`;
+
+  return {
+    id,
+    title:        `${raceName} ${season} — Sprint Race`,
+    content,
+    tags: {
+      season,
+      type:                'sprint',
+      round,
+      circuit:             slugify(circuitName),
+      sprint_winner:       slugify(results[0]?.driverName || ''),
+      drivers_classified:  full.map(r => slugify(r.driver))
+    },
+    source_url:   null,
+    updated_at:   new Date().toISOString(),
+    content_hash: contentHash(content)
+  };
+}
+
+/**
+ * Summarise pit stop data into a compact structure for Claude.
+ */
+function pitStopSummary(pitStops) {
+  if (!pitStops?.length) return null;
+
+  // Per-driver summary
+  const byDriver = new Map();
+  for (const p of pitStops) {
+    if (!byDriver.has(p.driverId)) byDriver.set(p.driverId, []);
+    byDriver.get(p.driverId).push(p);
+  }
+
+  const driverSummaries = [...byDriver.entries()].map(([driverId, stops]) => {
+    const durations = stops.map(s => parseFloat(s.duration)).filter(Boolean);
+    const avg = durations.length ? +(durations.reduce((a, b) => a + b, 0) / durations.length).toFixed(2) : null;
+    return {
+      driverId,
+      stopCount: stops.length,
+      laps:      stops.map(s => s.lap),
+      avgDuration: avg
+    };
+  });
+
+  // Fastest stop overall
+  const allStops = pitStops
+    .map(p => ({ ...p, secs: parseFloat(p.duration) }))
+    .filter(p => !isNaN(p.secs) && p.secs < 60);
+  allStops.sort((a, b) => a.secs - b.secs);
+  const fastest = allStops[0] || null;
+
+  // Unusually slow stops (>10s over median — likely issues)
+  const durations = allStops.map(p => p.secs).sort((a, b) => a - b);
+  const median    = durations[Math.floor(durations.length / 2)] || 0;
+  const slow      = allStops.filter(p => p.secs > median + 15).map(p => ({
+    driverId: p.driverId, duration: `${p.secs}s`, lap: p.lap
+  }));
+
+  return { fastest, driverSummaries, slow };
+}
+
+export async function synthesiseRaceDoc(raceResults, qualifying, standingsBefore, standingsAfter, pitStops = []) {
   const { season, round, raceName, circuitName, date, results } = raceResults;
 
   const podium = results.slice(0, 3).map(r => ({
@@ -114,6 +227,7 @@ export async function synthesiseRaceDoc(raceResults, qualifying, standingsBefore
     race: { season, round, name: raceName, circuit: circuitName, date },
     podium,
     full_grid: fullGrid,
+    pit_stops: pitStopSummary(pitStops),
     pole: pole
       ? { driver: pole.driverName, team: pole.constructor, time: pole.q3 || pole.q2 || pole.q1 }
       : null,
@@ -131,11 +245,12 @@ export async function synthesiseRaceDoc(raceResults, qualifying, standingsBefore
 
   const prompt = `You are generating ONE Knowledge Base entry for an F1 prediction app.
 
-Below is the full race result data for one Grand Prix. Write a neutral, factual KB document body of 180–220 words covering, in this order:
+Below is the full race result data for one Grand Prix. Write a neutral, factual KB document body of 200–240 words covering, in this order:
 1. Podium and result (winner, key gaps, notable grid-vs-finish movers across the full field)
 2. Pole and fastest lap (who, brief context if it changed strategy)
-3. Notable DNFs/penalties implied by the data
-4. Championship implications using the standings delta (who gained, who lost ground)
+3. Pit stop strategy — fastest team, number of stops, any unusually slow stops indicating issues (use pit_stops data)
+4. Notable DNFs/penalties implied by the data
+5. Championship implications using the standings delta (who gained, who lost ground)
 
 Tone: analytical, factual. No opinion-as-fact, no quotes, no speculation. Use full driver names and team names. Do not add a heading. Output ONLY the prose body — no markdown, no preamble.
 

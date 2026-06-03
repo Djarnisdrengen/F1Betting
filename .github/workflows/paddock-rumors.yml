@@ -37,7 +37,9 @@ name: Paddock Rumors — KB Update
 
 on:
   schedule:
-    # Qualifying window (Sat afternoon UTC — catches most sessions by 16:00 UTC)
+    # Sprint race window (Sat morning UTC — sprint races finish ~11:30 UTC)
+    - cron: '0 12,13 * * 6'
+    # Qualifying + sprint results window (Sat afternoon UTC)
     - cron: '0 14,16,18 * * 6'
     # Results window (Sun afternoon → Mon afternoon UTC)
     - cron: '0 16,18,20,22 * * 0'
