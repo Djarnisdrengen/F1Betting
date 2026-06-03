@@ -590,5 +590,80 @@
     "source_url": "https://www.f1technical.net/news/28543",
     "updated_at": "2026-06-02T21:51:57.725Z",
     "content_hash": "f99454a8aeac1eb8"
+  },
+  {
+    "id": "quali-2026-r01-albert-grand-prix",
+    "title": "Australian Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 1 Qualifying: Australian Grand Prix. George Russell claimed pole position for the 2026 Australian Grand Prix at Albert Park Grand Prix Circuit with a Q3 lap of 1:18.518, giving Mercedes a front-row lockout. Andrea Kimi Antonelli qualified second for Mercedes, 0.293 seconds adrift. Isack Hadjar secured third for Red Bull at 1:19.303, a gap of 0.785 seconds to pole, with Charles Leclerc fourth for Ferrari just 0.024 seconds further back. Oscar Piastri and Lando Norris placed fifth and sixth for McLaren, separated by 0.095 seconds, suggesting strong but not dominant single-lap pace from the Woking-based constructor. Notably, Arvid Lindblad of RB F1 Team set a competitive Q2 time of 1:19.971 but recorded a significantly slower Q3 lap of 1:21.247, indicating a possible issue during the final session. Gabriel Bortoleto reaching Q3 for Audi represents a noteworthy result for a returning manufacturer. Mercedes' qualifying margin over rivals suggests a meaningful advantage in race pace, though the closely grouped midfield from third through seventh indicates a competitive battle is likely through the opening stint.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 1,
+      "circuit": "albert-park-grand-prix-circuit",
+      "pole_driver": "george-russell"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-03T16:05:45.434Z",
+    "content_hash": "efbf879973af5e53"
+  },
+  {
+    "id": "quali-2026-r02-shanghai",
+    "title": "Chinese Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 2 Qualifying: Chinese Grand Prix. Andrea Kimi Antonelli claimed pole position for the Chinese Grand Prix at Shanghai International Circuit, setting a Q3 lap time of 1:32.064 for Mercedes. George Russell qualified second for Mercedes, 0.222 seconds adrift, giving the team a front-row lockout. Lewis Hamilton qualified third for Ferrari at 1:32.415, with Charles Leclerc fourth just 0.013 seconds behind his teammate, placing both Ferrari cars within 0.351 seconds of pole. Oscar Piastri and Lando Norris qualified fifth and sixth for McLaren, separated by 0.058 seconds but 0.486 seconds off the pole time, suggesting a modest deficit to the leading teams.\n\nPierre Gasly's seventh-place finish for Alpine F1 Team is a notable result, outqualifying both Red Bull Racing drivers. Max Verstappen managed only eighth at 1:33.002, with Isack Hadjar ninth, indicating a significant underperformance from Red Bull relative to expectations. Oliver Bearman secured tenth for Haas F1 Team.\n\nThe qualifying order points to Mercedes holding a clear pace advantage, with Ferrari representing the closest challenge. Red Bull's deficit of nearly a full second to pole raises questions about their race competitiveness, while Alpine's strong showing indicates genuine single-lap pace improvement.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 2,
+      "circuit": "shanghai-international-circuit",
+      "pole_driver": "andrea-kimi-antonelli"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-03T16:05:54.779Z",
+    "content_hash": "78d36fd99d3d97be"
+  },
+  {
+    "id": "quali-2026-r03-suzuka",
+    "title": "Japanese Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 3 Qualifying: Japanese Grand Prix. Andrea Kimi Antonelli claimed pole position for the Japanese Grand Prix at Suzuka Circuit, setting a Q3 lap time of 1:28.778 for Mercedes. George Russell qualified second for Mercedes with a 1:29.076, leaving a gap of 0.298 seconds to his teammate. Oscar Piastri qualified third for McLaren at 1:29.132, just 0.056 seconds behind Russell, with Charles Leclerc taking fourth for Ferrari at 1:29.405. The front four are covered by 0.627 seconds.\n\nNotable performances include Pierre Gasly qualifying seventh for Alpine F1 Team, representing a strong result for a midfield constructor at a technically demanding circuit. Gabriel Bortoleto reached Q3 in ninth place for Audi, a noteworthy achievement given the team's status as a returning manufacturer. Isack Hadjar qualified eighth for Red Bull, while the absence of a second Red Bull driver in the top ten is a notable underperformance for that team.\n\nThe qualifying order indicates Mercedes holds a meaningful pace advantage in single-lap trim, with McLaren and Ferrari closely matched behind. The strong midfield representation from Alpine and Audi in Q3 suggests the competitive order may be tighter than usual through the pack during race conditions at Suzuka.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 3,
+      "circuit": "suzuka-circuit",
+      "pole_driver": "andrea-kimi-antonelli"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-03T16:06:04.057Z",
+    "content_hash": "e4657de285532c9d"
+  },
+  {
+    "id": "quali-2026-r04-miami-autodrome",
+    "title": "Miami Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 4 Qualifying: Miami Grand Prix. Andrea Kimi Antonelli claimed pole position for the Miami Grand Prix at Miami International Autodrome, setting a best lap of 1:27.798 for Mercedes. Max Verstappen qualified second for Red Bull Racing, 0.166 seconds adrift, while Charles Leclerc placed third for Ferrari at 1:28.143, a further 0.179 seconds back. Lando Norris qualified fourth for McLaren at 1:28.183, separated from Leclerc by just 0.040 seconds, indicating a tightly contested midfield of the top four. George Russell in fifth and Lewis Hamilton in sixth demonstrate strong pace from both Mercedes and Ferrari across their driver lineups. A notable result came from Franco Colapinto, who placed Alpine F1 Team eighth, representing a strong qualifying outcome for that constructor alongside teammate Pierre Gasly in ninth. Nico Hülkenberg secured tenth for Audi, suggesting continued competitiveness from that program. The qualifying distribution indicates Mercedes holds a marginal single-lap advantage, with Red Bull, Ferrari, and McLaren closely grouped and likely to apply sustained race pressure from the opening laps.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 4,
+      "circuit": "miami-international-autodrome",
+      "pole_driver": "andrea-kimi-antonelli"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-03T16:06:13.132Z",
+    "content_hash": "297d44d7efca62ce"
+  },
+  {
+    "id": "quali-2026-r05-gilles-villeneuve",
+    "title": "Canadian Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 5 Qualifying: Canadian Grand Prix. George Russell took pole position for the Canadian Grand Prix at Circuit Gilles Villeneuve, setting a best lap of 1:12.578 for Mercedes. Andrea Kimi Antonelli qualified second, just 0.068 seconds adrift, giving Mercedes a front-row lockout. Lando Norris qualified third for McLaren at 1:12.729, with teammate Oscar Piastri fourth at 1:12.781, the two McLarens covered by 0.052 seconds and separated from the Mercedes pair by around 0.151 seconds. Lewis Hamilton qualified fifth for Ferrari at 1:12.868, outpacing Ferrari teammate Charles Leclerc, who could manage only eighth at 1:12.976. Max Verstappen qualified sixth for Red Bull at 1:12.907, a notable result given Red Bull's recent form deficits. Isack Hadjar impressed in seventh for Red Bull at 1:12.935. Arvid Lindblad delivered a strong performance for RB F1 Team in ninth, while Franco Colapinto secured tenth for Alpine F1 Team. The qualifying order suggests Mercedes holds a genuine single-lap pace advantage at this circuit, with McLaren well-positioned to challenge on race pace and Ferrari's split grid positions indicating potential strategic flexibility.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 5,
+      "circuit": "circuit-gilles-villeneuve",
+      "pole_driver": "george-russell"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-03T16:06:22.142Z",
+    "content_hash": "9cc8aa3ab6c76d4b"
   }
 ]
