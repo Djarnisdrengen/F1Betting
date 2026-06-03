@@ -131,15 +131,13 @@ async function summariseArticle(article, raceContext) {
 
 Extract the key TECHNICAL and ANALYTICAL conclusions in 100–130 words. Tone: neutral, factual, useful for predicting future race performance — focus on upgrades, reliability, setup direction, power-unit context, telemetry findings, pace deltas. Use full team and driver names. No quotes, no opinion-as-fact, no boilerplate.
 
-If the article is NOT relevant to F1 race performance (e.g. management news, sponsorship, calendar admin), output exactly: SKIP
-
-Output ONLY the summary prose, or the word SKIP.
+Output ONLY the summary prose.
 
 HTML:
 ${html}`;
 
   const summary = (await claude(prompt, 500)).trim();
-  if (summary === 'SKIP' || summary.length < 60) return null;
+  if (summary.length < 20) return null;
 
   const season = raceContext?.season || new Date().getUTCFullYear();
   const round = raceContext?.round || 0;

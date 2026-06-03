@@ -198,15 +198,13 @@ async function summarise(article, race) {
 
 Extract the key TECHNICAL and ANALYTICAL conclusions in 100–130 words. Tone: neutral, factual, useful for predicting future race performance — focus on upgrades, reliability, setup direction, power-unit context, telemetry findings, pace deltas. Use full team and driver names. No quotes, no opinion-as-fact, no boilerplate.
 
-If the article is NOT relevant to F1 race performance (e.g. management news, sponsorship, calendar admin, MotoGP), output exactly: SKIP
-
-Output ONLY the summary prose, or the word SKIP.
+Output ONLY the summary prose.
 
 HTML:
 ${html}`;
 
   const summary = (await claude(prompt, 500)).trim();
-  if (summary === 'SKIP' || summary.length < 60) return null;
+  if (summary.length < 20) return null;
 
   const { season, round, raceName } = race;
   const content = `Season ${season} technical analysis — ${article.title}. ${summary}`;
@@ -241,13 +239,13 @@ Your response MUST start with exactly one of these lines:
 
 Then on the next line, extract the key TECHNICAL and ANALYTICAL conclusions in 100–130 words. Tone: neutral, factual, useful for predicting future race performance — focus on upgrades, reliability, power-unit context, telemetry findings, pace deltas. Use full team and driver names. No quotes, no opinion-as-fact.
 
-If the article is NOT relevant to F1 race performance (e.g. management news, sponsorship, calendar admin, MotoGP), output exactly: SKIP
+Output ONLY the RACE line followed by the summary prose.
 
 HTML:
 ${html}`;
 
   const raw = (await claude(prompt, 560)).trim();
-  if (raw === 'SKIP' || raw.length < 60) return null;
+  if (raw.length < 20) return null;
 
   // Parse RACE: line
   const lines       = raw.split('\n');
