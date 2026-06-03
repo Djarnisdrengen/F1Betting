@@ -67,6 +67,13 @@ node update-kb.js                # default: writes to ./data/knowledge-base.json
 
 Output lands in `./data/knowledge-base.json`. **Nothing touches `f1-intelligence/` unless you ask it to** — see `ROADMAP.md` for integration paths.
 
+**Syncing to the PHP client:** the live PHP query page (`public/paddock-rumors/`) reads a `knowledge-base.json` served alongside it on the web host. The GitHub Actions cron copies `data/knowledge-base.json` → `public/paddock-rumors/` and deploys automatically. For local changes you must copy manually then deploy:
+
+```bash
+cp data/knowledge-base.json ../public/paddock-rumors/knowledge-base.json
+npm run deploy:test   # from repo root
+```
+
 Idempotent: re-running with no new round and no analysis-window work exits in under a second.
 
 ```
@@ -103,6 +110,7 @@ Paddock Rumors generates a **richer, tagged** knowledge base. It can:
 - **Enrichment is non-blocking.** Network or parse failures log a warning; Tier 1 docs are never blocked.
 - **Synthesis failure stops the run.** Tier 1 failure exits non-zero and leaves the round's state untouched. Re-run after fixing.
 - **State is versioned.** Migration from v1 to v2 happens automatically on first run.
+- **`getRaceResults()` throws on a missing round** — this is safe. `getLatestFinishedRound()` reads `/last/results.json`, so a round only enters the Tier 1 loop once Jolpica has actually published its results. Calling `getRaceResults()` on a future or in-progress round (e.g. in tests or pre-flight probes) will throw "No race found" — expected, and never triggered by normal orchestration.
 
 ## Scheduled in production
 

@@ -28,6 +28,18 @@ enrichment.
 | **Idempotency** | `state.rounds.N.qualifying_at` set on completion; won't repeat unless `FORCE_QUALI=true` |
 | **Trigger** | Saturday crons (14:00, 16:00, 18:00 UTC) or manual `force_quali` dispatch |
 
+### Phase 0b — Sprint (selected rounds only)
+
+| | |
+|---|---|
+| **Runs** | Once per sprint round, checked on the same Saturday crons as qualifying |
+| **Output** | One sprint document: sprint qualifying grid (from start `grid` positions) + sprint race result — tagged `type: sprint` |
+| **Source** | Jolpica-F1 sprint results endpoint (`/{season}/{round}/sprint.json`) |
+| **Idempotency** | `state.rounds.N.sprint_at` set on completion |
+| **Note** | Jolpica does not publish sprint-qualifying (shootout) times — only GP qualifying times. The sprint grid is derived from each driver's `grid` field in the sprint results. |
+
+**2026 sprint rounds:** R2 (China), R4 (Miami), R5 (Canada), R9 (Britain), R12 (Belgium), R16 (USA).
+
 ### Phase 1 — Tier 1 (results + driver synthesis)
 
 | | |
