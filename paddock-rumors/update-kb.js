@@ -55,7 +55,7 @@ const KB_PATH = process.env.KB_OUTPUT_PATH
 const STATE_PATH = path.resolve(__dirname, './state/last_processed_round.json');
 
 const CURRENT_SEASON = parseInt(process.env.F1_SEASON || '2026', 10);
-const TOP_N = parseInt(process.env.TOP_N_DRIVERS || '10', 10);
+const TOP_N = parseInt(process.env.TOP_N_DRIVERS || '20', 10);
 const ENRICH = process.env.F1TECH_ENRICH !== '0';
 const FORCE_QUALI = process.env.FORCE_QUALI === 'true';
 

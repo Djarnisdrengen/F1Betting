@@ -80,7 +80,7 @@ Idempotent: re-running with no new round and no analysis-window work exits in un
 | Var | Default | Purpose |
 |-----|---------|---------|
 | `F1_SEASON` | `2026` | Current championship season. |
-| `TOP_N_DRIVERS` | `10` | How many drivers get a maintained per-season doc. |
+| `TOP_N_DRIVERS` | `20` | How many drivers get a maintained per-season doc. |
 | `F1TECH_ENRICH` | `1` | Set to `0` to disable enrichment (useful for backfill). |
 | `F1TECH_MAX_ARTICLES` | `5` | Cap on F1Tech articles summarised per round. |
 | `CLAUDE_MODEL` | `claude-sonnet-4-6` | Model used for synthesis. |
