@@ -42,6 +42,9 @@ module.exports = {
     bettingRace:    ()       => call('seed_betting_race'),
     // → { ok, raceId, email, password, drivers: [{id, name}] }
 
+    racePage:       ()       => call('seed_race_page'),
+    // → { ok, openRaceId, doneRaceId, email, password, drivers: {p1, p2, p3} }
+
     authUser:       ()       => call('seed_auth_user'),
     // → { ok, email, password }
 
@@ -79,6 +82,7 @@ module.exports = {
 
     cleanup: {
         bettingRace:    () => call('cleanup_betting_race'),
+        racePage:       () => call('cleanup_race_page'),
         authUser:       () => call('cleanup_auth_user'),
         scoreRace:      () => call('cleanup_score_race'),
         resetResult:    () => call('cleanup_reset_result'),

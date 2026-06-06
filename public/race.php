@@ -78,7 +78,7 @@ include __DIR__ . '/includes/header.php';
     <!-- Back link -->
     <div style="margin-bottom:0.75rem;">
         <a href="races.php" style="color:var(--text-secondary);font-size:0.875rem;text-decoration:none;">
-            ← <?= t('races') ?>
+            ← <?= t('all_races') ?>
         </a>
     </div>
 
@@ -96,10 +96,10 @@ include __DIR__ . '/includes/header.php';
                     <?php endif; ?>
                 </div>
                 <div class="hf-racemeta" style="margin-top:0.25rem;">
-                    <?= escape($race['location']) ?>
-                    · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
+                    <span><i class="fas fa-map-marker-alt"></i> <?= escape($race['location']) ?></span>
+                    · <span><i class="fas fa-flag-checkered"></i> <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></span>
                     <?php if ($qualiDT): ?>
-                        · <?= t('qualifying') ?>: <?= date('d M', strtotime($race['quali_date'])) ?> <?= substr($race['quali_time'], 0, 5) ?> CET
+                        · <span><i class="fas fa-stopwatch"></i> <?= date('d M', strtotime($race['quali_date'])) ?> <?= substr($race['quali_time'], 0, 5) ?> CET</span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -109,16 +109,27 @@ include __DIR__ . '/includes/header.php';
         <!-- Schedule box: timings + actions -->
         <div class="race-schedule">
 
+            <!-- Qualifying start countdown (or "done" once qualifying has run) -->
             <?php if ($qualiDT): ?>
-                <?php $qualiElapsed = $now >= $qualiDT; ?>
-                <div class="countdown-timer<?= $qualiElapsed ? ' done' : '' ?>"
-                    <?= !$qualiElapsed ? 'data-target="' . $qualiDT->format('c') . '"' : '' ?>>
-                    <i class="fas fa-flag-checkered"></i>
-                    <?= t('qualifying') ?>:
-                    <span class="countdown-value"><?= $qualiElapsed ? t('status_done') : '--' ?></span>
+                <?php $qualiDone = (bool)$race['quali_p1']; ?>
+                <div class="countdown-timer<?= $qualiDone ? ' done' : '' ?>"
+                    <?= !$qualiDone ? 'data-target="' . $qualiDT->format('c') . '"' : '' ?>>
+                    <i class="fas fa-stopwatch"></i>
+                    <?= t('quali_starts') ?>:
+                    <span class="countdown-value"><?= $qualiDone ? t('status_done') : '--' ?></span>
                 </div>
             <?php endif; ?>
 
+            <!-- Race start countdown (or "done" once the race has run) -->
+            <?php $raceDone = (bool)$race['result_p1']; ?>
+            <div class="countdown-timer<?= $raceDone ? ' done' : '' ?>"
+                <?= !$raceDone ? 'data-target="' . $raceDT->format('c') . '"' : '' ?>>
+                <i class="fas fa-flag-checkered"></i>
+                <?= t('race_starts') ?>:
+                <span class="countdown-value"><?= $raceDone ? t('status_done') : '--' ?></span>
+            </div>
+
+            <!-- Betting window line (pending / open only) -->
             <?php if ($status['status'] === 'pending'): ?>
                 <div class="countdown-timer" data-target="<?= $bettingOpens->format('c') ?>">
                     <i class="fas fa-hourglass-half"></i>
@@ -127,21 +138,18 @@ include __DIR__ . '/includes/header.php';
                 </div>
             <?php elseif ($status['status'] === 'open'): ?>
                 <div class="countdown-timer betting-open" data-target="<?= $raceDT->format('c') ?>">
-                    <i class="fas fa-stopwatch"></i>
+                    <i class="fas fa-lock-open"></i>
                     <?= t('betting_closes_in') ?>:
                     <span class="countdown-value">--</span>
                 </div>
-            <?php else: ?>
-                <div class="countdown-timer done">
-                    <i class="fas fa-flag-checkered"></i>
-                    <?= t('betting_closed') ?>:
-                    <span class="countdown-value"><?= t('status_done') ?></span>
-                </div>
             <?php endif; ?>
 
+            <!-- Pool size (modest gold, aligned into the schedule grid) -->
             <?php if ($race['bettingpool_size']): ?>
-                <div style="font-size:0.8rem;color:var(--text-secondary);">
-                    <?= t('pool_size') ?> <span class="bettingpool_size"><?= escape($race['bettingpool_size']) ?></span>
+                <div class="countdown-timer">
+                    <i class="fas fa-dollar-sign bettingpool_size"></i>
+                    <?= t('pool_size') ?>
+                    <span class="countdown-value bettingpool_size"><?= escape($race['bettingpool_size']) ?></span>
                 </div>
             <?php endif; ?>
 
@@ -212,7 +220,7 @@ include __DIR__ . '/includes/header.php';
                     <?= t('login_to_bet_hint') ?>
                 </div>
             </div>
-            <a href="login.php?redirect=<?= $loginRedirect ?>" class="race-login-mini">
+            <a href="login.php?redirect=<?= $loginRedirect ?>" class="hf-badge open">
                 <i class="fas fa-sign-in-alt"></i> <?= t('login_to_bet') ?>
             </a>
         </div>
