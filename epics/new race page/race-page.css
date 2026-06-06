@@ -1,0 +1,536 @@
+/* ============================================================
+   RACE PAGE — single-race focus
+   Production-faithful race-box components (from races.php /
+   index.php) rebuilt on the hi-fi token system so the dark/light
+   toggle works. Class structure mirrors the live site (.card →
+   .rp-card, .race-header → .rp-race-header, …) so implementers can
+   map 1:1. Additions only — no live class is renamed.
+   ============================================================ */
+
+/* ---- The card shell (= .card + .race-card on the live site) ---- */
+.rp-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.rp-card-pad { padding: 24px; }
+.rp-frame-md .rp-card-pad,
+.rp-frame-lg .rp-card-pad,
+.rp-frame-xl .rp-card-pad { padding: 28px 32px; }
+
+/* ---- Header: title block + status badge ---- */
+.rp-race-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.rp-eyebrow {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+.rp-race-title {
+    font-family: var(--display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.rp-frame-md .rp-race-title { font-size: 30px; }
+.rp-frame-lg .rp-race-title { font-size: 38px; }
+.rp-frame-xl .rp-race-title { font-size: 44px; }
+
+.rp-race-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 12px;
+}
+.rp-race-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.rp-race-meta i { color: var(--text-muted); width: 14px; text-align: center; }
+
+/* ---- Status badges (status-open/closed/pending/completed) ---- */
+.rp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.rp-badge.open      { background: linear-gradient(135deg, #059669, #047857); color: #fff; }
+.rp-badge.closed    { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; }
+.rp-badge.pending   { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
+.rp-badge.completed { background: #6b7280; color: #fff; }
+.rp-badge.pool-won  { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a1d; }
+.rp-badge.placed    { background: #059669; color: #fff; }
+.rp-badge.live      { background: rgba(225,6,0,0.18); color: var(--f1-red-light); border: 1px solid rgba(225,6,0,0.45); }
+
+/* Inline-in-title smaller badge */
+.rp-race-title .rp-badge { font-size: 11px; padding: 3px 9px; }
+
+/* ---- Countdown timer (text style — Direction A) ----
+   3-column grid: icon · label (flexes, may wrap) · value (right, no wrap). */
+.rp-countdown {
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    align-items: baseline;
+    gap: 6px 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+.rp-countdown i { color: var(--text-muted); width: 18px; text-align: center; }
+.rp-countdown .rp-cd-label {
+    font-family: var(--display);
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 0;
+}
+.rp-countdown .rp-cd-value {
+    color: var(--f1-red);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+    justify-self: end;
+}
+.rp-countdown.open .rp-cd-value { color: var(--status-success); }
+.rp-countdown.done .rp-cd-value { color: var(--text-muted); }
+.rp-countdown.done i { color: var(--text-muted); }
+
+/* Pool size line — pool-gold highlight, matching live .bettingpool_size */
+.rp-pool-line {
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    align-items: baseline;
+    gap: 6px 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-family: var(--display);
+    font-weight: 600;
+}
+.rp-pool-line i { width: 18px; text-align: center; color: var(--pool-gold, #b98f10); }
+.rp-pool-line .rp-pool-val {
+    color: var(--pool-gold, #b98f10);
+    font-weight: 800;
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    justify-self: end;
+    white-space: nowrap;
+}
+
+.rp-cd-stack {
+    display: flex; flex-direction: column; gap: 12px;
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-lg);
+}
+
+/* Extra-small login CTA tucked into the schedule, beside the times */
+.rp-login-mini {
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 2px;
+    padding: 7px 13px;
+    border-radius: var(--r-md);
+    background: rgba(225,6,0,0.10);
+    border: 1px solid rgba(225,6,0,0.45);
+    color: var(--f1-red-light);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 12.5px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.rp-login-mini:hover { background: var(--f1-red); border-color: var(--f1-red); color: #fff; }
+.rp-login-mini i { font-size: 11px; }
+body.light .rp-login-mini { color: var(--f1-red); }
+
+/* ---- 4-cell countdown blocks (Direction B) ---- */
+.rp-cd-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+.rp-cd-cell {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-color);
+    border-radius: var(--r-md);
+    padding: 12px 6px 9px;
+    text-align: center;
+}
+body.light .rp-cd-cell { background: rgba(0,0,0,0.03); }
+.rp-cd-num {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    font-size: 28px;
+    color: var(--text-primary);
+}
+.rp-frame-lg .rp-cd-num,
+.rp-frame-xl .rp-cd-num { font-size: 36px; }
+.rp-cd-cell .rp-cd-lab {
+    font-family: var(--display);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 7px;
+    font-weight: 600;
+}
+/* "done" badge replacing a finished countdown */
+.rp-cd-done {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: var(--r-md);
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed var(--border-color);
+    color: var(--text-muted);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+}
+body.light .rp-cd-done { background: rgba(0,0,0,0.02); }
+.rp-cd-done .tick { color: var(--status-success); }
+
+/* Schedule module (Direction B) */
+.rp-sched {
+    display: grid;
+    gap: 12px;
+}
+.rp-frame-lg .rp-sched,
+.rp-frame-xl .rp-sched { grid-template-columns: 1fr 1fr; }
+.rp-sched-mod {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-lg);
+    padding: 16px;
+}
+.rp-sched-h {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+.rp-sched-h .nm {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 15px;
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.rp-sched-h .when {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+/* ---- Quali / Result rows (= .quali-row + .quali-item) ---- */
+.rp-results-block { margin-top: 18px; }
+.rp-block-label {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+}
+.rp-quali-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.rp-quali-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 12px 7px 7px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-md);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.rp-position-badge {
+    font-family: var(--display);
+    font-weight: 800;
+    width: 30px; height: 30px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+.rp-position-badge.p1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a1d; }
+.rp-position-badge.p2 { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #1a1a1d; }
+.rp-position-badge.p3 { background: linear-gradient(135deg, #cd7c2f, #a15c1d); color: #fff; }
+.rp-quali-item .drv-3 {
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-left: 2px;
+}
+/* Empty result placeholder */
+.rp-result-pending {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--r-md);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-family: var(--display);
+    font-weight: 600;
+}
+
+/* Two-column results layout at wide widths (Direction B) */
+.rp-frame-lg .rp-results-two,
+.rp-frame-xl .rp-results-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+/* ---- Actions row ---- */
+.rp-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+.rp-actions .count {
+    color: var(--text-muted);
+    font-size: 14px;
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--display);
+    font-weight: 600;
+}
+.rp-actions .count i { color: var(--text-muted); }
+
+.rp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: var(--r-md);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    border: none;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.rp-btn-primary { background: var(--f1-red); color: #fff; box-shadow: 0 4px 14px rgba(225,6,0,0.30); }
+.rp-btn-primary:hover { background: var(--f1-red-light); transform: translateY(-1px); }
+.rp-btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+.rp-btn-secondary:hover { background: var(--bg-hover); }
+.rp-btn-lg { padding: 14px 26px; font-size: 15px; }
+
+.rp-closed-note {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--text-muted);
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* Login CTA banner (Direction A inline) */
+.rp-login-cta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 16px 18px;
+    margin-top: 18px;
+    border-radius: var(--r-lg);
+    background: linear-gradient(90deg, rgba(225,6,0,0.12), rgba(225,6,0,0.03));
+    border: 1px solid rgba(225,6,0,0.35);
+}
+.rp-login-cta .txt { min-width: 0; flex: 1 1 180px; }
+.rp-login-cta .ttl { font-family: var(--display); font-weight: 800; font-size: 15px; color: var(--text-primary); }
+.rp-login-cta .sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+/* ---- Bets section (= .bets-section / .bet-item) ---- */
+.rp-bets {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+.rp-bets-h {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 10px;
+}
+.rp-bets-h h3 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 16px;
+}
+.rp-bets-h .hint { font-size: 12px; color: var(--text-muted); font-family: var(--display); font-weight: 600; }
+
+.rp-bet-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--r-md);
+    margin-bottom: 8px;
+}
+.rp-bet-item.my-bet {
+    background: linear-gradient(90deg, rgba(225,6,0,0.15), var(--bg-secondary));
+    border-color: var(--f1-red);
+}
+.rp-bet-item.perfect-bet {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.40);
+    border-color: #fbbf24;
+}
+.rp-bet-user { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.rp-bet-avatar {
+    width: 32px; height: 32px;
+    background: var(--f1-red);
+    color: #fff;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+}
+.rp-bet-item.my-bet .rp-bet-avatar { box-shadow: 0 0 0 3px rgba(225,6,0,0.30); }
+.rp-bet-who { min-width: 0; }
+.rp-bet-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+    display: flex; align-items: center; gap: 7px;
+    color: var(--text-primary);
+}
+.rp-bet-time { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.rp-you-tag {
+    background: var(--f1-red); color: #fff;
+    font-family: var(--display); font-weight: 800;
+    font-size: 10px; padding: 2px 7px; border-radius: 9999px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+}
+.rp-star { color: #fbbf24; font-size: 15px; }
+
+.rp-bet-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.rp-bet-preds { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.rp-bet-pred {
+    padding: 4px 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-sm);
+    font-size: 12px;
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.rp-bet-pred b { color: var(--text-muted); font-weight: 700; }
+.rp-pts-badge {
+    background: var(--f1-red); color: #fff;
+    font-family: var(--display); font-weight: 800;
+    font-size: 12px; padding: 4px 9px; border-radius: 9999px;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.rp-pts-pending {
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 12px;
+}
+
+/* Stack bet item on narrow frames (matches live mobile rule) */
+.rp-frame-xs .rp-bet-item,
+.rp-frame-sm .rp-bet-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+.rp-frame-xs .rp-bet-right,
+.rp-frame-sm .rp-bet-right { justify-content: space-between; }
+.rp-frame-xs .rp-bet-preds,
+.rp-frame-sm .rp-bet-preds { justify-content: flex-start; }
+
+/* Empty bets state */
+.rp-bets-empty {
+    padding: 22px 16px;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--r-lg);
+    text-align: center;
+    color: var(--text-muted);
+}
+.rp-bets-empty .big { font-family: var(--accent); font-size: 17px; color: var(--text-secondary); }
+.rp-bets-empty .sm { font-size: 13px; margin-top: 4px; font-family: var(--display); font-weight: 600; }
+
+/* ---- Section heading reused on Direction B ---- */
+.rp-section { margin-top: 26px; }
+.rp-section-h {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 14px; gap: 10px;
+}
+.rp-section-h h2 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+}
+.rp-section-h .meta { font-size: 12px; color: var(--text-muted); font-family: var(--display); font-weight: 600; }
+
+/* Direction B hero tweaks layered on .hf-hero */
+.rp-hero-cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 20px; }
+.rp-hero-pool {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--display); font-weight: 700; font-size: 14px;
+    color: var(--text-secondary);
+}
+.rp-hero-pool .rp-pool-val { color: var(--pool-gold, #b98f10); font-family: var(--mono); font-weight: 800; }

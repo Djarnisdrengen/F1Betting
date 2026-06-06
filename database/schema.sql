@@ -35,6 +35,8 @@ CREATE TABLE races (
     location VARCHAR(100) NOT NULL,
     race_date DATE NOT NULL,
     race_time TIME NOT NULL,
+    quali_date DATE NULL,
+    quali_time TIME NULL,
     quali_p1 VARCHAR(36),
     quali_p2 VARCHAR(36),
     quali_p3 VARCHAR(36),
