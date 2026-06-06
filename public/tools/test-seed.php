@@ -134,6 +134,125 @@ if (($_GET['action'] ?? '') === 'cleanup_betting_race') {
     exit;
 }
 
+// Action: seed_race_page — data for the single-race page (race.php) e2e spec.
+// Creates two races, both with qualifying timing set (quali_date/quali_time):
+//   - "E2E Race Page Open"  — open state (race +2h, quali +1h, no results), pool 250.
+//                             Exercises both countdowns, quali meta line, login affordances, pool row.
+//   - "E2E Race Page Done"  — completed (quali + race results set, in the past), pool 300, pool won.
+//                             Two scored bets (one perfect) → both countdowns "done", result badges,
+//                             sorted bets with points + ★.
+// One in-competition login user is returned for the logged-in open-state assertions.
+// Returns: { ok, openRaceId, doneRaceId, email, password, drivers: {p1, p2, p3} }
+if (($_GET['action'] ?? '') === 'seed_race_page') {
+    $loginEmail   = 'e2e_racepage_user_f1@test.localhost';
+    $perfectEmail = 'e2e_racepage_perfect_f1@test.localhost';
+    $otherEmail   = 'e2e_racepage_other_f1@test.localhost';
+    $allEmails    = [$loginEmail, $perfectEmail, $otherEmail];
+    $raceNames    = ['E2E Race Page Open', 'E2E Race Page Done'];
+
+    // Idempotent cleanup
+    foreach ($allEmails as $em) {
+        $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
+        $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
+        $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
+    }
+    foreach ($raceNames as $rn) {
+        $db->prepare("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = ?)")->execute([$rn]);
+        $db->prepare("DELETE FROM races WHERE name = ?")->execute([$rn]);
+    }
+
+    // Ensure 3 known drivers exist (Hamilton P1, Verstappen P2, Leclerc P3)
+    $driverDefs = [
+        'p1' => [44, 'Hamilton',   'Lewis Hamilton',  'Mercedes'],
+        'p2' => [1,  'Verstappen', 'Max Verstappen',  'Red Bull'],
+        'p3' => [16, 'Leclerc',    'Charles Leclerc', 'Ferrari'],
+    ];
+    $driverIds = [];
+    foreach ($driverDefs as $pos => [$num, $lastName, $fullName, $team]) {
+        $stmt = $db->prepare("SELECT id FROM drivers WHERE LOWER(name) LIKE LOWER(?)");
+        $stmt->execute(['%' . $lastName . '%']);
+        $row = $stmt->fetch();
+        if ($row) {
+            $driverIds[$pos] = $row['id'];
+        } else {
+            $newId = seed_uuid();
+            $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")
+               ->execute([$newId, $fullName, $team, $num]);
+            $driverIds[$pos] = $newId;
+        }
+    }
+    [$hamId, $verId, $lecId] = [$driverIds['p1'], $driverIds['p2'], $driverIds['p3']];
+
+    // In-competition users
+    $hash    = hashPassword('E2ERacePagePassword2026!');
+    $userIds = [];
+    foreach ([
+        'login'   => [$loginEmail,   'E2E Race Page User'],
+        'perfect' => [$perfectEmail, 'E2E Race Page Perfect'],
+        'other'   => [$otherEmail,   'E2E Race Page Other'],
+    ] as $key => [$em, $displayName]) {
+        $id            = seed_uuid();
+        $userIds[$key] = $id;
+        $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, ?, 'user', 1, 0, 0)")
+           ->execute([$id, $em, $hash, $displayName]);
+    }
+
+    // Guarantee the betting window is open for the open race (race 2h away within 48h window)
+    $db->query("UPDATE settings SET betting_window_hours = 48 WHERE id = 1");
+
+    // Open race — race +2h, qualifying +1h, both in the future, no results, pool 250
+    $openId    = seed_uuid();
+    $raceDate  = (new DateTime('+2 hours'))->format('Y-m-d');
+    $raceTime  = (new DateTime('+2 hours'))->format('H:i:s');
+    $qualiDate = (new DateTime('+1 hour'))->format('Y-m-d');
+    $qualiTime = (new DateTime('+1 hour'))->format('H:i:s');
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, quali_date, quali_time, bettingpool_size) VALUES (?, 'E2E Race Page Open', 'Monaco', ?, ?, ?, ?, 250)")
+       ->execute([$openId, $raceDate, $raceTime, $qualiDate, $qualiTime]);
+
+    // Done race — qualifying + race results set, dates in the past, pool 300, pool won
+    $doneId      = seed_uuid();
+    $doneRaceDt  = (new DateTime('-2 days'))->format('Y-m-d');
+    $doneQualiDt = (new DateTime('-3 days'))->format('Y-m-d');
+    $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, quali_date, quali_time, bettingpool_size, bettingpool_won, quali_p1, quali_p2, quali_p3, result_p1, result_p2, result_p3) VALUES (?, 'E2E Race Page Done', 'Silverstone', ?, '14:00:00', ?, '15:00:00', 300, 1, ?, ?, ?, ?, ?, ?)")
+       ->execute([$doneId, $doneRaceDt, $doneQualiDt, $hamId, $verId, $lecId, $hamId, $verId, $lecId]);
+
+    // Scored bets on the done race: perfect (Ham/Ver/Lec, 30 pts) sorts above the other (8 pts)
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 30, 1)")
+       ->execute([seed_uuid(), $userIds['perfect'], $doneId, $hamId, $verId, $lecId]);
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 8, 0)")
+       ->execute([seed_uuid(), $userIds['other'], $doneId, $verId, $hamId, $lecId]);
+
+    echo json_encode([
+        'ok'         => true,
+        'openRaceId' => $openId,
+        'doneRaceId' => $doneId,
+        'email'      => $loginEmail,
+        'password'   => 'E2ERacePagePassword2026!',
+        'drivers'    => $driverIds,
+    ]);
+    exit;
+}
+
+// Action: cleanup_race_page — removes all data created by seed_race_page
+if (($_GET['action'] ?? '') === 'cleanup_race_page') {
+    $allEmails = [
+        'e2e_racepage_user_f1@test.localhost',
+        'e2e_racepage_perfect_f1@test.localhost',
+        'e2e_racepage_other_f1@test.localhost',
+    ];
+    foreach ($allEmails as $em) {
+        $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
+        $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
+        $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
+    }
+    foreach (['E2E Race Page Open', 'E2E Race Page Done'] as $rn) {
+        $db->prepare("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = ?)")->execute([$rn]);
+        $db->prepare("DELETE FROM races WHERE name = ?")->execute([$rn]);
+    }
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Action: seed_register_invite — creates invite for registration flow test
 // Returns: { ok, token, email }
 if (($_GET['action'] ?? '') === 'seed_register_invite') {

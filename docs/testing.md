@@ -19,6 +19,7 @@
   - [admin/11-invites.spec.js](#admin11-invitesspecjs)
   - [admin/12-users.spec.js](#admin12-usersspecjs)
   - [admin/13-scoring.spec.js](#admin13-scoringspecjs)
+  - [14-race-page.spec.js](#14-race-pagespecjs)
 - [Email Preview](#email-preview)
 - [Resend Health Check](#resend-health-check)
 - [Security Tests](#security-tests)
@@ -391,6 +392,35 @@ Race B: day after Race A, no result yet — test enters it via admin UI.
 | Race A pool unchanged | `poolA` shown on Race A card |
 | Reset button scope | Race A: no reset button; Race B: reset button visible |
 | Reset Race B | Confirm → Race B result gone, reset button gone; leaderboard rolled back to Race A baseline |
+
+---
+
+### `14-race-page.spec.js`
+
+Test env only. Serial. Covers the single-race focus page (`public/race.php`) across its lifecycle
+states. Seeds one **open** race (with qualifying timing) and one **completed** race plus scored bets
+via `seed.racePage()` / `seed.cleanup.racePage()`. Manages its own anon + logged-in contexts (the
+logged-in user is the in-competition account returned by the seed).
+
+Open race: `race_date` +2h, `quali_date` +1h, no results, pool 250.
+Completed race: qualifying + race results set, dates in the past, pool 300 (`bettingpool_won`), with a
+perfect bet (30 pts) and a non-perfect bet (8 pts).
+
+| Test | Asserts |
+|---|---|
+| Open — countdowns ticking | Schedule box shows quali (`fa-stopwatch`) + race (`fa-flag-checkered`) `.countdown-timer[data-target]`, none `.done` |
+| Open — meta + pool | Qualifying meta line (`fa-stopwatch`, no prefix); pool row shows `250` with `.bettingpool_size` |
+| Open — result placeholders | Two `.result-pending`, zero `.position-badge` |
+| Open, logged out — login affordances | `.race-login-mini` + `.race-login-cta` visible, both link to `login.php?redirect=` |
+| Open, logged in competitor | No login affordances; `bet.php?race=` place-bet CTA shown |
+| Open — 320px | No horizontal scroll (`scrollWidth ≤ clientWidth`) |
+| Completed — countdowns done | Two `.countdown-timer.done`, zero `[data-target]` |
+| Completed — results | Zero `.result-pending`, six `.position-badge`, two `.quali-row` |
+| Completed — pool won | `.hf-racename .hf-badge` (pool-won) in title |
+| Completed — bets scored/sorted | Two `.bet-item`; highest-points perfect bet sorts first with `.perfect-bet` + `★` + `30` pts badge |
+
+**Test-seed actions used:** `seed_race_page` / `cleanup_race_page` (creates races *E2E Race Page Open*
+and *E2E Race Page Done* plus 3 in-competition users).
 
 ---
 
