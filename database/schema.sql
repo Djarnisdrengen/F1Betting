@@ -19,10 +19,6 @@ CREATE TABLE users (
     last_login DATETIME NULL
 );
 
--- Migration: add theme and font_stack to users (run once on each environment via phpMyAdmin)
--- ALTER TABLE users
---   ADD COLUMN theme      ENUM('dark','light')       NULL DEFAULT NULL AFTER language,
---   ADD COLUMN font_stack ENUM('system','editorial') NULL DEFAULT NULL AFTER theme;
  
 -- Kørere
 CREATE TABLE drivers (
@@ -54,6 +50,11 @@ CREATE TABLE races (
     FOREIGN KEY (result_p2) REFERENCES drivers(id) ON DELETE SET NULL,
     FOREIGN KEY (result_p3) REFERENCES drivers(id) ON DELETE SET NULL
 );
+
+-- Migration v2.3.0: qualifying timing (run once on each environment via phpMyAdmin)
+-- ALTER TABLE races
+--   ADD COLUMN quali_date DATE NULL AFTER race_time,
+--   ADD COLUMN quali_time TIME NULL AFTER quali_date;
 
 -- Bets
 CREATE TABLE bets (

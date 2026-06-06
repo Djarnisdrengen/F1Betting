@@ -93,7 +93,7 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                         <div class="hf-racefull-hd">
                             <div class="hf-racefull-info">
                                 <div class="hf-racename">
-                                    <?= escape($race['name']) ?>
+                                    <a href="race.php?id=<?= escape($race['id']) ?>" style="color:inherit;text-decoration:none;"><?= escape($race['name']) ?></a>
                                     <?php if ($hasBet): ?>
                                         <span class="hf-badge open" style="margin-left: 6px;">
                                             <i class="fas fa-check"></i> <?= t('bet_placed_label') ?>
@@ -174,7 +174,7 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                         <div class="hf-racefull-hd">
                             <div class="hf-racefull-info">
                                 <div class="hf-racename">
-                                    <?= escape($race['name']) ?>
+                                    <a href="race.php?id=<?= escape($race['id']) ?>" style="color:inherit;text-decoration:none;"><?= escape($race['name']) ?></a>
                                     <?php if ($hasBet): ?>
                                         <span class="hf-badge done" style="margin-left: 6px;">
                                             <i class="fas fa-check"></i> <?= t('bet_placed_label') ?>

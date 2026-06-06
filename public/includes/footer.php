@@ -38,7 +38,8 @@
         document.querySelectorAll('.countdown-timer').forEach(timer => {
             const opens = timer.dataset.opens;
             const closes = timer.dataset.closes;
-            const targetDate = opens ? new Date(opens) : (closes ? new Date(closes) : null);
+            const target = timer.dataset.target;
+            const targetDate = opens ? new Date(opens) : closes ? new Date(closes) : target ? new Date(target) : null;
             
             if (!targetDate) return;
             

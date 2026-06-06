@@ -1406,7 +1406,7 @@
   {
     "id": "quali-2026-r06-de-monaco",
     "title": "Monaco Grand Prix 2026 — Qualifying",
-    "content": "Season 2026, Round 6 Qualifying: Monaco Grand Prix. Andrea Kimi Antonelli claimed pole position for the Monaco Grand Prix, setting a Q3 best of 1:12.051 for Mercedes. Max Verstappen qualified second for Red Bull just 0.043 seconds behind, making it an exceptionally close front row. Lewis Hamilton placed third for Ferrari at 1:12.279, with teammate Charles Leclerc fourth at 1:12.351, giving Ferrari a strong double presence in the top four. Isack Hadjar completed the top five for Red Bull at 1:12.434, a notably strong Q3 performance for the rookie, while George Russell was sixth for Mercedes at 1:12.445.\n\nMcLaren underperformed relative to their 2025 championship-contending status, with Oscar Piastri seventh and Lando Norris eighth, both outside the top six. Pierre Gasly delivered a standout result by reaching ninth for Alpine F1 Team. Liam Lawson rounded out the top ten for RB F1 Team. Fernando Alonso and Lance Stroll were eliminated in Q1 for Aston Martin, finishing 21st and 22nd respectively, a significant underperformance from the established constructor.\n\nGiven Monaco's limited overtaking opportunities, Antonelli's pole position carries substantial race-winning importance. The tight top-five margins indicate broadly comparable pace, making strategy and track position the decisive factors on race day.",
+    "content": "Season 2026, Round 6 Qualifying: Monaco Grand Prix. Andrea Kimi Antonelli claimed pole position for the Monaco Grand Prix driving for Mercedes, setting a Q3 best of 1:12.051. Max Verstappen qualified second for Red Bull just 0.043 seconds behind, representing an exceptionally tight margin at the front. Lewis Hamilton placed third for Ferrari at 1:12.279, with teammate Charles Leclerc fourth at 1:12.351, giving Ferrari a strong combined presence on the second row. Isack Hadjar rounded out the top five for Red Bull at 1:12.434, a notably strong performance from the sophomore driver. George Russell qualified sixth for Mercedes, with both McLaren drivers Oscar Piastri and Lando Norris in seventh and eighth, suggesting McLaren lacked their typical single-lap competitiveness at this circuit. Pierre Gasly delivered a solid ninth for Alpine F1 Team, while Liam Lawson took tenth for RB F1 Team. Fernando Alonso and Lance Stroll were eliminated in Q1 in 21st and 22nd respectively, a significant underperformance for Aston Martin. The compactness of the top five — covered by just 0.383 seconds — indicates closely matched race pace among the leading teams, though Monaco's limited overtaking opportunities will make grid position a decisive factor in Sunday's race outcome.",
     "tags": {
       "season": 2026,
       "type": "qualifying",
@@ -1415,7 +1415,7 @@
       "pole_driver": "andrea-kimi-antonelli"
     },
     "source_url": null,
-    "updated_at": "2026-06-06T17:04:18.052Z",
-    "content_hash": "2f9eccac2792a17a"
+    "updated_at": "2026-06-06T19:26:03.672Z",
+    "content_hash": "8258af3ff77d36b8"
   }
 ]

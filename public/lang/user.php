@@ -203,6 +203,18 @@ return [
         'scenario_2_perfect'      => 'Scenarie 2 (Perfekt!)',
         'wrong_but_top3_leclerc'  => 'forkert, men Leclerc i top 3',
         'wrong_but_top3_norris'   => 'forkert, men Norris i top 3',
+
+        // Race page
+        'round'                 => 'Runde',
+        'of'                    => 'af',
+        'result_after_quali'    => 'Vises efter kvalifikationen',
+        'result_after_race'     => 'Vises efter løbet',
+        'login_to_bet'          => 'Log ind for at byde',
+        'login_to_bet_hint'     => 'Budrunden er åben – log ind for at afgive dit bud',
+        'sorted_by_points'      => 'Sorteret efter point',
+        'optional'              => 'valgfri',
+        'quali_date'            => 'Kval. dato',
+        'quali_time'            => 'Kval. tid',
     ],
     'en' => [
         // Navigation
@@ -406,5 +418,17 @@ return [
         'scenario_2_perfect'      => 'Scenario 2 (Perfect!)',
         'wrong_but_top3_leclerc'  => 'wrong, but Leclerc in top 3',
         'wrong_but_top3_norris'   => 'wrong, but Norris in top 3',
+
+        // Race page
+        'round'                 => 'Round',
+        'of'                    => 'of',
+        'result_after_quali'    => 'Shown after qualifying',
+        'result_after_race'     => 'Shown after the race',
+        'login_to_bet'          => 'Log in to bet',
+        'login_to_bet_hint'     => 'Betting is open – log in to place your prediction',
+        'sorted_by_points'      => 'Sorted by points',
+        'optional'              => 'optional',
+        'quali_date'            => 'Quali. date',
+        'quali_time'            => 'Quali. time',
     ],
 ];

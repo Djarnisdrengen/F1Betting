@@ -25,6 +25,14 @@
                         <label class="form-label"><?= t('race_time') ?> (CET)</label>
                         <input type="time" name="race_time" class="form-input" required>
                     </div>
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label"><?= t('quali_date') ?> (<?= t('optional') ?>)</label>
+                        <input type="date" name="quali_date" class="form-input">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label"><?= t('quali_time') ?> (CET)</label>
+                        <input type="time" name="quali_time" class="form-input">
+                    </div>
                 </div>
                 <button type="submit" name="add_race" class="btn btn-primary"><i class="fas fa-plus"></i> <?= t('add') ?></button>
             </form>
@@ -114,6 +122,14 @@
                             <div class="form-group" style="margin:0;">
                                 <label class="form-label"><?= t('race_time') ?> (CET)</label>
                                 <input type="time" name="race_time" class="form-input" value="<?= escape($race['race_time']) ?>" required>
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label"><?= t('quali_date') ?> (<?= t('optional') ?>)</label>
+                                <input type="date" name="quali_date" class="form-input" value="<?= escape($race['quali_date'] ?? '') ?>">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label"><?= t('quali_time') ?> (CET)</label>
+                                <input type="time" name="quali_time" class="form-input" value="<?= escape($race['quali_time'] ?? '') ?>">
                             </div>
                         </div>
                         <label class="form-label"><?= t('qualifying') ?></label>

@@ -81,6 +81,8 @@ if (isset($_POST['add_race'])) {
     $location = trim($_POST['race_location'] ?? '');
     $date = $_POST['race_date'] ?? '';
     $time = $_POST['race_time'] ?? '';
+    $quali_date = ($_POST['quali_date'] ?? '') ?: null;
+    $quali_time = ($_POST['quali_time'] ?? '') ?: null;
     $quali_p1 = $_POST['quali_p1'] ?: null;
     $quali_p2 = $_POST['quali_p2'] ?: null;
     $quali_p3 = $_POST['quali_p3'] ?: null;
@@ -89,11 +91,12 @@ if (isset($_POST['add_race'])) {
         // Validate date format
         $dateObj = DateTime::createFromFormat('Y-m-d', $date);
         $timeObj = DateTime::createFromFormat('H:i', $time);
-        
+        if ($quali_date && !DateTime::createFromFormat('Y-m-d', $quali_date)) { $quali_date = null; }
+
         if ($dateObj && $timeObj) {
             $id = generateUUID();
-            $stmt = $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, quali_p1, quali_p2, quali_p3) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$id, $name, $location, $date, $time, $quali_p1, $quali_p2, $quali_p3]);
+            $stmt = $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, quali_date, quali_time, quali_p1, quali_p2, quali_p3) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$id, $name, $location, $date, $time, $quali_date, $quali_time, $quali_p1, $quali_p2, $quali_p3]);
             $message = t('race_added');
         } else {
             $error = t('invalid_date_time');
@@ -109,16 +112,19 @@ if (isset($_POST['update_race'])) {
     $location = trim($_POST['race_location'] ?? '');
     $date = $_POST['race_date'] ?? '';
     $time = $_POST['race_time'] ?? '';
+    $quali_date = ($_POST['quali_date'] ?? '') ?: null;
+    $quali_time = ($_POST['quali_time'] ?? '') ?: null;
     $quali_p1 = $_POST['quali_p1'] ?: null;
     $quali_p2 = $_POST['quali_p2'] ?: null;
     $quali_p3 = $_POST['quali_p3'] ?: null;
     $result_p1 = $_POST['result_p1'] ?: null;
     $result_p2 = $_POST['result_p2'] ?: null;
     $result_p3 = $_POST['result_p3'] ?: null;
-    
+    if ($quali_date && !DateTime::createFromFormat('Y-m-d', $quali_date)) { $quali_date = null; }
+
     if ($id && $name) {
-        $stmt = $db->prepare("UPDATE races SET name = ?, location = ?, race_date = ?, race_time = ?, quali_p1 = ?, quali_p2 = ?, quali_p3 = ?, result_p1 = ?, result_p2 = ?, result_p3 = ? WHERE id = ?");
-        $stmt->execute([$name, $location, $date, $time, $quali_p1, $quali_p2, $quali_p3, $result_p1, $result_p2, $result_p3, $id]);
+        $stmt = $db->prepare("UPDATE races SET name = ?, location = ?, race_date = ?, race_time = ?, quali_date = ?, quali_time = ?, quali_p1 = ?, quali_p2 = ?, quali_p3 = ?, result_p1 = ?, result_p2 = ?, result_p3 = ? WHERE id = ?");
+        $stmt->execute([$name, $location, $date, $time, $quali_date, $quali_time, $quali_p1, $quali_p2, $quali_p3, $result_p1, $result_p2, $result_p3, $id]);
 
         // Beregn point hvis resultater er sat
         if ($result_p1 && $result_p2 && $result_p3) {

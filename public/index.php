@@ -116,7 +116,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
         <div class="hf-hero-inner">
             <div class="hf-hero-left">
                 <?php if ($heroRace): ?>
-                    <div class="hf-hero-eyebrow"><?= escape($heroRace['name']) ?></div>
+                    <div class="hf-hero-eyebrow"><a href="race.php?id=<?= escape($heroRace['id']) ?>" style="color:inherit;text-decoration:none;"><?= escape($heroRace['name']) ?></a></div>
                 <?php endif; ?>
                 <h1 class="hf-hero-title"><?= escape($heroTitle) ?></h1>
 
@@ -256,8 +256,17 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
 
         <!-- Races + results column -->
         <div data-testid="home-results">
+            <?php if (!empty($recentResults)): ?>
+            <div class="hf-home-seg-wrap">
+                <div class="hf-seg">
+                    <button class="active" id="home-seg-upcoming"><?= t('upcoming_races') ?></button>
+                    <button id="home-seg-results"><?= t('recent_results') ?></button>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Upcoming races -->
-            <div class="hf-section">
+            <div class="hf-section hf-home-sec" id="home-col-upcoming">
                 <div class="hf-section-h">
                     <h2><?= t('upcoming_races') ?></h2>
                     <a href="races.php"><?= t('see_all') ?></a>
@@ -278,7 +287,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                     ?>
                         <div class="hf-racecard" id="race-<?= $race['id'] ?>">
                             <div>
-                                <div class="hf-racename"><?= escape($race['name']) ?></div>
+                                <div class="hf-racename"><a href="race.php?id=<?= escape($race['id']) ?>" style="color:inherit;text-decoration:none;"><?= escape($race['name']) ?></a></div>
                                 <div class="hf-racemeta"><?= escape($race['location']) ?> · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></div>
                             </div>
                             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
@@ -309,7 +318,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
 
             <!-- Recent results -->
             <?php if (!empty($recentResults)): ?>
-            <div class="hf-section">
+            <div class="hf-section hf-home-sec hidden" id="home-col-results">
                 <div class="hf-section-h">
                     <h2><?= t('recent_results') ?></h2>
                     <a href="races.php?tab=completed"><?= t('see_all') ?></a>
@@ -317,7 +326,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                 <?php foreach ($recentResults as $race): ?>
                     <div class="hf-racecard">
                         <div>
-                            <div class="hf-racename"><?= escape($race['name']) ?></div>
+                            <div class="hf-racename"><a href="race.php?id=<?= escape($race['id']) ?>" style="color:inherit;text-decoration:none;"><?= escape($race['name']) ?></a></div>
                             <div class="hf-racemeta">
                                 <?= escape($race['location']) ?> · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?>
                                 <?php if ($race['result_p1']): ?>
@@ -334,5 +343,21 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
 
     </div>
 </div>
+
+<script nonce="<?= $nonce ?>">
+(function () {
+    var seg  = { upcoming: document.getElementById('home-seg-upcoming'),  results: document.getElementById('home-seg-results') };
+    var cols = { upcoming: document.getElementById('home-col-upcoming'),   results: document.getElementById('home-col-results') };
+    if (!seg.upcoming || !cols.results) return;
+    function show(tab) {
+        ['upcoming', 'results'].forEach(function (k) {
+            seg[k].classList.toggle('active', k === tab);
+            cols[k].classList.toggle('hidden', k !== tab);
+        });
+    }
+    seg.upcoming.addEventListener('click', function () { show('upcoming'); });
+    seg.results.addEventListener('click',  function () { show('results'); });
+})();
+</script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

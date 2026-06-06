@@ -2603,6 +2603,14 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     .hf-races-col.hidden { display: block; }
 }
 
+/* ── Home page: races/results seg (mobile only) ────────────── */
+.hf-home-seg-wrap { margin: 8px 0 16px; }
+.hf-home-sec.hidden { display: none; }
+@media (min-width: 768px) {
+    .hf-home-seg-wrap { display: none; }
+    .hf-home-sec.hidden { display: block; }
+}
+
 /* ── Phase D: Profile layout ────────────────────────────────── */
 .hf-profile-grid  { display: block; padding-bottom: 48px; }
 .hf-profile-forms { display: flex; flex-direction: column; gap: 16px; }
@@ -3090,3 +3098,14 @@ body.font-system {
     .hf-stats-chip         { padding: 10px 14px; min-height: 52px; }
     .hf-stats-chip .v      { font-size: 14px; }
 }
+
+/* v2.3.0 — Single-race page additions (race.php). Additive only. */
+.race-schedule { margin-top:1rem; padding:0.875rem 1rem; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; display:flex; flex-direction:column; gap:0.75rem; }
+.race-schedule .countdown-timer { display:grid; grid-template-columns:18px 1fr auto; align-items:baseline; gap:0.375rem 0.625rem; margin:0; }
+.race-schedule .countdown-timer .countdown-value { text-align:right; white-space:nowrap; }
+.countdown-timer.done .countdown-value { color:var(--text-muted); }
+.result-pending { display:flex; align-items:center; gap:0.625rem; margin-top:0.5rem; padding:0.75rem 0.875rem; border:1px dashed var(--border-color); border-radius:8px; color:var(--text-muted); font-size:0.875rem; }
+.race-login-cta { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.875rem; margin-top:1.125rem; padding:1rem 1.125rem; border-radius:12px; background:linear-gradient(90deg,rgba(225,6,0,0.12),rgba(225,6,0,0.03)); border:1px solid rgba(225,6,0,0.35); }
+.race-login-mini { align-self:flex-end; display:inline-flex; align-items:center; gap:0.4375rem; padding:0.4375rem 0.8125rem; border-radius:8px; background:rgba(225,6,0,0.10); border:1px solid rgba(225,6,0,0.45); color:var(--f1-red-light); font-weight:700; font-size:0.78rem; text-decoration:none; white-space:nowrap; }
+.race-login-mini:hover { background:var(--f1-red); border-color:var(--f1-red); color:#fff; }
+.bets-empty { padding:1.25rem; text-align:center; border:1px dashed var(--border-color); border-radius:12px; color:var(--text-muted); }
