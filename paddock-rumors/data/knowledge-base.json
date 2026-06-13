@@ -1455,5 +1455,20 @@
     "source_url": "https://en.wikipedia.org/wiki/2026_Monaco_Grand_Prix",
     "updated_at": "2026-06-07T19:39:07.618Z",
     "content_hash": "4e606ba70b5562f3"
+  },
+  {
+    "id": "quali-2026-r07-de-barcelona-catalunya",
+    "title": "Barcelona Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 7 Qualifying: Barcelona Grand Prix. George Russell claimed pole position for the Barcelona Grand Prix at Circuit de Barcelona-Catalunya, setting a best lap of 1:14.679 for Mercedes. Lewis Hamilton qualified second for Ferrari, just 0.064 seconds adrift, marking a notable result for the former Mercedes driver at a circuit where he historically excelled. Andrea Kimi Antonelli completed the second Mercedes entry in third at 1:14.998, 0.319 seconds off pole. Lando Norris and Max Verstappen qualified fourth and fifth respectively, separated by only 0.020 seconds, with both drivers within 0.342 seconds of Russell.\n\nIsack Hadjar impressed in sixth for Red Bull, outqualifying teammate Verstappen in Q2 pace comparisons and ahead of Oscar Piastri in seventh. Charles Leclerc's failure to set a Q3 lap time is a significant anomaly, leaving the Ferrari driver tenth on the grid despite his Q2 time of 1:15.281 being competitive. Aston Martin struggled severely, with both Fernando Alonso and Lance Stroll eliminated in Q1 and filling the final two grid positions.\n\nThe qualifying order indicates Mercedes holds a clear performance advantage at this circuit, with Ferrari and McLaren closely matched in second-tier pace. Red Bull's presence in the top five suggests competitive race pace, though the gap to Mercedes may be difficult to bridge over a full race distance.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 7,
+      "circuit": "circuit-de-barcelona-catalunya",
+      "pole_driver": "george-russell"
+    },
+    "source_url": null,
+    "updated_at": "2026-06-13T19:15:41.506Z",
+    "content_hash": "39c07d668fd50caa"
   }
 ]
