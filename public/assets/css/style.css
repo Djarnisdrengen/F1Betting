@@ -3109,3 +3109,20 @@ body.font-system {
 .race-login-mini { align-self:flex-end; display:inline-flex; align-items:center; gap:0.4375rem; padding:0.4375rem 0.8125rem; border-radius:8px; background:rgba(225,6,0,0.10); border:1px solid rgba(225,6,0,0.45); color:var(--f1-red-light); font-weight:700; font-size:0.78rem; text-decoration:none; white-space:nowrap; }
 .race-login-mini:hover { background:var(--f1-red); border-color:var(--f1-red); color:#fff; }
 .bets-empty { padding:1.25rem; text-align:center; border:1px dashed var(--border-color); border-radius:12px; color:var(--text-muted); }
+
+/* v2.4.0 — race.php fidelity (Race Page.html). Additive + namespaced; inherits theme tokens. */
+/* Pool-size number in the schedule box: gold, matching the $ icon (beats .countdown-value red). */
+.race-schedule .countdown-value.bettingpool_size { color:#b98f10; }
+/* Whole race box is clickable (index.php / races.php). */
+.clickable-card { cursor:pointer; }
+/* "YOU" tag on own bet */
+.race-you-tag { display:inline-flex; align-items:center; background:var(--f1-red); color:#fff; font-family:var(--display); font-weight:800; font-size:10px; line-height:1; padding:3px 7px; border-radius:9999px; letter-spacing:0.04em; text-transform:uppercase; }
+/* "— pts" placeholder for unscored bets */
+.race-pts-pending { color:var(--text-muted); font-family:var(--mono); font-weight:700; font-size:0.8rem; white-space:nowrap; }
+/* Qualifying + race results: stacked by default, two-up at >=1024px */
+.race-results-two { display:grid; gap:1rem; }
+@media (min-width:1024px) { .race-results-two { grid-template-columns:1fr 1fr; align-items:start; } }
+/* Responsive title scaling on the focus page */
+.race-title { font-size:1.5rem; }
+@media (min-width:768px)  { .race-title { font-size:1.9rem; } }
+@media (min-width:1024px) { .race-title { font-size:2.4rem; } }

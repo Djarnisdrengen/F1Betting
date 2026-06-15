@@ -116,7 +116,7 @@ test.describe.serial('Single-race page (race.php)', () => {
         await anonPage.goto(`/race.php?id=${data.doneRaceId}`);
 
         const bets = anonPage.locator('.bet-item');
-        await expect(bets).toHaveCount(2);
+        await expect(bets).toHaveCount(3); // perfect (30) + other (8) + login (0, scored)
 
         // "sorted by points" hint present once a result is set
         await expect(anonPage.locator('.bets-section .text-muted').first()).toBeVisible();
@@ -126,5 +126,71 @@ test.describe.serial('Single-race page (race.php)', () => {
         await expect(top).toHaveClass(/perfect-bet/);
         await expect(top.locator('span.star')).toBeVisible();
         await expect(top.locator('.hf-badge')).toContainText('30');
+    });
+
+    // ── v2.4.0 fidelity: bet-row flourishes (race.php only) ─────────────────────
+
+    test('done race: bet predictions show full driver surnames', async () => {
+        await anonPage.goto(`/race.php?id=${data.doneRaceId}`);
+        const topPreds = anonPage.locator('.bet-item').first().locator('.bet-pred');
+        // Perfect bet = Hamilton / Verstappen / Leclerc → full surnames, not 3-letter codes
+        await expect(topPreds.nth(0)).toContainText('Hamilton');
+        await expect(topPreds.nth(1)).toContainText('Verstappen');
+        await expect(topPreds.nth(2)).toContainText('Leclerc');
+        // Accented surname renders intact
+        await expect(anonPage.locator('.bet-pred', { hasText: 'Hülkenberg' })).toHaveCount(1);
+    });
+
+    test('done race, logged OUT: no YOU tag, scored rows never show "— pts"', async () => {
+        await anonPage.goto(`/race.php?id=${data.doneRaceId}`);
+        await expect(anonPage.locator('.race-you-tag')).toHaveCount(0);   // nobody is "me" when logged out
+        await expect(anonPage.locator('.race-pts-pending')).toHaveCount(0); // race is scored → all show pts badges
+    });
+
+    test('done race, logged IN: own row has YOU tag and a "0 pts" badge (scored, not "— pts")', async () => {
+        await authPage.goto(`/race.php?id=${data.doneRaceId}`);
+        const mine = authPage.locator('.bet-item.my-bet');
+        await expect(mine).toHaveCount(1);
+        await expect(mine.locator('.race-you-tag')).toBeVisible();
+        await expect(mine.locator('.hf-badge')).toContainText('0 pts'); // 0 points but scored → badge, not "— pts"
+        await expect(mine.locator('.race-pts-pending')).toHaveCount(0);
+    });
+
+    test('open race (unscored): bets show "— pts", no points badge', async () => {
+        await anonPage.goto(`/race.php?id=${data.openRaceId}`);
+        const bets = anonPage.locator('.bet-item');
+        await expect(bets).toHaveCount(2);
+        await expect(anonPage.locator('.race-pts-pending')).toHaveCount(2); // one per unscored bet
+        await expect(anonPage.locator('.bet-item .hf-badge.soon')).toHaveCount(0); // no points badges yet
+    });
+
+    test('done race: results are two-column at >=1024px, stacked below', async () => {
+        const cols = anonPage.locator('.race-results-two > div');
+
+        await anonPage.setViewportSize({ width: 1280, height: 900 });
+        await anonPage.goto(`/race.php?id=${data.doneRaceId}`);
+        const a = await cols.nth(0).boundingBox();
+        const b = await cols.nth(1).boundingBox();
+        expect(Math.abs(a.y - b.y)).toBeLessThanOrEqual(2);   // same row
+        expect(Math.abs(a.x - b.x)).toBeGreaterThan(20);      // different columns
+
+        await anonPage.setViewportSize({ width: 375, height: 900 });
+        await anonPage.goto(`/race.php?id=${data.doneRaceId}`);
+        const c = await cols.nth(0).boundingBox();
+        const d = await cols.nth(1).boundingBox();
+        expect(d.y).toBeGreaterThan(c.y);                     // stacked
+        await anonPage.setViewportSize({ width: 1280, height: 800 });
+    });
+
+    // ── Regression: races.php must NOT inherit the race.php-only flourishes ──────
+
+    test('races.php bet rows are unchanged (no YOU tag / "— pts", full surnames)', async () => {
+        await authPage.goto('/races.php');
+        // Core leak guard: the flag-gated flourishes must never appear on races.php.
+        await expect(authPage.locator('.race-you-tag')).toHaveCount(0);
+        await expect(authPage.locator('.race-pts-pending')).toHaveCount(0);
+        // Sanity: races.php still renders bet rows with full surnames (default path), not 3-letter codes.
+        const surnameChips = await authPage.locator('.bet-pred', { hasText: 'Hamilton' }).count();
+        expect(surnameChips).toBeGreaterThan(0);
     });
 });

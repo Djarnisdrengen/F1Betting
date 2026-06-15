@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetId = this.dataset.target;
             const target = document.getElementById(targetId);
             const icon = this.querySelector('i');
-            
+
             if (target.classList.contains('hidden')) {
                 target.classList.remove('hidden');
                 icon.classList.remove('fa-chevron-down');
@@ -17,6 +17,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 icon.classList.remove('fa-chevron-up');
                 icon.classList.add('fa-chevron-down');
             }
+        });
+    });
+
+    // Whole-card navigation (index.php / races.php race boxes).
+    // Ignores clicks on inner interactive elements (links, buttons, form fields,
+    // the bets toggle) and on text selections, so existing controls keep working.
+    document.querySelectorAll('.clickable-card[data-href]').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('a, button, input, select, label, .toggle-bets, .bets-section')) return;
+            if (window.getSelection && String(window.getSelection())) return;
+            window.location.href = this.dataset.href;
         });
     });
     

@@ -402,9 +402,10 @@ states. Seeds one **open** race (with qualifying timing) and one **completed** r
 via `seed.racePage()` / `seed.cleanup.racePage()`. Manages its own anon + logged-in contexts (the
 logged-in user is the in-competition account returned by the seed).
 
-Open race: `race_date` +2h, `quali_date` +1h, no results, pool 250.
+Open race: `race_date` +2h, `quali_date` +1h, no results, pool 250, **two unscored bets**.
 Completed race: qualifying + race results set, dates in the past, pool 300 (`bettingpool_won`), with a
-perfect bet (30 pts) and a non-perfect bet (8 pts).
+perfect bet (30 pts), a non-perfect bet (8 pts), and the **login user's own 0-pt scored bet** (P1 uses
+an accented-surname driver, "Hülkenberg").
 
 | Test | Asserts |
 |---|---|
@@ -417,10 +418,16 @@ perfect bet (30 pts) and a non-perfect bet (8 pts).
 | Completed — countdowns done | Two `.countdown-timer.done`, zero `[data-target]` |
 | Completed — results | Zero `.result-pending`, six `.position-badge`, two `.quali-row` |
 | Completed — pool won | `.hf-racename .hf-badge` (pool-won) in title |
-| Completed — bets scored/sorted | Two `.bet-item`; highest-points perfect bet sorts first with `.perfect-bet` + `★` + `30` pts badge |
+| Completed — bets scored/sorted | Three `.bet-item`; highest-points perfect bet sorts first with `.perfect-bet` + `★` + `30` pts badge |
+| **v2.4.0** Surname chips | Done-race chips show full surnames (Hamilton/Verstappen/Leclerc); accented "Hülkenberg" renders intact |
+| **v2.4.0** YOU tag / "— pts" negatives | Logged-out done race: zero `.race-you-tag`, zero `.race-pts-pending` (scored) |
+| **v2.4.0** Own bet (logged in) | `.bet-item.my-bet` has `.race-you-tag` + a **"0 pts"** badge (scored 0-pt → badge, not `— pts`) |
+| **v2.4.0** Unscored bets | Open race: two `.race-pts-pending` ("— pts"), zero `.hf-badge.soon` points badges |
+| **v2.4.0** Two-column results | At 1280px the two `.race-results-two` children share y (±2px) / differ in x; at 375px they stack |
+| **v2.4.0** `races.php` regression | `races.php` has zero `.race-you-tag` / `.race-pts-pending`, surname chips intact (flag-gated, no leak) |
 
 **Test-seed actions used:** `seed_race_page` / `cleanup_race_page` (creates races *E2E Race Page Open*
-and *E2E Race Page Done* plus 3 in-competition users).
+and *E2E Race Page Done*, 3 in-competition users, and the accented-surname driver).
 
 ---
 

@@ -89,7 +89,7 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                     $raceDateTime = new DateTime($race['race_date'] . ' ' . $race['race_time']);
                     $bettingOpens = (clone $raceDateTime)->modify("-{$bettingWindowHours} hours");
                 ?>
-                    <div class="hf-racefull">
+                    <div class="hf-racefull clickable-card" data-href="race.php?id=<?= escape($race['id']) ?>">
                         <div class="hf-racefull-hd">
                             <div class="hf-racefull-info">
                                 <div class="hf-racename">
@@ -170,7 +170,7 @@ $flashError = $errorMessages[$_GET['error'] ?? ''] ?? null;
                     $raceBets = $betsByRace[$race['id']] ?? [];
                     $hasBet   = in_array($race['id'], $myBets);
                 ?>
-                    <div class="hf-racefull">
+                    <div class="hf-racefull clickable-card" data-href="race.php?id=<?= escape($race['id']) ?>">
                         <div class="hf-racefull-hd">
                             <div class="hf-racefull-info">
                                 <div class="hf-racename">
