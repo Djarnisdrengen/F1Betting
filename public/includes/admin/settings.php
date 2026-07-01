@@ -105,3 +105,31 @@
         </form>
     </div>
 </div>
+
+<?php
+// Email delivery toggle — only relevant on the test environment (SMTP_INTERCEPT on).
+require_once __DIR__ . '/../smtp.php';
+if (defined('SMTP_INTERCEPT') && SMTP_INTERCEPT):
+    $emailLive = !emailIntercepted();
+?>
+<div class="card mt-3">
+    <div class="card-header"><h3><i class="fas fa-envelope-open-text text-accent"></i> <?= t('email_delivery_section') ?></h3></div>
+    <div class="card-body">
+        <p class="text-muted mb-2" style="font-size:0.875rem;"><?= t('email_delivery_desc') ?></p>
+        <p class="mb-2">
+            <?= t('email_delivery_status') ?>:
+            <strong data-testid="email-delivery-status" style="color:<?= $emailLive ? 'var(--success,#3fb950)' : 'var(--text-secondary)' ?>;">
+                <?= $emailLive ? t('email_delivery_live') : t('email_delivery_intercept') ?>
+            </strong>
+        </p>
+        <form method="POST">
+            <?= csrfField() ?>
+            <input type="hidden" name="toggle_smtp_live" value="1">
+            <button type="submit" class="btn <?= $emailLive ? 'btn-secondary' : 'btn-primary' ?>" data-testid="email-delivery-toggle">
+                <i class="fas fa-toggle-<?= $emailLive ? 'on' : 'off' ?>"></i>
+                <?= $emailLive ? t('email_delivery_switch_intercept') : t('email_delivery_switch_live') ?>
+            </button>
+        </form>
+    </div>
+</div>
+<?php endif; ?>

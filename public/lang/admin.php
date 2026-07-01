@@ -92,6 +92,13 @@ return [
         'backfill_snapshots_desc'    => 'Gendan historiske rangordnings-snapshots for alle afsluttede løb. Kræves for at vis rangordningsændringer (▲/▼) på leaderboardet. Kan køres sikkert flere gange.',
         'backfill_snapshots_btn'     => 'Gendan rangordnings-snapshots',
         'backfill_snapshots_done'    => 'Rangordnings-snapshots gendannet for %d løb.',
+        'email_delivery_section'     => 'E-mail-levering (testmiljø)',
+        'email_delivery_desc'        => 'På testmiljøet sendes e-mails som standard. Skift til opsamling, hvis du ikke vil have dem leveret. E2E-tests slår opsamling til under kørslen og fra igen bagefter.',
+        'email_delivery_status'      => 'Status',
+        'email_delivery_live'        => 'Sender rigtige e-mails',
+        'email_delivery_intercept'   => 'Opsamler (sender ikke)',
+        'email_delivery_switch_live' => 'Slå ægte afsendelse til',
+        'email_delivery_switch_intercept' => 'Skift til opsamling',
     ],
     'en' => [
         // Tab labels
@@ -185,5 +192,12 @@ return [
         'backfill_snapshots_desc'    => 'Backfill historical rank snapshots for all scored races. Required to show rank movement (▲/▼) on the leaderboard. Safe to run multiple times.',
         'backfill_snapshots_btn'     => 'Backfill rank snapshots',
         'backfill_snapshots_done'    => 'Rank snapshots backfilled for %d races.',
+        'email_delivery_section'     => 'Email delivery (test environment)',
+        'email_delivery_desc'        => 'On the test environment emails are sent by default. Switch to capture if you do not want them delivered. E2E tests turn capture on for the run and off again afterwards.',
+        'email_delivery_status'      => 'Status',
+        'email_delivery_live'        => 'Sending real emails',
+        'email_delivery_intercept'   => 'Capturing (not sending)',
+        'email_delivery_switch_live' => 'Turn on real delivery',
+        'email_delivery_switch_intercept' => 'Switch to capture',
     ],
 ];

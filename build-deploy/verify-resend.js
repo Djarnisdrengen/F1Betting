@@ -1,12 +1,21 @@
 'use strict';
+const path = require('path');
 const { makeResendSender } = require('./mailer');
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const SMTP_FROM      = process.env.SMTP_FROM;
-const REPORT_TO      = process.env.REPORT_TO;
+// Env vars win (GitHub Actions injects them); otherwise fall back to config.<env>.php,
+// the same source the app uses — so `npm run test:resend` works locally without a .env.
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+let cfg = {};
+try {
+    cfg = require('./php-config').readPhpConfig(process.env.DEPLOY_ENV || 'test');
+} catch { /* fall back to env vars only */ }
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY || cfg.resendApiKey;
+const SMTP_FROM      = process.env.SMTP_FROM      || cfg.smtpFromEmail;
+const REPORT_TO      = process.env.REPORT_TO      || cfg.reportTo || cfg.adminEmail;
 
 if (!RESEND_API_KEY || !SMTP_FROM || !REPORT_TO) {
-    console.error('[verify-resend] Missing required env vars: RESEND_API_KEY, SMTP_FROM, REPORT_TO');
+    console.error('[verify-resend] Missing RESEND_API_KEY / SMTP_FROM / REPORT_TO — set them as env vars or in config.' + (process.env.DEPLOY_ENV || 'test') + '.php');
     process.exit(1);
 }
 

@@ -87,9 +87,9 @@ npm run test:e2e:live     # 01-smoke.spec.js only, against live
 
 Config: `tests/playwright.config.js`. Screenshots on failure: `build-deploy/screenshots/`.
 
-**Email interception** — all E2E tests run with `SMTP_INTERCEPT=true` (set in `config.test.php`). Emails are captured to `/tmp/f1betting_test_emails.jsonl` on the test server instead of being sent via SMTP. Tests read them back via `test-seed.php?action=get_test_emails`. No real emails are ever sent during the test suite.
+**Email interception** — real delivery is the default on the test env; interception is opt-in. `tests/global-setup.js` turns it on for the duration of the run (`test-seed.php?action=smtp_intercept_on`, creating `/tmp/f1betting_smtp_intercept`) so emails are captured to `/tmp/f1betting_test_emails.jsonl` and read back via `test-seed.php?action=get_test_emails`; `tests/global-teardown.js` turns it off (`smtp_intercept_off`) at the end. No real emails are sent while the suite runs.
 
-To enable real SMTP temporarily during manual testing (e.g., verifying the Proton → Resend chain): SSH into the test server and `touch /tmp/f1betting_smtp_live`. Remove it when done.
+For manual testing, email sends for real by default. To capture instead, flip **Admin → Settings → Email delivery** to "Switch to capture" (or `touch /tmp/f1betting_smtp_intercept` on the server; remove it to resume sending).
 
 **On test:** all `tests/e2e/**/*.spec.js` and `tests/e2e/admin/**/*.spec.js` files matching the numbered glob are run.
 **On live:** `01-smoke.spec.js` only.

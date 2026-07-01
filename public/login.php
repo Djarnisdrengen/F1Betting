@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/mfa.php';
 
 if (getCurrentUser()) {
     header("Location: /index.php");
@@ -17,7 +18,8 @@ function sanitizeLoginRedirect(string $url): string {
 
 $redirect = sanitizeLoginRedirect($_POST['redirect'] ?? $_GET['redirect'] ?? '');
 
-$error = '';
+$error = $_SESSION['flash_error'] ?? '';
+unset($_SESSION['flash_error']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
@@ -49,6 +51,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
             $anonTheme = $_SESSION['theme']      ?? $_COOKIE['f1_theme'] ?? 'dark';
             $anonFont  = $_SESSION['font_stack'] ?? $_COOKIE['f1_font']  ?? 'system';
+
+            // Two-step login: if the member has opted into any second factor, the password
+            // step alone must NOT grant a session. Hold them in a pending state (no user_id)
+            // and send them to the challenge, which is the only place that promotes the session.
+            if (userHasActiveFactor($db, $user['id'])) {
+                $_SESSION['mfa_pending'] = [
+                    'uid'       => $user['id'],
+                    'exp'       => time() + 600,           // 10-minute window
+                    'redirect'  => $redirect,
+                    'anonTheme' => $anonTheme,
+                    'anonFont'  => $anonFont,
+                ];
+                session_regenerate_id(true);               // rotate the pre-auth session id
+                if (emailOtpActive($db, $user['id'])) {
+                    try { issueEmailOtp($db, $user['id'], 'login'); } catch (Exception $e) {}
+                }
+                header('Location: /mfa_challenge.php');
+                exit;
+            }
+
             $_SESSION['user_id'] = $user['id'];
             session_regenerate_id(true);
             $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);

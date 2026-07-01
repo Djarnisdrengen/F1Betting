@@ -154,3 +154,25 @@ The admin account (`F1_ADMIN_EMAIL`, currently `f1_admin@helvegpovlsen.dk`) is p
 
 If you expect to trigger emails to synced users during manual testing, look them up in the Mailsac web UI at mailsac.com using the rewritten address.
 
+
+---
+
+## 16. MFA requires `MFA_KEY` in config, and MFA tables use the legacy `latin1` collation
+
+The multi-factor auth system (`public/includes/mfa.php`) seals TOTP secrets at rest with a new config constant **`MFA_KEY`** — exactly 64 hex chars (32 bytes). It must be present in `config.test.php` and `config.live.php` (on the server too), alongside `PASSWORD_PEPPER`. `mfa.php` throws if it is missing or malformed — by design, so a misconfigured deploy fails loud instead of storing unsealed secrets. Generate with `php -r "echo bin2hex(random_bytes(32));"`.
+
+The `users` table is legacy **`latin1_swedish_ci`**. New MFA tables (`user_totp`, `user_recovery_codes`, `user_email_otp`, `user_passkeys`) therefore pin their `user_id` foreign-key columns to `CHARACTER SET latin1 COLLATE latin1_swedish_ci` — otherwise the FK fails with error 3780 ("incompatible columns"). Keep this in mind for any future table that references `users.id`.
+
+Apply the migration with `database/add_mfa.sql` (idempotent except the additive `users.email_otp_enabled` column, which errors harmlessly on re-run). Passkeys (Phase 2) additionally require Composer + `web-auth/webauthn-lib`; `vendor/` must reach the server, and the WebAuthn RP ID must be the **www** host (see gotcha #1).
+
+---
+
+## 17. Test env sends email by default — interception is opt-in (E2E turns it on per run)
+
+On the test environment `config.test.php` sets `SMTP_INTERCEPT = true`, which makes the environment *capable* of interception but does **not** enable it — **real delivery is the default**, so manual testing (e.g. sending an invite) just works. Interception is active only while the flag file `sys_get_temp_dir()/f1betting_smtp_intercept` is present.
+
+- **E2E**: `tests/global-setup.js` turns interception **on** (`action=smtp_intercept_on`) for the run so specs capture email to the JSONL store; `tests/global-teardown.js` turns it **off** (`smtp_intercept_off`) at the end, restoring the send-by-default state.
+- **Manual capture**: flip **Admin → Settings → Email delivery** to "Switch to capture" (and back). The shared helpers are `emailIntercepted()` and `smtpInterceptFlagPath()` in `public/includes/smtp.php`.
+- **Live**: `SMTP_INTERCEPT` is undefined, so email always sends and the toggle is hidden.
+
+`npm run test:resend` reads `RESEND_API_KEY` / `SMTP_FROM` / `REPORT_TO` from env vars if present, otherwise falls back to `config.<env>.php` (RESEND_API_KEY, SMTP_FROM_EMAIL, REPORT_TO→F1_ADMIN_EMAIL) — so it runs locally without a `build-deploy/.env`.

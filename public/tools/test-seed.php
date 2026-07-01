@@ -1026,16 +1026,16 @@ if (($_GET['action'] ?? '') === 'cleanup_score_race') {
     exit;
 }
 
-// Action: smtp_live_on — creates flag file so PHP sends real SMTP even when SMTP_INTERCEPT=true.
-if (($_GET['action'] ?? '') === 'smtp_live_on') {
-    file_put_contents(sys_get_temp_dir() . '/f1betting_smtp_live', '1');
+// Action: smtp_intercept_on — captures email instead of sending (E2E turns this on for a run).
+if (($_GET['action'] ?? '') === 'smtp_intercept_on') {
+    file_put_contents(sys_get_temp_dir() . '/f1betting_smtp_intercept', '1');
     echo json_encode(['ok' => true]);
     exit;
 }
 
-// Action: smtp_live_off — removes the flag file, restoring intercept mode.
-if (($_GET['action'] ?? '') === 'smtp_live_off') {
-    @unlink(sys_get_temp_dir() . '/f1betting_smtp_live');
+// Action: smtp_intercept_off — removes the flag, restoring the default of real delivery.
+if (($_GET['action'] ?? '') === 'smtp_intercept_off') {
+    @unlink(sys_get_temp_dir() . '/f1betting_smtp_intercept');
     echo json_encode(['ok' => true]);
     exit;
 }

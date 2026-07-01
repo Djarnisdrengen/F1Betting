@@ -1,6 +1,11 @@
 <?php
 return [
     'da' => [
+        // MFA email OTP
+        'email_otp_subject'                => 'Din loginkode: %s',
+        'email_otp_greeting'               => 'Hej %s!',
+        'email_otp_body'                   => 'Din kode er <strong>%s</strong>. Den udløber om 10 minutter.',
+        'email_otp_ignore'                 => 'Hvis du ikke forsøgte at logge ind, kan du ignorere denne e-mail.',
         // Betting window open notification
         'email_betting_open_subject'       => 'Betting åbent: %s',
         'email_betting_open_greeting'      => 'Hej %s!',
@@ -71,6 +76,11 @@ return [
         'email_regards'             => 'Venlig hilsen,<br>%s',
     ],
     'en' => [
+        // MFA email OTP
+        'email_otp_subject'                => 'Your login code: %s',
+        'email_otp_greeting'               => 'Hi %s!',
+        'email_otp_body'                   => 'Your code is <strong>%s</strong>. It expires in 10 minutes.',
+        'email_otp_ignore'                 => 'If you did not try to sign in, you can ignore this email.',
         // Betting window open notification
         'email_betting_open_subject'       => 'Betting open: %s',
         'email_betting_open_greeting'      => 'Hi %s!',
