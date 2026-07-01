@@ -17,6 +17,9 @@
 - [13. quali_p1/p2/p3 must match exact bet validation](#13-quali_p1p2p3-must-match-exact-bet-validation)
 - [14. Nightly report emails appear twice when SMTP_FROM and REPORT_TO share the same Proton account](#14-nightly-report-emails-appear-twice-when-smtp_from-and-report_to-share-the-same-proton-account)
 - [15. sync:live rewrites all user emails to @mailsac.com](#15-synclive-rewrites-all-user-emails-to-mailsaccom)
+- [16. MFA requires MFA_KEY in config, and MFA tables use the legacy latin1 collation](#16-mfa-requires-mfa_key-in-config-and-mfa-tables-use-the-legacy-latin1-collation)
+- [17. Test env sends email by default — interception is opt-in](#17-test-env-sends-email-by-default--interception-is-opt-in-e2e-turns-it-on-per-run)
+- [18. Migrations are manual per environment — the deploy schema check catches forgotten ones](#18-migrations-are-manual-per-environment--the-deploy-schema-check-catches-forgotten-ones)
 
 ---
 
@@ -176,3 +179,11 @@ On the test environment `config.test.php` sets `SMTP_INTERCEPT = true`, which ma
 - **Live**: `SMTP_INTERCEPT` is undefined, so email always sends and the toggle is hidden.
 
 `npm run test:resend` reads `RESEND_API_KEY` / `SMTP_FROM` / `REPORT_TO` from env vars if present, otherwise falls back to `config.<env>.php` (RESEND_API_KEY, SMTP_FROM_EMAIL, REPORT_TO→F1_ADMIN_EMAIL) — so it runs locally without a `build-deploy/.env`.
+
+---
+
+## 18. Migrations are manual per environment — the deploy schema check catches forgotten ones
+
+Migrations (`database/*.sql` and inline `ALTER`s in `schema.sql`) are applied by hand in phpMyAdmin on each environment. Deploy code that references a not-yet-added column and you get a runtime fatal (e.g. `Unknown column 'quali_date'`), not a deploy failure — unless the object is registered for checking.
+
+`deploy.js` guards this: after upload it POSTs `database/migrations.json` to `public/tools/schema-check.php`, which introspects the target DB. Missing objects fail the deploy (and roll back on live) with the exact migration file(s) to run. **When you add a migration, add the tables/columns it introduces to `database/migrations.json`** or the check can't see them. See `build-deploy/DEPLOYMENT.md → Schema check`.

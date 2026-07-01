@@ -113,6 +113,16 @@ node build-deploy/deploy.js live
 - `config.shared.php` (from repo root) — deployed alongside `config.php` on each target server
 - Respects exclusions listed in `build-deploy/.deployignore`
 
+## Schema check (guards against forgotten migrations)
+
+Migrations are applied manually per environment (phpMyAdmin). To stop code from going live against a DB that hasn't been migrated, every deploy runs a schema check after upload:
+
+1. `database/migrations.json` lists every table/column the code depends on, each tagged with the migration file that introduces it. **When you add a migration, add its objects here** — otherwise a forgotten manual run won't be caught.
+2. `deploy.js` POSTs that list to `public/tools/schema-check.php`, which introspects the target env's own DB and reports anything missing.
+3. If something is missing, the deploy fails and lists exactly which migration file(s) to run. On live it first rolls back to the pre-deploy backup.
+
+The endpoint is uploaded earlier in the same deploy, so the check is active immediately — including the deploy that first introduces it. If `schema-check.php` is unreachable (404), the deploy warns and continues rather than blocking on the checker itself.
+
 ## Environment Variables
 
 `build-deploy/.env` holds **FTP credentials only** (never committed to git):
