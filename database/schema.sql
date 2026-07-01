@@ -16,7 +16,57 @@ CREATE TABLE users (
     theme      ENUM('dark','light')       NULL DEFAULT NULL,
     font_stack ENUM('system','editorial') NULL DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_login DATETIME NULL
+    last_login DATETIME NULL,
+    email_otp_enabled TINYINT(1) NOT NULL DEFAULT 0
+);
+
+-- Multi-factor authentication (see database/add_mfa.sql for the migration applied to existing DBs).
+-- NOTE: user_id columns pin latin1_swedish_ci to match users.id (legacy collation) for the FK.
+CREATE TABLE user_totp (
+    user_id      VARCHAR(36)    CHARACTER SET latin1 COLLATE latin1_swedish_ci PRIMARY KEY,
+    secret_enc   VARBINARY(255) NOT NULL,
+    confirmed_at DATETIME       NULL,
+    created_at   DATETIME       DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE user_recovery_codes (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    VARCHAR(36)  CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
+    code_hash  VARCHAR(255) NOT NULL,
+    used_at    DATETIME     NULL,
+    created_at DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    KEY idx_recovery_user (user_id)
+);
+
+CREATE TABLE user_email_otp (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    VARCHAR(36)        CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
+    code_hash  VARCHAR(255)       NOT NULL,
+    purpose    ENUM('enroll','login') NOT NULL,
+    expires_at DATETIME           NOT NULL,
+    attempts   TINYINT UNSIGNED   NOT NULL DEFAULT 0,
+    used_at    DATETIME           NULL,
+    created_at DATETIME           DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    KEY idx_emailotp_user (user_id)
+);
+
+CREATE TABLE user_passkeys (
+    id            VARCHAR(36)    CHARACTER SET latin1 COLLATE latin1_swedish_ci PRIMARY KEY,
+    user_id       VARCHAR(36)    CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
+    credential_id VARBINARY(255) NOT NULL,
+    public_key    BLOB           NOT NULL,
+    sign_count    BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    transports    VARCHAR(255)   NULL,
+    friendly_name VARCHAR(100)   NULL,
+    aaguid        BINARY(16)     NULL,
+    created_at    DATETIME       DEFAULT CURRENT_TIMESTAMP,
+    last_used_at  DATETIME       NULL,
+    UNIQUE KEY uniq_credential (credential_id),
+    KEY idx_passkey_user (user_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
  

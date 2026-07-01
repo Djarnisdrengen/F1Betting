@@ -1,7 +1,13 @@
 <?php
 // Renders a single bet row inside a bets-section list.
 // Caller must have in scope: $bet, $driversById, $currentUser.
-$_bi_mine = $currentUser && $bet['user_id'] === $currentUser['id'];
+// Optional caller flags (single-race focus page, race.php):
+//   $_bi_full   — true to render the YOU tag, 3-letter driver codes, and the scored/"— pts" cell.
+//   $_bi_scored — true when the race has a result; drives the points badge vs "— pts" placeholder.
+// When the flags are unset (e.g. races.php), the row renders exactly as before.
+$_bi_mine   = $currentUser && $bet['user_id'] === $currentUser['id'];
+$_bi_full   = $_bi_full   ?? false;
+$_bi_scored = $_bi_scored ?? false;
 ?>
 <div class="bet-item <?= $bet['is_perfect'] ? 'perfect-bet' : '' ?> <?= $_bi_mine ? 'my-bet' : '' ?>">
     <div class="bet-user">
@@ -9,11 +15,18 @@ $_bi_mine = $currentUser && $bet['user_id'] === $currentUser['id'];
         <div style="flex: 1; min-width: 0;">
             <strong class="flex items-center gap-1">
                 <?= displayUserName($bet) ?>
+                <?php if ($_bi_full && $_bi_mine): ?><span class="race-you-tag"><?= t('you_badge') ?></span><?php endif; ?>
                 <?php if ($bet['is_perfect']): ?><span class="star">★</span><?php endif; ?>
             </strong>
             <small class="text-muted"><?= date('d M H:i', strtotime($bet['placed_at'])) ?></small>
         </div>
-        <?php if ($bet['points'] > 0): ?>
+        <?php if ($_bi_full): ?>
+            <?php if ($_bi_scored): ?>
+                <span class="hf-badge soon" style="flex-shrink: 0;"><?= (int) $bet['points'] ?> pts</span>
+            <?php else: ?>
+                <span class="race-pts-pending" style="flex-shrink: 0;">— pts</span>
+            <?php endif; ?>
+        <?php elseif ($bet['points'] > 0): ?>
             <span class="hf-badge soon" style="flex-shrink: 0;"><?= $bet['points'] ?> pts</span>
         <?php endif; ?>
     </div>
@@ -25,4 +38,4 @@ $_bi_mine = $currentUser && $bet['user_id'] === $currentUser['id'];
         <?php endforeach; ?>
     </div>
 </div>
-<?php unset($_bi_mine, $_bi_i, $_bi_key, $_bi_driver); ?>
+<?php unset($_bi_mine, $_bi_full, $_bi_scored, $_bi_i, $_bi_key, $_bi_driver); ?>

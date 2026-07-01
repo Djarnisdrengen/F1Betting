@@ -36,6 +36,20 @@ if ($testMode && !empty($_GET['e2e_markers'])) {
     }
 }
 
+// ============ EMAIL DELIVERY MODE (test env only) ============
+// On the test env real delivery is the default; this lets the admin switch to capture
+// (interception) for manual testing. E2E manages interception itself (on for a run, off after).
+if (isset($_POST['toggle_smtp_live']) && defined('SMTP_INTERCEPT') && SMTP_INTERCEPT) {
+    require_once __DIR__ . '/includes/smtp.php';
+    if (emailIntercepted()) {
+        @unlink(smtpInterceptFlagPath());                  // back to real delivery (default)
+    } else {
+        file_put_contents(smtpInterceptFlagPath(), '1');   // switch to capture
+    }
+    header('Location: admin.php?tab=settings');
+    exit;
+}
+
 // ============ DRIVERS ============
 if (isset($_POST['add_driver'])) {
     $name = sanitizeString($_POST['driver_name'] ?? '');

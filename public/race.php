@@ -89,7 +89,7 @@ include __DIR__ . '/includes/header.php';
                 <div class="hf-racemeta" style="margin-bottom:0.25rem;font-size:0.8rem;">
                     <?= t('round') ?> <?= $round ?> <?= t('of') ?> <?= $totalRounds ?>
                 </div>
-                <div class="hf-racename" style="font-size:1.35rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                <div class="hf-racename race-title" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
                     <?= escape($race['name']) ?>
                     <?php if ($race['bettingpool_won']): ?>
                         <span class="hf-badge open">★ <?= t('pool_won') ?></span>
@@ -173,40 +173,45 @@ include __DIR__ . '/includes/header.php';
 
         </div>
 
-        <!-- Qualifying result or pending placeholder -->
-        <div style="margin-top:1rem;">
-            <?php if ($race['quali_p1']): ?>
-                <?php
-                $_qd_data  = $race;
-                $_qd_keys  = ['quali_p1', 'quali_p2', 'quali_p3'];
-                $_qd_label = t('qualifying');
-                $_qd_style = 'background: var(--bg-secondary); padding: 0.75rem 0.875rem; border-radius: 8px;';
-                include __DIR__ . '/includes/qualifying-display.php';
-                ?>
-            <?php else: ?>
-                <div class="result-pending">
-                    <i class="fas fa-lock" style="flex-shrink:0;"></i>
-                    <span><?= t('qualifying') ?>: <?= t('result_after_quali') ?></span>
-                </div>
-            <?php endif; ?>
-        </div>
+        <!-- Qualifying + race results (two-column at >=1024px, stacked below) -->
+        <div class="race-results-two" style="margin-top:1rem;">
 
-        <!-- Race result or pending placeholder -->
-        <div style="margin-top:0.75rem;">
-            <?php if ($race['result_p1']): ?>
-                <?php
-                $_qd_data  = $race;
-                $_qd_keys  = ['result_p1', 'result_p2', 'result_p3'];
-                $_qd_label = t('result');
-                $_qd_style = 'background: var(--bg-secondary); padding: 0.75rem 0.875rem; border-radius: 8px;';
-                include __DIR__ . '/includes/qualifying-display.php';
-                ?>
-            <?php else: ?>
-                <div class="result-pending">
-                    <i class="fas fa-lock" style="flex-shrink:0;"></i>
-                    <span><?= t('result') ?>: <?= t('result_after_race') ?></span>
-                </div>
-            <?php endif; ?>
+            <!-- Qualifying result or pending placeholder -->
+            <div>
+                <?php if ($race['quali_p1']): ?>
+                    <?php
+                    $_qd_data  = $race;
+                    $_qd_keys  = ['quali_p1', 'quali_p2', 'quali_p3'];
+                    $_qd_label = t('qualifying');
+                    $_qd_style = 'background: var(--bg-secondary); padding: 0.75rem 0.875rem; border-radius: 8px;';
+                    include __DIR__ . '/includes/qualifying-display.php';
+                    ?>
+                <?php else: ?>
+                    <div class="result-pending">
+                        <i class="fas fa-lock" style="flex-shrink:0;"></i>
+                        <span><?= t('qualifying') ?>: <?= t('result_after_quali') ?></span>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Race result or pending placeholder -->
+            <div>
+                <?php if ($race['result_p1']): ?>
+                    <?php
+                    $_qd_data  = $race;
+                    $_qd_keys  = ['result_p1', 'result_p2', 'result_p3'];
+                    $_qd_label = t('result');
+                    $_qd_style = 'background: var(--bg-secondary); padding: 0.75rem 0.875rem; border-radius: 8px;';
+                    include __DIR__ . '/includes/qualifying-display.php';
+                    ?>
+                <?php else: ?>
+                    <div class="result-pending">
+                        <i class="fas fa-lock" style="flex-shrink:0;"></i>
+                        <span><?= t('result') ?>: <?= t('result_after_race') ?></span>
+                    </div>
+                <?php endif; ?>
+            </div>
+
         </div>
 
     </div>
@@ -227,7 +232,7 @@ include __DIR__ . '/includes/header.php';
     <?php endif; ?>
 
     <!-- Bets section — always visible -->
-    <div class="bets-section">
+    <div class="bets-section race-bets">
         <div class="hf-section-h" style="margin-bottom:0.75rem;">
             <h2><?= t('all_bets') ?> (<?= count($raceBets) ?>)</h2>
             <?php if ($race['result_p1']): ?>
@@ -239,6 +244,7 @@ include __DIR__ . '/includes/header.php';
             <div class="bets-empty"><?= t('no_bets') ?></div>
         <?php else: ?>
             <?php foreach ($raceBets as $bet): ?>
+                <?php $_bi_full = true; $_bi_scored = (bool) $race['result_p1']; ?>
                 <?php include __DIR__ . '/includes/bet-item.php'; ?>
             <?php endforeach; ?>
         <?php endif; ?>

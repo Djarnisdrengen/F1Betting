@@ -23,6 +23,7 @@ Formula 1 prediction game. Players pick top-3 podium finishers before each race.
 | Deploy to test + run tests | `npm run deploy:test` |
 | Deploy to live (smoke only) | `npm run deploy:live` |
 | Copy live DB → test DB | `npm run sync:live` |
+| Check DB schema is migrated | `npm run schema:check` / `schema:check:live` |
 | Run all tests | `npm run test:all` |
 | Smoke tests only | `npm run test:smoke` |
 | E2E tests on test env | `npm run test:e2e:test` |

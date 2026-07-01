@@ -336,12 +336,26 @@ function convertToEmailUrl($link) {
     return $link;
 }
 
+// On an interception-capable environment (SMTP_INTERCEPT) real delivery is the DEFAULT.
+// Interception is opt-in: it is active only while this flag file is present. E2E turns it
+// on for the duration of a run (global-setup) and off at the end (global-teardown); the admin
+// panel toggles it for manual capture. Toggled via test-seed smtp_intercept_on/off actions.
+function smtpInterceptFlagPath(): string {
+    return sys_get_temp_dir() . '/f1betting_smtp_intercept';
+}
+
+// True when this environment is capturing emails instead of delivering them
+// (i.e. SMTP_INTERCEPT is on AND the intercept flag is present).
+function emailIntercepted(): bool {
+    return defined('SMTP_INTERCEPT') && SMTP_INTERCEPT && file_exists(smtpInterceptFlagPath());
+}
+
 /**
  * Send email using configured SMTP
  */
 function sendEmail($to, $subject, $htmlContent, $textContent = null) {
     // In test mode, write to JSONL file instead of sending real email.
-    if (defined('SMTP_INTERCEPT') && SMTP_INTERCEPT && !file_exists(sys_get_temp_dir() . '/f1betting_smtp_live')) {
+    if (emailIntercepted()) {
         $fromEmail = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : '';
         $fromName  = defined('SMTP_FROM_NAME')  ? SMTP_FROM_NAME  : '';
         $entry = json_encode([

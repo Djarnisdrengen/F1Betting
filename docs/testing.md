@@ -87,9 +87,9 @@ npm run test:e2e:live     # 01-smoke.spec.js only, against live
 
 Config: `tests/playwright.config.js`. Screenshots on failure: `build-deploy/screenshots/`.
 
-**Email interception** — all E2E tests run with `SMTP_INTERCEPT=true` (set in `config.test.php`). Emails are captured to `/tmp/f1betting_test_emails.jsonl` on the test server instead of being sent via SMTP. Tests read them back via `test-seed.php?action=get_test_emails`. No real emails are ever sent during the test suite.
+**Email interception** — real delivery is the default on the test env; interception is opt-in. `tests/global-setup.js` turns it on for the duration of the run (`test-seed.php?action=smtp_intercept_on`, creating `/tmp/f1betting_smtp_intercept`) so emails are captured to `/tmp/f1betting_test_emails.jsonl` and read back via `test-seed.php?action=get_test_emails`; `tests/global-teardown.js` turns it off (`smtp_intercept_off`) at the end. No real emails are sent while the suite runs.
 
-To enable real SMTP temporarily during manual testing (e.g., verifying the Proton → Resend chain): SSH into the test server and `touch /tmp/f1betting_smtp_live`. Remove it when done.
+For manual testing, email sends for real by default. To capture instead, flip **Admin → Settings → Email delivery** to "Switch to capture" (or `touch /tmp/f1betting_smtp_intercept` on the server; remove it to resume sending).
 
 **On test:** all `tests/e2e/**/*.spec.js` and `tests/e2e/admin/**/*.spec.js` files matching the numbered glob are run.
 **On live:** `01-smoke.spec.js` only.
@@ -402,9 +402,10 @@ states. Seeds one **open** race (with qualifying timing) and one **completed** r
 via `seed.racePage()` / `seed.cleanup.racePage()`. Manages its own anon + logged-in contexts (the
 logged-in user is the in-competition account returned by the seed).
 
-Open race: `race_date` +2h, `quali_date` +1h, no results, pool 250.
+Open race: `race_date` +2h, `quali_date` +1h, no results, pool 250, **two unscored bets**.
 Completed race: qualifying + race results set, dates in the past, pool 300 (`bettingpool_won`), with a
-perfect bet (30 pts) and a non-perfect bet (8 pts).
+perfect bet (30 pts), a non-perfect bet (8 pts), and the **login user's own 0-pt scored bet** (P1 uses
+an accented-surname driver, "Hülkenberg").
 
 | Test | Asserts |
 |---|---|
@@ -417,10 +418,16 @@ perfect bet (30 pts) and a non-perfect bet (8 pts).
 | Completed — countdowns done | Two `.countdown-timer.done`, zero `[data-target]` |
 | Completed — results | Zero `.result-pending`, six `.position-badge`, two `.quali-row` |
 | Completed — pool won | `.hf-racename .hf-badge` (pool-won) in title |
-| Completed — bets scored/sorted | Two `.bet-item`; highest-points perfect bet sorts first with `.perfect-bet` + `★` + `30` pts badge |
+| Completed — bets scored/sorted | Three `.bet-item`; highest-points perfect bet sorts first with `.perfect-bet` + `★` + `30` pts badge |
+| **v2.4.0** Surname chips | Done-race chips show full surnames (Hamilton/Verstappen/Leclerc); accented "Hülkenberg" renders intact |
+| **v2.4.0** YOU tag / "— pts" negatives | Logged-out done race: zero `.race-you-tag`, zero `.race-pts-pending` (scored) |
+| **v2.4.0** Own bet (logged in) | `.bet-item.my-bet` has `.race-you-tag` + a **"0 pts"** badge (scored 0-pt → badge, not `— pts`) |
+| **v2.4.0** Unscored bets | Open race: two `.race-pts-pending` ("— pts"), zero `.hf-badge.soon` points badges |
+| **v2.4.0** Two-column results | At 1280px the two `.race-results-two` children share y (±2px) / differ in x; at 375px they stack |
+| **v2.4.0** `races.php` regression | `races.php` has zero `.race-you-tag` / `.race-pts-pending`, surname chips intact (flag-gated, no leak) |
 
 **Test-seed actions used:** `seed_race_page` / `cleanup_race_page` (creates races *E2E Race Page Open*
-and *E2E Race Page Done* plus 3 in-competition users).
+and *E2E Race Page Done*, 3 in-competition users, and the accented-surname driver).
 
 ---
 

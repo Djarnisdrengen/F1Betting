@@ -183,6 +183,17 @@ if (($_GET['action'] ?? '') === 'seed_race_page') {
     }
     [$hamId, $verId, $lecId] = [$driverIds['p1'], $driverIds['p2'], $driverIds['p3']];
 
+    // Accented-surname driver for the multibyte driverCode() check ("Hülkenberg" → "HÜL")
+    $stmt = $db->prepare("SELECT id FROM drivers WHERE name = ?");
+    $stmt->execute(['Nico Hülkenberg']);
+    $row   = $stmt->fetch();
+    $hulId = $row ? $row['id'] : seed_uuid();
+    if (!$row) {
+        $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, 'Nico Hülkenberg', 'Haas', 27)")
+           ->execute([$hulId]);
+    }
+    $driverIds['hul'] = $hulId;
+
     // In-competition users
     $hash    = hashPassword('E2ERacePagePassword2026!');
     $userIds = [];
@@ -209,6 +220,13 @@ if (($_GET['action'] ?? '') === 'seed_race_page') {
     $db->prepare("INSERT INTO races (id, name, location, race_date, race_time, quali_date, quali_time, bettingpool_size) VALUES (?, 'E2E Race Page Open', 'Monaco', ?, ?, ?, ?, 250)")
        ->execute([$openId, $raceDate, $raceTime, $qualiDate, $qualiTime]);
 
+    // Unscored bets on the open race → drive "— pts" + driver-code chips before scoring.
+    // (The login user has NO bet here, so the logged-in place-bet CTA still appears.)
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userIds['perfect'], $openId, $hamId, $verId, $lecId]);
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userIds['other'], $openId, $verId, $hamId, $lecId]);
+
     // Done race — qualifying + race results set, dates in the past, pool 300, pool won
     $doneId      = seed_uuid();
     $doneRaceDt  = (new DateTime('-2 days'))->format('Y-m-d');
@@ -221,6 +239,10 @@ if (($_GET['action'] ?? '') === 'seed_race_page') {
        ->execute([seed_uuid(), $userIds['perfect'], $doneId, $hamId, $verId, $lecId]);
     $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 8, 0)")
        ->execute([seed_uuid(), $userIds['other'], $doneId, $verId, $hamId, $lecId]);
+    // Login user's own bet on the done race: 0 points but SCORED → must show "0 pts" (not "— pts"),
+    // and P1 uses the accented driver to verify the multibyte driverCode() ("HÜL").
+    $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+       ->execute([seed_uuid(), $userIds['login'], $doneId, $hulId, $lecId, $verId]);
 
     echo json_encode([
         'ok'         => true,
@@ -1004,16 +1026,16 @@ if (($_GET['action'] ?? '') === 'cleanup_score_race') {
     exit;
 }
 
-// Action: smtp_live_on — creates flag file so PHP sends real SMTP even when SMTP_INTERCEPT=true.
-if (($_GET['action'] ?? '') === 'smtp_live_on') {
-    file_put_contents(sys_get_temp_dir() . '/f1betting_smtp_live', '1');
+// Action: smtp_intercept_on — captures email instead of sending (E2E turns this on for a run).
+if (($_GET['action'] ?? '') === 'smtp_intercept_on') {
+    file_put_contents(sys_get_temp_dir() . '/f1betting_smtp_intercept', '1');
     echo json_encode(['ok' => true]);
     exit;
 }
 
-// Action: smtp_live_off — removes the flag file, restoring intercept mode.
-if (($_GET['action'] ?? '') === 'smtp_live_off') {
-    @unlink(sys_get_temp_dir() . '/f1betting_smtp_live');
+// Action: smtp_intercept_off — removes the flag, restoring the default of real delivery.
+if (($_GET['action'] ?? '') === 'smtp_intercept_off') {
+    @unlink(sys_get_temp_dir() . '/f1betting_smtp_intercept');
     echo json_encode(['ok' => true]);
     exit;
 }

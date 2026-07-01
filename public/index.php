@@ -285,7 +285,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                             }
                         }
                     ?>
-                        <div class="hf-racecard" id="race-<?= $race['id'] ?>">
+                        <div class="hf-racecard clickable-card" id="race-<?= $race['id'] ?>" data-href="race.php?id=<?= escape($race['id']) ?>">
                             <div>
                                 <div class="hf-racename"><a href="race.php?id=<?= escape($race['id']) ?>" style="color:inherit;text-decoration:none;"><?= escape($race['name']) ?></a></div>
                                 <div class="hf-racemeta"><?= escape($race['location']) ?> · <?= formatRaceDateTime($race['race_date'], $race['race_time']) ?></div>
@@ -324,7 +324,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                     <a href="races.php?tab=completed"><?= t('see_all') ?></a>
                 </div>
                 <?php foreach ($recentResults as $race): ?>
-                    <div class="hf-racecard">
+                    <div class="hf-racecard clickable-card" data-href="race.php?id=<?= escape($race['id']) ?>">
                         <div>
                             <div class="hf-racename"><a href="race.php?id=<?= escape($race['id']) ?>" style="color:inherit;text-decoration:none;"><?= escape($race['name']) ?></a></div>
                             <div class="hf-racemeta">

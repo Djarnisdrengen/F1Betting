@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/mfa.php';
 
 requireLogin();
 
@@ -59,7 +60,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['flash_success'] = t('preferences_updated');
         header('Location: profile.php?tab=tab-preferences');
         exit;
+
+    } elseif ($action === 'totp_begin') {
+        // Start (or restart) authenticator enrollment — stores an unconfirmed sealed secret.
+        totpBegin($db, $currentUser['id']);
+        header('Location: profile.php?tab=tab-security');
+        exit;
+
+    } elseif ($action === 'totp_confirm') {
+        if (totpConfirm($db, $currentUser['id'], $_POST['code'] ?? '')) {
+            $codes = ensureRecoveryCodes($db, $currentUser['id']); // first factor → show recovery codes once
+            if ($codes) $_SESSION['flash_recovery_codes'] = $codes;
+            $_SESSION['flash_success'] = t('totp_enabled');
+        } else {
+            $_SESSION['flash_error'] = t('mfa_invalid_code');
+        }
+        header('Location: profile.php?tab=tab-security');
+        exit;
+
+    } elseif ($action === 'totp_cancel') {
+        // Abandon an in-progress enrollment — no re-auth (nothing was activated).
+        totpCancelPending($db, $currentUser['id']);
+        header('Location: profile.php?tab=tab-security');
+        exit;
+
+    } elseif ($action === 'totp_disable') {
+        if (!mfaReauth($db, $currentUser['id'], $_POST['current_password'] ?? '')) {
+            $_SESSION['flash_error'] = t('mfa_reauth_required');
+        } else {
+            totpDisable($db, $currentUser['id']);
+            $_SESSION['flash_success'] = t('totp_disabled');
+        }
+        header('Location: profile.php?tab=tab-security');
+        exit;
+
+    } elseif ($action === 'recovery_regen') {
+        if (!mfaReauth($db, $currentUser['id'], $_POST['current_password'] ?? '')) {
+            $_SESSION['flash_error'] = t('mfa_reauth_required');
+        } else {
+            $codes = genRecoveryCodes();
+            storeRecoveryCodes($db, $currentUser['id'], $codes);
+            $_SESSION['flash_recovery_codes'] = $codes;
+            $_SESSION['flash_success'] = t('recovery_codes');
+        }
+        header('Location: profile.php?tab=tab-security');
+        exit;
+
+    } elseif ($action === 'emailotp_begin') {
+        // Email the member a confirmation code and show the confirm field.
+        try { issueEmailOtp($db, $currentUser['id'], 'enroll'); } catch (Exception $e) {}
+        $_SESSION['flash_emailotp_enrolling'] = true;
+        header('Location: profile.php?tab=tab-security');
+        exit;
+
+    } elseif ($action === 'emailotp_confirm') {
+        if (verifyEmailOtp($db, $currentUser['id'], $_POST['code'] ?? '', 'enroll')) {
+            setEmailOtpEnabled($db, $currentUser['id'], true);
+            $codes = ensureRecoveryCodes($db, $currentUser['id']);
+            if ($codes) $_SESSION['flash_recovery_codes'] = $codes;
+            $_SESSION['flash_success'] = t('email_otp_enabled');
+        } else {
+            $_SESSION['flash_error'] = t('mfa_invalid_code');
+            $_SESSION['flash_emailotp_enrolling'] = true;
+        }
+        header('Location: profile.php?tab=tab-security');
+        exit;
+
+    } elseif ($action === 'emailotp_cancel') {
+        // Abandon email-OTP enrollment: invalidate any pending enroll code and drop the enrolling view.
+        $db->prepare("UPDATE user_email_otp SET used_at = NOW() WHERE user_id = ? AND purpose = 'enroll' AND used_at IS NULL")
+           ->execute([$currentUser['id']]);
+        header('Location: profile.php?tab=tab-security');
+        exit;
+
+    } elseif ($action === 'emailotp_disable') {
+        if (!mfaReauth($db, $currentUser['id'], $_POST['current_password'] ?? '')) {
+            $_SESSION['flash_error'] = t('mfa_reauth_required');
+        } else {
+            setEmailOtpEnabled($db, $currentUser['id'], false);
+            $_SESSION['flash_success'] = t('email_otp_disabled');
+        }
+        header('Location: profile.php?tab=tab-security');
+        exit;
     }
+}
+
+// Verifies the member's current password — gate for disabling factors / regenerating codes.
+function mfaReauth(PDO $db, string $uid, string $password): bool {
+    $st = $db->prepare("SELECT password FROM users WHERE id = ?");
+    $st->execute([$uid]);
+    $hash = $st->fetchColumn();
+    return $hash !== false && verifyPassword($password, $hash);
 }
 
 // Bet history
@@ -77,6 +168,28 @@ $betHistory = $db->prepare("
 ");
 $betHistory->execute([$currentUser['id']]);
 $betHistory = $betHistory->fetchAll();
+
+// ── MFA state for the Security tab ──────────────────────────────────────────
+$totpIsActive  = totpActive($db, $currentUser['id']);
+$emailOtpIsOn  = emailOtpActive($db, $currentUser['id']);
+$recoveryCount = countRecoveryCodes($db, $currentUser['id']);
+
+// Pending (unconfirmed) authenticator enrollment → drives the QR / confirm view.
+$totpEnrollSecret = null;
+if (!$totpIsActive) {
+    $st = $db->prepare("SELECT secret_enc FROM user_totp WHERE user_id = ? AND confirmed_at IS NULL");
+    $st->execute([$currentUser['id']]);
+    $blob = $st->fetchColumn();
+    if ($blob !== false) $totpEnrollSecret = mfaOpen($blob);
+}
+$totpOtpauthUri = $totpEnrollSecret
+    ? totpUri($totpEnrollSecret, $currentUser['email'], getSettings()['app_title'] ?? 'Paddock Picks')
+    : '';
+
+// One-time displays carried across the PRG redirect.
+$flashRecoveryCodes = $_SESSION['flash_recovery_codes'] ?? null;
+$emailOtpEnrolling  = !empty($_SESSION['flash_emailotp_enrolling']);
+unset($_SESSION['flash_recovery_codes'], $_SESSION['flash_emailotp_enrolling']);
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -165,6 +278,142 @@ include __DIR__ . '/includes/header.php';
                             </form>
                         </div>
                     </div>
+
+                    <!-- Two-factor login -->
+                    <div class="card" style="margin-top:16px;" data-testid="mfa-card">
+                        <div class="card-body">
+                            <h3 style="margin-bottom:16px;"><i class="fas fa-shield-halved text-accent"></i> <?= t('two_factor') ?></h3>
+
+                            <?php if ($flashRecoveryCodes): ?>
+                                <!-- Persistent reveal (NOT .alert — app.js auto-hides alerts). Shown once; copy/download before dismissing. -->
+                                <div class="hf-recovery-reveal mb-3" data-testid="recovery-codes" style="border:1px solid var(--f1-red-light);border-radius:10px;padding:14px;">
+                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                                        <strong><?= t('recovery_codes') ?></strong>
+                                        <div style="display:flex;gap:8px;">
+                                            <button type="button" class="btn btn-secondary" data-recovery-copy data-testid="recovery-copy-btn"><i class="fas fa-copy"></i> <?= t('copy') ?></button>
+                                            <button type="button" class="btn btn-secondary" data-recovery-download><i class="fas fa-download"></i> <?= t('download') ?></button>
+                                            <span data-recovery-copied hidden style="align-self:center;color:var(--success,#3fb950);font-size:13px;"><?= t('copied') ?></span>
+                                        </div>
+                                    </div>
+                                    <p style="margin:6px 0;font-size:13px;"><?= t('recovery_codes_intro') ?></p>
+                                    <pre data-recovery-codes style="font-family:var(--font-mono,monospace);font-size:15px;line-height:1.8;margin:8px 0;"><?php foreach ($flashRecoveryCodes as $rc) { echo escape($rc) . "\n"; } ?></pre>
+                                    <button type="button" class="btn btn-primary" data-recovery-dismiss data-testid="recovery-dismiss-btn"><?= t('recovery_saved') ?></button>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- Authenticator app (TOTP) -->
+                            <div style="padding:12px 0;border-bottom:1px solid var(--border,#2a2a2a);">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                    <div>
+                                        <div style="font-weight:600;"><?= t('totp_app') ?></div>
+                                        <div class="text-muted" style="font-size:13px;" data-testid="totp-status">
+                                            <?= $totpIsActive ? t('totp_active') : t('totp_inactive') ?>
+                                        </div>
+                                    </div>
+                                    <?php if ($totpIsActive): ?>
+                                        <form method="POST" onsubmit="return !!this.current_password.value;">
+                                            <?= csrfField() ?>
+                                            <input type="hidden" name="action" value="totp_disable">
+                                            <input type="password" name="current_password" class="form-input" style="max-width:160px;display:inline-block;" placeholder="<?= t('current_password') ?>" autocomplete="current-password" required>
+                                            <button type="submit" class="btn btn-secondary" data-testid="totp-disable-btn"><?= t('disable') ?></button>
+                                        </form>
+                                    <?php elseif (!$totpEnrollSecret): ?>
+                                        <form method="POST">
+                                            <?= csrfField() ?>
+                                            <input type="hidden" name="action" value="totp_begin">
+                                            <button type="submit" class="btn btn-primary" data-testid="totp-setup-btn"><?= t('totp_setup') ?></button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
+
+                                <?php if (!$totpIsActive && $totpEnrollSecret): ?>
+                                    <div style="margin-top:14px;" data-testid="totp-enroll">
+                                        <p style="font-size:13px;margin:0 0 6px;"><?= t('totp_scan') ?></p>
+                                        <!-- QR image is a progressive enhancement (renders client-side from data-otpauth);
+                                             the otpauth link and manual key below work without it. -->
+                                        <div class="hf-qr" data-otpauth="<?= escape($totpOtpauthUri) ?>" style="margin:8px 0;"></div>
+                                        <a href="<?= escape($totpOtpauthUri) ?>" class="text-accent" style="font-size:13px;word-break:break-all;">otpauth://…</a>
+                                        <p style="font-size:13px;margin:8px 0 4px;"><?= t('totp_manual_key') ?></p>
+                                        <code data-testid="totp-secret" style="display:inline-block;letter-spacing:2px;font-size:15px;padding:6px 10px;background:var(--surface,#1a1a1a);border-radius:6px;"><?= escape(chunk_split($totpEnrollSecret, 4, ' ')) ?></code>
+                                        <form method="POST" style="margin-top:12px;display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+                                            <?= csrfField() ?>
+                                            <input type="hidden" name="action" value="totp_confirm">
+                                            <div class="form-group" style="margin:0;">
+                                                <label class="form-label"><?= t('totp_enter_code') ?></label>
+                                                <input type="text" name="code" class="form-input" inputmode="numeric" pattern="\d{6}" maxlength="6" required placeholder="123456" data-testid="totp-confirm-input">
+                                            </div>
+                                            <button type="submit" class="btn btn-primary" data-testid="totp-confirm-btn"><?= t('totp_confirm') ?></button>
+                                        </form>
+                                        <form method="POST" style="margin-top:8px;">
+                                            <?= csrfField() ?>
+                                            <input type="hidden" name="action" value="totp_cancel">
+                                            <button type="submit" class="btn btn-secondary" data-testid="totp-cancel-btn"><?= t('cancel') ?></button>
+                                        </form>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Email code (OTP) -->
+                            <div style="padding:12px 0;border-bottom:1px solid var(--border,#2a2a2a);">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                    <div>
+                                        <div style="font-weight:600;"><?= t('email_otp') ?></div>
+                                        <div class="text-muted" style="font-size:13px;" data-testid="emailotp-status">
+                                            <?= $emailOtpIsOn ? t('totp_active') : t('totp_inactive') ?>
+                                        </div>
+                                    </div>
+                                    <?php if ($emailOtpIsOn): ?>
+                                        <form method="POST" onsubmit="return !!this.current_password.value;">
+                                            <?= csrfField() ?>
+                                            <input type="hidden" name="action" value="emailotp_disable">
+                                            <input type="password" name="current_password" class="form-input" style="max-width:160px;display:inline-block;" placeholder="<?= t('current_password') ?>" autocomplete="current-password" required>
+                                            <button type="submit" class="btn btn-secondary" data-testid="emailotp-disable-btn"><?= t('disable') ?></button>
+                                        </form>
+                                    <?php elseif (!$emailOtpEnrolling): ?>
+                                        <form method="POST">
+                                            <?= csrfField() ?>
+                                            <input type="hidden" name="action" value="emailotp_begin">
+                                            <button type="submit" class="btn btn-primary" data-testid="emailotp-setup-btn"><?= t('email_otp_send') ?></button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if (!$emailOtpIsOn && $emailOtpEnrolling): ?>
+                                    <form method="POST" style="margin-top:12px;display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;" data-testid="emailotp-enroll">
+                                        <?= csrfField() ?>
+                                        <input type="hidden" name="action" value="emailotp_confirm">
+                                        <div class="form-group" style="margin:0;">
+                                            <label class="form-label"><?= t('totp_enter_code') ?></label>
+                                            <input type="text" name="code" class="form-input" inputmode="numeric" pattern="\d{6}" maxlength="6" required placeholder="123456" data-testid="emailotp-confirm-input">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" data-testid="emailotp-confirm-btn"><?= t('totp_confirm') ?></button>
+                                    </form>
+                                    <form method="POST" style="margin-top:8px;">
+                                        <?= csrfField() ?>
+                                        <input type="hidden" name="action" value="emailotp_cancel">
+                                        <button type="submit" class="btn btn-secondary" data-testid="emailotp-cancel-btn"><?= t('cancel') ?></button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Recovery codes -->
+                            <?php if ($totpIsActive || $emailOtpIsOn): ?>
+                            <div style="padding:12px 0;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                    <div>
+                                        <div style="font-weight:600;"><?= t('recovery_codes') ?></div>
+                                        <div class="text-muted" style="font-size:13px;"><?= $recoveryCount ?></div>
+                                    </div>
+                                    <form method="POST" onsubmit="return !!this.current_password.value;">
+                                        <?= csrfField() ?>
+                                        <input type="hidden" name="action" value="recovery_regen">
+                                        <input type="password" name="current_password" class="form-input" style="max-width:160px;display:inline-block;" placeholder="<?= t('current_password') ?>" autocomplete="current-password" required>
+                                        <button type="submit" class="btn btn-secondary" data-testid="recovery-regen-btn"><?= t('recovery_regenerate') ?></button>
+                                    </form>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Preferences tab -->
@@ -249,5 +498,8 @@ include __DIR__ . '/includes/header.php';
 
     </div>
 </div>
+
+<script nonce="<?= $nonce ?>" src="assets/js/qrcode.min.js"></script>
+<script nonce="<?= $nonce ?>" src="assets/js/mfa.js"></script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

@@ -21,7 +21,14 @@ const AUTH_FILE = path.join(__dirname, '../.auth/admin.json');
 module.exports = async function globalSetup() {
     if (env !== 'live') {
         await purgeInbox();
-        console.log('[setup] Intercepted email log cleared');
+        // Real delivery is the default on the test env; turn interception ON for the duration
+        // of this run so specs capture email instead of sending it. global-teardown turns it off.
+        try {
+            const url = `${process.env.BASE_URL}/tools/test-seed.php`
+                + `?token=${encodeURIComponent(process.env.INTEGRATION_SEED_TOKEN)}&action=smtp_intercept_on`;
+            await fetch(url);
+        } catch { /* best-effort */ }
+        console.log('[setup] Intercepted email log cleared, interception enabled for the run');
     }
 
     fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true });

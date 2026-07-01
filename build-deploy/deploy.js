@@ -9,6 +9,7 @@ const { backup, pruneBackups } = require("./backup");
 const { rollback } = require("./rollback");
 const { runSmoke } = require("../tests/smoke");
 const { readPhpConfig } = require("./php-config");
+const { checkSchema } = require("./schema-check");
 
 function loadIgnores(isLive) {
     const parse = file => fs.existsSync(file)
@@ -124,11 +125,13 @@ async function deploy() {
         client.close();
     }
 
-    const testsOk = await runTests(baseUrl, env);
+    const schemaOk = await checkSchema(baseUrl, phpCfg.integrationSeedToken);
+    const testsOk = schemaOk && await runTests(baseUrl, env);
 
     if (!testsOk) {
         if (isLive && backupInfo) {
-            console.log(`\n❌ Tests failed — rolling back to backup ${backupInfo.timestamp}...`);
+            const reason = schemaOk ? "Tests failed" : "DB schema behind code";
+            console.log(`\n❌ ${reason} — rolling back to backup ${backupInfo.timestamp}...`);
             await rollback(backupInfo.backupDir);
         }
         console.log(`\n❌ Deploy to ${env.toUpperCase()} failed — fix and redeploy.`);

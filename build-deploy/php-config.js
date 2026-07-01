@@ -22,6 +22,8 @@ function readPhpConfig(env) {
         mailsacApiKey:        str("MAILSAC_API_KEY"),
         mailsacInbox:         str("MAILSAC_INBOX"),
         smtpFromEmail:        str("SMTP_FROM_EMAIL"),
+        resendApiKey:         str("RESEND_API_KEY"),
+        reportTo:             str("REPORT_TO"),
     };
 }
 
