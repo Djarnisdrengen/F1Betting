@@ -10,6 +10,15 @@
 | `npm run deploy:live` | Uploads all files from `public/` to **formula-1.dk** via FTP. Requires typing `YES` at the confirmation prompt. Before uploading, creates a timestamped backup of the current live site. After upload, runs smoke tests + Playwright E2E tests. If either fails, automatically rolls back to the backup. Test-only files are excluded via `.deployignore.live`. |
 | `npm run setup:deploy` | One-time interactive setup that writes FTP credentials into `build-deploy/.env`. Run this when setting up the project on a new machine. |
 
+### Schema check
+
+| Command | What it does |
+|---|---|
+| `npm run schema:check` | Checks the **test** DB has every table/column in `database/migrations.json`, via the `tools/schema-check.php` endpoint. Read-only, no deploy. Exits non-zero and lists the migration file(s) to run if anything is missing. |
+| `npm run schema:check:live` | Same, against the **live** DB. Handy before a deploy to confirm live has been migrated. |
+
+Deploys run this check automatically after upload (see [Schema check](#schema-check-guards-against-forgotten-migrations) below).
+
 ### Sync & Restore
 
 | Command | What it does |
@@ -118,10 +127,10 @@ node build-deploy/deploy.js live
 Migrations are applied manually per environment (phpMyAdmin). To stop code from going live against a DB that hasn't been migrated, every deploy runs a schema check after upload:
 
 1. `database/migrations.json` lists every table/column the code depends on, each tagged with the migration file that introduces it. **When you add a migration, add its objects here** — otherwise a forgotten manual run won't be caught.
-2. `deploy.js` POSTs that list to `public/tools/schema-check.php`, which introspects the target env's own DB and reports anything missing.
+2. `build-deploy/schema-check.js` POSTs that list to `public/tools/schema-check.php`, which introspects the target env's own DB and reports anything missing. `deploy.js` calls this after upload; the same module powers the standalone `npm run schema:check` / `schema:check:live` commands.
 3. If something is missing, the deploy fails and lists exactly which migration file(s) to run. On live it first rolls back to the pre-deploy backup.
 
-The endpoint is uploaded earlier in the same deploy, so the check is active immediately — including the deploy that first introduces it. If `schema-check.php` is unreachable (404), the deploy warns and continues rather than blocking on the checker itself.
+Run `npm run schema:check:live` **before** a deploy to confirm live has been migrated (read-only, no upload). During a deploy the endpoint is uploaded earlier in the same run, so the check is active immediately — including the deploy that first introduces it. If `schema-check.php` is unreachable (404), the deploy warns and continues rather than blocking on the checker itself.
 
 ## Environment Variables
 

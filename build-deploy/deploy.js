@@ -9,6 +9,7 @@ const { backup, pruneBackups } = require("./backup");
 const { rollback } = require("./rollback");
 const { runSmoke } = require("../tests/smoke");
 const { readPhpConfig } = require("./php-config");
+const { checkSchema } = require("./schema-check");
 
 function loadIgnores(isLive) {
     const parse = file => fs.existsSync(file)
@@ -41,76 +42,6 @@ async function uploadDir(client, localDir, remoteDir, ignores) {
             await client.uploadFrom(localPath, remotePath);
         }
     }
-}
-
-// Verify the target DB has every schema object the deployed code needs.
-// The required objects live in database/migrations.json (not deployed), so we
-// POST them to the server-side checker, which introspects that env's own DB.
-// Returns true if the DB is up to date (or the checker isn't deployed yet).
-async function checkSchema(baseUrl, token) {
-    if (!token) {
-        console.warn("⚠️  INTEGRATION_SEED_TOKEN missing — skipping schema check.");
-        return true;
-    }
-
-    let objects;
-    try {
-        const manifest = JSON.parse(
-            fs.readFileSync(path.join(__dirname, "../database/migrations.json"), "utf8")
-        );
-        objects = manifest.objects;
-    } catch (err) {
-        console.error("❌ Could not read database/migrations.json:", err.message);
-        return false;
-    }
-
-    console.log("🔎 Checking DB schema is up to date...");
-    let res;
-    try {
-        res = await fetch(`${baseUrl}/tools/schema-check.php?token=${token}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ objects }),
-        });
-    } catch (err) {
-        console.error("❌ Schema check request failed:", err.message);
-        return false;
-    }
-
-    // Graceful fallback: the endpoint is uploaded earlier in this same deploy, so
-    // it should be present. A 404 means something is off (excluded from upload,
-    // wrong path) — warn rather than block the deploy on the checker itself.
-    if (res.status === 404) {
-        console.warn("⚠️  schema-check.php not reachable (404) — skipping schema check.");
-        return true;
-    }
-
-    const text = await res.text();
-    let body;
-    try {
-        body = JSON.parse(text);
-    } catch {
-        console.error(`❌ Schema check returned invalid JSON (HTTP ${res.status}):`);
-        console.error(text.slice(0, 500));
-        return false;
-    }
-
-    if (body.ok) {
-        console.log("✅ DB schema up to date.");
-        return true;
-    }
-
-    const byMigration = new Map();
-    for (const m of body.missing ?? []) {
-        if (!byMigration.has(m.migration)) byMigration.set(m.migration, []);
-        byMigration.get(m.migration).push(m.detail);
-    }
-    console.error("\n❌ Target DB is behind the code. Run these migrations before deploying:");
-    for (const [migration, details] of byMigration) {
-        console.error(`   • ${migration}  (${details.join(", ")})`);
-    }
-    if (body.error) console.error(`   ${body.error}`);
-    return false;
 }
 
 async function runTests(baseUrl, env) {

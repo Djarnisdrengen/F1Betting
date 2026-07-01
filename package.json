@@ -18,6 +18,8 @@
     "test:unit": "node --test tests/unit/mailer.test.js",
     "test:resend": "node build-deploy/verify-resend.js",
     "test:all": "npm run test:smoke && npm run test:unit && npm run test:e2e:test",
+    "schema:check": "node build-deploy/schema-check.js test",
+    "schema:check:live": "node build-deploy/schema-check.js live",
     "sync:live": "node build-deploy/sync.js",
     "backup:live": "node build-deploy/backup.js",
     "restore:db": "node build-deploy/restore-db.js",
