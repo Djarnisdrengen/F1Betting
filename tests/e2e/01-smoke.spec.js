@@ -95,6 +95,9 @@ test.describe("Protected pages", () => {
         await expect(page.locator('[data-testid="tab-profile-btn"]')).toBeVisible();
         await expect(page.locator('[data-testid="tab-security-btn"]')).toBeVisible();
         await expect(page.locator('[data-testid="tab-preferences-btn"]')).toBeVisible();
+        await expect(page.locator('[data-testid="tab-history-btn"]')).toBeVisible();
+        // Betting history now lives in its own tab — open it before asserting the heading.
+        await page.click('[data-testid="tab-history-btn"]');
         await expect(page.locator("h3").filter({ hasText: /Betting History|Din Betting Historik/ })).toBeVisible();
     });
 

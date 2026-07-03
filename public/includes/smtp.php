@@ -462,7 +462,19 @@ function getEmailTemplate($greeting, $intro, $buttonText, $buttonLink, $expiry, 
     if (!empty($siteUrl) && !empty($emailBaseUrl) && $siteUrl !== $emailBaseUrl && strpos($buttonLink, $siteUrl) === 0) {
         $buttonLink = str_replace($siteUrl, $emailBaseUrl, $buttonLink);
     }
-    
+
+    // Action area: a CTA link when a buttonLink is given, otherwise a read-only code box
+    // (used by one-time codes like the login OTP, which have nothing to click).
+    if ($buttonLink === '') {
+        $actionBlock = <<<HTML
+<div style="display: inline-block; padding: 16px 28px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; color: #ffffff; font-size: 30px; font-weight: 700; letter-spacing: 8px; font-family: 'Courier New', monospace;">{$buttonText}</div>
+HTML;
+    } else {
+        $actionBlock = <<<HTML
+<a href="{$buttonLink}" style="display: inline-block; padding: 14px 32px; background: #e10600; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">{$buttonText}</a>
+HTML;
+    }
+
     return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -489,7 +501,7 @@ function getEmailTemplate($greeting, $intro, $buttonText, $buttonLink, $expiry, 
                             <table role="presentation" style="width: 100%; margin: 30px 0;">
                                 <tr>
                                     <td style="text-align: center;">
-                                        <a href="{$buttonLink}" style="display: inline-block; padding: 14px 32px; background: #e10600; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">{$buttonText}</a>
+                                        {$actionBlock}
                                     </td>
                                 </tr>
                             </table>

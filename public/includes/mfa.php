@@ -218,11 +218,23 @@ function issueEmailOtp(PDO $db, string $uid, string $purpose): bool {
 
     $lang    = $u['language'] ?: 'da';
     $name    = $u['display_name'] ?: $u['email'];
-    $subject = sprintf(t('email_otp_subject', $lang), $code);
-    $html    = '<p>' . sprintf(t('email_otp_greeting', $lang), escape($name)) . '</p>'
-             . '<p>' . sprintf(t('email_otp_body', $lang), escape($code)) . '</p>'
-             . '<p style="color:#888;font-size:13px;">' . t('email_otp_ignore', $lang) . '</p>';
-    $res = sendEmail($u['email'], $subject, $html); // returns ['success' => bool, 'message' => ...]
+    $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+
+    // Standard branded email template. An empty button link makes getEmailTemplate render
+    // the code as a read-only code box rather than a clickable CTA.
+    $subject  = sprintf(t('email_otp_subject', $lang), $code);
+    $greeting = sprintf(t('email_otp_greeting', $lang), escape($name));
+    $intro    = t('email_otp_intro', $lang);
+    $expiry   = t('email_otp_expiry', $lang);
+    $ignore   = t('email_otp_ignore', $lang);
+    $footer   = sprintf(t('email_footer', $lang), escape($appName));
+
+    $html = getEmailTemplate($greeting, $intro, $code, '', $expiry, $ignore, $footer, $appName);
+    $text = sprintf(t('email_otp_greeting', $lang), $name) . "\n\n"
+          . t('email_otp_intro', $lang) . "\n\n"
+          . $code . "\n\n" . $expiry . "\n\n" . t('email_otp_ignore', $lang);
+
+    $res = sendEmail($u['email'], $subject, $html, $text); // returns ['success' => bool, 'message' => ...]
     return is_array($res) ? !empty($res['success']) : (bool)$res;
 }
 
@@ -262,4 +274,31 @@ function passkeyActive(PDO $db, string $uid): bool {
 // True if the member has opted into ANY second factor — the trigger for the two-step login.
 function userHasActiveFactor(PDO $db, string $uid): bool {
     return totpActive($db, $uid) || emailOtpActive($db, $uid) || passkeyActive($db, $uid);
+}
+
+// The active challenge methods, in fixed fallback priority. Recovery codes are always
+// available as a last resort and are intentionally NOT listed here.
+function activeMfaMethods(PDO $db, string $uid): array {
+    $methods = [];
+    if (totpActive($db, $uid))     $methods[] = 'totp';
+    if (emailOtpActive($db, $uid)) $methods[] = 'email';
+    return $methods;
+}
+
+// The method to show first on the challenge screen: the member's stored preference if that
+// factor is still active, otherwise the first available by fallback priority (totp → email).
+function getMfaDefaultMethod(PDO $db, string $uid): ?string {
+    $active = activeMfaMethods($db, $uid);
+    if (!$active) return null;
+    $st = $db->prepare("SELECT mfa_default_method FROM users WHERE id = ?");
+    $st->execute([$uid]);
+    $pref = $st->fetchColumn();
+    if ($pref && in_array($pref, $active, true)) return $pref;
+    return $active[0];
+}
+
+// Persists the preferred method. Only 'totp' | 'email' are storable; anything else clears it.
+function setMfaDefaultMethod(PDO $db, string $uid, ?string $method): void {
+    $method = in_array($method, ['totp', 'email'], true) ? $method : null;
+    $db->prepare("UPDATE users SET mfa_default_method = ? WHERE id = ?")->execute([$method, $uid]);
 }

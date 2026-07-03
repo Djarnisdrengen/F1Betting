@@ -59,6 +59,9 @@ Pure functions, no globals beyond `getDB()`:
 | `issueEmailOtp($db,$uid,$purpose)` | gen + hash + store + send via `smtp.php` |
 | `verifyEmailOtp($db,$uid,$code,$purpose)` | TTL + attempts + single-use |
 | `userHasActiveFactor($db,$uid)` | TOTP \|\| email OTP \|\| passkey |
+| `activeMfaMethods($db,$uid)` | active challenge methods in fallback order (`totp`, `email`) — recovery excluded |
+| `getMfaDefaultMethod($db,$uid)` | stored preference if its factor is still active, else first by fallback order |
+| `setMfaDefaultMethod($db,$uid,$m)` | persist `users.mfa_default_method` (`'totp'`\|`'email'`; else NULL) |
 
 **Critical:** recovery + email consumption use
 `UPDATE ... SET used_at=NOW() WHERE id=? AND used_at IS NULL` and check `rowCount()===1`, so a race
@@ -69,7 +72,9 @@ After `verifyPassword()` succeeds, **before** setting `user_id`:
 ```php
 if (userHasActiveFactor($db, $user['id'])) {
     $_SESSION['mfa_pending'] = ['uid' => $user['id'], 'exp' => time() + 600];
-    if (emailOtpActive($db, $user['id'])) issueEmailOtp($db, $user['id'], 'login');
+    // Only pre-send the email code when it's the member's default method; otherwise
+    // it's sent on demand from the challenge screen (no email until they ask).
+    if (getMfaDefaultMethod($db, $user['id']) === 'email') issueEmailOtp($db, $user['id'], 'login');
     session_regenerate_id(true);            // rotate pre-auth session id
     header('Location: /mfa_challenge.php?redirect=' . urlencode($redirect));
     exit;
@@ -79,7 +84,10 @@ if (userHasActiveFactor($db, $user['id'])) {
 
 ### Step 1.3 — `public/mfa_challenge.php`
 - Guard: requires a non-expired `mfa_pending`; else → `/login.php`. Never readable when fully logged in.
-- Renders the active factor(s): TOTP code field and/or email-OTP field, always a "use a recovery code" link.
+- Leads with the member's **default method** (`getMfaDefaultMethod()`), rendered first. The remaining
+  active factor(s) + a "use a recovery code" option live in a collapsed "Other options" `<details>`.
+- Email code is **on demand**: shown as an "Email me a code" button unless it's the default (pre-sent at
+  login) or already requested this session (`mfa_pending['email_sent']`). The `resend` POST issues it.
 - POST (CSRF + rate limit): verify in priority order; on success promote (unset pending, set `user_id`,
   `session_regenerate_id(true)`, set lang/theme/font like the normal path), redirect.
 - Wrong code → `recordLoginAttempt()` + generic error.
@@ -96,6 +104,7 @@ New `action` branches (all `requireCsrf()`, all re-auth where noted):
 | `emailotp_begin` | issue enroll OTP via email |
 | `emailotp_confirm` | verify enroll OTP → `email_otp_enabled = 1` (+ recovery codes if first factor) |
 | `emailotp_disable` | re-auth → `email_otp_enabled = 0` |
+| `mfa_default` | set `users.mfa_default_method` (no re-auth — a preference). Selector shown only with 2+ active factors |
 
 UI is a new "Security" card in the profile layout, strings via `t()`, QR rendered client-side from a
 `data-otpauth` attribute (manual key always shown as the guaranteed path).

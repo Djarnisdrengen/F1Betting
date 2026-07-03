@@ -4,7 +4,7 @@
     { "migration": "schema.sql v2.3.0 (races qualifying)", "table": "races", "columns": ["quali_date", "quali_time"] },
     { "migration": "add_user_language.sql", "table": "users", "columns": ["language"] },
     { "migration": "add_login_attempts.sql", "table": "login_attempts" },
-    { "migration": "add_mfa.sql", "table": "users", "columns": ["email_otp_enabled"] },
+    { "migration": "add_mfa.sql", "table": "users", "columns": ["email_otp_enabled", "mfa_default_method"] },
     { "migration": "add_mfa.sql", "table": "user_totp" },
     { "migration": "add_mfa.sql", "table": "user_recovery_codes" },
     { "migration": "add_mfa.sql", "table": "user_email_otp" },

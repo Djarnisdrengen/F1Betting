@@ -2612,16 +2612,15 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 }
 
 /* ── Phase D: Profile layout ────────────────────────────────── */
+/* Single, full-width column — the tabs (incl. Betting History) span the page. */
 .hf-profile-grid  { display: block; padding-bottom: 48px; }
 .hf-profile-forms { display: flex; flex-direction: column; gap: 16px; }
 
-@media (min-width: 1024px) {
-    .hf-profile-grid {
-        display: grid;
-        grid-template-columns: 1fr 1.3fr;
-        gap: 40px;
-        align-items: start;
-    }
+/* Betting-history cards flow into a responsive grid across the full width. */
+.hf-history-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
 }
 
 /* ── Phase D: Bet page ──────────────────────────────────────── */
@@ -2900,6 +2899,8 @@ body.font-system {
     border-bottom: 1px solid var(--border-color);
 }
 .hf-tab-btn {
+    flex: 1 1 140px;
+    text-align: center;
     padding: 9px 20px;
     border-radius: 6px;
     border: 1px solid var(--text-secondary);

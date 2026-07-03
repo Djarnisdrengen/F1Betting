@@ -62,10 +62,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'redirect'  => $redirect,
                     'anonTheme' => $anonTheme,
                     'anonFont'  => $anonFont,
+                    'email_sent'=> false,                  // set once an email code is issued
                 ];
                 session_regenerate_id(true);               // rotate the pre-auth session id
-                if (emailOtpActive($db, $user['id'])) {
-                    try { issueEmailOtp($db, $user['id'], 'login'); } catch (Exception $e) {}
+                // Only pre-send the email code when it's the member's default method (so it's
+                // waiting in their inbox on arrival). Otherwise it's sent on demand from the
+                // challenge screen — no email until they actually pick that method.
+                if (getMfaDefaultMethod($db, $user['id']) === 'email') {
+                    try {
+                        if (issueEmailOtp($db, $user['id'], 'login')) {
+                            $_SESSION['mfa_pending']['email_sent'] = true;
+                        }
+                    } catch (Exception $e) {}
                 }
                 header('Location: /mfa_challenge.php');
                 exit;

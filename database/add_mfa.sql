@@ -5,6 +5,10 @@
 -- guard manually or ignore the "Duplicate column" error on re-run.)
 ALTER TABLE users ADD COLUMN email_otp_enabled TINYINT(1) NOT NULL DEFAULT 0;
 
+-- Preferred second factor shown first on the challenge screen ('totp' | 'email').
+-- NULL falls back to a fixed priority (totp → email). Recovery codes are never a default.
+ALTER TABLE users ADD COLUMN mfa_default_method VARCHAR(16) DEFAULT NULL;
+
 -- TOTP authenticator secret (sealed at rest with sodium secretbox under MFA_KEY).
 -- A row with confirmed_at IS NULL is a pending enrollment and is NOT an active factor.
 CREATE TABLE IF NOT EXISTS user_totp (

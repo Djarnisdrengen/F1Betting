@@ -66,6 +66,10 @@ single-use · disable requires re-auth · email OTP rate-limited.
 | EOTP-03 | Expired code rejected (past TTL) | must resend | High | Integration |
 | EOTP-04 | Send + verify rate-limited | no mail-bomb / cost spike | High | Sec |
 | EOTP-05 | Attempts lock after N | locked, generic error | High | Integration |
+| DEF-01 | Default = TOTP: login sends NO email; email offered on demand | inbox empty on arrival; lead block = totp | High | E2E |
+| DEF-02 | On-demand "Email me a code" issues + verifies | code arrives only after click; promotes | High | E2E |
+| DEF-03 | Set preferred = email (U6) pre-sends at next login | lead block = email; code waiting | Med | E2E |
+| DEF-04 | Preferred method whose factor is disabled | falls back to remaining active factor | Med | Integration |
 | SEC-01 | CSRF on every new POST | `requireCsrf()` blocks | High | Sec |
 | SEC-02 | Challenge brute-force throttled | blocked, `Retry-After` | High | Sec |
 | SEC-03 | No MFA-status enumeration | responses indistinguishable | Med | Sec |
@@ -78,7 +82,7 @@ single-use · disable requires re-auth · email OTP rate-limited.
 | `user_id` set before 2nd factor | Med | Critical | MFA-01/03 gate release; review every `$_SESSION['user_id'] =` |
 | Recovery/email double-spend race | Med | High | atomic conditional UPDATE + `rowCount()`; REC-02 / EOTP-05 |
 | Unthrottled code guessing | Low | High | SEC-02 + per-row attempts |
-| Email volume / cost spike | Low | Med | EOTP-04 rate limit on send |
+| Email volume / cost spike | Low | Med | EOTP-04 rate limit on send; email only sent when it's the default method or requested on demand (DEF-01) |
 | Password-only regression | Low | High | MFA-05 + smoke login (U1) |
 
 ## 7. Definition of Done (testing)

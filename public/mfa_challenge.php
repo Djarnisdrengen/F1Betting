@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $method = $_POST['method'] ?? 'totp';
 
-    // Resend email OTP (rate-limited) without consuming an attempt.
+    // Send / resend the email OTP (rate-limited) without consuming a verification attempt.
     if ($method === 'resend' && $hasEmailOtp) {
         try {
             if (isRateLimited($db, $ip)) {
@@ -39,7 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = t('rate_limited');
             } else {
                 recordLoginAttempt($db, $ip);
-                issueEmailOtp($db, $uid, 'login');
+                if (issueEmailOtp($db, $uid, 'login')) {
+                    $_SESSION['mfa_pending']['email_sent'] = true;
+                    $pending['email_sent'] = true;
+                }
             }
         } catch (Exception $e) {}
     } else {
@@ -92,6 +95,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Resolve which method leads: the member's preference (if still active) or the fallback order.
+$default    = getMfaDefaultMethod($db, $uid);
+$emailSent  = !empty($pending['email_sent']);
+
+// Order active methods with the default first; the rest go into the collapsed "other options".
+$active = activeMfaMethods($db, $uid);
+$others = array_values(array_diff($active, [$default]));
+
+// Renders one method's block. $primary drives autofocus (only the lead method grabs focus).
+function mfaMethodBlock(string $method, bool $primary, bool $emailSent): void {
+    if ($method === 'totp') {
+        ?>
+        <form method="POST" style="display:flex;flex-direction:column;gap:12px;" data-testid="mfa-form-totp">
+            <?= csrfField() ?>
+            <input type="hidden" name="method" value="totp">
+            <div>
+                <label class="form-label"><?= t('totp_enter_code') ?></label>
+                <input type="text" name="code" class="form-input" inputmode="numeric" autocomplete="one-time-code"
+                       pattern="\d{6}" maxlength="6" required <?= $primary ? 'autofocus' : '' ?> placeholder="123456">
+            </div>
+            <button type="submit" class="hf-cta-primary" style="width:100%;"><?= t('verify') ?> <span class="arrow">→</span></button>
+        </form>
+        <?php
+    } elseif ($method === 'email') {
+        if ($emailSent) {
+            ?>
+            <form method="POST" style="display:flex;flex-direction:column;gap:12px;" data-testid="mfa-form-email">
+                <?= csrfField() ?>
+                <input type="hidden" name="method" value="email">
+                <div>
+                    <label class="form-label"><?= t('email_otp') ?></label>
+                    <input type="text" name="code" class="form-input" inputmode="numeric" autocomplete="one-time-code"
+                           pattern="\d{6}" maxlength="6" required <?= $primary ? 'autofocus' : '' ?> placeholder="123456">
+                </div>
+                <button type="submit" class="hf-cta-primary" style="width:100%;"><?= t('verify') ?> <span class="arrow">→</span></button>
+            </form>
+            <form method="POST" style="margin-top:8px;">
+                <?= csrfField() ?>
+                <input type="hidden" name="method" value="resend">
+                <button type="submit" data-testid="mfa-email-resend" style="background:none;border:none;color:var(--f1-red-light);font-family:var(--font-display);font-weight:600;font-size:13px;cursor:pointer;padding:0;"><?= t('email_otp_resend') ?></button>
+            </form>
+            <?php
+        } else {
+            // No code issued yet — nothing is emailed until the member asks for it here.
+            ?>
+            <form method="POST" style="display:flex;flex-direction:column;gap:12px;" data-testid="mfa-form-email">
+                <?= csrfField() ?>
+                <input type="hidden" name="method" value="resend">
+                <p style="color:var(--text-secondary);font-size:14px;margin:0;"><?= t('email_otp_prompt') ?></p>
+                <button type="submit" class="hf-cta-primary" style="width:100%;" data-testid="mfa-email-send"><?= t('email_otp_send') ?> <span class="arrow">→</span></button>
+            </form>
+            <?php
+        }
+    } elseif ($method === 'recovery') {
+        ?>
+        <form method="POST" style="display:flex;flex-direction:column;gap:12px;" data-testid="mfa-form-recovery">
+            <?= csrfField() ?>
+            <input type="hidden" name="method" value="recovery">
+            <div>
+                <label class="form-label"><?= t('recovery_codes') ?></label>
+                <input type="text" name="code" class="form-input" autocomplete="off" required placeholder="xxxxx-xxxxx">
+            </div>
+            <button type="submit" class="hf-cta-primary" style="width:100%;"><?= t('verify') ?> <span class="arrow">→</span></button>
+        </form>
+        <?php
+    }
+}
+
+// Human label for a method (used to title the lead block).
+function mfaMethodLabel(string $method): string {
+    return $method === 'email' ? t('email_otp') : t('totp_app');
+}
+
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -107,49 +183,28 @@ include __DIR__ . '/includes/header.php';
                 <div class="alert alert-error" role="alert"><i class="fas fa-exclamation-triangle"></i> <?= escape($error) ?></div>
             <?php endif; ?>
 
-            <?php if ($hasTotp): ?>
-            <form method="POST" style="display:flex;flex-direction:column;gap:12px;">
-                <?= csrfField() ?>
-                <input type="hidden" name="method" value="totp">
-                <div>
-                    <label class="form-label"><?= t('totp_enter_code') ?></label>
-                    <input type="text" name="code" class="form-input" inputmode="numeric" autocomplete="one-time-code"
-                           pattern="\d{6}" maxlength="6" required autofocus placeholder="123456">
+            <?php if ($default): ?>
+                <div data-testid="mfa-default" data-method="<?= escape($default) ?>">
+                    <div class="hf-hero-eyebrow" style="margin-bottom:8px;"><?= escape(mfaMethodLabel($default)) ?></div>
+                    <?php mfaMethodBlock($default, true, $emailSent); ?>
                 </div>
-                <button type="submit" class="hf-cta-primary" style="width:100%;"><?= t('verify') ?> <span class="arrow">→</span></button>
-            </form>
             <?php endif; ?>
 
-            <?php if ($hasEmailOtp): ?>
-            <form method="POST" style="display:flex;flex-direction:column;gap:12px;margin-top:<?= $hasTotp ? '18px' : '0' ?>;">
-                <?= csrfField() ?>
-                <input type="hidden" name="method" value="email">
-                <div>
-                    <label class="form-label"><?= t('email_otp') ?></label>
-                    <input type="text" name="code" class="form-input" inputmode="numeric" autocomplete="one-time-code"
-                           pattern="\d{6}" maxlength="6" required <?= $hasTotp ? '' : 'autofocus' ?> placeholder="123456">
-                </div>
-                <button type="submit" class="hf-cta-primary" style="width:100%;"><?= t('verify') ?> <span class="arrow">→</span></button>
-            </form>
-            <form method="POST" style="margin-top:8px;">
-                <?= csrfField() ?>
-                <input type="hidden" name="method" value="resend">
-                <button type="submit" style="background:none;border:none;color:var(--f1-red-light);font-family:var(--font-display);font-weight:600;font-size:13px;cursor:pointer;padding:0;"><?= t('email_otp_send') ?></button>
-            </form>
-            <?php endif; ?>
-
-            <details style="margin-top:18px;">
-                <summary style="cursor:pointer;color:var(--text-secondary);font-size:13px;"><?= t('mfa_use_recovery') ?></summary>
-                <form method="POST" style="display:flex;flex-direction:column;gap:12px;margin-top:12px;">
-                    <?= csrfField() ?>
-                    <input type="hidden" name="method" value="recovery">
-                    <div>
-                        <label class="form-label"><?= t('recovery_codes') ?></label>
-                        <input type="text" name="code" class="form-input" autocomplete="off" required placeholder="xxxxx-xxxxx">
+                <details style="margin-top:18px;" data-testid="mfa-other-options">
+                    <summary style="cursor:pointer;color:var(--text-secondary);font-size:13px;"><?= t('mfa_other_options') ?></summary>
+                    <div style="margin-top:14px;display:flex;flex-direction:column;gap:20px;">
+                        <?php foreach ($others as $m): ?>
+                            <div data-method="<?= escape($m) ?>">
+                                <div class="form-label" style="margin-bottom:8px;"><?= escape(mfaMethodLabel($m)) ?></div>
+                                <?php mfaMethodBlock($m, false, $emailSent); ?>
+                            </div>
+                        <?php endforeach; ?>
+                        <div data-method="recovery">
+                            <div class="form-label" style="margin-bottom:8px;"><?= t('mfa_use_recovery') ?></div>
+                            <?php mfaMethodBlock('recovery', false, $emailSent); ?>
+                        </div>
                     </div>
-                    <button type="submit" class="hf-cta-primary" style="width:100%;"><?= t('verify') ?> <span class="arrow">→</span></button>
-                </form>
-            </details>
+                </details>
         </div>
     </div>
 </div>

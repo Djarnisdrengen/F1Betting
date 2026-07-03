@@ -4,7 +4,9 @@ return [
         // MFA email OTP
         'email_otp_subject'                => 'Din loginkode: %s',
         'email_otp_greeting'               => 'Hej %s!',
+        'email_otp_intro'                  => 'Brug denne engangskode for at fuldføre dit login:',
         'email_otp_body'                   => 'Din kode er <strong>%s</strong>. Den udløber om 10 minutter.',
+        'email_otp_expiry'                 => 'Koden udløber om 10 minutter.',
         'email_otp_ignore'                 => 'Hvis du ikke forsøgte at logge ind, kan du ignorere denne e-mail.',
         // Betting window open notification
         'email_betting_open_subject'       => 'Betting åbent: %s',
@@ -79,7 +81,9 @@ return [
         // MFA email OTP
         'email_otp_subject'                => 'Your login code: %s',
         'email_otp_greeting'               => 'Hi %s!',
+        'email_otp_intro'                  => 'Use this one-time code to finish signing in:',
         'email_otp_body'                   => 'Your code is <strong>%s</strong>. It expires in 10 minutes.',
+        'email_otp_expiry'                 => 'The code expires in 10 minutes.',
         'email_otp_ignore'                 => 'If you did not try to sign in, you can ignore this email.',
         // Betting window open notification
         'email_betting_open_subject'       => 'Betting open: %s',

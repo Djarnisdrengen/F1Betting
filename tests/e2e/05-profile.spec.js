@@ -44,6 +44,7 @@ test.describe.serial("Profile", () => {
 
     test("bet history shows empty state when no bets placed", async () => {
         await sharedPage.goto("/profile.php");
+        await sharedPage.click('[data-testid="tab-history-btn"]');
         await expect(sharedPage.locator('[data-testid="empty-bet-history"]')).toBeVisible();
     });
 

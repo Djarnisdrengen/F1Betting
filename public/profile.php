@@ -142,6 +142,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         header('Location: profile.php?tab=tab-security');
         exit;
+
+    } elseif ($action === 'mfa_default') {
+        // Preferred challenge method — a preference, not a factor change, so no re-auth.
+        setMfaDefaultMethod($db, $currentUser['id'], $_POST['mfa_default_method'] ?? null);
+        $_SESSION['flash_success'] = t('mfa_default_saved');
+        header('Location: profile.php?tab=tab-security');
+        exit;
     }
 }
 
@@ -173,6 +180,10 @@ $betHistory = $betHistory->fetchAll();
 $totpIsActive  = totpActive($db, $currentUser['id']);
 $emailOtpIsOn  = emailOtpActive($db, $currentUser['id']);
 $recoveryCount = countRecoveryCodes($db, $currentUser['id']);
+
+// Preferred challenge method — only meaningful (and only offered) when 2+ factors are active.
+$activeMethods    = activeMfaMethods($db, $currentUser['id']);
+$mfaDefaultMethod = getMfaDefaultMethod($db, $currentUser['id']);
 
 // Pending (unconfirmed) authenticator enrollment → drives the QR / confirm view.
 $totpEnrollSecret = null;
@@ -225,6 +236,7 @@ include __DIR__ . '/includes/header.php';
                     <button class="hf-tab-btn" data-target="tab-profile" data-testid="tab-profile-btn"><?= t('tab_profile') ?></button>
                     <button class="hf-tab-btn" data-target="tab-security" data-testid="tab-security-btn"><?= t('tab_security') ?></button>
                     <button class="hf-tab-btn" data-target="tab-preferences" data-testid="tab-preferences-btn"><?= t('tab_preferences') ?></button>
+                    <button class="hf-tab-btn" data-target="tab-history" data-testid="tab-history-btn"><?= t('tab_history') ?></button>
                 </nav>
 
                 <!-- Profile tab -->
@@ -412,6 +424,27 @@ include __DIR__ . '/includes/header.php';
                                 </div>
                             </div>
                             <?php endif; ?>
+
+                            <!-- Preferred method — only when there's an actual choice (2+ active factors) -->
+                            <?php if (count($activeMethods) >= 2): ?>
+                            <div style="padding:12px 0;border-top:1px solid var(--border,#2a2a2a);" data-testid="mfa-default-method">
+                                <div style="font-weight:600;margin-bottom:2px;"><?= t('mfa_default_method') ?></div>
+                                <div class="text-muted" style="font-size:13px;margin-bottom:10px;"><?= t('mfa_default_hint') ?></div>
+                                <form method="POST" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                                    <?= csrfField() ?>
+                                    <input type="hidden" name="action" value="mfa_default">
+                                    <select name="mfa_default_method" class="form-input" style="max-width:220px;" data-testid="mfa-default-select">
+                                        <?php if (in_array('totp', $activeMethods, true)): ?>
+                                            <option value="totp"  <?= $mfaDefaultMethod === 'totp'  ? 'selected' : '' ?>><?= t('totp_app') ?></option>
+                                        <?php endif; ?>
+                                        <?php if (in_array('email', $activeMethods, true)): ?>
+                                            <option value="email" <?= $mfaDefaultMethod === 'email' ? 'selected' : '' ?>><?= t('email_otp') ?></option>
+                                        <?php endif; ?>
+                                    </select>
+                                    <button type="submit" class="btn btn-secondary" data-testid="mfa-default-save-btn"><?= t('save') ?></button>
+                                </form>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -456,44 +489,46 @@ include __DIR__ . '/includes/header.php';
                     </div>
                 </div>
 
-            </div>
-        </div>
-
-        <!-- Right: bet history -->
-        <div>
-            <div class="hf-section-h" style="margin-bottom:12px;">
-                <h3><?= t('betting_history') ?></h3>
-            </div>
-
-            <?php if (empty($betHistory)): ?>
-                <p data-testid="empty-bet-history" class="text-muted" style="padding: 12px 0;"><?= t('no_bets_yet') ?></p>
-            <?php else: ?>
-                <?php foreach ($betHistory as $bet): ?>
-                    <div class="hf-racecard hf-racecard--static">
-                        <div>
-                            <div class="hf-racename">
-                                <?= escape($bet['race_name']) ?>
-                                <?php if ($bet['is_perfect']): ?><span class="star" style="margin-left:4px;">★</span><?php endif; ?>
-                            </div>
-                            <div class="hf-racemeta">
-                                <?= escape($bet['location']) ?> · <?= formatRaceDateTime($bet['race_date'], $bet['race_time']) ?>
-                            </div>
-                            <div class="hf-racemeta">
-                                P1: <?= driverLastName(['name' => $bet['p1_name']]) ?>
-                                &nbsp;· P2: <?= driverLastName(['name' => $bet['p2_name']]) ?>
-                                &nbsp;· P3: <?= driverLastName(['name' => $bet['p3_name']]) ?>
-                            </div>
-                        </div>
-                        <?php if ($bet['result_p1']): ?>
-                            <span class="hf-badge <?= $bet['is_perfect'] ? 'open' : 'done' ?>" style="align-self: center;">
-                                <?= $bet['is_perfect'] ? '★ ' : '' ?><?= $bet['points'] ?>p
-                            </span>
-                        <?php else: ?>
-                            <span class="text-muted" style="align-self: center;">—</span>
-                        <?php endif; ?>
+                <!-- Betting history tab -->
+                <div class="hf-tab-panel" id="tab-history" data-testid="tab-history-panel" hidden>
+                    <div class="hf-section-h" style="margin-bottom:12px;">
+                        <h3><?= t('betting_history') ?></h3>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+
+                    <?php if (empty($betHistory)): ?>
+                        <p data-testid="empty-bet-history" class="text-muted" style="padding: 12px 0;"><?= t('no_bets_yet') ?></p>
+                    <?php else: ?>
+                        <div class="hf-history-list">
+                        <?php foreach ($betHistory as $bet): ?>
+                            <div class="hf-racecard hf-racecard--static">
+                                <div>
+                                    <div class="hf-racename">
+                                        <?= escape($bet['race_name']) ?>
+                                        <?php if ($bet['is_perfect']): ?><span class="star" style="margin-left:4px;">★</span><?php endif; ?>
+                                    </div>
+                                    <div class="hf-racemeta">
+                                        <?= escape($bet['location']) ?> · <?= formatRaceDateTime($bet['race_date'], $bet['race_time']) ?>
+                                    </div>
+                                    <div class="hf-racemeta">
+                                        P1: <?= driverLastName(['name' => $bet['p1_name']]) ?>
+                                        &nbsp;· P2: <?= driverLastName(['name' => $bet['p2_name']]) ?>
+                                        &nbsp;· P3: <?= driverLastName(['name' => $bet['p3_name']]) ?>
+                                    </div>
+                                </div>
+                                <?php if ($bet['result_p1']): ?>
+                                    <span class="hf-badge <?= $bet['is_perfect'] ? 'open' : 'done' ?>" style="align-self: center;">
+                                        <?= $bet['is_perfect'] ? '★ ' : '' ?><?= $bet['points'] ?>p
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-muted" style="align-self: center;">—</span>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+            </div>
         </div>
 
     </div>
