@@ -16,7 +16,7 @@
 - [12. in_competition = 0 for the admin user](#12-in_competition--0-for-the-admin-user)
 - [13. quali_p1/p2/p3 must match exact bet validation](#13-quali_p1p2p3-must-match-exact-bet-validation)
 - [14. Nightly report emails appear twice when SMTP_FROM and REPORT_TO share the same Proton account](#14-nightly-report-emails-appear-twice-when-smtp_from-and-report_to-share-the-same-proton-account)
-- [15. sync:live rewrites all user emails to @mailsac.com](#15-synclive-rewrites-all-user-emails-to-mailsaccom)
+- [15. sync:live rewrites all user emails to @test.localhost](#15-synclive-rewrites-all-user-emails-to-testlocalhost)
 - [16. MFA requires MFA_KEY in config, and MFA tables use the legacy latin1 collation](#16-mfa-requires-mfa_key-in-config-and-mfa-tables-use-the-legacy-latin1-collation)
 - [17. Test env sends email by default — interception is opt-in](#17-test-env-sends-email-by-default--interception-is-opt-in-e2e-turns-it-on-per-run)
 - [18. Migrations are manual per environment — the deploy schema check catches forgotten ones](#18-migrations-are-manual-per-environment--the-deploy-schema-check-catches-forgotten-ones)
@@ -149,13 +149,13 @@ There is no incoming-only condition available in Proton's simple filter builder,
 
 ---
 
-## 15. `sync:live` rewrites all user emails to `@mailsac.com`
+## 15. `sync:live` rewrites all user emails to `@test.localhost`
 
-When `npm run sync:live` copies the live database into test, every user email that is not already `@mailsac.com` is rewritten: `thomas@helvegpovlsen.dk` becomes `thomas@mailsac.com`, `user@gmail.com` becomes `user@mailsac.com`, and so on. This prevents any email accidentally triggered on the test site from reaching real inboxes.
+When `npm run sync:live` copies the live database into test, every user email whose domain is not already `test.localhost` has its domain rewritten: `thomas@helvegpovlsen.dk` becomes `thomas@test.localhost`, `user@gmail.com` becomes `user@test.localhost`, and so on. This prevents any email accidentally triggered on the test site from reaching real inboxes.
 
 The admin account (`F1_ADMIN_EMAIL`, currently `f1_admin@helvegpovlsen.dk`) is preserved unchanged — it is saved before the sync wipe and restored afterward.
 
-If you expect to trigger emails to synced users during manual testing, look them up in the Mailsac web UI at mailsac.com using the rewritten address.
+Emails to synced users are never sent — `@test.localhost` is a placeholder and the test server captures mail via the SMTP intercept. To read what would have been sent, use `npm run test:email:preview` (writes HTML to `tests/email-previews/`) or flip **Admin → Settings → Email delivery** to capture and inspect the intercept log. See [testing.md](testing.md).
 
 
 ---
@@ -166,7 +166,11 @@ The multi-factor auth system (`public/includes/mfa.php`) seals TOTP secrets at r
 
 The `users` table is legacy **`latin1_swedish_ci`**. New MFA tables (`user_totp`, `user_recovery_codes`, `user_email_otp`, `user_passkeys`) therefore pin their `user_id` foreign-key columns to `CHARACTER SET latin1 COLLATE latin1_swedish_ci` — otherwise the FK fails with error 3780 ("incompatible columns"). Keep this in mind for any future table that references `users.id`.
 
-Apply the migration with `database/add_mfa.sql` (idempotent except the additive `users.email_otp_enabled` column, which errors harmlessly on re-run). Passkeys (Phase 2) additionally require Composer + `web-auth/webauthn-lib`; `vendor/` must reach the server, and the WebAuthn RP ID must be the **www** host (see gotcha #1).
+Apply the migration with `database/add_mfa.sql` (idempotent except the additive `users.email_otp_enabled` and `users.mfa_default_method` columns, which error harmlessly on re-run). Passkeys (Phase 2) additionally require Composer + `web-auth/webauthn-lib`; `vendor/` must reach the server, and the WebAuthn RP ID must be the **www** host (see gotcha #1).
+
+**Preferred method + on-demand email:** `users.mfa_default_method` (`'totp'` | `'email'`, NULL = fallback order `totp → email`) decides which factor leads the challenge screen; resolve it with `getMfaDefaultMethod()`, which ignores a stored preference whose factor is no longer active. The email OTP is **only** auto-sent at login when the resolved default is `email` — otherwise no code is emailed until the member clicks "Email me a code" in the challenge screen's collapsed "Other options". So don't assume a login with email OTP active always sends a code.
+
+**⚠️ The automation admin account must NOT have MFA enrolled.** `build-deploy/deploy.js` smoke authed checks and `tests/global-setup.js` both log in as `F1_ADMIN_EMAIL` with a plain email+password POST. If that account has any active factor, login stops at `/mfa_challenge.php`, no session is granted, and **every authed smoke check + the entire E2E run fails** (global-setup can't save `admin.json`). If a deploy suddenly fails on `GET /profile.php [authed] → 302` or E2E dies in setup, check whether someone enrolled MFA on the admin account while testing — disable it (Profile → Security) to restore automation.
 
 ---
 

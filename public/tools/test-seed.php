@@ -634,7 +634,7 @@ if (($_GET['action'] ?? '') === 'cleanup_bet_deleted') {
 if (($_GET['action'] ?? '') === 'send_email_preview') {
     require_once __DIR__ . '/../includes/smtp.php';
 
-    $adminEmail   = defined('MAILSAC_INBOX') ? MAILSAC_INBOX : F1_ADMIN_EMAIL;
+    $adminEmail   = F1_ADMIN_EMAIL;
     $appName      = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
     $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
     $emails       = [];

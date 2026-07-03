@@ -8,7 +8,7 @@
   - [Layer 1 — Config](#layer-1--config)
   - [Layer 2 — Helpers](#layer-2--helpers)
   - [Layer 3 — Fixtures](#layer-3--fixtures)
-- [Mailsac Inboxes](#mailsac-inboxes)
+- [Test Inboxes (SMTP intercept)](#test-inboxes-smtp-intercept)
 - [Adding a New Test](#adding-a-new-test)
   - [Which stack?](#which-stack)
   - [New user-facing feature (Stack A)](#new-user-facing-feature-stack-a)
@@ -64,7 +64,7 @@ The test suite is not one unified system — it is two separate stacks that shar
 │       as a safety net)    │   │  Each reads php-config.js         │
 │  fixtures/index.js        │   │  directly. No shared helpers.     │
 │  helpers/seed.js          │   │  Self-contained by design.        │
-│  helpers/mailsac.js       │   │                                   │
+│  helpers/email.js         │   │                                   │
 │  helpers/markers.js       │   │  On GitHub Actions: falls back    │
 │  e2e/**/*.spec.js         │   │  to process.env (GH Secrets)      │
 │                           │   │  since php-config is absent.      │
@@ -89,7 +89,7 @@ Layer 4 — Specs          tests/e2e/**/*.spec.js
 Layer 3 — Fixtures       tests/fixtures/index.js      (Playwright fixture extensions)
                          ↓ use
 Layer 2 — Helpers        tests/helpers/seed.js        (seed API wrapper)
-                         tests/helpers/mailsac.js     (email polling + assertDelivered)
+                         tests/helpers/email.js       (email polling + assertDelivered)
                          tests/helpers/markers.js     (e2e_markers parsing)
                          ↓ use
 Layer 1 — Config         playwright.config.js         (reads php-config → sets process.env)
@@ -130,17 +130,20 @@ seed.e2eUser(params)   → { ok, email, password }
 
 **Error contract:** All functions throw if the HTTP response is non-200 or `body.ok !== true`. Callers never check `ok` — a failed seed throws immediately, failing `beforeAll` with a clear message. Cleanup functions also throw on non-200 so broken teardowns are never silently swallowed.
 
-**`tests/helpers/mailsac.js`**
+**`tests/helpers/email.js`** (re-exports `tests/helpers/intercepted-mail.js`)
 
 ```js
-// Assert real email delivery in one call:
-assertDelivered(inbox, apiKey, { count=1, timeout=20000, fromDomain='formula-1.dk' })
-// Returns msgs array, or skips silently if apiKey not set (CI without Mailsac)
+// Assert email delivery in one call — reads the server-side SMTP intercept log:
+assertDelivered(inbox, _apiKey, { count=1, timeout=20000 })
+// Returns msgs array; throws on timeout. (_apiKey is a vestigial no-op — pass null.)
 
-// For non-owned inboxes (can't purge) — baseline approach:
-waitForNewMessages(inbox, baselineIds, count, apiKey, { timeout })
+// Baseline approach — poll for messages that arrived after a snapshot:
+waitForNewMessages(inbox, baselineIds, count, _apiKey, { timeout })
 // Take a baseline snapshot before triggering the action, poll for new IDs only
 ```
+
+Interception is the only backend: `global-setup.js` enables it (`smtp_intercept_on`) and
+clears the log; these helpers read it back via `test-seed.php?action=get_test_emails`.
 
 **`tests/helpers/markers.js`**
 
@@ -159,26 +162,25 @@ expectMarker(text, key, value)  → throws with clear message if missing or wron
 
 ---
 
-## Mailsac Inboxes
+## Test Inboxes (SMTP intercept)
 
-**Owned inboxes** (Mailsac Indie Plan — supports purge before suite run):
+There are no external inboxes. Every test address uses the `@test.localhost` placeholder
+domain; emails are captured server-side to the intercept log (never sent). `global-setup.js`
+clears the **entire** log once before the suite runs — there is no per-inbox purge and no
+plan/account limit. Assert with `assertDelivered`/`waitForMessages` (absolute count) or
+`waitForNewMessages` (baseline snapshot before triggering the action).
 
-| Inbox | Spec | Purged by |
+| Inbox | Spec | Email type |
 |---|---|---|
-| `f1betting-preview@mailsac.com` | `test:email:preview` — 16 email types | `global-setup.js` |
-| `e2e_testing_invite_f1@mailsac.com` | `admin/11-invites.spec.js` — invite email | `global-setup.js` |
-| `e2e_bet_delete_f1@mailsac.com` | `admin/12-users.spec.js` — bet-deleted email | `global-setup.js` |
-| `e2e_testing_testuser_f1@mailsac.com` | `admin/12-users.spec.js` — admin password reset | `global-setup.js` |
-| `e2e_auth_f1@mailsac.com` | `02-auth.spec.js` — forgot-password reset email | `global-setup.js` |
+| `e2e_auth_f1@test.localhost` | `02-auth.spec.js` | Forgot-password reset link |
+| `e2e_testing_invite_f1@test.localhost` | `admin/11-invites.spec.js` | Invite to register |
+| `e2e_testing_testuser_f1@test.localhost` | `admin/12-users.spec.js` | Admin-issued password reset |
+| `e2e_bet_delete_f1@test.localhost` | `admin/12-users.spec.js` | Bet-deletion notification |
+| `e2e_notify_open_in_f1@test.localhost` | `07-cron.spec.js` real-run | Betting window open |
+| `e2e_notify_close_a_f1@test.localhost` | `07-cron.spec.js` real-run | Betting window closing soon |
 
-5 owned inboxes total — this fills the Indie Plan limit. Any future owned inbox requires a plan upgrade; design new tests to use `waitForNewMessages` (baseline approach) on non-owned inboxes instead.
-
-**Non-owned inboxes** (public; use `waitForNewMessages` with a pre-run baseline snapshot):
-
-| Inbox | Spec | Strategy |
-|---|---|---|
-| `e2e_notify_open_in_f1@mailsac.com` | `07-cron.spec.js` real-run — betting open | Baseline before cron run |
-| `e2e_notify_close_a_f1@mailsac.com` | `07-cron.spec.js` real-run — betting close | Baseline before cron run |
+`test:email:preview` renders all email types to `F1_ADMIN_EMAIL` via the same intercept and
+writes HTML to `tests/email-previews/`. See [testing.md](testing.md) for the full inbox list.
 
 ---
 
@@ -186,7 +188,7 @@ expectMarker(text, key, value)  → throws with clear message if missing or wron
 
 ### Which stack?
 
-- Writing a Playwright spec (`*.spec.js`)? → **Stack A.** Use `helpers/seed.js`, `helpers/mailsac.js`, `helpers/markers.js`, `fixtures/index.js`.
+- Writing a Playwright spec (`*.spec.js`)? → **Stack A.** Use `helpers/seed.js`, `helpers/email.js`, `helpers/markers.js`, `fixtures/index.js`.
 - Writing a standalone Node script (`node tests/mything.js`)? → **Stack B.** Read `php-config.js` directly. Do not import Stack A helpers.
 
 ### New user-facing feature (Stack A)
@@ -194,7 +196,7 @@ expectMarker(text, key, value)  → throws with clear message if missing or wron
 1. Add seed/cleanup action to `test-seed.php` if data is needed
 2. Add typed wrapper to `helpers/seed.js`
 3. Add a numbered spec (e.g. `08-newfeature.spec.js`) — picked up automatically by `testMatch` glob
-4. If the feature sends email: add a Mailsac inbox to `global-setup.js` purge list; assert with `assertDelivered()` in the feature's spec
+4. If the feature sends email: assert with `assertDelivered()` in the feature's spec (the intercept log is cleared automatically by `global-setup.js` — no per-inbox setup needed)
 
 ### New admin feature (Stack A)
 

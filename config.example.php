@@ -48,10 +48,4 @@ define('RESEND_API_KEY',  're_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 // ── CRON ──────────────────────────────────────────────────────────────
 define('CRON_SECRET', 'change-me');
 
-// ── MAILSAC (test email interception — test config only) ──────────────
-// Used by e2e tests to verify email delivery and content via the Mailsac API.
-// Get a key at mailsac.com → Account → API Keys. Not needed in config.live.php.
-define('MAILSAC_API_KEY', 'your-key-here');
-define('MAILSAC_INBOX',   'f1betting-preview@mailsac.com');
-
 require_once __DIR__ . '/config.shared.php';

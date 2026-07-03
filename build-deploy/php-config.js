@@ -19,8 +19,6 @@ function readPhpConfig(env) {
         adminPassword:        str("F1_ADMIN_PASSWORD"),
         integrationSeedToken: str("INTEGRATION_SEED_TOKEN"),
         cronSecret:           str("CRON_SECRET"),
-        mailsacApiKey:        str("MAILSAC_API_KEY"),
-        mailsacInbox:         str("MAILSAC_INBOX"),
         smtpFromEmail:        str("SMTP_FROM_EMAIL"),
         resendApiKey:         str("RESEND_API_KEY"),
         reportTo:             str("REPORT_TO"),

@@ -98,7 +98,7 @@ Read these when you need detail:
 | `docs/architecture.md` | Request lifecycle, scoring, admin panel, cron jobs, test seeding |
 | `docs/patterns.md` | PHP conventions, helpers, naming, structure |
 | `docs/gotchas.md` | Full gotcha list (deployment, edge cases, common mistakes) |
-| `docs/testing.md` | Mailsac integration, E2E test architecture, test seeding |
+| `docs/testing.md` | Email interception (SMTP capture), E2E test architecture, test seeding |
 | `docs/github-actions.md` | CI workflows |
 | `docs/f1-intelligence-reference.md` | RAG system (Phase 1, live on Vercel) — do not modify without user OK |
 | `docs/paddock-rumors-reference.md` | Content-gen pipeline (coexists, isolated by default) |

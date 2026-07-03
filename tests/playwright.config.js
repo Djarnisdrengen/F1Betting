@@ -18,10 +18,6 @@ try {
         const domain = cfg.smtpFromEmail.split('@')[1];
         if (domain) process.env.SMTP_FROM_DOMAIN = process.env.SMTP_FROM_DOMAIN || domain;
     }
-    // API key only needed for real Mailsac delivery checks.
-    if ((process.env.EMAIL_BACKEND || 'intercept') === 'mailsac') {
-        process.env.MAILSAC_API_KEY = process.env.MAILSAC_API_KEY || cfg.mailsacApiKey;
-    }
 } catch {
     // PHP config not available — rely on pre-set environment variables (e.g. GitHub Actions).
     process.env.BASE_URL           = process.env[`BASE_URL_${env.toUpperCase()}`]           || process.env.BASE_URL;
