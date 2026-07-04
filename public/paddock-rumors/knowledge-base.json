@@ -1600,5 +1600,20 @@
     "source_url": null,
     "updated_at": "2026-07-04T15:00:31.640Z",
     "content_hash": "0ee14124a5959c61"
+  },
+  {
+    "id": "quali-2026-r09-silverstone",
+    "title": "British Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 9 Qualifying: British Grand Prix. Andrea Kimi Antonelli took pole position for the British Grand Prix at Silverstone Circuit, setting a Q3 lap time of 1:28.111 for Mercedes. Charles Leclerc qualified second for Ferrari, 0.175 seconds adrift, with teammate Lewis Hamilton third at 1:28.458, giving Ferrari a strong front-row challenge. George Russell completed the second row for Mercedes at 1:28.481, just 0.023 seconds behind Hamilton, indicating an exceptionally tight midfield of the top four. Isack Hadjar was an impressive fifth for Red Bull at 1:28.746, outqualifying both McLaren drivers and veteran teammate Max Verstappen, who ended seventh at 1:28.893. Lando Norris in sixth and Oscar Piastri in eighth represent a subdued qualifying for McLaren relative to their recent form. Arvid Lindblad reached Q3 for RB F1 Team in ninth, a notable result for the junior outfit. Aston Martin's Lance Stroll and Fernando Alonso were eliminated in Q1 with times over 1.5 seconds off the pace, underscoring a significant competitiveness gap. The front-row lockout for Mercedes and Ferrari, combined with Red Bull's moderate pace, suggests a race likely to be contested between those two constructors, with Red Bull and McLaren potentially operating as secondary challengers.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 9,
+      "circuit": "silverstone-circuit",
+      "pole_driver": "andrea-kimi-antonelli"
+    },
+    "source_url": null,
+    "updated_at": "2026-07-04T19:00:49.709Z",
+    "content_hash": "1b39dc7db96003ef"
   }
 ]
