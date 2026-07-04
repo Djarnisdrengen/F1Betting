@@ -1561,5 +1561,44 @@
     "source_url": "https://en.wikipedia.org/wiki/2026_Austrian_Grand_Prix",
     "updated_at": "2026-06-28T17:18:01.700Z",
     "content_hash": "f001ca8d8ceaf04d"
+  },
+  {
+    "id": "sprint-2026-r09-silverstone",
+    "title": "British Grand Prix 2026 — Sprint Race",
+    "content": "Season 2026, Round 9 Sprint: British Grand Prix. Lewis Hamilton took sprint qualifying pole at Silverstone Circuit for the 2026 British Grand Prix, with Andrea Kimi Antonelli of Mercedes completing the front row. Max Verstappen of Red Bull and Charles Leclerc of Ferrari occupied the second row. In the sprint race, Antonelli converted his front-row start into victory, with Hamilton finishing second and Lando Norris of McLaren completing the podium after advancing three places from sixth on the grid. George Russell gained one position to finish fourth, while Verstappen dropped three places from third to sixth, suggesting Red Bull faced pace or tyre management difficulties over the sprint distance. Alexander Albon of Williams was the largest net gainer, moving four positions forward from twenty-second to eighteenth, while Sergio Pérez of Cadillac F1 Team lost four places to finish last. The sprint results indicate Ferrari and Mercedes hold strong single-lap and race pace at Silverstone, with McLaren demonstrating competitive race-trim performance that could be significant over the longer Grand Prix distance and across tyre compounds.",
+    "tags": {
+      "season": 2026,
+      "type": "sprint",
+      "round": 9,
+      "circuit": "silverstone-circuit",
+      "sprint_winner": "andrea-kimi-antonelli",
+      "drivers_classified": [
+        "andrea-kimi-antonelli",
+        "lewis-hamilton",
+        "lando-norris",
+        "george-russell",
+        "charles-leclerc",
+        "max-verstappen",
+        "oscar-piastri",
+        "liam-lawson",
+        "isack-hadjar",
+        "arvid-lindblad",
+        "pierre-gasly",
+        "franco-colapinto",
+        "gabriel-bortoleto",
+        "oliver-bearman",
+        "nico-h-lkenberg",
+        "esteban-ocon",
+        "carlos-sainz",
+        "alexander-albon",
+        "valtteri-bottas",
+        "fernando-alonso",
+        "lance-stroll",
+        "sergio-p-rez"
+      ]
+    },
+    "source_url": null,
+    "updated_at": "2026-07-04T15:00:31.640Z",
+    "content_hash": "0ee14124a5959c61"
   }
 ]
