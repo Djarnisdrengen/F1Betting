@@ -61,7 +61,7 @@ Key sections to fill:
 - `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS` — MySQL connection for that environment
 - `SITE_URL` — e.g. `https://www.hpovlsen.dk` for test
 - `F1_ADMIN_EMAIL`, `F1_ADMIN_PASSWORD` — the service admin account
-- `JWT_SECRET`, `PASSWORD_PEPPER` — random 32-hex strings (generate with `openssl rand -hex 32`)
+- `PASSWORD_PEPPER` — random 32-hex string (generate with `openssl rand -hex 32`)
 - `INTEGRATION_SEED_TOKEN`, `CRON_SECRET` — any random secret strings
 - `SMTP_*` — email server credentials
 

@@ -76,7 +76,7 @@ Fill in all values for the target environment. See the comments in `config.examp
 Critical values to set correctly:
 - `APP_ENV` — must be `'test'` or `'live'` exactly
 - `SITE_URL` — must use `www` (e.g. `https://www.formula-1.dk`). Non-www 301s drop POST bodies.
-- `PASSWORD_PEPPER` and `JWT_SECRET` — generate with `openssl rand -hex 32`. Once users exist, changing these invalidates all passwords.
+- `PASSWORD_PEPPER` — generate with `openssl rand -hex 32`. Once users exist, changing it invalidates all passwords.
 - `CRON_SECRET` and `INTEGRATION_SEED_TOKEN` — any random secret; used to authenticate HTTP calls to cron and tool endpoints.
 
 ---

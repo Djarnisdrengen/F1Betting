@@ -26,7 +26,6 @@ define('SITE_DOMAIN', parse_url(SITE_URL, PHP_URL_HOST));
 
 // ── SECURITY ──────────────────────────────────────────────────────────
 // Generate with: php -r "echo bin2hex(random_bytes(32));"
-define('JWT_SECRET',             'change-me-32-random-hex-chars');
 define('PASSWORD_PEPPER',        'change-me-32-random-hex-chars');
 // MFA_KEY seals TOTP secrets at rest (sodium secretbox). MUST be exactly 64 hex chars (32 bytes).
 define('MFA_KEY',                'change-me-64-random-hex-chars');

@@ -27,7 +27,7 @@ All terminal commands for the F1 Betting project.
 | `cp config.example.php config.test.php` | Create test environment config |
 | `cp config.example.php config.live.php` | Create live environment config |
 | `npm run setup:deploy` | Interactive FTP setup — writes `build-deploy/.env` |
-| `openssl rand -hex 32` | Generate a 32-hex secret (for JWT_SECRET, PASSWORD_PEPPER) |
+| `openssl rand -hex 32` | Generate a 32-hex secret (for PASSWORD_PEPPER) |
 
 ---
 

@@ -65,9 +65,9 @@ Enter FTP credentials from your password manager when prompted. See `build-deplo
 
 ### Step 3 — Reconstruct `config.live.php`
 
-Copy `config.example.php` to `config.live.php` and fill in all 19 constants from your password manager.
+Copy `config.example.php` to `config.live.php` and fill in all constants from your password manager.
 
-**Critical:** `JWT_SECRET` and `PASSWORD_PEPPER` must match the original values exactly — changing either logs out all users or breaks all password logins respectively.
+**Critical:** `PASSWORD_PEPPER` must match the original value exactly — changing it breaks all password logins.
 
 ### Step 3a — Reconstruct `config.test.php`
 

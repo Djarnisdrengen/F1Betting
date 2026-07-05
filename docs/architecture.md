@@ -209,7 +209,7 @@ require_once __DIR__ . '/config.shared.php';
 - `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`
 - `SITE_URL`, `SITE_DOMAIN`
 - `F1_ADMIN_EMAIL`, `F1_ADMIN_PASSWORD`
-- `JWT_SECRET`, `PASSWORD_PEPPER` (32 hex chars each)
+- `PASSWORD_PEPPER` (32 hex chars)
 - `INTEGRATION_SEED_TOKEN`, `CRON_SECRET`
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
 
