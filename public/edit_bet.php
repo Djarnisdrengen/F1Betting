@@ -77,6 +77,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$error) {
         $db->prepare("UPDATE bets SET p1 = ?, p2 = ?, p3 = ?, placed_at = NOW() WHERE id = ?")
            ->execute([$p1, $p2, $p3, $betId]);
+
+        // Confirmation email — best effort, never blocks the bet (sendEmail logs failures)
+        require_once __DIR__ . '/includes/smtp.php';
+        sendBetConfirmationEmail(
+            $currentUser['email'],
+            $currentUser['display_name'],
+            $bet['race_name'],
+            [$driversById[$p1]['name'] ?? $p1, $driversById[$p2]['name'] ?? $p2, $driversById[$p3]['name'] ?? $p3],
+            true,
+            $lang
+        );
+
         header("Location: index.php?success=bet_updated");
         exit;
     }

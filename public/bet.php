@@ -71,6 +71,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $betId = generateUUID();
         $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3) VALUES (?, ?, ?, ?, ?, ?)")
            ->execute([$betId, $currentUser['id'], $raceId, $p1, $p2, $p3]);
+
+        // Confirmation email — best effort, never blocks the bet (sendEmail logs failures)
+        require_once __DIR__ . '/includes/smtp.php';
+        sendBetConfirmationEmail(
+            $currentUser['email'],
+            $currentUser['display_name'],
+            $race['name'],
+            [$driversById[$p1]['name'] ?? $p1, $driversById[$p2]['name'] ?? $p2, $driversById[$p3]['name'] ?? $p3],
+            false,
+            $lang
+        );
+
         header("Location: index.php?success=bet_placed");
         exit;
     }

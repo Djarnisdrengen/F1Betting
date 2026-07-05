@@ -629,7 +629,7 @@ if (($_GET['action'] ?? '') === 'cleanup_bet_deleted') {
 
 // Action: send_email_preview — sends one real email of each type to F1_ADMIN_EMAIL for visual review.
 // No DB side-effects. All dummy data, all sent to F1_ADMIN_EMAIL.
-// Sends all 8 types in both Danish and English (16 emails total).
+// Sends all 10 types in both Danish and English (20 emails total).
 // Returns: { ok, emails: { "<key>_<lang>": { sent, to, subject, ...details } } }
 if (($_GET['action'] ?? '') === 'send_email_preview') {
     require_once __DIR__ . '/../includes/smtp.php';
@@ -816,6 +816,21 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
             'race'    => $previewRace['name'],
             'html'    => $html,
         ];
+
+        // 9 + 10. Bet confirmation — placed and updated (via buildBetConfirmationEmail)
+        $previewDrivers = ['Max Verstappen', 'Lewis Hamilton', 'Charles Leclerc'];
+        foreach ([['9_bet_placed', false], ['10_bet_updated', true]] as [$key, $isUpdate]) {
+            $mail = buildBetConfirmationEmail($previewName, $adminEmail, $previewRace['name'], $previewDrivers, $isUpdate, $lang);
+            $r = sendEmail($adminEmail, $mail['subject'], $mail['html'], $mail['text']);
+            $emails["{$key}{$suffix}"] = [
+                'sent'    => $r['success'],
+                'to'      => $adminEmail,
+                'subject' => $mail['subject'],
+                'race'    => $previewRace['name'],
+                'drivers' => implode(', ', $previewDrivers),
+                'html'    => $mail['html'],
+            ];
+        }
     }
 
     $allOk = array_reduce($emails, fn($c, $e) => $c && $e['sent'], true);

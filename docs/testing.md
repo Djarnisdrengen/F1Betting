@@ -41,7 +41,7 @@ All tests run against the deployed site over HTTP — there is no local test ser
 | `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery | test | ~5–10 min |
 | `npm run test:e2e:live` | A | `01-smoke.spec.js` only — read-only live health check | live | ~30s |
 | `npm run test:resend` | B | Sends one email directly via Resend API; verifies backup transport is operational | live | ~5s |
-| `npm run test:email:preview` | B | Renders all 16 email types locally as HTML files for manual visual review | test | ~30s |
+| `npm run test:email:preview` | B | Renders all 20 email types locally as HTML files for manual visual review | test | ~30s |
 | `npm run test:security` | B | OWASP headers, cookies, access control, CWE Top 25 | test or live | ~30s |
 | `npm run test:all` | B+A | smoke + unit + e2e:test | test | ~10 min |
 
@@ -199,8 +199,10 @@ Test env only. Serial. Seeds a race and in-competition user (`seed.bettingRace()
 | Test | Asserts |
 |---|---|
 | Place a bet | Submit → redirect to `index.php?success=bet_placed`; success alert |
+| Bet confirmation email | Intercepted mail: subject has race name; body has domain, P1–P3 drivers in picked order, timestamp |
 | Attempt to bet again | Redirect contains `already_bet` |
 | Edit a bet | Swap P1/P3 → redirect to `index.php?success=bet_updated`; success alert |
+| Update confirmation email | Intercepted mail: "updated" subject with race name; body has domain, swapped picks in order, timestamp |
 | Duplicate driver | Same driver in two positions → validation error |
 
 ---
@@ -437,7 +439,7 @@ and *E2E Race Page Done*, 3 in-competition users, and the accented-surname drive
 npm run test:email:preview
 ```
 
-Standalone Stack B script. Calls `test-seed.php?action=send_email_preview` which renders all 8 email types in DA + EN (16 total) via the SMTP intercept. Prints a formatted summary (name, to, subject, extra fields) and writes HTML files to `tests/email-previews/{timestamp}/`. Not pass/fail — exit 0 always. Use it for manual visual review of email templates after copy or layout changes.
+Standalone Stack B script. Calls `test-seed.php?action=send_email_preview` which renders all 10 email types in DA + EN (20 total) via the SMTP intercept. Prints a formatted summary (name, to, subject, extra fields) and writes HTML files to `tests/email-previews/{timestamp}/`. Not pass/fail — exit 0 always. Use it for manual visual review of email templates after copy or layout changes.
 
 Open the generated HTML files in a browser to inspect the rendered emails:
 

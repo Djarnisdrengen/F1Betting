@@ -450,6 +450,51 @@ function sendInviteEmail($email, $inviteLink, $inviterName, $lang = 'da') {
 }
 
 /**
+ * Build bet confirmation email content (bet placed or updated).
+ * $driverNames = driver names in podium order [P1, P2, P3].
+ * Returns ['subject' => ..., 'html' => ..., 'text' => ...] so the email
+ * preview endpoint can render it without duplicating the layout.
+ */
+function buildBetConfirmationEmail($displayName, $email, $raceName, array $driverNames, $isUpdate = false, $lang = 'da') {
+    $appName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+    $domain  = parse_url(defined('SITE_URL') ? SITE_URL : '', PHP_URL_HOST) ?: '';
+    $when    = date('d M Y') . ' - ' . date('H:i') . ' CET';
+
+    $name       = $displayName ?: $email;
+    $variant    = $isUpdate ? 'updated' : 'placed';
+    $subject    = sprintf(t("email_bet_confirm_subject_{$variant}", $lang), $raceName);
+    $greeting   = sprintf(t('email_bet_confirm_greeting', $lang), $name);
+    $intro      = sprintf(t("email_bet_confirm_intro_{$variant}", $lang), htmlspecialchars($raceName));
+    $picksLabel = t('email_bet_confirm_picks', $lang);
+    $meta       = sprintf(t('email_bet_confirm_meta', $lang), $domain, $when);
+
+    $picksHtml = $picksLabel;
+    $picksText = $picksLabel;
+    foreach (array_values($driverNames) as $i => $driverName) {
+        $pos        = 'P' . ($i + 1);
+        $picksHtml .= "<br>{$pos}: <strong>" . htmlspecialchars($driverName) . '</strong>';
+        $picksText .= "\n{$pos}: {$driverName}";
+    }
+
+    $buttonText   = t('email_go_to_app', $lang);
+    $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : (defined('SITE_URL') ? SITE_URL : '');
+    $regards      = sprintf(t('email_regards', $lang), $appName);
+
+    $html = getEmailTemplate($greeting, "$intro<br><br>$picksHtml", $buttonText, $emailBaseUrl, $meta, '', $regards, $appName);
+    $text = $greeting . "\n\n" . strip_tags($intro) . "\n\n" . $picksText . "\n\n" . $meta;
+
+    return ['subject' => $subject, 'html' => $html, 'text' => $text];
+}
+
+/**
+ * Send bet confirmation email (bet placed or updated)
+ */
+function sendBetConfirmationEmail($email, $displayName, $raceName, array $driverNames, $isUpdate = false, $lang = 'da') {
+    $mail = buildBetConfirmationEmail($displayName, $email, $raceName, $driverNames, $isUpdate, $lang);
+    return sendEmail($email, $mail['subject'], $mail['html'], $mail['text']);
+}
+
+/**
  * Get HTML email template
  */
 function getEmailTemplate($greeting, $intro, $buttonText, $buttonLink, $expiry, $ignore, $footer, $appName) {

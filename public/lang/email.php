@@ -76,6 +76,15 @@ return [
         'email_go_to_app'           => 'Gå til appen',
         'email_contact_admin'       => 'Kontakt administrator hvis du har spørgsmål.',
         'email_regards'             => 'Venlig hilsen,<br>%s',
+
+        // Bet confirmation email (placed / updated)
+        'email_bet_confirm_subject_placed'  => 'Bet bekræftet: %s',
+        'email_bet_confirm_subject_updated' => 'Bet opdateret: %s',
+        'email_bet_confirm_greeting'        => 'Hej %s,',
+        'email_bet_confirm_intro_placed'    => 'Dit bet på <strong>%s</strong> er registreret.',
+        'email_bet_confirm_intro_updated'   => 'Dit bet på <strong>%s</strong> er opdateret.',
+        'email_bet_confirm_picks'           => 'Dine valg:',
+        'email_bet_confirm_meta'            => 'Registreret på %s: %s',
     ],
     'en' => [
         // MFA email OTP
@@ -153,5 +162,14 @@ return [
         'email_go_to_app'           => 'Go to app',
         'email_contact_admin'       => 'Contact administrator if you have questions.',
         'email_regards'             => 'Best regards,<br>%s',
+
+        // Bet confirmation email (placed / updated)
+        'email_bet_confirm_subject_placed'  => 'Bet confirmed: %s',
+        'email_bet_confirm_subject_updated' => 'Bet updated: %s',
+        'email_bet_confirm_greeting'        => 'Hi %s,',
+        'email_bet_confirm_intro_placed'    => 'Your bet on <strong>%s</strong> has been placed.',
+        'email_bet_confirm_intro_updated'   => 'Your bet on <strong>%s</strong> has been updated.',
+        'email_bet_confirm_picks'           => 'Your picks:',
+        'email_bet_confirm_meta'            => 'Recorded on %s: %s',
     ],
 ];
