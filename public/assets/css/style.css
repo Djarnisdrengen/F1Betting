@@ -3127,3 +3127,55 @@ body.font-system {
 .race-title { font-size:1.5rem; }
 @media (min-width:768px)  { .race-title { font-size:1.9rem; } }
 @media (min-width:1024px) { .race-title { font-size:2.4rem; } }
+
+/* ============================================================
+   v2.4.1 — Test-environment banner. Additive only.
+   Fixed hazard colours on purpose — must stay loud on every theme.
+   Sticky at top:56px = .hf-top height (same constant .hf-drawer uses);
+   z-index 20 keeps it level with the header and *below* the drawer (30).
+   ============================================================ */
+
+.test-banner {
+    position: sticky;
+    top: 56px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 9px 16px;
+    color: #1a1a00;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    text-align: center;
+    border-top: 2px solid rgba(0,0,0,.55);
+    border-bottom: 3px solid rgba(0,0,0,.55);
+    /* hazard stripes */
+    background-color: #ffcf00;
+    background-image: repeating-linear-gradient(45deg, #1a1a00 0 14px, transparent 14px 28px);
+}
+
+/* Solid plate keeps the message readable over the stripes */
+.test-banner .test-banner-plate {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    background: #ffcf00;
+    padding: 3px 16px;
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px #1a1a00;
+}
+.test-banner i { font-size: 15px; }
+
+@media (max-width: 480px) {
+    .test-banner { font-size: 11.5px; padding: 7px 10px; }
+    .test-banner .test-banner-plate { padding: 3px 10px; gap: 7px; }
+}
+
+@media print {
+    .test-banner { display: none; }
+}

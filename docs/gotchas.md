@@ -20,6 +20,7 @@
 - [16. MFA requires MFA_KEY in config, and MFA tables use the legacy latin1 collation](#16-mfa-requires-mfa_key-in-config-and-mfa-tables-use-the-legacy-latin1-collation)
 - [17. Test env sends email by default — interception is opt-in](#17-test-env-sends-email-by-default--interception-is-opt-in-e2e-turns-it-on-per-run)
 - [18. Migrations are manual per environment — the deploy schema check catches forgotten ones](#18-migrations-are-manual-per-environment--the-deploy-schema-check-catches-forgotten-ones)
+- [19. The test-environment banner is gated by APP_ENV — never loosen the guard](#19-the-test-environment-banner-is-gated-by-app_env--never-loosen-the-guard)
 
 ---
 
@@ -191,3 +192,9 @@ On the test environment `config.test.php` sets `SMTP_INTERCEPT = true`, which ma
 Migrations (`database/*.sql` and inline `ALTER`s in `schema.sql`) are applied by hand in phpMyAdmin on each environment. Deploy code that references a not-yet-added column and you get a runtime fatal (e.g. `Unknown column 'quali_date'`), not a deploy failure — unless the object is registered for checking.
 
 `deploy.js` guards this: after upload it POSTs `database/migrations.json` to `public/tools/schema-check.php`, which introspects the target DB. Missing objects fail the deploy (and roll back on live) with the exact migration file(s) to run. **When you add a migration, add the tables/columns it introduces to `database/migrations.json`** or the check can't see them. See `build-deploy/DEPLOYMENT.md → Schema check`.
+
+---
+
+## 19. The test-environment banner is gated by `APP_ENV` — never loosen the guard
+
+`public/includes/header.php` renders a yellow "Dette er en testhjemmeside" banner only when `APP_ENV === 'test'`. The banner is only ever allowed on hpovlsen.dk — never formula-1.dk (owner decision, 2026-07-05). The guard is server-side config, deliberately **not** `$_SERVER['HTTP_HOST']` (client-controlled). Don't remove the guard, don't switch it to Host-header sniffing, and don't raise the banner's `z-index` above the nav drawer's 30. The `deploy:live` E2E gate (`tests/e2e/01-smoke.spec.js`) asserts the banner is absent on live and rolls back the deploy if it isn't. Full spec: `epics/design_handoff_test_banner/`.

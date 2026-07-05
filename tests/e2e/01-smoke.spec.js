@@ -34,6 +34,25 @@ test.describe("Public pages", () => {
         await page.goto("/");
         await expect(page.locator('[data-testid="home-results"]')).toBeVisible();
     });
+
+    // Banner is gated server-side by APP_ENV === 'test' (header.php); this is
+    // the only spec the live testMatch gate runs, so the absence branch is the
+    // deploy:live safety net (deploy.js rolls back on failure).
+    test("test-environment banner: present on test, absent on live", async ({ page }) => {
+        await page.goto("/");
+        const banner = page.locator(".test-banner");
+        if (process.env.DEPLOY_ENV === "live") {
+            // Guard against env mix-ups: only trust an "absent" pass if we are
+            // genuinely pointed at the live host.
+            expect(new URL(page.url()).hostname).toContain("formula-1.dk");
+            await expect(banner).toHaveCount(0);
+        } else {
+            // Exact strings, both languages: t() falls back to the raw key, so a
+            // missing i18n entry must fail here, not render "test_site_banner".
+            await expect(banner).toBeVisible();
+            await expect(banner).toContainText(/Dette er en testhjemmeside|This is a test website/);
+        }
+    });
 });
 
 // ─── Translations ─────────────────────────────────────────────────────────────

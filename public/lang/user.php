@@ -1,6 +1,8 @@
 <?php
 return [
     'da' => [
+        // Test-environment banner
+        'test_site_banner'      => 'Dette er en testhjemmeside',
         // Navigation
         'home'                  => 'Hjem',
         'races'                 => 'Løb',
@@ -259,6 +261,8 @@ return [
         'quali_time'            => 'Kval. tid',
     ],
     'en' => [
+        // Test-environment banner
+        'test_site_banner'      => 'This is a test website',
         // Navigation
         'home'                  => 'Home',
         'races'                 => 'Races',

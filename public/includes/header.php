@@ -104,6 +104,16 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     </button>
 </header>
 
+<?php if (defined('APP_ENV') && APP_ENV === 'test'): ?>
+<!-- Test-environment banner — only ever rendered when APP_ENV === 'test' -->
+<div class="test-banner">
+    <span class="test-banner-plate">
+        <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+        <?= t('test_site_banner') ?>
+    </span>
+</div>
+<?php endif; ?>
+
 <nav class="hf-drawer" id="hf-drawer">
     <a href="/" class="hf-drawer-row <?= $currentPage === 'index' ? 'active' : '' ?>">
         <i class="fas fa-home"></i><span><?= t('home') ?></span>
