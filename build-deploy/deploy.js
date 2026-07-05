@@ -45,7 +45,7 @@ async function uploadDir(client, localDir, remoteDir, ignores) {
 }
 
 async function runTests(baseUrl, env) {
-    const smokeOk = await runSmoke(baseUrl);
+    const smokeOk = await runSmoke(baseUrl, env);
 
     if (env === "test") {
         return smokeOk;

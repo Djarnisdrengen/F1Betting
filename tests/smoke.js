@@ -4,15 +4,17 @@ const https = require("https");
 const { URL: URL_ } = require("url");
 require("dotenv").config({ path: path.join(__dirname, "../build-deploy/.env") });
 
-// Try to load admin credentials from PHP config (single source of truth, same as security.js)
-let adminEmail, adminPassword;
-try {
-    const { readPhpConfig } = require("../build-deploy/php-config");
-    const env = process.env.DEPLOY_ENV || "test";
-    const cfg = readPhpConfig(env);
-    adminEmail    = cfg.adminEmail;
-    adminPassword = cfg.adminPassword;
-} catch { /* config absent — authenticated smoke checks will be skipped */ }
+// Load admin credentials from the PHP config for the TARGET environment (single source of truth,
+// same as security.js). Resolved per-call, not at module load, so a live deploy authenticates with
+// live credentials — not whatever DEPLOY_ENV happened to be when this module was first required.
+function loadAdminCreds(env) {
+    try {
+        const { readPhpConfig } = require("../build-deploy/php-config");
+        const cfg = readPhpConfig(env);
+        return { adminEmail: cfg.adminEmail, adminPassword: cfg.adminPassword };
+    } catch { /* config absent — authenticated smoke checks will be skipped */ }
+    return { adminEmail: undefined, adminPassword: undefined };
+}
 
 // ─── Public checks (no session required) ─────────────────────────────────────
 
@@ -116,8 +118,9 @@ async function loginForSmoke(baseUrl, email, password) {
 
 // ─── Smoke runner ─────────────────────────────────────────────────────────────
 
-async function runSmoke(baseUrl) {
+async function runSmoke(baseUrl, env = process.env.DEPLOY_ENV || "test") {
     console.log(`\n🧪 Running smoke tests against ${baseUrl}...`);
+    const { adminEmail, adminPassword } = loadAdminCreds(env);
     let failed = 0;
     let total  = CHECKS.length;
 
