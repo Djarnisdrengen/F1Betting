@@ -4,14 +4,17 @@ require_once __DIR__ . '/../../config.php';
 header('Content-Type: application/json');
 
 $token = $_GET['token'] ?? '';
-if (!defined('INTEGRATION_SEED_TOKEN') || $token !== INTEGRATION_SEED_TOKEN) {
+if (!defined('INTEGRATION_SEED_TOKEN') || !hash_equals(INTEGRATION_SEED_TOKEN, $token)) {
     http_response_code(403);
     echo json_encode(['ok' => false, 'error' => 'Forbidden']);
     exit;
 }
 
 $db = getDB();
-$tables = ['settings', 'drivers', 'users', 'races', 'leaderboard_snapshots', 'bets', 'password_resets', 'invites'];
+// password_resets is intentionally NOT dumped: reset tokens are short-lived, are not needed to
+// restore the app, and must never sit in backup artifacts (a leaked backup would otherwise be an
+// account-takeover primitive). All other tables are included for disaster recovery.
+$tables = ['settings', 'drivers', 'users', 'races', 'leaderboard_snapshots', 'bets', 'invites'];
 
 $schema = [];
 $dump = [];

@@ -13,7 +13,12 @@ $success = '';
 $lang = getLang();
 
 $rawToken = $_GET['e2e_token'] ?? $_POST['e2e_token'] ?? '';
-$testMode = defined('INTEGRATION_SEED_TOKEN') && !empty($rawToken) && $rawToken === INTEGRATION_SEED_TOKEN;
+// The e2e backdoor returns the real reset link inline instead of emailing it. It must NEVER be
+// reachable in production: gate on the test environment AND the token, using hash_equals to avoid
+// leaking the token via timing. On live (APP_ENV='live') this is always false.
+$testMode = defined('APP_ENV') && APP_ENV === 'test'
+    && defined('INTEGRATION_SEED_TOKEN') && !empty($rawToken)
+    && hash_equals(INTEGRATION_SEED_TOKEN, $rawToken);
 $pwdResetTestOutput = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

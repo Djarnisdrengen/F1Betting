@@ -20,14 +20,20 @@ test.describe("Cron jobs", () => {
             await page.close();
         });
 
-        test("unauthorized without token or test mode", async ({ page }) => {
+        test("unauthorized without a token (bare request)", async ({ page }) => {
             await page.goto("/cron/import_qualifying.php");
             const text = await page.textContent("body");
             expect(text).toContain("Unauthorized access");
         });
 
-        test("test mode imports qualifying results", async ({ page }) => {
+        test("test mode alone does NOT bypass the cron token", async ({ page }) => {
             await page.goto("/cron/import_qualifying.php?test=true");
+            const text = await page.textContent("body");
+            expect(text).toContain("Unauthorized access");
+        });
+
+        test("test mode imports qualifying results with a valid token", async ({ page }) => {
+            await page.goto(`/cron/import_qualifying.php?test=true&token=${encodeURIComponent(CRON_SECRET)}`);
             const text = await page.textContent("body");
             expect(text).toContain("[SUCCESS] Updated qualifying results");
             expect(text).toContain("Total races updated: 1");

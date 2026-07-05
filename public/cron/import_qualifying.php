@@ -58,14 +58,16 @@ $tokenValid = false;
 
 if (php_sapi_name() === 'cli') {
     global $argv;
-    $tokenValid = isset($argv[1]) && $argv[1] === CRON_SECRET;
+    $tokenValid = isset($argv[1]) && hash_equals(CRON_SECRET, $argv[1]);
 } else {
-    $tokenValid = isset($_GET['token']) && $_GET['token'] === CRON_SECRET;
+    $tokenValid = isset($_GET['token']) && hash_equals(CRON_SECRET, $_GET['token']);
 }
 
 logMessage("[DEBUG] Cron token validation: " . ($tokenValid ? "VALID" : "INVALID"));
 
-if (!$tokenValid && !$TEST_MODE) {
+// CRON_SECRET is ALWAYS required. Test mode only swaps the API for stub data; it must never
+// bypass authentication (previously `?test=true` alone skipped the token check entirely).
+if (!$tokenValid) {
     logMessage("[ERROR] Unauthorized access. Exiting.");
     exit(1);
 }
