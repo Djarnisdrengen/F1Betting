@@ -125,6 +125,26 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await expect(page).toHaveURL(/profile\.php/); // genuinely promoted
     });
 
+    test('passwordless login from the login page (PWL-01)', async ({ page }) => {
+        await addVirtualAuthenticator(page);
+        await login(page, user.email, user.password);
+        await page.waitForURL(/index\.php/);
+        await registerPasskey(page);
+        await dismissRecoveryCodes(page);
+        await page.goto('/logout.php');
+
+        // The button ships hidden and is revealed by feature detection.
+        await page.goto('/login.php');
+        const btn = page.locator('[data-testid="passkey-login"]');
+        await expect(btn).toBeVisible();
+
+        // No email, no password — discoverable credential straight to a session.
+        await btn.click();
+        await page.waitForURL(/index\.php/);
+        await page.goto('/profile.php');
+        await expect(page).toHaveURL(/profile\.php/); // genuinely promoted
+    });
+
     test('rename a passkey (management)', async ({ page }) => {
         await addVirtualAuthenticator(page);
         await login(page, user.email, user.password);

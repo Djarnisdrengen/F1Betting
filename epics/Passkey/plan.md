@@ -23,11 +23,11 @@ All review conditions from `test-plan.md` §8 were decided by Djarnis on 2026-07
 
 ## Phasing
 
-| Phase | Content | Shippable |
-|---|---|---|
-| **1** | Vendored lib + `passkey.php` core + endpoint + registration UI + challenge method + `sync.js` guard + docs | yes (complete passkey-as-factor) |
-| **2** | Passwordless login button + conditional UI on `login.php` | yes |
-| **3** | Hardening: login-method instrumentation, nudge copy, docs polish | yes |
+| Phase | Content | Shippable | Status |
+|---|---|---|---|
+| **1** | Vendored lib + `passkey.php` core + endpoint + registration UI + challenge method + `sync.js` guard + docs | yes (complete passkey-as-factor) | **shipped live 2026-07-06** (both gates passed: auth suite green on test, device checklist signed) |
+| **2** | Passwordless login button on `login.php` (conditional UI deferred — see Phase 2) | yes | implemented 2026-07-06 |
+| **3** | Hardening: login-method instrumentation, nudge copy, docs polish | yes | not started |
 
 Phases 1 and 2 can also land as a single release; Phase 1 is the minimum safe unit.
 
@@ -127,9 +127,25 @@ Vanilla JS, loaded with the existing CSP nonce script pattern (`header.php` emit
 
 ## Phase 2 — Passwordless login (`public/login.php`)
 
-- "Sign in with a passkey" button under the password form (`data-testid="passkey-login"`), visible only after JS feature detection.
-- Optional conditional UI: `navigator.credentials.get({mediation:'conditional'})` with `autocomplete="username webauthn"` on the email field where supported.
+- "Sign in with a passkey" button under the password form (`data-testid="passkey-login"`), visible only after JS feature detection (ships `hidden`; `passkey.js` reveals `[data-passkey-supported]` when WebAuthn exists — no dead button for no-JS/unsupported browsers).
 - Flow: `login_options` → `navigator.credentials.get()` → `login_verify` → JS navigates to the returned redirect. Failures fall back silently to the password form with a generic error.
+- Covered by PWL-01 in `35-passkey.spec.js` (register → logout → button → session, no email/password typed).
+
+**Conditional UI deferred (2026-07-06).** The optional autofill flow
+(`navigator.credentials.get({mediation:'conditional'})`) is intentionally **not** implemented:
+
+1. **Untestable in the release gate:** the CDP virtual authenticator cannot drive the browser's
+   autofill credential picker, so the flow can never be covered by the auth E2E suite that gates
+   every live deploy — and depending on Chromium version, a pending conditional request against a
+   virtual authenticator with a resident credential risks *auto-resolving*, which would let
+   passwordless auto-login race the password flows in every existing auth spec.
+2. **Device-unverified:** the one-time real-device gate (🔴-1 B) has already run and did not
+   include conditional UI; shipping it now would put unverified prompt UX on iOS/Android.
+3. A pending conditional request must be `AbortController`-cancelled before any modal
+   `credentials.get()` or the button flow throws — extra state machine for marginal gain.
+
+The email field already carries `autocomplete="username webauthn"`, so enabling it later is a
+JS-only change. Revisit only on demand, with its own device pass.
 
 ## Phase 3 — Hardening (committed — all review nice-to-haves accepted 2026-07-05)
 

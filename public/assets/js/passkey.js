@@ -104,6 +104,9 @@
             document.querySelectorAll('[data-passkey-unsupported]').forEach(function (el) { el.hidden = false; });
             return;
         }
+        // Reveal blocks that must only exist when passkeys work (the login-page
+        // button ships hidden); no-op for blocks that are visible by default.
+        document.querySelectorAll('[data-passkey-supported]').forEach(function (el) { el.hidden = false; });
         document.addEventListener('click', function (e) {
             var add = e.target.closest('[data-passkey-add]');
             if (add) { e.preventDefault(); register(add); return; }

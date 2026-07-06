@@ -117,21 +117,32 @@ include __DIR__ . '/includes/header.php';
                 <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>">
                 <div>
                     <label class="form-label"><?= t('email') ?></label>
-                    <input type="email" name="email" class="form-input" required placeholder="name@example.com">
+                    <input type="email" name="email" class="form-input" required placeholder="name@example.com" autocomplete="username webauthn">
                 </div>
                 <div>
                     <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
                         <label class="form-label" style="margin:0;"><?= t('password') ?></label>
                         <a href="forgot_password.php" style="font-family:var(--font-display);font-weight:600;font-size:12px;color:var(--f1-red-light);text-decoration:none;"><?= t('forgot_password') ?></a>
                     </div>
-                    <input type="password" name="password" class="form-input" required placeholder="••••••••">
+                    <input type="password" name="password" class="form-input" required placeholder="••••••••" autocomplete="current-password">
                 </div>
                 <button type="submit" class="hf-cta-primary" style="width:100%;margin-top:8px;">
                     <?= t('login') ?> <span class="arrow">→</span>
                 </button>
             </form>
+            <?php // Passwordless login (discoverable credential). Starts hidden — passkey.js
+                  // reveals it only when the browser supports WebAuthn, so no-JS and
+                  // unsupported browsers never see a dead button. No inline display style
+                  // on this element: it would override the hidden attribute. ?>
+            <div hidden data-passkey-supported data-passkey-scope>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border-color);">
+                    <button type="button" class="btn btn-secondary" style="width:100%;" data-passkey-login data-redirect="<?= htmlspecialchars($redirect) ?>" data-testid="passkey-login"><i class="fas fa-fingerprint"></i> <?= t('passkey_signin') ?></button>
+                    <p data-passkey-error hidden role="alert" style="font-size:13px;margin:0;color:var(--f1-red-light);" data-testid="passkey-login-error"><?= t('passkey_error') ?></p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
+<script nonce="<?= $nonce ?>" src="assets/js/passkey.js"></script>
