@@ -78,6 +78,9 @@ module.exports = {
     emailPreview:   ()       => call('send_email_preview'),
     // → { ok, emails: { "<key>_<lang>": { sent, to, subject, ... } } }
 
+    setPasskeySignCount: (email, count) => call('set_passkey_sign_count', { email, count }),
+    // → { ok, updated }
+
     // ── Cleanup ────────────────────────────────────────────────────────────────
 
     cleanup: {
@@ -93,5 +96,7 @@ module.exports = {
         register:       () => call('cleanup_register'),
         e2eUser:        () => call('cleanup_e2e_user'),
         e2eInvite:      () => call('cleanup_e2e_invite'),
+        passkeys:       (email) => call('cleanup_passkeys', email ? { email } : {}),
+        loginAttempts:  () => call('clear_login_attempts'),
     },
 };

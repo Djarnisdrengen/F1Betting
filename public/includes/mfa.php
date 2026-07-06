@@ -263,7 +263,9 @@ function verifyEmailOtp(PDO $db, string $uid, string $code, string $purpose): bo
     return false;
 }
 
-// ── Passkeys (Phase 2 placeholder) ───────────────────────────────────────────
+// ── Passkeys ─────────────────────────────────────────────────────────────────
+// Registration/assertion logic lives in passkey.php; only the "is enrolled"
+// check lives here so the aggregate below has no library dependency.
 function passkeyActive(PDO $db, string $uid): bool {
     $st = $db->prepare("SELECT 1 FROM user_passkeys WHERE user_id = ? LIMIT 1");
     $st->execute([$uid]);
@@ -280,13 +282,14 @@ function userHasActiveFactor(PDO $db, string $uid): bool {
 // available as a last resort and are intentionally NOT listed here.
 function activeMfaMethods(PDO $db, string $uid): array {
     $methods = [];
+    if (passkeyActive($db, $uid))  $methods[] = 'passkey';
     if (totpActive($db, $uid))     $methods[] = 'totp';
     if (emailOtpActive($db, $uid)) $methods[] = 'email';
     return $methods;
 }
 
 // The method to show first on the challenge screen: the member's stored preference if that
-// factor is still active, otherwise the first available by fallback priority (totp → email).
+// factor is still active, otherwise the first available by fallback priority (passkey → totp → email).
 function getMfaDefaultMethod(PDO $db, string $uid): ?string {
     $active = activeMfaMethods($db, $uid);
     if (!$active) return null;
@@ -297,8 +300,8 @@ function getMfaDefaultMethod(PDO $db, string $uid): ?string {
     return $active[0];
 }
 
-// Persists the preferred method. Only 'totp' | 'email' are storable; anything else clears it.
+// Persists the preferred method. Only 'passkey' | 'totp' | 'email' are storable; anything else clears it.
 function setMfaDefaultMethod(PDO $db, string $uid, ?string $method): void {
-    $method = in_array($method, ['totp', 'email'], true) ? $method : null;
+    $method = in_array($method, ['passkey', 'totp', 'email'], true) ? $method : null;
     $db->prepare("UPDATE users SET mfa_default_method = ? WHERE id = ?")->execute([$method, $uid]);
 }

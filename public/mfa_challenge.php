@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/mfa.php';
+require_once __DIR__ . '/includes/passkey.php';
 
 // Already fully authenticated → nothing to do here.
 if (getCurrentUser()) {
@@ -105,7 +106,20 @@ $others = array_values(array_diff($active, [$default]));
 
 // Renders one method's block. $primary drives autofocus (only the lead method grabs focus).
 function mfaMethodBlock(string $method, bool $primary, bool $emailSent): void {
-    if ($method === 'totp') {
+    if ($method === 'passkey') {
+        // Verification happens via passkey.js → webauthn.php (challenge_options /
+        // challenge_verify), not a form POST. Without WebAuthn support the button
+        // hides and the unsupported note + "Other options" remain the path.
+        ?>
+        <div style="display:flex;flex-direction:column;gap:12px;" data-passkey-scope data-testid="mfa-form-passkey">
+            <p style="color:var(--text-secondary);font-size:14px;margin:0;"><?= t('passkey_challenge_prompt') ?></p>
+            <button type="button" class="hf-cta-primary" style="width:100%;" data-passkey-challenge data-passkey-supported data-testid="mfa-passkey-btn" <?= $primary ? 'autofocus' : '' ?>><?= t('passkey_signin') ?> <span class="arrow">→</span></button>
+            <p data-passkey-unsupported hidden style="font-size:13px;margin:0;color:var(--f1-red-light);"><?= t('passkey_unsupported') ?></p>
+            <p data-passkey-error hidden role="alert" style="font-size:13px;margin:0;color:var(--f1-red-light);" data-testid="mfa-passkey-error"><?= t('passkey_error') ?></p>
+            <form hidden aria-hidden="true"><?= csrfField() ?></form>
+        </div>
+        <?php
+    } elseif ($method === 'totp') {
         ?>
         <form method="POST" style="display:flex;flex-direction:column;gap:12px;" data-testid="mfa-form-totp">
             <?= csrfField() ?>
@@ -165,6 +179,7 @@ function mfaMethodBlock(string $method, bool $primary, bool $emailSent): void {
 
 // Human label for a method (used to title the lead block).
 function mfaMethodLabel(string $method): string {
+    if ($method === 'passkey') return t('passkey');
     return $method === 'email' ? t('email_otp') : t('totp_app');
 }
 
@@ -210,3 +225,4 @@ include __DIR__ . '/includes/header.php';
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
+<script nonce="<?= $nonce ?>" src="assets/js/passkey.js"></script>

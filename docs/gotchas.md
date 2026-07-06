@@ -21,6 +21,7 @@
 - [17. Test env sends email by default — interception is opt-in](#17-test-env-sends-email-by-default--interception-is-opt-in-e2e-turns-it-on-per-run)
 - [18. Migrations are manual per environment — the deploy schema check catches forgotten ones](#18-migrations-are-manual-per-environment--the-deploy-schema-check-catches-forgotten-ones)
 - [19. The test-environment banner is gated by APP_ENV — never loosen the guard](#19-the-test-environment-banner-is-gated-by-app_env--never-loosen-the-guard)
+- [20. Passkeys are bound to PASSKEY_RPID — a one-way door per environment](#20-passkeys-are-bound-to-passkey_rpid--a-one-way-door-per-environment)
 
 ---
 
@@ -167,7 +168,7 @@ The multi-factor auth system (`public/includes/mfa.php`) seals TOTP secrets at r
 
 The `users` table is legacy **`latin1_swedish_ci`**. New MFA tables (`user_totp`, `user_recovery_codes`, `user_email_otp`, `user_passkeys`) therefore pin their `user_id` foreign-key columns to `CHARACTER SET latin1 COLLATE latin1_swedish_ci` — otherwise the FK fails with error 3780 ("incompatible columns"). Keep this in mind for any future table that references `users.id`.
 
-Apply the migration with `database/add_mfa.sql` (idempotent except the additive `users.email_otp_enabled` and `users.mfa_default_method` columns, which error harmlessly on re-run). Passkeys (Phase 2) additionally require Composer + `web-auth/webauthn-lib`; `vendor/` must reach the server, and the WebAuthn RP ID must be the **www** host (see gotcha #1).
+Apply the migration with `database/add_mfa.sql` (idempotent except the additive `users.email_otp_enabled` and `users.mfa_default_method` columns, which error harmlessly on re-run). Passkeys use the **vendored** lbuchs/WebAuthn library in `public/includes/webauthn/` — no Composer — and require the `PASSKEY_RPID` config constant (see gotcha #20).
 
 **Preferred method + on-demand email:** `users.mfa_default_method` (`'totp'` | `'email'`, NULL = fallback order `totp → email`) decides which factor leads the challenge screen; resolve it with `getMfaDefaultMethod()`, which ignores a stored preference whose factor is no longer active. The email OTP is **only** auto-sent at login when the resolved default is `email` — otherwise no code is emailed until the member clicks "Email me a code" in the challenge screen's collapsed "Other options". So don't assume a login with email OTP active always sends a code.
 
@@ -198,3 +199,17 @@ Migrations (`database/*.sql` and inline `ALTER`s in `schema.sql`) are applied by
 ## 19. The test-environment banner is gated by `APP_ENV` — never loosen the guard
 
 `public/includes/header.php` renders a yellow "Dette er en testhjemmeside" banner only when `APP_ENV === 'test'`. The banner is only ever allowed on hpovlsen.dk — never formula-1.dk (owner decision, 2026-07-05). The guard is server-side config, deliberately **not** `$_SERVER['HTTP_HOST']` (client-controlled). Don't remove the guard, don't switch it to Host-header sniffing, and don't raise the banner's `z-index` above the nav drawer's 30. The `deploy:live` E2E gate (`tests/e2e/01-smoke.spec.js`) asserts the banner is absent on live and rolls back the deploy if it isn't. Full spec: `epics/design_handoff_test_banner/`.
+
+---
+
+## 20. Passkeys are bound to `PASSKEY_RPID` — a one-way door per environment
+
+Every passkey is cryptographically bound to the WebAuthn relying-party id: the **registrable domain**, `hpovlsen.dk` (test) / `formula-1.dk` (live), set as `PASSKEY_RPID` in each config. **Changing it after members have registered orphans every passkey silently** — logins just stop working. That's why `passkeyRpId()` (`public/includes/passkey.php`) fails loud unless the constant is present *and* matches the domain derived from `SITE_URL`: a config edit that changes the domain becomes an immediate error, not silent orphaning.
+
+Consequences to keep in mind:
+
+- **Test and live credentials are not interchangeable** — a passkey registered on hpovlsen.dk can never sign in on formula-1.dk, and vice versa.
+- **`sync:live` clears `user_passkeys` on the test copy** (`sync-from-live.php`, verified fail-loud by `sync.js`). Live rows would be unusable on test *and* would gate those members' test logins behind a factor that cannot be satisfied — `passkeyActive()` feeds `userHasActiveFactor()`, which triggers the two-step login.
+- **Registration and challenge verification must always ship together.** A member's *first* `user_passkeys` row immediately gates their password login, so a deploy that carries registration without the `mfa_challenge.php` passkey block + `webauthn.php` verify actions locks that member down to recovery codes.
+- **Sign counts are advisory.** Most platform authenticators always report 0; the clone check in `passkeyAssertVerify()` only rejects when both stored and new counters are non-zero. Don't "harden" it into a lockout — you'd lock out every iCloud/Google-synced passkey.
+- The vendored library is pinned in `public/includes/webauthn/VERSION`; bump it only via the documented update procedure (re-copy, diff, rerun `tests/unit/passkey-harness.php` + the auth E2E suite).

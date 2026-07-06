@@ -54,6 +54,9 @@ CREATE TABLE user_email_otp (
     KEY idx_emailotp_user (user_id)
 );
 
+-- WebAuthn credentials (public/includes/passkey.php). credential_id/public_key
+-- come from the authenticator; a row existing = the member is passkey-enrolled
+-- and their login is two-step (see docs/gotchas.md #20 on PASSKEY_RPID binding).
 CREATE TABLE user_passkeys (
     id            VARCHAR(36)    CHARACTER SET latin1 COLLATE latin1_swedish_ci PRIMARY KEY,
     user_id       VARCHAR(36)    CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,

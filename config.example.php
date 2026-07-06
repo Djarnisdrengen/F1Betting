@@ -29,6 +29,10 @@ define('SITE_DOMAIN', parse_url(SITE_URL, PHP_URL_HOST));
 define('PASSWORD_PEPPER',        'change-me-32-random-hex-chars');
 // MFA_KEY seals TOTP secrets at rest (sodium secretbox). MUST be exactly 64 hex chars (32 bytes).
 define('MFA_KEY',                'change-me-64-random-hex-chars');
+// PASSKEY_RPID: the WebAuthn relying-party id — the registrable domain (SITE_DOMAIN
+// without www). ONE-WAY DOOR: changing it orphans every registered passkey.
+// passkey.php fails loud if this doesn't match the domain derived from SITE_URL.
+define('PASSKEY_RPID',           'example.dk');
 define('INTEGRATION_SEED_TOKEN', 'change-me');
 
 // ── SMTP (Proton Mail — primary) ──────────────────────────────────────

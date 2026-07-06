@@ -875,6 +875,72 @@ if (($_GET['action'] ?? '') === 'cleanup_auth_user') {
     exit;
 }
 
+// Action: cleanup_passkeys — drop a test user's passkey rows (mid-suite reset).
+// Only @test.localhost accounts are touched, so a stray call cannot hit real members.
+if (($_GET['action'] ?? '') === 'cleanup_passkeys') {
+    $email = $_GET['email'] ?? 'e2e_auth_f1@test.localhost';
+    if (!str_ends_with($email, '@test.localhost')) {
+        echo json_encode(['ok' => false, 'error' => 'test.localhost accounts only']);
+        exit;
+    }
+    $st = $db->prepare("DELETE FROM user_passkeys WHERE user_id IN (SELECT id FROM users WHERE email = ?)");
+    $st->execute([$email]);
+    echo json_encode(['ok' => true, 'deleted' => $st->rowCount()]);
+    exit;
+}
+
+// Action: cleanup_admin_mfa — strip ALL factors from the f1_admin service
+// account. The automation admin must never have MFA enrolled (docs/gotchas.md
+// #16): an enrolled factor holds its login at the challenge and every authed
+// smoke check + E2E global-setup fails with "GET /profile.php [authed] → 302".
+// Reports what was removed so the enrolment source can be identified.
+if (($_GET['action'] ?? '') === 'cleanup_admin_mfa') {
+    $st = $db->prepare("SELECT id, email_otp_enabled FROM users WHERE email = ?");
+    $st->execute([F1_ADMIN_EMAIL]);
+    $admin = $st->fetch();
+    if (!$admin) {
+        echo json_encode(['ok' => false, 'error' => 'f1_admin not found']);
+        exit;
+    }
+    $pk = $db->prepare("DELETE FROM user_passkeys WHERE user_id = ?");
+    $pk->execute([$admin['id']]);
+    $tp = $db->prepare("DELETE FROM user_totp WHERE user_id = ?");
+    $tp->execute([$admin['id']]);
+    $db->prepare("UPDATE users SET email_otp_enabled = 0, mfa_default_method = NULL WHERE id = ?")
+       ->execute([$admin['id']]);
+    echo json_encode([
+        'ok'               => true,
+        'passkeys_removed' => $pk->rowCount(),
+        'totp_removed'     => $tp->rowCount(),
+        'email_otp_was_on' => (bool)$admin['email_otp_enabled'],
+    ]);
+    exit;
+}
+
+// Action: clear_login_attempts — reset the IP rate-limit budget (test DB only;
+// this tool never reaches live). The passkey negatives spec deliberately records
+// failed attempts; without this, back-to-back suite runs within 15 min lock the
+// runner's IP out of global-setup's admin login.
+if (($_GET['action'] ?? '') === 'clear_login_attempts') {
+    $st = $db->query("DELETE FROM login_attempts");
+    echo json_encode(['ok' => true, 'deleted' => $st->rowCount()]);
+    exit;
+}
+
+// Action: set_passkey_sign_count — force a stored sign_count (clone-detection test SEC-01).
+if (($_GET['action'] ?? '') === 'set_passkey_sign_count') {
+    $email = $_GET['email'] ?? 'e2e_auth_f1@test.localhost';
+    $count = (int)($_GET['count'] ?? 0);
+    if (!str_ends_with($email, '@test.localhost')) {
+        echo json_encode(['ok' => false, 'error' => 'test.localhost accounts only']);
+        exit;
+    }
+    $st = $db->prepare("UPDATE user_passkeys SET sign_count = ? WHERE user_id IN (SELECT id FROM users WHERE email = ?)");
+    $st->execute([$count, $email]);
+    echo json_encode(['ok' => true, 'updated' => $st->rowCount()]);
+    exit;
+}
+
 // Action: seed_score_race — two-race scoring fixture
 // Race A: +400 days from now, result set (Ham/Ver/Lec), no perfect bet → pool carries to Race B
 // Race B: +401 days from now, bets placed, no result set → test enters result via admin UI

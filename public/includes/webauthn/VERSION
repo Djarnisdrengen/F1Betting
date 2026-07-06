@@ -1,0 +1,7 @@
+lbuchs/WebAuthn v2.2.0
+Upstream: https://github.com/lbuchs/WebAuthn
+Commit: 20adb4a240c3997bd8cac7dc4dde38ab0bea0ed1
+Vendored: 2026-07-06 (files copied unmodified from src/)
+
+Update procedure: download the newer tag, replace these files, diff,
+then rerun tests/unit/passkey-harness.php and the auth E2E suite.

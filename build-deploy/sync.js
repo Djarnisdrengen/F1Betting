@@ -49,6 +49,13 @@ async function sync() {
         process.exit(1);
     }
 
+    // Fail loud if the server ran without the user_passkeys guard — stale live
+    // passkey rows on test gate those members' logins behind an unusable factor.
+    if (typeof body.passkeys_cleared !== "number") {
+        console.error("❌ Sync response missing passkeys_cleared — sync-from-live.php on test is outdated (deploy first)");
+        process.exit(1);
+    }
+
     const { dropped_old_tables: dropped, copied, passwords_reset } = body;
     const parts = [];
     if (dropped > 0) parts.push(`${dropped} old_ tables dropped`);
@@ -56,6 +63,7 @@ async function sync() {
     parts.push(`${copied.users} users`);
     parts.push(`${copied.races} races`);
     parts.push(`${copied.bets} bets copied`);
+    parts.push(`user_passkeys cleared (${body.passkeys_cleared} stale)`);
     if (passwords_reset) parts.push("passwords reset to SYNC_TEST_PASSWORD");
     else                 parts.push("⚠️  SYNC_TEST_PASSWORD not set — passwords unverifiable on test");
     console.log("✅ Sync complete:", parts.join(", "));

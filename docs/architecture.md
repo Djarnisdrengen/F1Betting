@@ -251,6 +251,8 @@ FTP_HOST, FTP_USER, FTP_PASS, FTP_ROOT_TEST, FTP_ROOT_LIVE, DRY_RUN
 | Concern | Implementation |
 |---|---|
 | Authentication | bcrypt + `PASSWORD_PEPPER` constant |
+| Multi-factor auth | Opt-in TOTP / email OTP / recovery codes (`includes/mfa.php`). After a correct password, an enrolled member gets only `$_SESSION['mfa_pending']`; a session is granted solely by `mfa_challenge.php` or the `webauthn.php` verify actions |
+| Passkeys (WebAuthn) | Vendored lbuchs/WebAuthn (`includes/webauthn/`, no Composer) behind `includes/passkey.php`; JSON endpoint `public/webauthn.php` (6 actions, byte-identical generic errors); rpId = `PASSKEY_RPID` (registrable domain — one-way door, see gotcha #20) |
 | Session fixation | `session_regenerate_id()` after login |
 | CSRF | Per-session token, `csrfField()` + `requireCsrf()` |
 | Rate limiting | 5 failed logins per IP per 15 min, `login_attempts` table. Successful login clears the IP's attempts and updates `users.last_login`; no separate audit log exists |

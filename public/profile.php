@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/mfa.php';
+require_once __DIR__ . '/includes/passkey.php';
 
 requireLogin();
 
@@ -149,6 +150,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['flash_success'] = t('mfa_default_saved');
         header('Location: profile.php?tab=tab-security');
         exit;
+
+    } elseif ($action === 'passkey_rename') {
+        // Cosmetic — no re-auth, but scoped to the member's own rows.
+        if (passkeyRename($db, $currentUser['id'], $_POST['passkey_id'] ?? '', $_POST['friendly_name'] ?? '')) {
+            $_SESSION['flash_success'] = t('passkey_renamed');
+        } else {
+            $_SESSION['flash_error'] = t('passkey_error');
+        }
+        header('Location: profile.php?tab=tab-security');
+        exit;
+
+    } elseif ($action === 'passkey_delete') {
+        if (!mfaReauth($db, $currentUser['id'], $_POST['current_password'] ?? '')) {
+            $_SESSION['flash_error'] = t('mfa_reauth_required');
+        } elseif (passkeyDelete($db, $currentUser['id'], $_POST['passkey_id'] ?? '')) {
+            $_SESSION['flash_success'] = t('passkey_removed');
+        } else {
+            $_SESSION['flash_error'] = t('passkey_error');
+        }
+        header('Location: profile.php?tab=tab-security');
+        exit;
     }
 }
 
@@ -180,6 +202,8 @@ $betHistory = $betHistory->fetchAll();
 $totpIsActive  = totpActive($db, $currentUser['id']);
 $emailOtpIsOn  = emailOtpActive($db, $currentUser['id']);
 $recoveryCount = countRecoveryCodes($db, $currentUser['id']);
+$passkeys      = passkeyList($db, $currentUser['id']);
+$hasPasskeys   = count($passkeys) > 0;
 
 // Preferred challenge method — only meaningful (and only offered) when 2+ factors are active.
 $activeMethods    = activeMfaMethods($db, $currentUser['id']);
@@ -313,6 +337,50 @@ include __DIR__ . '/includes/header.php';
                                 </div>
                             <?php endif; ?>
 
+                            <!-- Passkeys (WebAuthn) -->
+                            <div style="padding:12px 0;border-bottom:1px solid var(--border,#2a2a2a);" data-passkey-scope data-testid="passkey-section">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                    <div>
+                                        <div style="font-weight:600;"><?= t('passkey') ?></div>
+                                        <div class="text-muted" style="font-size:13px;" data-testid="passkey-status">
+                                            <?= $hasPasskeys ? t('totp_active') : t('totp_inactive') ?>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" data-passkey-add data-passkey-supported data-testid="passkey-add"><?= t('passkey_add') ?></button>
+                                </div>
+                                <p class="text-muted" style="font-size:13px;margin:6px 0 0;"><?= t('passkey_intro') ?></p>
+                                <p data-passkey-unsupported hidden style="font-size:13px;margin:6px 0 0;color:var(--f1-red-light);"><?= t('passkey_unsupported') ?></p>
+                                <p data-passkey-error hidden role="alert" style="font-size:13px;margin:6px 0 0;color:var(--f1-red-light);" data-testid="passkey-error"><?= t('passkey_error') ?></p>
+
+                                <?php foreach ($passkeys as $pk): ?>
+                                    <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;" data-testid="passkey-row">
+                                        <div>
+                                            <div style="font-weight:600;" data-testid="passkey-name"><?= escape($pk['friendly_name'] ?? '') ?></div>
+                                            <div class="text-muted" style="font-size:12px;">
+                                                <?= escape(substr($pk['created_at'] ?? '', 0, 10)) ?>
+                                                <?php if (!empty($pk['last_used_at'])): ?> · <?= t('passkey_last_used') ?>: <?= escape(substr($pk['last_used_at'], 0, 10)) ?><?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                            <form method="POST" style="display:flex;gap:6px;align-items:center;">
+                                                <?= csrfField() ?>
+                                                <input type="hidden" name="action" value="passkey_rename">
+                                                <input type="hidden" name="passkey_id" value="<?= escape($pk['id']) ?>">
+                                                <input type="text" name="friendly_name" class="form-input" style="max-width:150px;display:inline-block;" maxlength="100" value="<?= escape($pk['friendly_name'] ?? '') ?>" required>
+                                                <button type="submit" class="btn btn-secondary" data-testid="passkey-rename-btn"><?= t('passkey_rename') ?></button>
+                                            </form>
+                                            <form method="POST" onsubmit="return !!this.current_password.value;">
+                                                <?= csrfField() ?>
+                                                <input type="hidden" name="action" value="passkey_delete">
+                                                <input type="hidden" name="passkey_id" value="<?= escape($pk['id']) ?>">
+                                                <input type="password" name="current_password" class="form-input" style="max-width:160px;display:inline-block;" placeholder="<?= t('current_password') ?>" autocomplete="current-password" required>
+                                                <button type="submit" class="btn btn-secondary" data-testid="passkey-delete-btn"><?= t('passkey_revoke') ?></button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+
                             <!-- Authenticator app (TOTP) -->
                             <div style="padding:12px 0;border-bottom:1px solid var(--border,#2a2a2a);">
                                 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
@@ -408,7 +476,7 @@ include __DIR__ . '/includes/header.php';
                             </div>
 
                             <!-- Recovery codes -->
-                            <?php if ($totpIsActive || $emailOtpIsOn): ?>
+                            <?php if ($totpIsActive || $emailOtpIsOn || $hasPasskeys): ?>
                             <div style="padding:12px 0;">
                                 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
                                     <div>
@@ -434,6 +502,9 @@ include __DIR__ . '/includes/header.php';
                                     <?= csrfField() ?>
                                     <input type="hidden" name="action" value="mfa_default">
                                     <select name="mfa_default_method" class="form-input" style="max-width:220px;" data-testid="mfa-default-select">
+                                        <?php if (in_array('passkey', $activeMethods, true)): ?>
+                                            <option value="passkey" <?= $mfaDefaultMethod === 'passkey' ? 'selected' : '' ?>><?= t('passkey') ?></option>
+                                        <?php endif; ?>
                                         <?php if (in_array('totp', $activeMethods, true)): ?>
                                             <option value="totp"  <?= $mfaDefaultMethod === 'totp'  ? 'selected' : '' ?>><?= t('totp_app') ?></option>
                                         <?php endif; ?>
@@ -536,5 +607,6 @@ include __DIR__ . '/includes/header.php';
 
 <script nonce="<?= $nonce ?>" src="assets/js/qrcode.min.js"></script>
 <script nonce="<?= $nonce ?>" src="assets/js/mfa.js"></script>
+<script nonce="<?= $nonce ?>" src="assets/js/passkey.js"></script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

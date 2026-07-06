@@ -139,11 +139,23 @@ try {
     $placeholders = implode(', ', array_fill(0, count($testEmails), '?'));
     $db->prepare("DELETE FROM invites WHERE email IN ($placeholders)")->execute($testEmails);
 
+    // Passkeys are rpId-bound to the live domain and can never be satisfied on
+    // test — and a user_passkeys row gates that member's login behind an
+    // unusable factor. The users wipe above cascades test rows away and the
+    // copy list excludes the MFA tables, so this is a fail-loud guarantee
+    // (any PDO error here aborts the sync), not routine cleanup.
+    $stalePasskeys = $db->exec("DELETE FROM user_passkeys");
+    $passkeysRemaining = (int)$db->query("SELECT COUNT(*) FROM user_passkeys")->fetchColumn();
+    if ($passkeysRemaining !== 0) {
+        throw new PDOException("user_passkeys not empty after sync ($passkeysRemaining rows)");
+    }
+
     echo json_encode([
         'ok'                 => true,
         'dropped_old_tables' => $droppedCount,
         'copied'             => $copied,
         'passwords_reset'    => $passwordsReset,
+        'passkeys_cleared'   => (int)$stalePasskeys,
     ]);
 } catch (PDOException $e) {
     if ($db->inTransaction()) {
