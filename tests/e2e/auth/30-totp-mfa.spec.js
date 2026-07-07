@@ -33,6 +33,15 @@ async function login(page, email, password) {
     await page.click('button[type="submit"]');
 }
 
+// Fills a 6-digit code into a method's OTP boxes (box 1 gets the whole string; client JS
+// distributes it across the rest — see assets/js/mfa.js) and submits its verify form. The wrapper
+// is only ever in the DOM for candidate/recovery methods, so `method` disambiguates which form.
+async function submitMfaCode(page, method, code) {
+    const wrapper = page.locator(`[data-testid="mfa-form-${method}"]`);
+    await wrapper.locator('[data-testid="mfa-otp-box"]').first().fill(code);
+    await wrapper.locator('form').first().locator('button[type="submit"]').click();
+}
+
 // Enroll TOTP through the profile UI and return the shared secret.
 async function enrollTotp(page) {
     await page.goto('/profile.php?tab=tab-security');
@@ -88,10 +97,12 @@ test.describe('TOTP multi-factor authentication', () => {
         await expect(page.locator('[data-testid="recovery-codes"]')).toHaveCount(0);
     });
 
-    test('password step now stops at the challenge (no session yet)', async ({ page }) => {
+    test('password step now stops at the challenge, single factor skips the list (AC-MFA-05)', async ({ page }) => {
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await expect(page.locator('input[name="code"]').first()).toBeVisible();
+        // Authenticator is the member's only factor: its detail view opens directly, no method list.
+        await expect(page.locator('[data-testid="mfa-view-root"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-otp-box"]').first()).toBeVisible();
     });
 
     test('BYPASS GUARD: protected page is denied while pending', async ({ page }) => {
@@ -102,20 +113,20 @@ test.describe('TOTP multi-factor authentication', () => {
         await expect(page).toHaveURL(/login\.php/); // requireLogin bounced us — no session was granted
     });
 
-    test('wrong code is rejected at the challenge', async ({ page }) => {
+    test('wrong code is rejected at the challenge, inline, single-method layout kept (AC-MFA-07)', async ({ page }) => {
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await page.locator('input[name="code"]').first().fill('000000');
-        await page.locator('form:has(input[name="code"]) button[type="submit"]').first().click();
+        await submitMfaCode(page, 'totp', '000000');
         await expect(page.locator('.alert-error')).toBeVisible();
         await expect(page).toHaveURL(/mfa_challenge\.php/);
+        // Still the single totp view — not bounced to a list or another method.
+        await expect(page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-otp-box"]').first()).toBeVisible();
     });
 
     test('correct TOTP code promotes the session', async ({ page }) => {
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await page.locator('input[name="code"]').first().fill(totp(secret));
-        await page.locator('form:has(input[name="code"]) button[type="submit"]').first().click();
+        await submitMfaCode(page, 'totp', totp(secret));
         await page.waitForURL(/index\.php/);
         // Now genuinely logged in: a protected page renders.
         await page.goto('/profile.php');
@@ -126,8 +137,7 @@ test.describe('TOTP multi-factor authentication', () => {
         // Log in fully first.
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await page.locator('input[name="code"]').first().fill(totp(secret));
-        await page.locator('form:has(input[name="code"]) button[type="submit"]').first().click();
+        await submitMfaCode(page, 'totp', totp(secret));
         await page.waitForURL(/index\.php/);
 
         await page.goto('/profile.php?tab=tab-security');

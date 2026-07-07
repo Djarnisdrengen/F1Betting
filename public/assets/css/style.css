@@ -2362,6 +2362,31 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
     .hf-login-card { max-width: 440px; justify-self: end; margin: 0; }
 }
 
+/* ── Phase D: MFA challenge — list→detail (v3.0.0). Additive only. ───────── */
+.more-toggle { display:inline-flex; align-items:center; gap:8px; background:none; border:0;
+  cursor:pointer; color:var(--text-secondary); font:600 13px/1 var(--font-display); }
+.more-toggle .chev { transition:transform .18s; }
+.more-toggle.open .chev { transform:rotate(180deg); }
+
+.method { display:flex; align-items:center; gap:13px; width:100%; padding:13px 14px;
+  border-radius:12px; cursor:pointer; text-align:left;
+  background:var(--bg-secondary); border:1px solid var(--border-color); color:var(--text-primary); }
+.method:hover { background:var(--bg-hover); border-color:var(--f1-red); }
+.method .ic { width:38px; height:38px; border-radius:10px; display:inline-flex;
+  align-items:center; justify-content:center; color:var(--f1-red-light);
+  background:var(--bg-card); border:1px solid var(--border-soft); }
+
+.otp { display:flex; gap:9px; justify-content:space-between; }
+.otp input { width:100%; aspect-ratio:1/1.1; min-height:44px; text-align:center; border-radius:10px;
+  background:var(--bg-secondary); border:1px solid var(--border-color); color:var(--text-primary);
+  font:700 22px/1 var(--font-mono); outline:none; }
+.otp input:focus { border-color:var(--f1-red); box-shadow:0 0 0 4px rgba(225,6,0,.14); }
+
+.code-sent { display:flex; align-items:center; gap:10px; padding:11px 13px; border-radius:10px;
+  background:rgba(30,138,91,.12); border:1px solid rgba(30,138,91,.4);
+  color:var(--text-secondary); font-size:12.5px; }
+.code-sent i { color:#2fb37f; }
+
 /* ── Phase D: Leaderboard layout ───────────────────────────── */
 /* Podium strip — mobile first */
 /* Podium strip — full width above the list */

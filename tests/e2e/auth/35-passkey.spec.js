@@ -76,6 +76,14 @@ async function dismissRecoveryCodes(page) {
     }
 }
 
+// Fills a 6-digit code into a method's OTP boxes and submits its verify form (see
+// 30-totp-mfa.spec.js for the box-distribution mechanics this relies on).
+async function submitMfaCode(page, method, code) {
+    const wrapper = page.locator(`[data-testid="mfa-form-${method}"]`);
+    await wrapper.locator('[data-testid="mfa-otp-box"]').first().fill(code);
+    await wrapper.locator('form').first().locator('button[type="submit"]').click();
+}
+
 test.describe('Passkey (WebAuthn) authentication', () => {
     test.describe.configure({ mode: 'serial' }); // shared seeded account — never parallel
     test.use({ storageState: { cookies: [], origins: [] } });
@@ -108,7 +116,7 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await expect(page.locator('[data-testid="recovery-codes"]')).toHaveCount(0); // shown once
     });
 
-    test('password login is gated; passkey leads and promotes the session (CHA-01/CHA-02)', async ({ page }) => {
+    test('password login is gated; passkey is not offered on the challenge — recovery is the fallback (CHA-01/CHA-02)', async ({ page }) => {
         await addVirtualAuthenticator(page);
         await login(page, user.email, user.password);
         await page.waitForURL(/index\.php/);
@@ -118,9 +126,22 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await page.goto('/logout.php');
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await expect(page.locator('[data-testid="mfa-default"]')).toHaveAttribute('data-method', 'passkey');
 
-        await page.click('[data-testid="mfa-passkey-btn"]');
+        // Passkey is retired from the challenge screen (v3.0.0). A passkey-only member who used
+        // the password form (not the login screen's passwordless button) has no other real
+        // factor, so the screen resolves straight to the recovery fallback with a hint pointing
+        // back to login.
+        await expect(page.locator('[data-testid="mfa-view-root"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="mfa-passkey-btn"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="mfa-form-recovery"]')).toBeVisible();
+        const hint = page.locator('[data-testid="mfa-footer-link"]');
+        await expect(hint).toBeVisible();
+        await expect(hint).toHaveAttribute('href', '/login.php');
+
+        // Following that hint back to login and using the passkey button there still works.
+        await hint.click();
+        await page.waitForURL(/login\.php/);
+        await page.click('[data-testid="passkey-login"]');
         await page.waitForURL(/index\.php/);
         await page.goto('/profile.php');
         await expect(page).toHaveURL(/profile\.php/); // genuinely promoted
@@ -159,7 +180,7 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await expect(page.locator('[data-testid="passkey-name"]').first()).toHaveText('Min testnøgle');
     });
 
-    test('sign-count regression is rejected (SEC-01)', async ({ page }) => {
+    test('sign-count regression is rejected on the passwordless login path (SEC-01)', async ({ page }) => {
         await addVirtualAuthenticator(page);
         await login(page, user.email, user.password);
         await page.waitForURL(/index\.php/);
@@ -167,17 +188,19 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await dismissRecoveryCodes(page);
         await page.goto('/logout.php');
 
-        // Force the stored counter above anything the authenticator reports next.
+        // Force the stored counter above anything the authenticator reports next. The check
+        // lives in the shared passkeyAssertVerify() (includes/passkey.php), used by both the
+        // challenge and the passwordless login_verify action — relocated here since passkey no
+        // longer appears on the challenge screen (v3.0.0; see CHA-01/CHA-02 above).
         await seed.setPasskeySignCount(user.email, 999999);
 
-        await login(page, user.email, user.password);
-        await page.waitForURL(/mfa_challenge\.php/);
-        await page.click('[data-testid="mfa-passkey-btn"]');
-        await expect(page.locator('[data-testid="mfa-passkey-error"]')).toBeVisible();
-        await expect(page).toHaveURL(/mfa_challenge\.php/); // no promotion
+        await page.goto('/login.php');
+        await page.click('[data-testid="passkey-login"]');
+        await expect(page.locator('[data-testid="passkey-login-error"]')).toBeVisible();
+        await expect(page).toHaveURL(/login\.php/); // no promotion
     });
 
-    test('default ordering and override: passkey first, then TOTP after override (CHA-04/CHA-05)', async ({ page }) => {
+    test('passkey never appears on the challenge; TOTP opens directly regardless of preference (CHA-04/CHA-05)', async ({ page }) => {
         await addVirtualAuthenticator(page);
         await login(page, user.email, user.password);
         await page.waitForURL(/index\.php/);
@@ -193,26 +216,29 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await page.click('[data-testid="totp-confirm-btn"]');
         await expect(page.locator('[data-testid="totp-status"]')).toContainText(/Active|Aktiv/);
 
-        // No explicit preference → passkey leads by fallback order.
+        // Passkey + TOTP active, no preference set: passkey is filtered out entirely, leaving
+        // TOTP as the only real candidate — its detail view opens directly, no list, no passkey
+        // button anywhere on the screen.
         await page.goto('/logout.php');
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await expect(page.locator('[data-testid="mfa-default"]')).toHaveAttribute('data-method', 'passkey');
-        await page.click('[data-testid="mfa-passkey-btn"]');
+        await expect(page.locator('[data-testid="mfa-view-root"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="mfa-passkey-btn"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-otp-box"]').first()).toBeVisible();
+        await submitMfaCode(page, 'totp', totp(secret));
         await page.waitForURL(/index\.php/);
 
-        // Override the preference to TOTP.
+        // Explicitly preferring TOTP is a no-op for the challenge screen here (it was already
+        // the only real candidate) — the preference selector should still accept it without error.
         await page.goto('/profile.php?tab=tab-security');
         await page.selectOption('[data-testid="mfa-default-select"]', 'totp');
         await page.click('[data-testid="mfa-default-save-btn"]');
 
-        // TOTP now leads; passkey sits under "Other options" and still completes login.
         await page.goto('/logout.php');
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await expect(page.locator('[data-testid="mfa-default"]')).toHaveAttribute('data-method', 'totp');
-        await page.locator('[data-testid="mfa-other-options"] summary').click();
-        await page.click('[data-testid="mfa-passkey-btn"]');
+        await expect(page.locator('[data-testid="mfa-passkey-btn"]')).toHaveCount(0);
+        await submitMfaCode(page, 'totp', totp(secret));
         await page.waitForURL(/index\.php/);
     });
 

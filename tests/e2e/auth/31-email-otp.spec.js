@@ -28,6 +28,14 @@ async function login(page, email, password) {
     await page.click('button[type="submit"]');
 }
 
+// Fills a 6-digit code into a method's OTP boxes (box 1 gets the whole string; client JS
+// distributes it across the rest — see assets/js/mfa.js) and submits its verify form.
+async function submitMfaCode(page, method, code) {
+    const wrapper = page.locator(`[data-testid="mfa-form-${method}"]`);
+    await wrapper.locator('[data-testid="mfa-otp-box"]').first().fill(code);
+    await wrapper.locator('form').first().locator('button[type="submit"]').click();
+}
+
 test.describe('Email OTP multi-factor authentication', () => {
     test.describe.configure({ mode: 'serial' });
     test.use({ storageState: { cookies: [], origins: [] } });
@@ -65,11 +73,13 @@ test.describe('Email OTP multi-factor authentication', () => {
         await expect(page.locator('[data-testid="recovery-codes"]')).toBeVisible(); // first factor → codes shown once
     });
 
-    test('login now emails a code and stops at the challenge', async ({ page }) => {
+    test('login now emails a code and stops at the challenge, single factor skips the list (AC-MFA-05)', async ({ page }) => {
         await mail.purgeInbox();
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        // A login code was emailed.
+        // Email is the member's only factor: pre-sent by login.php, its detail view opens directly.
+        await expect(page.locator('[data-testid="mfa-view-root"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="mfa-form-email"] .code-sent')).toBeVisible();
         await readOtp(user.email);
     });
 
@@ -87,8 +97,7 @@ test.describe('Email OTP multi-factor authentication', () => {
         await page.waitForURL(/mfa_challenge\.php/);
 
         const code = await readOtp(user.email);
-        await page.locator('input[name="code"]').first().fill(code);
-        await page.locator('form:has(input[name="code"]) button[type="submit"]').first().click();
+        await submitMfaCode(page, 'email', code);
 
         await page.waitForURL(/index\.php/);
         await page.goto('/profile.php');
@@ -99,8 +108,7 @@ test.describe('Email OTP multi-factor authentication', () => {
         await mail.purgeInbox();
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await page.locator('input[name="code"]').first().fill('000000');
-        await page.locator('form:has(input[name="code"]) button[type="submit"]').first().click();
+        await submitMfaCode(page, 'email', '000000');
         await expect(page.locator('.alert-error')).toBeVisible();
         await expect(page).toHaveURL(/mfa_challenge\.php/);
     });
@@ -111,8 +119,7 @@ test.describe('Email OTP multi-factor authentication', () => {
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
         const code = await readOtp(user.email);
-        await page.locator('input[name="code"]').first().fill(code);
-        await page.locator('form:has(input[name="code"]) button[type="submit"]').first().click();
+        await submitMfaCode(page, 'email', code);
         await page.waitForURL(/index\.php/);
 
         await page.goto('/profile.php?tab=tab-security');

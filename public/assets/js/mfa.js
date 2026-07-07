@@ -68,9 +68,77 @@
         if (dismissBtn) dismissBtn.addEventListener('click', function () { panel.remove(); });
     }
 
+    // ---- MFA challenge: OTP boxes + list<->detail swap (v3.0.0) ----
+    // Auto-advance / backspace-to-previous / paste (or autofill) distribution across 6 boxes,
+    // synced into a hidden input[name="code"] that actually submits — the backend contract
+    // ($_POST['code']) is unchanged. Any multi-digit value landing in one box (real clipboard
+    // paste, or mobile one-time-code autofill, which fires a plain `input` event rather than a
+    // `paste` event) distributes from that box onward, so both cases are covered.
+    function initOtpGroups() {
+        document.querySelectorAll('[data-otp-group]').forEach(function (group) {
+            var boxes = Array.prototype.slice.call(group.querySelectorAll('.otp input'));
+            var hidden = group.querySelector('[data-testid="mfa-otp-value"]');
+            function sync() {
+                if (hidden) hidden.value = boxes.map(function (b) { return b.value; }).join('');
+            }
+            boxes.forEach(function (box, i) {
+                box.addEventListener('input', function () {
+                    var digits = box.value.replace(/\D/g, '');
+                    if (digits.length > 1) {
+                        digits.split('').slice(0, boxes.length - i).forEach(function (d, k) {
+                            boxes[i + k].value = d;
+                        });
+                        boxes[Math.min(i + digits.length, boxes.length) - 1].focus();
+                    } else {
+                        box.value = digits;
+                        if (digits && i < boxes.length - 1) boxes[i + 1].focus();
+                    }
+                    sync();
+                });
+                box.addEventListener('keydown', function (e) {
+                    if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+                });
+            });
+        });
+    }
+
+    // Root list <-> method detail view. Purely a visibility swap — the server already rendered
+    // every view (hidden as appropriate) so no request is needed except for the one side-effecting
+    // case: selecting email before a code has been sent submits the existing resend form instead
+    // (a real POST; the server re-renders straight into the email view with the code sent).
+    function initMfaViewSwap() {
+        var views = document.querySelectorAll('[data-mfa-view]');
+        if (!views.length) return;
+
+        function showView(name) {
+            var target = null;
+            views.forEach(function (el) {
+                var match = el.getAttribute('data-mfa-view') === name;
+                el.hidden = !match;
+                if (match) target = el;
+            });
+            if (!target) return;
+            var focusEl = target.querySelector('.otp input, input[name="code"], [data-mfa-select]');
+            if (focusEl) focusEl.focus();
+        }
+
+        document.addEventListener('click', function (e) {
+            var el = e.target.closest('[data-mfa-select]');
+            if (!el) return;
+            if (el.hasAttribute('data-mfa-autosend')) {
+                var form = document.querySelector('[data-testid="mfa-resend-form"]');
+                if (form) { form.requestSubmit(); return; }
+            }
+            e.preventDefault();
+            showView(el.getAttribute('data-mfa-select'));
+        });
+    }
+
     function init() {
         render();
         initRecovery();
+        initOtpGroups();
+        initMfaViewSwap();
     }
 
     if (document.readyState === 'loading') {
