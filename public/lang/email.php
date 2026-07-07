@@ -69,6 +69,11 @@ return [
         'email_admin_reset_button'  => 'Gå til appen',
         'email_admin_contact'       => 'Kontakt administrator hvis du har spørgsmål.',
 
+        // Admin removed two-step sign-in (support/lockout recovery)
+        'email_mfa_removed_subject' => 'Totrins-login er fjernet fra din konto',
+        'email_mfa_removed_greeting' => 'Hej %s,',
+        'email_mfa_removed_intro'   => 'Administratoren %s har fjernet totrins-login (passkeys, autentificator-app, e-mail-koder og gendannelseskoder) fra din konto. Du logger nu ind med din adgangskode alene. Hvis du ikke selv har bedt om dette, så kontakt administratoren med det samme.',
+
         // Bet deleted notification email
         'email_bet_deleted_subject' => 'Dit bet er blevet slettet',
         'email_bet_deleted_greeting' => 'Hej %s,',
@@ -154,6 +159,11 @@ return [
         'email_admin_reset_intro'   => "Your password has been reset by %s. The new password is: '%s'",
         'email_admin_reset_button'  => 'Go to app',
         'email_admin_contact'       => 'Contact administrator if you have questions.',
+
+        // Admin removed two-step sign-in (support/lockout recovery)
+        'email_mfa_removed_subject' => 'Two-step sign-in was removed from your account',
+        'email_mfa_removed_greeting' => 'Hi %s,',
+        'email_mfa_removed_intro'   => 'The administrator %s has removed two-step sign-in (passkeys, authenticator app, email codes and recovery codes) from your account. You now sign in with your password alone. If you did not request this, contact the administrator immediately.',
 
         // Bet deleted notification email
         'email_bet_deleted_subject' => 'Your bet has been deleted',

@@ -33,6 +33,11 @@ return [
         'reset'                         => 'Nulstil',
         'last_seen'                     => 'Sidst set: ',
         'never'                         => 'Aldrig',
+        'remove_mfa'                    => 'Fjern totrins-login',
+        'remove_mfa_confirm_title'      => 'Fjern totrins-login?',
+        'remove_mfa_confirm_body'       => 'Fjerner passkeys, autentificator-app, e-mail-koder og gendannelseskoder for %s. Kontoen beskyttes derefter kun af adgangskoden. Brugeren får besked via e-mail.',
+        'remove_mfa_confirm_btn'        => 'Fjern',
+        'mfa_removed_success'           => 'Totrins-login fjernet og bruger notificeret!',
 
         // Bet management
         'bet_deleted_notified'      => 'Bet slettet og bruger notificeret!',
@@ -133,6 +138,11 @@ return [
         'reset'                         => 'Reset',
         'last_seen'                     => 'Last seen: ',
         'never'                         => 'Never',
+        'remove_mfa'                    => 'Remove two-step sign-in',
+        'remove_mfa_confirm_title'      => 'Remove two-step sign-in?',
+        'remove_mfa_confirm_body'       => 'Removes passkeys, authenticator app, email codes and recovery codes for %s. The account will then be protected by the password only. The member is notified by email.',
+        'remove_mfa_confirm_btn'        => 'Remove',
+        'mfa_removed_success'           => 'Two-step sign-in removed and member notified!',
 
         // Bet management
         'bet_deleted_notified'      => 'Bet deleted and user notified!',

@@ -1,6 +1,7 @@
 'use strict';
 const { test, expect } = require('@playwright/test');
 const crypto = require('crypto');
+const path = require('path');
 const seed = require('../../helpers/seed');
 
 // Passkey happy paths via Chromium's CDP virtual authenticator (ctap2/internal,
@@ -213,6 +214,38 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await page.locator('[data-testid="mfa-other-options"] summary').click();
         await page.click('[data-testid="mfa-passkey-btn"]');
         await page.waitForURL(/index\.php/);
+    });
+
+    test('admin strips two-step factors; member returns to password-only (support path)', async ({ page, browser }) => {
+        await addVirtualAuthenticator(page);
+        await login(page, user.email, user.password);
+        await page.waitForURL(/index\.php/);
+        await registerPasskey(page);
+        await dismissRecoveryCodes(page);
+        await page.goto('/logout.php');
+
+        // Admin (session from global-setup) removes the member's factors.
+        const adminCtx = await browser.newContext({
+            storageState: path.join(__dirname, '../../../.auth/admin.json'),
+            baseURL: process.env.BASE_URL,
+        });
+        const adminPage = await adminCtx.newPage();
+        await adminPage.goto('/admin.php?tab=users');
+        const card = adminPage.locator('.card', { hasText: user.email });
+        await card.locator('[data-testid="admin-remove-mfa"]').click();
+        await adminPage.locator('#delete-modal .btn-user-delete-confirm').click();
+        await adminPage.waitForURL(/msg=/);
+        await expect(adminPage.locator('.alert-success')).toBeVisible();
+        // Button gone: the member no longer has any factor.
+        await expect(adminPage.locator('.card', { hasText: user.email })
+            .locator('[data-testid="admin-remove-mfa"]')).toHaveCount(0);
+        await adminCtx.close();
+
+        // Password login goes straight in — no challenge.
+        await login(page, user.email, user.password);
+        await page.waitForURL(/index\.php/);
+        await page.goto('/profile.php');
+        await expect(page).toHaveURL(/profile\.php/);
     });
 
     test('revoke requires the password; removing it restores password-only (REV-01/REV-02)', async ({ page }) => {

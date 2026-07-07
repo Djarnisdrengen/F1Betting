@@ -35,6 +35,19 @@
                     <button type="button" class="btn btn-secondary btn-sm btn-reset-pwd" data-link="<?= escape($user['id']) ?>">
                         <i class="fas fa-key"></i>
                     </button>
+                    <?php if (!empty($user['has_mfa'])): ?>
+                        <form method="POST" style="display:inline">
+                            <?= csrfField() ?>
+                            <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
+                            <button type="submit" name="remove_user_mfa" class="btn btn-secondary btn-sm btn-remove-mfa" data-testid="admin-remove-mfa"
+                                    title="<?= t('remove_mfa') ?>"
+                                    data-title="<?= t('remove_mfa_confirm_title') ?>"
+                                    data-body="<?= escape(sprintf(t('remove_mfa_confirm_body'), $user['display_name'] ?: $user['email'])) ?>"
+                                    data-confirm="<?= t('remove_mfa_confirm_btn') ?>">
+                                <i class="fas fa-user-shield"></i>
+                            </button>
+                        </form>
+                    <?php endif; ?>
                     <form method="POST" style="display:inline">
                         <?= csrfField() ?>
                         <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
@@ -73,6 +86,16 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-reset-pwd').forEach(button => {
         button.addEventListener('click', function() {
             document.getElementById('reset-pw-' + this.getAttribute('data-link')).classList.toggle('hidden');
+        });
+    });
+    document.querySelectorAll('.btn-remove-mfa').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            showDeleteModal(this.closest('form'), '', {
+                title:       this.dataset.title,
+                bodyText:    this.dataset.body,
+                confirmText: this.dataset.confirm,
+            });
         });
     });
 });

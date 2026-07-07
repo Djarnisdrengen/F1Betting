@@ -301,6 +301,52 @@ if (isset($_POST['reset_user_password'])) {
 
 }
 
+// ============ REMOVE USER TWO-STEP FACTORS ============
+// Support/lockout recovery: strips passkeys + TOTP + recovery codes and turns
+// off email OTP, returning the member's login to password-only. Companion to
+// the admin password reset above — together they recover any lockout (lost
+// device, lost codes) without direct DB access.
+if (isset($_POST['remove_user_mfa'])) {
+    $userId = $_POST['user_id'] ?? '';
+    $stmt = $db->prepare("SELECT id, email, display_name, language FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $target = $stmt->fetch();
+
+    if ($target) {
+        $pk = $db->prepare("DELETE FROM user_passkeys WHERE user_id = ?");
+        $pk->execute([$target['id']]);
+        $tp = $db->prepare("DELETE FROM user_totp WHERE user_id = ?");
+        $tp->execute([$target['id']]);
+        // Recovery codes go too: with no factors they are dead weight, and stale
+        // rows would stop ensureRecoveryCodes() issuing fresh ones on re-enrollment.
+        $rc = $db->prepare("DELETE FROM user_recovery_codes WHERE user_id = ?");
+        $rc->execute([$target['id']]);
+        $db->prepare("UPDATE users SET email_otp_enabled = 0, mfa_default_method = NULL WHERE id = ?")
+           ->execute([$target['id']]);
+
+        logToFile(APP_LOG_FILE, '[ADMIN] ' . $currentUser['email'] . ' removed two-step factors for '
+            . $target['email'] . ' (passkeys ' . $pk->rowCount() . ', totp ' . $tp->rowCount()
+            . ', recovery codes ' . $rc->rowCount() . ')');
+
+        // Notify the member — silent 2FA removal must be distinguishable from an attack.
+        require_once __DIR__ . '/includes/smtp.php';
+        $appName  = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+        $userLang = in_array($target['language'] ?? '', ['da', 'en']) ? $target['language'] : 'da';
+
+        $subject  = t('email_mfa_removed_subject', $userLang);
+        $greeting = sprintf(t('email_mfa_removed_greeting', $userLang), $target['display_name']);
+        $intro    = sprintf(t('email_mfa_removed_intro', $userLang), $currentUser['display_name']);
+        $regards  = sprintf(t('email_regards', $userLang), $appName);
+        $emailBaseUrl = defined('EMAIL_BASE_URL') ? EMAIL_BASE_URL : SITE_URL;
+        $htmlContent  = getEmailTemplate($greeting, $intro, t('email_admin_reset_button', $userLang),
+            $emailBaseUrl, t('email_admin_contact', $userLang), '', $regards, $appName);
+        sendEmail($target['email'], $subject, $htmlContent);
+    }
+
+    header("Location: admin.php?tab=users&msg=" . urlencode(t('mfa_removed_success')));
+    exit;
+}
+
 // ============ DELETE BET ============
 if (isset($_POST['delete_bet'])) {
     $betId = $_POST['bet_id'];
@@ -557,7 +603,11 @@ switch ($currentTab) {
         $lastCompletedRaceId = $db->query("SELECT id FROM races WHERE result_p1 IS NOT NULL ORDER BY race_date DESC LIMIT 1")->fetchColumn() ?: null;
         break;
     case 'users':
-        $users = $db->query("SELECT * FROM users ORDER BY points DESC")->fetchAll();
+        $users = $db->query("SELECT u.*,
+            (EXISTS (SELECT 1 FROM user_passkeys p WHERE p.user_id = u.id)
+             OR EXISTS (SELECT 1 FROM user_totp tt WHERE tt.user_id = u.id AND tt.confirmed_at IS NOT NULL)
+             OR u.email_otp_enabled = 1) AS has_mfa
+            FROM users u ORDER BY u.points DESC")->fetchAll();
         break;
     case 'bets':
         $races      = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
