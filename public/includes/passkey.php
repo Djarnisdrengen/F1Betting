@@ -118,7 +118,9 @@ function passkeyRegisterVerify(PDO $db, string $uid, string $clientDataJSON, str
     if (strlen($aaguid) !== 16) $aaguid = null;
 
     $name = trim((string)$label);
-    if ($name === '' || mb_strlen($name) > 100) $name = passkeyDefaultLabel();
+    if ($name === '' || mb_strlen($name) > 100) {
+        $name = passkeyAaguidLabel($aaguid) ?? passkeyDefaultLabel();
+    }
     $transports = $transports !== null ? substr($transports, 0, 255) : null;
 
     try {
@@ -216,6 +218,37 @@ function passkeyDelete(PDO $db, string $uid, string $id): bool {
     $st = $db->prepare("DELETE FROM user_passkeys WHERE id = ? AND user_id = ?");
     $st->execute([$id, $uid]);
     return $st->rowCount() === 1;
+}
+
+// Default label from well-known authenticator AAGUIDs (plan 🟢-3). Passkey
+// providers keep their real AAGUID in the attested credential data even with
+// attestation 'none', so the big ones are nameable. Keys are lowercase UUIDs
+// from the community passkey-AAGUID list (github.com/passkeydeveloper/
+// passkey-authenticator-aaguids); unknown or zeroed ids fall back to the UA
+// label. Input is the raw 16-byte value as stored in user_passkeys.aaguid.
+function passkeyAaguidLabel(?string $aaguidBin): ?string {
+    if ($aaguidBin === null || strlen($aaguidBin) !== 16) return null;
+    $h = bin2hex($aaguidBin);
+    $uuid = substr($h, 0, 8) . '-' . substr($h, 8, 4) . '-' . substr($h, 12, 4)
+          . '-' . substr($h, 16, 4) . '-' . substr($h, 20, 12);
+    $known = [
+        'fbfc3007-154e-4ecc-8c0b-6e020557d7bd' => 'iCloud Keychain',
+        'dd4ec289-e01d-41c9-bb89-70fa845d4bf2' => 'iCloud Keychain',
+        'ea9b8d66-4d01-1d21-3ce4-b6b48cb575d4' => 'Google Password Manager',
+        '08987058-cadc-4b81-b6e1-30de50dcbe96' => 'Windows Hello',
+        '9ddd1817-af5a-4672-a2b9-3e3dd95000a9' => 'Windows Hello',
+        '6028b017-b1d4-4c02-b4b3-afcdafc96bb2' => 'Windows Hello',
+        'adce0002-35bc-c60a-648b-0b25f1f05503' => 'Chrome (Mac)',
+        'bada5566-a7aa-401f-bd96-45619a55120d' => '1Password',
+        'd548826e-79b4-db40-a3d8-11116f7e8349' => 'Bitwarden',
+        '531126d6-e717-415c-9320-3d9aa6981239' => 'Dashlane',
+        '53414d53-554e-4700-0000-000000000000' => 'Samsung Pass',
+        '50726f74-6f6e-5061-7373-50726f746f6e' => 'Proton Pass',
+        'fdb141b2-5d84-443e-8a35-4698c205a502' => 'KeePassXC',
+        '0ea242b4-43c4-4a1b-8b17-dd6d0b6baec6' => 'Keeper',
+    ];
+    if (!isset($known[$uuid])) return null;
+    return $known[$uuid] . ' · ' . date('d-m-Y');
 }
 
 // Coarse default label from the user agent; the member can rename it afterwards.

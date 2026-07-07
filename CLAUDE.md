@@ -73,7 +73,7 @@ $lang     = getLang();
 - `hashPassword()` / `verifyPassword()` — password handling
 - `t('key')` — all user-facing strings
 - `setLang($db, $userId, $lang)` — language updates
-- `logToFile($msg, $file)` — file logging with config constants
+- `logToFile($file, $msg)` — file logging, file first (e.g. `APP_LOG_FILE`)
 
 **Output escaping:** Always escape at render time with `htmlspecialchars()`. Prepared statements for all DB writes. Every POST form needs `<?= csrfField() ?>` and handler needs `requireCsrf()`.
 

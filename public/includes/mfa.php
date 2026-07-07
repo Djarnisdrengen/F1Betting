@@ -305,3 +305,12 @@ function setMfaDefaultMethod(PDO $db, string $uid, ?string $method): void {
     $method = in_array($method, ['passkey', 'totp', 'email'], true) ? $method : null;
     $db->prepare("UPDATE users SET mfa_default_method = ? WHERE id = ?")->execute([$method, $uid]);
 }
+
+// One log line per successful login — the passkey epic's success metrics (adoption,
+// passwordless share) are read straight from APP_LOG_FILE. Methods: 'password',
+// 'passkey' (passwordless), 'password+totp/email/recovery/passkey' (two-step).
+// Called from every place that promotes a session: login.php, mfa_challenge.php,
+// webauthn.php — keep that list in sync with new promotion paths.
+function logLoginMethod(string $method, string $uid): void {
+    logToFile(APP_LOG_FILE, '[LOGIN] method=' . $method . ' user=' . $uid);
+}

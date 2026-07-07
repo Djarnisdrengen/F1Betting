@@ -82,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['id'];
             session_regenerate_id(true);
             $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
+            logLoginMethod('password', $user['id']);
             setLang($user['language']    ?? 'da');
             setTheme($user['theme']      ?? $anonTheme);
             setFont($user['font_stack']  ?? $anonFont);
@@ -136,7 +137,8 @@ include __DIR__ . '/includes/header.php';
                   // on this element: it would override the hidden attribute. ?>
             <div hidden data-passkey-supported data-passkey-scope>
                 <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border-color);">
-                    <button type="button" class="btn btn-secondary" style="width:100%;" data-passkey-login data-redirect="<?= htmlspecialchars($redirect) ?>" data-testid="passkey-login"><i class="fas fa-fingerprint"></i> <?= t('passkey_signin') ?></button>
+                    <button type="button" class="btn btn-success" style="width:100%;" data-passkey-login data-redirect="<?= htmlspecialchars($redirect) ?>" data-testid="passkey-login"><i class="fas fa-fingerprint"></i> <?= t('passkey_signin') ?></button>
+                    <p style="font-size:12px;margin:0;color:var(--text-secondary);text-align:center;"><?= t('passkey_enable_hint') ?></p>
                     <p data-passkey-error hidden role="alert" style="font-size:13px;margin:0;color:var(--f1-red-light);" data-testid="passkey-login-error"><?= t('passkey_error') ?></p>
                 </div>
             </div>

@@ -248,6 +248,16 @@ body.clubhouse .bet-item.my-bet {
     background: var(--bg-hover);
 }
 
+.btn-success {
+    background: var(--status-success);
+    color: #fff;
+    border: 1px solid transparent;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
 .btn-ghost {
     background: transparent;
     color: var(--text-secondary);

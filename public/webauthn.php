@@ -143,6 +143,7 @@ switch ($action) {
         unset($_SESSION['mfa_pending']);
         try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
         passkeyPromoteSession($db, $uid, $anonTheme, $anonFont);
+        logLoginMethod('password+passkey', $uid);
 
         passkeyJsonOut(['ok' => true, 'redirect' => $redirect]);
         break;
@@ -190,6 +191,7 @@ switch ($action) {
         $anonFont  = $_SESSION['font_stack'] ?? $_COOKIE['f1_font']  ?? 'system';
         try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
         passkeyPromoteSession($db, $uid, $anonTheme, $anonFont);
+        logLoginMethod('passkey', $uid);
 
         passkeyJsonOut(['ok' => true, 'redirect' => $redirect]);
         break;

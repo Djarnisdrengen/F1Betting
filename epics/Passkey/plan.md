@@ -27,7 +27,7 @@ All review conditions from `test-plan.md` §8 were decided by Djarnis on 2026-07
 |---|---|---|---|
 | **1** | Vendored lib + `passkey.php` core + endpoint + registration UI + challenge method + `sync.js` guard + docs | yes (complete passkey-as-factor) | **shipped live 2026-07-06** (both gates passed: auth suite green on test, device checklist signed) |
 | **2** | Passwordless login button on `login.php` (conditional UI deferred — see Phase 2) | yes | implemented 2026-07-06 |
-| **3** | Hardening: login-method instrumentation, nudge copy, docs polish | yes | not started |
+| **3** | Hardening: login-method instrumentation, AAGUID labels, lib vectors | yes | implemented 2026-07-06 (nudge copy not done — still optional) |
 
 Phases 1 and 2 can also land as a single release; Phase 1 is the minimum safe unit.
 
@@ -147,12 +147,29 @@ Vanilla JS, loaded with the existing CSP nonce script pattern (`header.php` emit
 The email field already carries `autocomplete="username webauthn"`, so enabling it later is a
 JS-only change. Revisit only on demand, with its own device pass.
 
-## Phase 3 — Hardening (committed — all review nice-to-haves accepted 2026-07-05)
+## Phase 3 — Hardening (committed — all review nice-to-haves accepted 2026-07-05; implemented 2026-07-06)
 
-- **Login-method instrumentation (🟢-2):** `logToFile()` one line per successful login with the method used (`password`, `passkey`, `totp`, `email`, `recovery`) — makes the epic's success metrics measurable from day one; no schema change.
-- **AAGUID default naming (🟢-3):** map well-known AAGUIDs → labels ("iCloud Keychain", "Google Password Manager", "Windows Hello") for the default `friendly_name`, generic date label as fallback. Seed the map from what the launch device pass (see Verification) actually reports — if attestation `none` zeroes the AAGUIDs on real devices, keep the generic fallback and drop the map.
-- **Vendored-lib vector harness (🟢-1):** `tests/unit/passkey-harness.php` also checks the lib against a couple of published WebAuthn attestation/assertion vectors; rerun on every version bump of `public/includes/webauthn/`.
-- Post-login nudge copy for members with no passkey (reuses the existing dismissible nudge pattern, optional).
+- **Login-method instrumentation (🟢-2) — done:** `logLoginMethod()` in `mfa.php`, one
+  `[LOGIN] method=… user=…` line to `APP_LOG_FILE` from every promotion path (`login.php`,
+  `mfa_challenge.php`, `webauthn.php`). Methods: `password`, `passkey` (passwordless),
+  `password+totp/email/recovery/passkey` (two-step) — richer than the original single-token
+  list so passwordless share is readable directly. No schema change.
+- **AAGUID default naming (🟢-3) — done:** `passkeyAaguidLabel()` in `passkey.php` maps
+  well-known provider AAGUIDs (iCloud Keychain, Google Password Manager, Windows Hello,
+  Proton Pass, 1Password, Bitwarden, …) to `friendly_name` defaults with a date suffix;
+  precedence is member-supplied label → AAGUID map → UA/date fallback. The device pass
+  recorded no AAGUID observations, so the map is from the community list — safe either way,
+  since unknown/zeroed ids fall through to the existing fallback.
+- **Vendored-lib vector harness (🟢-1) — done:** `tests/unit/passkey-harness.php` now runs
+  known-answer create/get ceremonies against the lib: an ext-openssl P-256 key, hand-built
+  CBOR attestation, then `processCreate`/`processGet` with production's exact call shape —
+  asserting credential id, byte-exact public-key DER, AAGUID, counter, plus rejection of
+  tampered signatures, wrong challenges, and missing user verification. *Deviation from the
+  plan text:* synthetic vectors instead of published ones — they bind to our rpId/origin
+  config, cover signature verification end-to-end, and stay deterministic offline. Rerun on
+  every version bump of `public/includes/webauthn/`.
+- Post-login nudge copy for members with no passkey — **not implemented** (still optional;
+  product copy for Djarnis to decide).
 
 ---
 

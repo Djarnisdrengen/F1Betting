@@ -83,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 session_regenerate_id(true);
                 try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
                 $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$uid]);
+                logLoginMethod('password+' . $method, $uid); // $ok only for recovery|email|totp
                 setLang($u['language']   ?? 'da');
                 setTheme($u['theme']     ?? $anonTheme);
                 setFont($u['font_stack'] ?? $anonFont);
