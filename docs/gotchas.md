@@ -16,7 +16,7 @@
 - [12. in_competition = 0 for the admin user](#12-in_competition--0-for-the-admin-user)
 - [13. quali_p1/p2/p3 must match exact bet validation](#13-quali_p1p2p3-must-match-exact-bet-validation)
 - [14. Nightly report emails appear twice when SMTP_FROM and REPORT_TO share the same Proton account](#14-nightly-report-emails-appear-twice-when-smtp_from-and-report_to-share-the-same-proton-account)
-- [15. sync:live rewrites all user emails to @test.localhost](#15-synclive-rewrites-all-user-emails-to-testlocalhost)
+- [15. sync:live rewrites all user emails to @hpovlsen.dk](#15-synclive-rewrites-all-user-emails-to-hpovlsendk)
 - [16. MFA requires MFA_KEY in config, and MFA tables use the legacy latin1 collation](#16-mfa-requires-mfa_key-in-config-and-mfa-tables-use-the-legacy-latin1-collation)
 - [17. Test env sends email by default — interception is opt-in](#17-test-env-sends-email-by-default--interception-is-opt-in-e2e-turns-it-on-per-run)
 - [18. Migrations are manual per environment — the deploy schema check catches forgotten ones](#18-migrations-are-manual-per-environment--the-deploy-schema-check-catches-forgotten-ones)
@@ -151,13 +151,15 @@ There is no incoming-only condition available in Proton's simple filter builder,
 
 ---
 
-## 15. `sync:live` rewrites all user emails to `@test.localhost`
+## 15. `sync:live` rewrites all user emails to `@hpovlsen.dk`
 
-When `npm run sync:live` copies the live database into test, every user email whose domain is not already `test.localhost` has its domain rewritten: `thomas@helvegpovlsen.dk` becomes `thomas@test.localhost`, `user@gmail.com` becomes `user@test.localhost`, and so on. This prevents any email accidentally triggered on the test site from reaching real inboxes.
+When `npm run sync:live` copies the live database into test, every user email whose domain is not already `hpovlsen.dk` has its domain rewritten, local-part preserved: `thomas@helvegpovlsen.dk` becomes `thomas@hpovlsen.dk`, `user@gmail.com` becomes `user@hpovlsen.dk`, and so on. `hpovlsen.dk` is a domain Djarnis owns with catch-all alias forwarding enabled, so every synced user's mail lands in the same real inbox regardless of their original local-part — this is deliberate: it lets MFA challenges (email OTP) and other email content be verified by hand for accounts copied from production, without digging through the SMTP intercept log. It also means no rewritten address can ever collide with an actual third-party player's real inbox.
 
 The admin account (`F1_ADMIN_EMAIL`, currently `f1_admin@helvegpovlsen.dk`) is preserved unchanged — it is saved before the sync wipe and restored afterward.
 
-Emails to synced users are never sent — `@test.localhost` is a placeholder and the test server captures mail via the SMTP intercept. To read what would have been sent, use `npm run test:email:preview` (writes HTML to `tests/email-previews/`) or flip **Admin → Settings → Email delivery** to capture and inspect the intercept log. See [testing.md](testing.md).
+Unless SMTP intercept is on, emails to synced users **are sent for real** (captured only if you flip **Admin → Settings → Email delivery** to capture, or `touch /tmp/f1betting_smtp_intercept`). See [testing.md](testing.md). This is intentional for manual testing — but be aware that triggering a bulk action (e.g. running the notification cron) against a large synced user set will fire that many real emails at once into the same inbox.
+
+Automated E2E fixture addresses (`e2e_*_f1@test.localhost`, seeded by `test-seed.php`) are unaffected by this — they keep using `@test.localhost` since those are only ever read back via the SMTP intercept log, not a real inbox, and `test-seed.php`'s destructive actions (`cleanup_passkeys`, `set_passkey_sign_count`) gate on that domain specifically so they can never match a synced or manually created account.
 
 
 ---

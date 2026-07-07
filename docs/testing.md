@@ -594,7 +594,7 @@ All seeded test users use `@test.localhost` addresses. Since `SMTP_INTERCEPT=tru
 | `e2e_notify_open_invite_f1@test.localhost` | `07-cron.spec.js` | Pending invite (pool reminder) |
 | `e2e_notify_close_b_f1@test.localhost` | `07-cron.spec.js` | Already-bet user (notification skipped) |
 
-Users synced from live via `sync:live` have their email addresses rewritten to `@test.localhost`. The admin account (`F1_ADMIN_EMAIL`) is restored unchanged.
+Users synced from live via `sync:live` have their email addresses rewritten to `@hpovlsen.dk` (local-part preserved) — a domain with catch-all forwarding to a real inbox, so MFA challenges and email content can be verified by hand for accounts copied from production. This is separate from the `@test.localhost` fixture addresses above, which stay on the SMTP-intercept placeholder domain. See [gotchas.md #15](gotchas.md#15-synclive-rewrites-all-user-emails-to-hpovlsendk). The admin account (`F1_ADMIN_EMAIL`) is restored unchanged.
 
 ---
 

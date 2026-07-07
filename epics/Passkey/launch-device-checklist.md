@@ -6,9 +6,11 @@ of the passkey release. Sign and date each device row. Windows Hello is optional
 **Account to use:** a normal member account on the test DB — **never `f1_admin`**
 (enrolling any factor on it breaks every smoke/E2E run, see docs/gotchas.md #16).
 Create one via an admin invite, or use your own member account (after `sync:live`
-all passwords are `SYNC_TEST_PASSWORD`). Note: E2E runs and `sync:live` may wipe
-the account/passkey rows — if it vanishes mid-test, recreate it and also delete
-the orphaned passkey from the phone's password manager.
+all passwords are `SYNC_TEST_PASSWORD` and emails are rewritten to `@hpovlsen.dk`,
+a catch-all that forwards to Djarnis's real inbox — so email codes for synced
+accounts arrive for real; see docs/gotchas.md #15). Note: E2E runs and `sync:live`
+may wipe the account/passkey rows — if it vanishes mid-test, recreate it and also
+delete the orphaned passkey from the phone's password manager.
 
 ## Steps (repeat per device)
 

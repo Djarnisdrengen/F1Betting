@@ -94,8 +94,8 @@ try {
             }
             if ($table === 'users' && isset($row['email'])) {
                 $at = strpos($row['email'], '@');
-                if ($at !== false && substr($row['email'], $at + 1) !== 'test.localhost') {
-                    $row['email'] = substr($row['email'], 0, $at + 1) . 'test.localhost';
+                if ($at !== false && substr($row['email'], $at + 1) !== 'hpovlsen.dk') {
+                    $row['email'] = substr($row['email'], 0, $at + 1) . 'hpovlsen.dk';
                 }
             }
             $stmt->execute(array_values($row));
