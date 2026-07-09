@@ -5,6 +5,7 @@
 - [Nightly Workflow](#nightly-workflow)
   - [What it does](#what-it-does)
 - [Nightly DB Backup Workflow](#nightly-db-backup-workflow)
+- [Cron Trigger Workflows (in migration)](#cron-trigger-workflows-in-migration)
 - [Monthly Security Review Workflow](#monthly-security-review-workflow)
 - [Required Configuration](#required-configuration)
   - [Variables tab](#variables-tab)
@@ -47,6 +48,29 @@ Fetches a full DB snapshot from the live site (`db-backup.php`) and uploads it a
 **Required secrets/variables:** `BASE_URL_LIVE`, `INTEGRATION_SEED_TOKEN`
 
 Find artifacts under **Actions → Nightly DB Backup → (select run) → Artifacts**.
+
+---
+
+## Cron Trigger Workflows (in migration)
+
+**Files:** `.github/workflows/cron-qualifying-import.yml`, `.github/workflows/cron-notifications.yml`
+**Schedule:** none yet — currently `workflow_dispatch:`-only
+**Can be triggered:** manually via the Actions tab → "Run workflow" (optional `dry_run` input)
+
+Part of the F6 fix (`security-findings-remaining.md`): `public/cron/import_qualifying.php` and
+`public/cron/notifications.php` used to be triggered by Simply.com's control-panel cron feature,
+which only sends a plain GET with no custom headers — incompatible with the `Authorization:
+Bearer` auth those scripts now use. These two workflows replace that trigger, following the same
+shape as the Nightly DB Backup Workflow above (`vars.BASE_URL_LIVE`, a `secrets.CRON_SECRET`,
+inline `node -e` fetch).
+
+**Currently disabled by design.** No `schedule:` trigger is enabled yet — Simply.com's
+control-panel entries are still the live trigger, kept working by a temporary `?token=` shim in
+both cron scripts. The cutover sequence (add the `CRON_SECRET` secret, prove each workflow via
+`workflow_dispatch`, enable `schedule:`, delete the Simply.com entries) is tracked in
+`security-findings-remaining.md` under F6 — check there before assuming either trigger is live.
+
+**Required secrets/variables:** `BASE_URL_LIVE`, `CRON_SECRET`
 
 ---
 
@@ -94,6 +118,7 @@ Secrets are encrypted and hidden in logs.
 | `RESEND_API_KEY` | Resend API key — fallback transport if Proton SMTP fails. Get one at resend.com (free tier is sufficient). If unset, a warning is logged and there is no fallback. |
 | `REPORT_TO` | Recipient address for the nightly report email |
 | `TEST_USER_PASSWORD_LIVE` | Admin account password on the live site (used for E2E login) |
+| `CRON_SECRET` | Value of `CRON_SECRET` in `config.live.php` — used by the cron trigger workflows (see above, currently `workflow_dispatch`-only) |
 
 `TEST_USER_EMAIL_LIVE` is hardcoded in the workflow (`f1_admin@helvegpovlsen.dk`) and does not need to be a secret.
 

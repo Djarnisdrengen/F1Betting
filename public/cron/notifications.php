@@ -45,9 +45,15 @@ $tokenValid = false;
 
 if (php_sapi_name() === 'cli') {
     global $argv;
-    $tokenValid = isset($argv[1]) && $argv[1] === CRON_SECRET;
+    $tokenValid = isset($argv[1]) && hash_equals(CRON_SECRET, $argv[1]);
 } else {
-    $tokenValid = isset($_GET['token']) && $_GET['token'] === CRON_SECRET;
+    // F6 TEMPORARY SHIM: accepts the token via the Authorization header (new,
+    // preferred — getBearerToken()) OR the legacy ?token= query string while
+    // Simply.com's control-panel cron entry is migrated to GitHub Actions. Delete
+    // the ?token= branch once that entry is removed — see security-findings-remaining.md F6.
+    $bearer = getBearerToken();
+    $tokenValid = ($bearer !== null && hash_equals(CRON_SECRET, $bearer))
+        || (isset($_GET['token']) && hash_equals(CRON_SECRET, $_GET['token']));
 }
 
 if (!$tokenValid) {

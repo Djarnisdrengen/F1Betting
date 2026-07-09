@@ -88,9 +88,9 @@ async function main() {
 
     let res;
     try {
-        res = await fetch(`${baseUrl}/tools/db-restore.php?token=${token}`, {
+        res = await fetch(`${baseUrl}/tools/db-restore.php`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify(backup),
         });
     } catch (err) {

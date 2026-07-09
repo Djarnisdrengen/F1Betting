@@ -33,7 +33,8 @@ test.describe("Cron jobs", () => {
         });
 
         test("test mode imports qualifying results with a valid token", async ({ page }) => {
-            await page.goto(`/cron/import_qualifying.php?test=true&token=${encodeURIComponent(CRON_SECRET)}`);
+            await page.setExtraHTTPHeaders({ Authorization: `Bearer ${CRON_SECRET}` });
+            await page.goto(`/cron/import_qualifying.php?test=true`);
             const text = await page.textContent("body");
             expect(text).toContain("[SUCCESS] Updated qualifying results");
             expect(text).toContain("Total races updated: 1");
@@ -50,7 +51,8 @@ test.describe("Cron jobs", () => {
         });
 
         test("authorized with CRON_SECRET completes cleanly", async ({ page }) => {
-            await page.goto(`/cron/notifications.php?token=${CRON_SECRET}`);
+            await page.setExtraHTTPHeaders({ Authorization: `Bearer ${CRON_SECRET}` });
+            await page.goto(`/cron/notifications.php`);
             const text = await page.textContent("body");
             expect(text).toContain("Notification check complete");
             expect(text).not.toContain("FAILED to send");
@@ -92,7 +94,8 @@ test.describe("Cron jobs", () => {
         });
 
         test("sends open notification to in-competition user, pool reminder to non-competing and invited", async ({ page }) => {
-            await page.goto(`/cron/notifications.php?token=${CRON_SECRET}&test=true`);
+            await page.setExtraHTTPHeaders({ Authorization: `Bearer ${CRON_SECRET}` });
+            await page.goto(`/cron/notifications.php?test=true`);
             const text = await page.textContent("body");
             // Pass full cron output as the error message so failures are self-diagnosing
             expect(text, `Cron output:\n${text}`).toContain("Betting opened for: E2E Notify Open Race");
@@ -153,7 +156,8 @@ test.describe("Cron jobs", () => {
         });
 
         test("sends closing notification to unbetted user, skips user with existing bet", async ({ page }) => {
-            await page.goto(`/cron/notifications.php?token=${CRON_SECRET}&test=true`);
+            await page.setExtraHTTPHeaders({ Authorization: `Bearer ${CRON_SECRET}` });
+            await page.goto(`/cron/notifications.php?test=true`);
             const text = await page.textContent("body");
             expect(text).toContain("Betting closing soon for: E2E Notify Close Race");
 
@@ -196,7 +200,8 @@ test.describe("Cron jobs", () => {
                 (await getMessages(inbox)).map(m => m._id)
             );
 
-            await page.goto(`/cron/notifications.php?token=${CRON_SECRET}`);
+            await page.setExtraHTTPHeaders({ Authorization: `Bearer ${CRON_SECRET}` });
+            await page.goto(`/cron/notifications.php`);
             const cronText = await page.textContent('body');
             expect(cronText, `Cron output:\n${cronText}`).toContain(`Sent open notification to: ${inbox}`);
 
@@ -224,7 +229,8 @@ test.describe("Cron jobs", () => {
                 (await getMessages(inbox)).map(m => m._id)
             );
 
-            await page.goto(`/cron/notifications.php?token=${CRON_SECRET}`);
+            await page.setExtraHTTPHeaders({ Authorization: `Bearer ${CRON_SECRET}` });
+            await page.goto(`/cron/notifications.php`);
 
             const msgs = await waitForNewMessages(inbox, baseline, 1, null, { timeout: 20000 });
             const from = (msgs[0].from ?? []).map(f => f.address).join(' ');

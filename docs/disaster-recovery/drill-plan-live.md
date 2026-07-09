@@ -73,7 +73,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join('build-deploy', '.env') });
 const { readPhpConfig } = require('./build-deploy/php-config');
 const cfg = readPhpConfig('live');
-fetch(cfg.siteUrl + '/tools/db-backup.php?token=' + cfg.integrationSeedToken)
+fetch(cfg.siteUrl + '/tools/db-backup.php', { headers: { Authorization: 'Bearer ' + cfg.integrationSeedToken } })
   .then(r => r.json())
   .then(d => {
     console.log('ok:', d.ok);
@@ -173,7 +173,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join('build-deploy', '.env') });
 const { readPhpConfig } = require('./build-deploy/php-config');
 const cfg = readPhpConfig('live');
-fetch(cfg.siteUrl + '/tools/db-backup.php?token=' + cfg.integrationSeedToken)
+fetch(cfg.siteUrl + '/tools/db-backup.php', { headers: { Authorization: 'Bearer ' + cfg.integrationSeedToken } })
   .then(r => r.json())
   .then(after => {
     console.log('After restore:');

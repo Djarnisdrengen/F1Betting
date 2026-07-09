@@ -23,7 +23,9 @@ async function backupDb(backupDir) {
     console.log("🗄️  Backing up live database...");
     let res;
     try {
-        res = await fetch(`${baseUrl}/tools/db-backup.php?token=${token}`);
+        res = await fetch(`${baseUrl}/tools/db-backup.php`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
     } catch (err) {
         console.log("⚠️  DB backup request failed:", err.message);
         return;

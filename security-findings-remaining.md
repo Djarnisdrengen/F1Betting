@@ -7,15 +7,41 @@ Severity: Medium / Low / Info. "Status" reflects what the F1–F5 work already c
 
 ---
 
-## F6 — Secrets & tokens transmitted in URL query strings — **Medium**
+## F6 — Secrets & tokens transmitted in URL query strings — **Medium** — 🚧 In progress
 Tokens travel in `?token=…` on `db-backup.php`, `schema-check.php`, `seed_f1_admin.php`, `cron/*`, and
 the `forgot_password` e2e param, so they land in web-server/proxy access logs and `Referer` headers.
-- **Status:** partially mitigated — all these compares are now `hash_equals` (done in F2–F4), so the
-  timing side-channel is closed, but the tokens are still in URLs.
-- **Fix:** accept the token via a header (e.g. `Authorization: Bearer`) or POST body instead of the
-  query string; update the callers (`build-deploy/backup.js`, `.github/workflows/nightly-backup.yml`,
-  `build-deploy/schema-check.js`, `restore-db.js`, Simply cron). Scrub existing access logs.
-- **Effort:** medium (touches CI + cron config). **Files:** `public/tools/*.php`, the Node callers.
+- **Status:** all compares are `hash_equals`/constant-time now (`notifications.php` and
+  `db-restore.php` still had a plain `===`/`!==` — fixed as part of this pass). `db-backup.php`,
+  `schema-check.php`, `db-restore.php`, and both `cron/*` scripts' HTTP branch now read the token via
+  a new `getBearerToken()` helper (`functions.php`) instead of `$_GET['token']` — `Authorization:
+  Bearer <token>`. Node callers (`backup.js`, `schema-check.js`, `restore-db.js`,
+  `nightly-backup.yml`) updated to send the header. CLI invocation (`argv`) for the cron scripts is
+  unaffected — it was never URL/log-exposed.
+- **Cron trigger migration (in progress):** `import_qualifying.php`/`notifications.php` were triggered
+  by Simply.com's control-panel cron feature, which only does a plain GET with no custom headers —
+  incompatible with the header-only fix. Moving their trigger to GitHub Actions instead: new
+  `.github/workflows/cron-qualifying-import.yml` / `cron-notifications.yml`, currently
+  `workflow_dispatch:`-only (no `schedule:` yet — see cutover steps below). Both cron scripts
+  currently carry a **temporary dual-accept shim** — header OR the legacy `?token=` — so Simply's
+  existing control-panel entries keep working until the GitHub Actions replacement is proven and the
+  Simply.com entries are manually deleted. **Remove the `?token=` branch from both scripts** once
+  that happens; don't leave the shim in place long-term.
+- **Deferred, accepted as-is:** `seed_f1_admin.php` (already `hash_equals`-safe, excluded from live
+  deploy via `.deployignore.live`, and its only "caller" is a human pasting a URL into a browser — no
+  header-carrying client exists for it) and `forgot_password.php`'s `e2e_token` (already
+  `hash_equals`-gated and hard-`false` on live regardless of `APP_ENV`). Both stay on `?token=`.
+- **Remaining manual steps (not automatable):**
+  1. Add a `CRON_SECRET` GitHub Actions repo secret (value already in `config.live.php`).
+  2. `workflow_dispatch` both new workflows once by hand, confirm green + expected log text
+     (`Total races updated` / `Notification check complete`).
+  3. Uncomment the `schedule:` block in both new workflow files, then **immediately** delete both
+     Simply.com control-panel cron entries (same sitting — avoid an active race weekend window).
+  4. After one full clean cycle (a Saturday qualifying window + ~24h of hourly notifications),
+     remove the `?token=` shim from both cron scripts and redeploy.
+  5. Scrub existing access logs of the old `?token=` values if feasible.
+- **Effort:** medium (touches CI + cron config). **Files:** `functions.php`, `public/tools/*.php`,
+  `public/cron/*.php`, the Node callers, `.github/workflows/*`, `tests/e2e/07-cron.spec.js`,
+  `public/.htaccess`.
 
 ## F7 — Login / MFA rate limiting is weak — **Medium** — ✅ Fixed
 `public/includes/functions.php:391-408`: per-IP counter, threshold `>=5`/15 min (comment still says

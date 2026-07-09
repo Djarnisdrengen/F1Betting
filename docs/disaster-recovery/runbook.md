@@ -132,10 +132,20 @@ Smoke tests verify all pages respond. E2E tests verify login, race display, and 
 
 ### Step 9 — Re-provision Simply.com cron jobs
 
+**This step is mid-migration (F6, `security-findings-remaining.md`) — check that file for
+current status before following it.** Simply.com's control-panel cron feature can't send a
+custom header, so the trigger is moving to GitHub Actions (`.github/workflows/cron-qualifying-import.yml`,
+`cron-notifications.yml`). Until that migration's cutover is complete, Simply's control panel is
+still the live trigger, kept working by a temporary `?token=` shim in both cron scripts:
+
 Simply.com control panel → Cron jobs → re-add both endpoints with `CRON_SECRET`:
 
 - `https://www.formula-1.dk/cron/import_qualifying.php?token=<CRON_SECRET>`
 - `https://www.formula-1.dk/cron/notifications.php?token=<CRON_SECRET>`
+
+Once F6's cutover is complete, this step changes to: re-add the `CRON_SECRET` GitHub Actions
+repo secret and confirm both workflows' `schedule:` triggers are enabled — no Simply.com
+control-panel entries to re-provision at all.
 
 ---
 
@@ -152,6 +162,7 @@ If the GitHub repository must be recreated, re-provision in this order.
 | `RESEND_API_KEY` | resend.com dashboard → API Keys |
 | `TEST_USER_PASSWORD_LIVE` | Password manager (= `F1_ADMIN_PASSWORD` from `config.live.php`) |
 | `INTEGRATION_SEED_TOKEN` | Password manager (= `INTEGRATION_SEED_TOKEN` from `config.live.php`) |
+| `CRON_SECRET` | Password manager (= `CRON_SECRET` from `config.live.php`) — added for the F6 cron trigger migration; see Step 9 |
 
 ### Variables (Settings → Secrets and variables → Actions → Variables)
 

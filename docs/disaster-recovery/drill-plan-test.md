@@ -71,7 +71,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join('build-deploy', '.env') });
 const { readPhpConfig } = require('./build-deploy/php-config');
 const cfg = readPhpConfig('test');
-fetch(cfg.siteUrl + '/tools/db-backup.php?token=' + cfg.integrationSeedToken)
+fetch(cfg.siteUrl + '/tools/db-backup.php', { headers: { Authorization: 'Bearer ' + cfg.integrationSeedToken } })
   .then(r => r.json())
   .then(d => {
     require('fs').mkdirSync('build-deploy/backups/dr-drill', { recursive: true });
@@ -183,20 +183,22 @@ Select `[1] dr-drill-snapshot`, type `YES`.
 | 4.1 Smoke tests | `node tests/smoke.js https://www.hpovlsen.dk` | `✅ 8/8` |
 | 4.2 E2E tests | `npm run test:e2e:test` | 74/74 pass |
 | 4.3 Admin login | Browser: `https://www.hpovlsen.dk` → log in | Admin panel loads |
-| 4.4 Cron qualifying | Node.js fetch `?token=<CRON_SECRET>` to `import_qualifying.php` | `Cron token validation: VALID` |
-| 4.5 Cron notifications | Node.js fetch `?token=<CRON_SECRET>` to `notifications.php` | `Notification check complete.` |
+| 4.4 Cron qualifying | Node.js fetch with `Authorization: Bearer <CRON_SECRET>` to `import_qualifying.php` | `Cron token validation: VALID` |
+| 4.5 Cron notifications | Node.js fetch with `Authorization: Bearer <CRON_SECRET>` to `notifications.php` | `Notification check complete.` |
 | 4.6 Row counts | Node.js fetch backup endpoint, compare to step 1.2 | All tables match |
 
-Cron check (use `token=`, not `secret=`):
+Cron check (Authorization header, not `?token=` — see `security-findings-remaining.md` F6; both
+scripts still accept the old `?token=` as a temporary shim, but don't rely on it):
 ```bash
 node -e "
 const path = require('path');
 require('dotenv').config({ path: path.join('build-deploy', '.env') });
 const { readPhpConfig } = require('./build-deploy/php-config');
 const cfg = readPhpConfig('test');
+const authHeader = { headers: { Authorization: 'Bearer ' + cfg.cronSecret } };
 Promise.all([
-  fetch('https://www.hpovlsen.dk/cron/import_qualifying.php?token=' + cfg.cronSecret).then(r => r.text()),
-  fetch('https://www.hpovlsen.dk/cron/notifications.php?token=' + cfg.cronSecret).then(r => r.text()),
+  fetch('https://www.hpovlsen.dk/cron/import_qualifying.php', authHeader).then(r => r.text()),
+  fetch('https://www.hpovlsen.dk/cron/notifications.php', authHeader).then(r => r.text()),
 ]).then(([q, n]) => {
   console.log('qualifying:', q.includes('VALID') ? '✅ VALID' : '❌ ' + q.slice(0,100));
   console.log('notifications:', n.trim() === 'Notification check complete.' ? '✅ ' + n.trim() : '❌ ' + n.slice(0,100));

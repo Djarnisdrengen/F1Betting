@@ -1,0 +1,44 @@
+name: Cron — Email Notifications
+
+# Replaces the Simply.com control-panel cron entry for notifications.php as part of
+# F6 (security-findings-remaining.md): Simply's control-panel cron only does a plain
+# GET with no custom headers, so it can't carry the new Authorization: Bearer token.
+# schedule: is intentionally omitted for now — see the F6 cutover sequence in
+# security-findings-remaining.md. Until that trigger is added here, notifications
+# keep running from Simply's control panel (still working via the temporary
+# ?token= shim in notifications.php). Add the schedule: block only after step 5 of
+# that sequence, at the same time the Simply.com entry is deleted.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (?test=true) — no real emails sent"
+        required: false
+        default: "false"
+  # schedule:
+  #   - cron: '5 * * * *'   # hourly; notifications.php is itself time-window-gated
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger notifications cron
+        env:
+          BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL_LIVE + '/cron/notifications.php' + (process.env.DRY_RUN === 'true' ? '?test=true' : '');
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Notification check complete')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "

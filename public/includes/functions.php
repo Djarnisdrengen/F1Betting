@@ -385,6 +385,25 @@ function verifyPassword($password, $hash) {
     return password_verify($password . PASSWORD_PEPPER, $hash);
 }
 
+// ── Bearer token auth (cron/tool endpoints) ─────────────────────────────────────
+// Reads the bearer token from the Authorization header, if present. Apache/mod_php
+// sometimes omits $_SERVER['HTTP_AUTHORIZATION'] unless CGIPassAuth or a rewrite rule
+// is configured; some proxies surface it via REDIRECT_HTTP_AUTHORIZATION instead. F6:
+// callers used to pass these tokens as ?token=... query strings, which land in
+// web-server/proxy access logs and Referer headers — this reads the replacement
+// transport. Callers still compare the result with hash_equals(), same as before.
+function getBearerToken(): ?string {
+    $header = null;
+    if (function_exists('getallheaders')) {
+        foreach (getallheaders() as $name => $value) {
+            if (strcasecmp($name, 'Authorization') === 0) { $header = $value; break; }
+        }
+    }
+    $header = $header ?? $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? null;
+    if (!$header || stripos($header, 'Bearer ') !== 0) return null;
+    return substr($header, 7);
+}
+
 // ── Rate limiting ──────────────────────────────────────────────────────────────
 // Sliding 15-minute window, checked both per-IP (catches broad abuse from one
 // address) and per-account (catches a distributed attack on one victim regardless

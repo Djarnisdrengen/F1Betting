@@ -93,14 +93,20 @@ All terminal commands for the F1 Betting project.
 | `php public/cron/import_qualifying.php <CRON_SECRET>` | Import qualifying results from F1 API (CLI) |
 | `php public/cron/notifications.php <CRON_SECRET>` | Send betting window email notifications (CLI) |
 
-Or via HTTP:
+Or via HTTP — the token is sent as an `Authorization: Bearer <CRON_SECRET>` header (F6),
+not a query string, so use `fetch()`/Node rather than a plain browser visit or `curl`
+(this host's WAF also treats non-browser clients differently — see `docs/cron-jobs.md`):
 
-| URL | What it does |
+| Request | What it does |
 |---|---|
-| `/cron/import_qualifying.php?token=<CRON_SECRET>` | Same as above, via browser/curl |
-| `/cron/import_qualifying.php?token=<CRON_SECRET>&test=true` | Dry run — no DB writes |
-| `/cron/notifications.php?token=<CRON_SECRET>` | Same as above, via browser/curl |
-| `/cron/notifications.php?token=<CRON_SECRET>&test=true` | Dry run — no emails sent, same log output |
+| `fetch('/cron/import_qualifying.php', {headers:{Authorization:'Bearer <CRON_SECRET>'}})` | Same as above, via HTTP |
+| `fetch('/cron/import_qualifying.php?test=true', {headers:{...}})` | Dry run — no DB writes |
+| `fetch('/cron/notifications.php', {headers:{Authorization:'Bearer <CRON_SECRET>'}})` | Same as above, via HTTP |
+| `fetch('/cron/notifications.php?test=true', {headers:{...}})` | Dry run — no emails sent, same log output |
+
+Both scripts also still accept the token as `?token=<CRON_SECRET>` as a **temporary** shim
+while their trigger migrates from Simply.com's cron panel to GitHub Actions
+(`security-findings-remaining.md` F6) — don't build new tooling against it.
 
 ---
 

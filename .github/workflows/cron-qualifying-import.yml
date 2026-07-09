@@ -1,0 +1,50 @@
+name: Cron — Qualifying Results Import
+
+# Replaces the Simply.com control-panel cron entry for import_qualifying.php as part
+# of F6 (security-findings-remaining.md): Simply's control-panel cron only does a
+# plain GET with no custom headers, so it can't carry the new Authorization: Bearer
+# token. schedule: is intentionally omitted for now — see the F6 cutover sequence in
+# security-findings-remaining.md. Until that trigger is added here, the import keeps
+# running from Simply's control panel (still working via the temporary ?token= shim
+# in import_qualifying.php). Add the schedule: block only after step 5 of that
+# sequence, at the same time the Simply.com entry is deleted.
+#
+# GitHub's schedule: is UTC-only with no DST awareness, so once enabled this should
+# spread across the plausible local-time range for Saturday qualifying (e.g.
+# '0 13,14,15,16,17 * * 6') rather than pin one offset that silently drifts an hour
+# each spring/autumn. The extra firings are harmless no-ops: the script only writes
+# when a race's quali_p1 is still NULL, and it self-gates to 06:00-23:59 local time.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (?test=true) — stub data, no DB writes"
+        required: false
+        default: "false"
+  # schedule:
+  #   - cron: '0 13,14,15,16,17 * * 6'
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger qualifying import cron
+        env:
+          BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL_LIVE + '/cron/import_qualifying.php' + (process.env.DRY_RUN === 'true' ? '?test=true' : '');
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Total races updated')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "

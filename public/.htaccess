@@ -12,6 +12,14 @@ RewriteCond %{HTTP_HOST} !^www\. [NC]
 RewriteCond %{HTTP_HOST} ^([a-z0-9.-]+)$ [NC]
 RewriteRule ^(.*)$ https://www.%1/$1 [L,R=301]
 
+# F6: some Apache/mod_php configs don't populate $_SERVER['HTTP_AUTHORIZATION'] by
+# default (CGIPassAuth off). Cron/tool endpoints now read the Authorization header
+# (getBearerToken() in functions.php) instead of a ?token= query string — this
+# ensures PHP actually sees it. No-op if this layer isn't what's populating the
+# header already.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
 # ==================================================
 # SECURITY HEADERS
 # ==================================================

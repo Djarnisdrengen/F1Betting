@@ -101,7 +101,7 @@ If a Node.js script needs a numeric value, read it from `process.env` or hardcod
 
 The cron scripts (`import_qualifying.php`, `notifications.php`) return an error and exit immediately if the `CRON_SECRET` token is missing or wrong. If you open them in a browser without the token, you get a generic error response, not a 403 HTTP status, but the effect is the same.
 
-Always pass the token: `?token=<CRON_SECRET>`.
+Since F6, the token is sent via the `Authorization: Bearer <CRON_SECRET>` header, not a URL query string — a plain browser visit can't set that, so use `npm run test:e2e:test` or a `fetch()`/Node one-liner instead (see `docs/cron-jobs.md` → "Triggering manually"). Both cron scripts currently also still accept the old `?token=<CRON_SECRET>` query string as a **temporary** compatibility shim while their trigger migrates from Simply.com's control-panel cron to GitHub Actions (`security-findings-remaining.md` F6) — don't rely on it, it's slated for removal once that migration finishes.
 
 ---
 

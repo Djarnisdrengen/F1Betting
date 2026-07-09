@@ -27,9 +27,9 @@ async function checkSchema(baseUrl, token) {
     console.log("🔎 Checking DB schema is up to date...");
     let res;
     try {
-        res = await fetch(`${baseUrl}/tools/schema-check.php?token=${token}`, {
+        res = await fetch(`${baseUrl}/tools/schema-check.php`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ objects }),
         });
     } catch (err) {

@@ -96,13 +96,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 Any endpoint that trusts a bare token instead of a session (cron scripts, backup/seed tools, the e2e-only password-reset backdoor) must compare it with `hash_equals()`, never `===`/`==`. A naive string compare leaks timing information an attacker can use to guess the token byte-by-byte.
 
+Since F6, the token itself should also travel via the `Authorization: Bearer` header (`getBearerToken()` in `functions.php`), not a `?token=` query string — query strings land in web-server/proxy access logs and `Referer` headers. `?token=` is only still acceptable for a client that structurally cannot send a custom header (e.g. a browser-pasted URL with no request-building client behind it — see `seed_f1_admin.php`), and even then only `hash_equals()`-compared.
+
 ```php
 // Good
-if (!hash_equals(CRON_SECRET, $_GET['token'] ?? '')) {
+$token = getBearerToken() ?? '';
+if (!hash_equals(CRON_SECRET, $token)) {
     die('Forbidden');
 }
 
-// Bad — timing side-channel
+// Bad — token exposed in URLs/logs, and a timing side-channel besides
 if ($_GET['token'] !== CRON_SECRET) {
     die('Forbidden');
 }

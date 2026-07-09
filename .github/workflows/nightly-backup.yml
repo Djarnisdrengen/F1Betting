@@ -18,7 +18,9 @@ jobs:
           INTEGRATION_SEED_TOKEN: ${{ secrets.INTEGRATION_SEED_TOKEN }}
         run: |
           node -e "
-            fetch(process.env.BASE_URL_LIVE + '/tools/db-backup.php?token=' + process.env.INTEGRATION_SEED_TOKEN)
+            fetch(process.env.BASE_URL_LIVE + '/tools/db-backup.php', {
+              headers: { Authorization: 'Bearer ' + process.env.INTEGRATION_SEED_TOKEN }
+            })
               .then(r => r.json())
               .then(d => {
                 if (!d.ok) { console.error(d); process.exit(1); }
