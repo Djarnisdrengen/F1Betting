@@ -88,8 +88,7 @@ if ($postMethod === 'resend' && $hasEmailOtp) {
             $anonFont  = $pending['anonFont']  ?? 'system';
 
             unset($_SESSION['mfa_pending']);
-            $_SESSION['user_id'] = $uid;
-            session_regenerate_id(true);
+            establishSession($db, $uid);
             try { clearLoginAttempts($db, 'mfa', $uid); } catch (Exception $e) {}
             $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$uid]);
             logLoginMethod('password+' . $postMethod, $uid); // $ok only for recovery|email|totp

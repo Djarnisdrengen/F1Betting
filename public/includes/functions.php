@@ -38,15 +38,14 @@ function driverLabel($driver) {
     return escape($last) . ', ' . escape($first) . ' (#' . intval($driver['number']) . ', ' . escape($driver['team']) . ')';
 }
 
-// Generer UUID
+// Generer UUID (v4). F11: random_bytes() is a CSPRNG — mt_rand() was not, so exposed
+// UUIDs used to be guessable. Object fetches are still ownership-scoped (WHERE user_id
+// = ?) regardless; this is defense-in-depth.
 function generateUUID() {
-    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-        mt_rand(0, 0xffff),
-        mt_rand(0, 0x0fff) | 0x4000,
-        mt_rand(0, 0x3fff) | 0x8000,
-        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-    );
+    $data = random_bytes(16);
+    $data[6] = chr((ord($data[6]) & 0x0f) | 0x40); // version 4
+    $data[8] = chr((ord($data[8]) & 0x3f) | 0x80); // variant
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
 // ============================================
@@ -192,14 +191,69 @@ function getSettings() {
 // ============================================
 // USER FUNCTIONS
 // ============================================
+// F12: idle + absolute session timeout, in seconds. Checked below against the stamps
+// establishSession() sets at login.
+const SESSION_IDLE_TIMEOUT     = 1800;  // 30 minutes of inactivity
+const SESSION_ABSOLUTE_TIMEOUT = 43200; // 12 hours since login, regardless of activity
+
+// Bootstraps session state after a successful login — the same contract for every
+// login path (password, MFA challenge, passkey): rotates the session id and stamps
+// login_time/last_activity (used below for the idle/absolute timeout) plus the
+// account's current password_changed_at (used to detect, on this session's next
+// request, that the password was since changed elsewhere and this session is stale).
+function establishSession(PDO $db, string $uid): void {
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = $uid;
+    $_SESSION['login_time'] = time();
+    $_SESSION['last_activity'] = time();
+    $stmt = $db->prepare("SELECT password_changed_at FROM users WHERE id = ?");
+    $stmt->execute([$uid]);
+    $_SESSION['pwd_changed_at'] = $stmt->fetchColumn() ?: null;
+}
+
+// Ends the current session while preserving the language cookie/session value,
+// mirroring logout.php's own session_unset()+regenerate sequence.
+function invalidateSession(): void {
+    $lang = $_SESSION['lang'] ?? 'da';
+    session_unset();
+    $_SESSION['lang'] = $lang;
+    session_regenerate_id(true);
+}
+
 function getCurrentUser() {
     if (!isset($_SESSION['user_id'])) {
         return null;
     }
+
+    // F12: sessions from before this shipped have no login_time/last_activity yet —
+    // treat those as "not expired" rather than force-logging out everyone on deploy.
+    $now = time();
+    if (($_SESSION['last_activity'] ?? $now) < $now - SESSION_IDLE_TIMEOUT
+        || ($_SESSION['login_time'] ?? $now) < $now - SESSION_ABSOLUTE_TIMEOUT) {
+        invalidateSession();
+        return null;
+    }
+
     $db = getDB();
-    $stmt = $db->prepare("SELECT id, email, display_name, role, points, stars, created_at, in_competition, language, theme, font_stack, last_login FROM users WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, email, display_name, role, points, stars, created_at, in_competition, language, theme, font_stack, last_login, password_changed_at FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
-    return $stmt->fetch();
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        invalidateSession();
+        return null;
+    }
+
+    // Only sessions established after this feature shipped carry 'pwd_changed_at' —
+    // absence means "predates this fix", not "stale".
+    if (array_key_exists('pwd_changed_at', $_SESSION) && $_SESSION['pwd_changed_at'] !== $user['password_changed_at']) {
+        invalidateSession();
+        return null;
+    }
+
+    $_SESSION['last_activity'] = $now;
+    unset($user['password_changed_at']);
+    return $user;
 }
 
 function requireLogin() {
@@ -385,6 +439,18 @@ function verifyPassword($password, $hash) {
     return password_verify($password . PASSWORD_PEPPER, $hash);
 }
 
+// F12: minimum length + basic composition check. Returns a translated error string,
+// or '' on success. Used by register/reset/profile/admin password paths.
+function validatePasswordStrength(string $password): string {
+    if (strlen($password) < 10) {
+        return t('password_min_length');
+    }
+    if (!preg_match('/[A-Za-z]/', $password) || !preg_match('/[0-9]/', $password)) {
+        return t('password_too_weak');
+    }
+    return '';
+}
+
 // ── Bearer token auth (cron/tool endpoints) ─────────────────────────────────────
 // Reads the bearer token from the Authorization header, if present. Apache/mod_php
 // sometimes omits $_SERVER['HTTP_AUTHORIZATION'] unless CGIPassAuth or a rewrite rule
@@ -465,10 +531,15 @@ function clearLoginAttempts(PDO $db, string $scope, string $account): void {
 // ============================================
 
 // Validates a P1/P2/P3 combination. Returns a translated error string, or '' on success.
-// $context must contain quali_p1/p2/p3 keys (from a race or bet row).
-function validateBetCombination(string $p1, string $p2, string $p3, array $context, array $existingBets): string {
+// $context must contain quali_p1/p2/p3 keys (from a race or bet row). $validDriverIds
+// is a list of real driver IDs (e.g. array_keys($driversById)) — F10: without this, a
+// crafted POST could store IDs that don't exist in `drivers`.
+function validateBetCombination(string $p1, string $p2, string $p3, array $context, array $existingBets, array $validDriverIds): string {
     if (!$p1 || !$p2 || !$p3) {
         return t('select_all_positions');
+    }
+    if (!in_array($p1, $validDriverIds, true) || !in_array($p2, $validDriverIds, true) || !in_array($p3, $validDriverIds, true)) {
+        return t('invalid_driver');
     }
     if ($p1 === $p2 || $p1 === $p3 || $p2 === $p3) {
         return t('no_same_driver');

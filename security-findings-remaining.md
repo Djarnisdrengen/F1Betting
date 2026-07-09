@@ -96,34 +96,64 @@ attacker could MITM and capture the base64 `AUTH LOGIN` credentials.
 - **Effort:** low. **Files:** `smtp.php`. (Note: `SMTP_PASS` is shared test↔live, which raises the
   stakes here.)
 
-## F9 — SMTP header injection (latent) — **Low**
+## F9 — SMTP header injection (latent) — **Low** — ✅ Fixed
 `smtp.php:209,228-229` concatenate `$to`/`$subject` into SMTP data with no CRLF filtering.
-- **Status:** not currently exploitable — every caller validates the address via `sanitizeEmail`
-  (`functions.php:16`, `FILTER_VALIDATE_EMAIL` rejects CRLF) and subjects are app-controlled strings.
-- **Fix (hardening):** strip `\r`/`\n` from `$to` and `$subject` at the SMTP layer regardless of caller.
+- **Status (pre-fix):** not currently exploitable — every caller validates the address via
+  `sanitizeEmail` (`functions.php:16`, `FILTER_VALIDATE_EMAIL` rejects CRLF) and subjects are
+  app-controlled strings.
+- **Fix applied:** `SMTPMailer::send()` now strips `\r`/`\n` from `$to` and `$subject` up front,
+  before either the SMTP or the Resend fallback path uses them — hardening regardless of caller,
+  not a behavior change for any current caller.
 - **Effort:** low. **Files:** `smtp.php`.
 
-## F10 — Bet driver IDs not validated against `drivers` — **Low**
+## F10 — Bet driver IDs not validated against `drivers` — **Low** — ✅ Fixed
 `validateBetCombination` (`functions.php:416-432`) checks non-empty / distinct / not-quali / not-dupe,
 but not that `p1/p2/p3` are real IDs in `drivers`. A crafted POST to `bet.php`/`edit_bet.php` stores
 arbitrary strings (low impact: junk never scores and `profile.php` inner-joins `drivers` so it drops).
-- **Fix:** verify the three IDs exist in `drivers` for the race before insert.
-- **Effort:** low. **Files:** `functions.php`, `bet.php`, `edit_bet.php`.
+- **Fix applied:** `validateBetCombination()` takes a new `$validDriverIds` parameter and rejects any
+  p1/p2/p3 not in it (new `invalid_driver` translation key, da/en). `bet.php`/`edit_bet.php` pass
+  `array_keys($driversById)` — the driver list they already fetch via `fetchDrivers()`, no new query.
+- **Effort:** low. **Files:** `functions.php`, `bet.php`, `edit_bet.php`, `lang/user.php`.
 
-## F11 — Predictable identifiers — **Low**
+## F11 — Predictable identifiers — **Low** — ✅ Fixed
 `generateUUID()` uses `mt_rand`, not a CSPRNG, so exposed UUIDs are guessable. Object fetches are
 correctly scoped by `WHERE user_id = ?` today, so treat this as defense-in-depth.
-- **Fix:** build UUIDs from `random_bytes`.
-- **Effort:** low. **Files:** `functions.php` (keep every object fetch ownership-scoped).
+- **Fix applied:** `generateUUID()` now builds a v4 UUID from `random_bytes(16)` (version/variant bits
+  set per RFC 4122), same `8-4-4-4-12` lowercase-hex output shape as before — verified against the
+  UUIDv4 regex. Every object fetch stays ownership-scoped regardless.
+- **Effort:** low. **Files:** `functions.php`.
 
-## F12 — Weak password policy / session hygiene — **Low / Info**
+## F12 — Weak password policy / session hygiene — **Low / Info** — 🚧 Partially fixed
 - Minimum password length is 6 across register / reset / change.
 - No idle or absolute **session timeout**; changing the password does **not** revoke other active
   sessions (`profile.php:30-51`).
 - CSP allows `style-src 'unsafe-inline'` (`includes/header.php`).
-- **Fix:** raise the min length + basic strength check; add a session timeout and a "log out other
-  sessions" on password change; move inline styles to nonce'd blocks to drop `'unsafe-inline'`.
-- **Effort:** low–medium. **Files:** `register.php`, `reset_password.php`, `profile.php`, `header.php`.
+- **Fix applied (password policy + session hygiene):** new `validatePasswordStrength()`
+  (`functions.php`) enforces 10+ chars plus at least one letter and one digit — wired into
+  `register.php`, `reset_password.php`, `profile.php` (change_password), and `admin.php`
+  (admin-initiated reset); all five `minlength="6"` HTML attributes bumped to `10`. New
+  `establishSession()` helper stamps `login_time`/`last_activity`/`pwd_changed_at` at every
+  login-completion path (`login.php`, `mfa_challenge.php`, `webauthn.php`'s
+  `passkeyPromoteSession()`, `register.php`) and rotates the session id (unchanged behavior, just
+  centralized). `getCurrentUser()` now enforces a 30-minute idle timeout and a 12-hour absolute
+  timeout, and treats a session's `pwd_changed_at` stamp not matching the account's current DB value
+  as stale — logging it out. New `password_changed_at` column on `users`
+  (`database/add_password_changed_at.sql`, registered in `migrations.json`) is set to `NOW()`
+  whenever a password changes (self-service, reset-link, or admin reset); the session performing a
+  self-service change refreshes its own `pwd_changed_at` stamp immediately after so it doesn't log
+  itself out — only *other* active sessions for that account go stale on their next request. Sessions
+  that predate this fix (no `login_time`/`pwd_changed_at` in session, or `password_changed_at` still
+  `NULL`) are treated as not-expired/not-stale rather than mass-logged-out on deploy.
+- **Deferred:** CSP `style-src 'unsafe-inline'` removal. Checked the actual scope before starting —
+  it's 264 inline `style="..."` attributes across 27 files (CSP nonces only cover `<style>` blocks,
+  not the `style` attribute, so this means a CSS-class refactor across all of them, not a nonce
+  change), well past the "low-medium" estimate here and with real visual-regression risk. Djarnis
+  chose to scope it out of this pass; left as a separate follow-up if picked up later.
+- **Effort:** low–medium (done); CSS refactor for the CSP piece not scoped/estimated. **Files:**
+  `functions.php`, `register.php`, `reset_password.php`, `profile.php`, `admin.php`,
+  `includes/admin/users.php`, `login.php`, `mfa_challenge.php`, `webauthn.php`, `lang/user.php`,
+  `database/schema.sql`, `database/add_password_changed_at.sql`, `database/migrations.json`.
+  `header.php` untouched (CSP piece deferred).
 
 ---
 
@@ -131,6 +161,11 @@ correctly scoped by `WHERE user_id = ?` today, so treat this as defense-in-depth
 1. ~~**F8** (SMTP TLS) — small change, real MITM exposure, worsened by shared `SMTP_PASS`.~~ ✅ Fixed
 2. ~~**F7** (rate-limiting / lockout) — brute-force resistance for login + MFA.~~ ✅ Fixed
 3. **F6** (tokens out of URLs) — removes the last log-exposure of the seed/cron tokens.
-4. **F12 / F9 / F10 / F11** — low-risk hardening, batch them together.
+4. ~~**F12 / F9 / F10 / F11** — low-risk hardening, batch them together.~~ ✅ Fixed (F12's CSP
+   `unsafe-inline` piece deferred — see F12 above).
 
-Not security-blocking for the live deploy of F1–F5. F6 is next up; F9–F12 remain open, low-risk.
+Not security-blocking for the live deploy of F1–F5. F6 is the only item still open (migration to a
+DB-tracked `CRON_SECRET_TEST` and the `?token=` shim removal); F9–F12 are done except F12's deferred
+CSP/CSS refactor. **New DB migration to apply before this lands anywhere:**
+`database/add_password_changed_at.sql` (also registered in `migrations.json`, so `schema:check` /
+`schema:check:live` will now fail loudly until it's run against each environment's DB).

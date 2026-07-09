@@ -40,14 +40,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
     $password = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
     
-    if (strlen($password) < 6) {
-        $error = t('passwords_min_6');
+    $pwError = validatePasswordStrength($password);
+    if ($pwError) {
+        $error = $pwError;
     } elseif ($password !== $confirmPassword) {
         $error = t('passwords_no_match');
     } else {
-        // Update password
+        // Update password. F12: password_changed_at = NOW() also invalidates any
+        // other active session for this account on its next request (getCurrentUser()) —
+        // e.g. a stolen session cookie, since a reset link means the account owner no
+        // longer trusts whatever session(s) are currently active.
         $hashedPassword = hashPassword($password);
-        $stmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
+        $stmt = $db->prepare("UPDATE users SET password = ?, password_changed_at = NOW() WHERE id = ?");
         $stmt->execute([$hashedPassword, $resetRequest['user_id']]);
         
         // Mark token as used
@@ -90,11 +94,12 @@ include __DIR__ . '/includes/header.php';
                         <?= csrfField() ?>
                         <div class="form-group">
                             <label class="form-label"><?= t('new_password') ?></label>
-                            <input type="password" name="password" class="form-input" required minlength="6" placeholder="••••••••">
+                            <input type="password" name="password" class="form-input" required minlength="10" placeholder="••••••••">
+                            <small class="text-muted"><?= t('password_requirements_hint') ?></small>
                         </div>
                         <div class="form-group">
                             <label class="form-label"><?= t('confirm_password') ?></label>
-                            <input type="password" name="confirm_password" class="form-input" required minlength="6" placeholder="••••••••">
+                            <input type="password" name="confirm_password" class="form-input" required minlength="10" placeholder="••••••••">
                         </div>
                         <button type="submit" class="btn btn-primary" style="width:100%;">
                             <?= t('reset_password_btn') ?>

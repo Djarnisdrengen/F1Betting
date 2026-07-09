@@ -43,6 +43,11 @@ class SMTPMailer {
     public function send($to, $subject, $htmlBody, $textBody = null) {
         $this->lastError = '';
         $this->debugLog = [];
+        // F9: every caller today validates $to via sanitizeEmail() (rejects CRLF) and
+        // subjects are app-controlled strings, so this isn't currently exploitable —
+        // stripped here too so header injection stays impossible regardless of caller.
+        $to = str_replace(["\r", "\n"], '', $to);
+        $subject = str_replace(["\r", "\n"], '', $subject);
         $this->lastHtmlBody = $htmlBody;
         $this->lastTextBody = $textBody ?: strip_tags($htmlBody);
         

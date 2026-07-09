@@ -37,15 +37,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$currentUser['id']]);
         $hash = $stmt->fetchColumn();
 
+        $pwError = validatePasswordStrength($newPw);
+
         if (!verifyPassword($currentPw, $hash)) {
             $_SESSION['flash_error'] = t('current_password_wrong');
-        } elseif (strlen($newPw) < 6) {
-            $_SESSION['flash_error'] = t('passwords_min_6');
+        } elseif ($pwError) {
+            $_SESSION['flash_error'] = $pwError;
         } elseif ($newPw !== $confirmPw) {
             $_SESSION['flash_error'] = t('passwords_no_match');
         } else {
-            $stmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt = $db->prepare("UPDATE users SET password = ?, password_changed_at = NOW() WHERE id = ?");
             $stmt->execute([hashPassword($newPw), $currentUser['id']]);
+            // F12: keep this session alive — only *other* sessions (getCurrentUser's
+            // password_changed_at check) should be logged out by this change.
+            $stmt = $db->prepare("SELECT password_changed_at FROM users WHERE id = ?");
+            $stmt->execute([$currentUser['id']]);
+            $_SESSION['pwd_changed_at'] = $stmt->fetchColumn();
             $_SESSION['flash_success'] = t('password_changed');
         }
         header('Location: profile.php?tab=tab-security');
@@ -330,11 +337,12 @@ include __DIR__ . '/includes/header.php';
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label"><?= t('new_password') ?></label>
-                                    <input type="password" name="new_password" class="form-input" required autocomplete="new-password" minlength="6" data-testid="new-password-input">
+                                    <input type="password" name="new_password" class="form-input" required autocomplete="new-password" minlength="10" data-testid="new-password-input">
+                                    <small class="text-muted"><?= t('password_requirements_hint') ?></small>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label"><?= t('confirm_password') ?></label>
-                                    <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password" minlength="6" data-testid="confirm-password-input">
+                                    <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password" minlength="10" data-testid="confirm-password-input">
                                     <span class="hf-pw-match" aria-live="polite" data-testid="pw-match-indicator"></span>
                                 </div>
                                 <button type="submit" class="btn btn-primary" style="width:100%;">

@@ -9,6 +9,7 @@
     { "migration": "add_mfa.sql", "table": "user_totp" },
     { "migration": "add_mfa.sql", "table": "user_recovery_codes" },
     { "migration": "add_mfa.sql", "table": "user_email_otp" },
-    { "migration": "add_mfa.sql", "table": "user_passkeys" }
+    { "migration": "add_mfa.sql", "table": "user_passkeys" },
+    { "migration": "add_password_changed_at.sql", "table": "users", "columns": ["password_changed_at"] }
   ]
 }

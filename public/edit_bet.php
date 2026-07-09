@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $p2 = sanitizeString($_POST['p2'] ?? '');
     $p3 = sanitizeString($_POST['p3'] ?? '');
 
-    $error = validateBetCombination($p1, $p2, $p3, $bet, $existingBets);
+    $error = validateBetCombination($p1, $p2, $p3, $bet, $existingBets, array_keys($driversById));
     if (!$error) {
         $db->prepare("UPDATE bets SET p1 = ?, p2 = ?, p3 = ?, placed_at = NOW() WHERE id = ?")
            ->execute([$p1, $p2, $p3, $betId]);

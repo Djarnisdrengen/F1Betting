@@ -48,8 +48,7 @@ function passkeyPromoteSession(PDO $db, string $uid, string $anonTheme, string $
     $st->execute([$uid]);
     $u = $st->fetch() ?: [];
 
-    $_SESSION['user_id'] = $uid;
-    session_regenerate_id(true);
+    establishSession($db, $uid);
     $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$uid]);
     setLang($u['language']   ?? 'da');
     setTheme($u['theme']     ?? $anonTheme);

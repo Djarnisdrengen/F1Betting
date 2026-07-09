@@ -39,10 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $inviteValid) {
     $password = $_POST['password'] ?? '';
     $displayName = sanitizeString($_POST['display_name'] ?? '');
     
+    $pwError = validatePasswordStrength($password);
+
     // Email skal matche invite email
     if ($email !== $inviteEmail) {
         $error = sprintf(t('email_must_match_invite'), escape($inviteEmail));
-    } elseif ($email && $password && strlen($password) >= 6) {
+    } elseif ($email && $password && !$pwError) {
         $db = getDB();
         
         // Check om email allerede findes
@@ -65,13 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $inviteValid) {
             $stmt = $db->prepare("UPDATE invites SET used = 1 WHERE token = ?");
             $stmt->execute([$token]);
             
-            $_SESSION['user_id'] = $userId;
-            session_regenerate_id(true);
+            establishSession($db, $userId);
             header("Location: index.php?success=welcome");
             exit;
         }
     } else {
-        $error = t('password_min_length');
+        $error = $pwError ?: t('password_min_length');
     }
 }
 
@@ -111,7 +112,8 @@ include __DIR__ . '/includes/header.php';
                         </div>
                         <div class="form-group">
                             <label class="form-label"><?= t('password') ?></label>
-                            <input type="password" name="password" class="form-input" required minlength="6" placeholder="••••••••">
+                            <input type="password" name="password" class="form-input" required minlength="10" placeholder="••••••••">
+                            <small class="text-muted"><?= t('password_requirements_hint') ?></small>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width:100%;"><?= t('register') ?></button>
                     </form>

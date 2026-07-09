@@ -70,7 +70,8 @@
                     <input type="hidden" name="user_name" value="<?= escape($user['display_name']) ?>">
                     <div class="form-group" style="margin:0; flex:1;">
                         <label class="form-label"><?= t('new_password') ?></label>
-                        <input type="password" name="new_password" class="form-input" required minlength="6" placeholder="••••••••">
+                        <input type="password" name="new_password" class="form-input" required minlength="10" placeholder="••••••••">
+                        <small class="text-muted"><?= t('password_requirements_hint') ?></small>
                     </div>
                     <button type="submit" name="reset_user_password" class="btn btn-primary btn-sm">
                         <?= t('reset') ?>

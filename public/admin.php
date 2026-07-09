@@ -252,9 +252,12 @@ if (isset($_POST['reset_user_password'])) {
     $userEmail = $_POST['user_email'] ?? '';
     $userName = $_POST['user_name'] ?? '';
 
-    if ($userId && strlen($newPassword) >= 6) {
+    if ($userId && !validatePasswordStrength($newPassword)) {
         $hashedPassword = hashPassword($newPassword);
-        $stmt = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
+        // F12: also invalidates any of this user's other active sessions on their next
+        // request (getCurrentUser()) — appropriate here since an admin-initiated reset
+        // usually means the account owner no longer trusts their current session(s).
+        $stmt = $db->prepare("UPDATE users SET password = ?, password_changed_at = NOW() WHERE id = ?");
         $stmt->execute([$hashedPassword, $userId]);
         $message = t('password_reset_success');
 

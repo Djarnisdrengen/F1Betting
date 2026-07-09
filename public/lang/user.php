@@ -102,6 +102,7 @@ return [
 
         // Validation errors
         'select_all_positions'  => 'Vælg alle 3 positioner',
+        'invalid_driver'        => 'Ugyldigt kørervalg',
         'no_same_driver'        => 'Kan ikke vælge samme kører flere gange',
         'quali_match_error'     => 'Bet kan ikke matche kvalifikationsresultatet',
         'combo_taken'           => 'Denne kombination er allerede taget',
@@ -109,8 +110,10 @@ return [
         'rate_limited'          => 'For mange loginforsøg. Prøv igen om 15 minutter.',
         'email_exists'          => 'Email er allerede registreret',
         'forgot_password'       => 'Glemt adgangskode?',
-        'password_min_length'   => 'Adgangskode skal være mindst 6 tegn',
-        'passwords_min_6'       => 'Adgangskoden skal være mindst 6 tegn',
+        'password_min_length'   => 'Adgangskode skal være mindst 10 tegn',
+        'passwords_min_6'       => 'Adgangskoden skal være mindst 10 tegn',
+        'password_too_weak'     => 'Adgangskode skal indeholde både bogstaver og tal',
+        'password_requirements_hint' => 'Mindst 10 tegn, inkl. mindst ét bogstav og ét tal',
         'passwords_no_match'    => 'Adgangskoderne matcher ikke',
         'enter_valid_email'     => 'Indtast en gyldig email',
 
@@ -391,6 +394,7 @@ return [
 
         // Validation errors
         'select_all_positions'  => 'Select all 3 positions',
+        'invalid_driver'        => 'Invalid driver selection',
         'no_same_driver'        => 'Cannot select same driver multiple times',
         'quali_match_error'     => 'Bet cannot match qualifying result',
         'combo_taken'           => 'This combination is already taken',
@@ -398,8 +402,10 @@ return [
         'rate_limited'          => 'Too many login attempts. Please try again in 15 minutes.',
         'email_exists'          => 'Email already registered',
         'forgot_password'       => 'Forgot password?',
-        'password_min_length'   => 'Password must be at least 6 characters',
-        'passwords_min_6'       => 'Password must be at least 6 characters',
+        'password_min_length'   => 'Password must be at least 10 characters',
+        'passwords_min_6'       => 'Password must be at least 10 characters',
+        'password_too_weak'     => 'Password must contain both letters and numbers',
+        'password_requirements_hint' => 'At least 10 characters, including a letter and a number',
         'passwords_no_match'    => 'Passwords do not match',
         'enter_valid_email'     => 'Enter a valid email',
 

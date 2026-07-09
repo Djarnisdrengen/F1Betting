@@ -83,8 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            $_SESSION['user_id'] = $user['id'];
-            session_regenerate_id(true);
+            establishSession($db, $user['id']);
             $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
             logLoginMethod('password', $user['id']);
             setLang($user['language']    ?? 'da');

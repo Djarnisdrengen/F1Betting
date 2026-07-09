@@ -18,7 +18,8 @@ CREATE TABLE users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_login DATETIME NULL,
     email_otp_enabled TINYINT(1) NOT NULL DEFAULT 0,
-    mfa_default_method VARCHAR(16) DEFAULT NULL
+    mfa_default_method VARCHAR(16) DEFAULT NULL,
+    password_changed_at DATETIME NULL DEFAULT NULL
 );
 
 -- Multi-factor authentication (see database/add_mfa.sql for the migration applied to existing DBs).

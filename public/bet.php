@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $p2 = sanitizeString($_POST['p2'] ?? '');
     $p3 = sanitizeString($_POST['p3'] ?? '');
 
-    $error = validateBetCombination($p1, $p2, $p3, $race, $existingBets);
+    $error = validateBetCombination($p1, $p2, $p3, $race, $existingBets, array_keys($driversById));
     if (!$error) {
         $betId = generateUUID();
         $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3) VALUES (?, ?, ?, ?, ?, ?)")
