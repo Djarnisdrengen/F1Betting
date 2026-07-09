@@ -10,6 +10,9 @@
   - [Findings](#findings-1)
   - [Actions taken](#actions-taken-1)
   - [Deferred (F6–F12)](#deferred-f6f12)
+- [2026-07-09 — Second pass on deferred findings: F7 and F8 fixed](#2026-07-09--second-pass-on-deferred-findings-f7-and-f8-fixed)
+  - [Actions taken](#actions-taken-2)
+  - [Still deferred (F6, F9–F12)](#still-deferred-f6-f9f12)
 - [Template for future entries](#template-for-future-entries)
 
 ---
@@ -100,12 +103,35 @@ Twelve findings, numbered F1–F12 by severity (Critical/High first). F1–F5 we
 
 Tracked in `security-findings-remaining.md` (repo root, not `docs/` — a working file, delete or fold into a tracker once addressed). Summary, ordered by the suggested next-pass priority in that file:
 
-1. **F8** — SMTP TLS certificate verification disabled (`verify_peer=false` in `smtp.php`) — real MITM exposure, worsened by `SMTP_PASS` being shared test↔live
-2. **F7** — Login/MFA rate limiting has no per-account lockout, fails open on DB error, and shares one IP bucket between login and the MFA challenge
+1. **F8** — SMTP TLS certificate verification disabled (`verify_peer=false` in `smtp.php`) — real MITM exposure, worsened by `SMTP_PASS` being shared test↔live — ✅ fixed 2026-07-09, see below
+2. **F7** — Login/MFA rate limiting has no per-account lockout, fails open on DB error, and shares one IP bucket between login and the MFA challenge — ✅ fixed 2026-07-09, see below
 3. **F6** — Tokens still travel in URL query strings (land in access logs / `Referer` headers) even though the compares are now constant-time
 4. **F12 / F9 / F10 / F11** — weak password policy + no session timeout, latent SMTP header injection (not currently exploitable), unvalidated bet driver IDs, `mt_rand`-based UUIDs — batch as low-risk hardening
 
 None of F6–F12 block a live deploy; F1–F5 were the release gate for this review.
+
+---
+
+## 2026-07-09 — Second pass on deferred findings: F7 and F8 fixed
+
+**Reviewer:** Claude (assisted) + Thomas
+**Trigger:** Working through the next-pass priority order set in the 2026-07-05 entry (`security-findings-remaining.md` → "Suggested order if you do a second pass").
+**Report:** No HTML report (not a monthly workflow run). Findings tracked in commits and in `security-findings-remaining.md`.
+
+### Actions taken
+
+- **F8 — SMTP TLS certificate verification disabled.** `smtp.php`: `verify_peer`/`verify_peer_name` now `true`, `allow_self_signed` now `false`, and an explicit `peer_name` (the configured `SMTP_HOST`) is set on the context — needed because the STARTTLS path connects via plain `tcp://` first, so PHP has no scheme-derived hostname to check against at the point `stream_socket_enable_crypto` runs. Verified against the real `smtp.protonmail.ch:587` STARTTLS handshake (cert `CN=protonmail.com`, SAN includes `*.protonmail.ch`) — TLS now validates successfully; previously it silently accepted anything. Commit `99ad521`.
+- **F7 — Login/MFA rate limiting.** `login_attempts` gained `scope` (`login` \| `mfa`) and `account` columns (migration `database/add_login_attempts_scope.sql`, registered in `migrations.json`). `isRateLimited()` / `recordLoginAttempt()` / `clearLoginAttempts()` (`functions.php`) now check **both** an IP bucket and an account bucket per scope, so a distributed attack on one victim is caught across IPs while a shared/NAT'd IP stays usable for everyone else once its real owner logs in. `login.php`, `mfa_challenge.php`, and `webauthn.php` all fail **closed** on a DB error now (previously `catch { $rateLimited = false; }`), and a success only clears that account's own counter — never the whole IP's — so an attacker can no longer reset a shared IP's budget by logging into their own account mid-attack. `login` (password + passwordless passkey) and `mfa` (code/passkey challenge + resend) are fully separate buckets, so exhausting one never blocks the other; MFA's account threshold is stricter (3 vs. 5) since an OTP/TOTP code has a far smaller keyspace than a password. Verified the new thresholds against the E2E auth suite's incidental MFA failures (`tests/e2e/auth/30-totp-mfa.spec.js`, `31-email-otp.spec.js`, `32-mfa-default-method.spec.js`, `35-passkey.spec.js`) so CI, which shares one runner IP across all of them, doesn't get spuriously rate-limited. Commit `9eaaa16`.
+- Both entries in `security-findings-remaining.md` updated to "✅ Fixed" with implementation detail; the "Suggested order" list there struck through.
+
+### Still deferred (F6, F9–F12)
+
+Same priority order as the 2026-07-05 entry, minus F7/F8:
+
+1. **F6** — Tokens still travel in URL query strings — next up.
+2. **F12 / F9 / F10 / F11** — weak password policy + no session timeout, latent SMTP header injection (not currently exploitable), unvalidated bet driver IDs, `mt_rand`-based UUIDs — batch as low-risk hardening.
+
+None of these block a live deploy.
 
 ---
 

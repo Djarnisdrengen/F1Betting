@@ -87,9 +87,9 @@ correctly scoped by `WHERE user_id = ?` today, so treat this as defense-in-depth
 ---
 
 ## Suggested order if you do a second pass
-1. **F8** (SMTP TLS) — small change, real MITM exposure, worsened by shared `SMTP_PASS`.
-2. **F7** (rate-limiting / lockout) — brute-force resistance for login + MFA.
+1. ~~**F8** (SMTP TLS) — small change, real MITM exposure, worsened by shared `SMTP_PASS`.~~ ✅ Fixed
+2. ~~**F7** (rate-limiting / lockout) — brute-force resistance for login + MFA.~~ ✅ Fixed
 3. **F6** (tokens out of URLs) — removes the last log-exposure of the seed/cron tokens.
 4. **F12 / F9 / F10 / F11** — low-risk hardening, batch them together.
 
-Not security-blocking for the live deploy of F1–F5.
+Not security-blocking for the live deploy of F1–F5. F6 is next up; F9–F12 remain open, low-risk.
