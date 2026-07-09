@@ -2377,7 +2377,7 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
   background:var(--bg-card); border:1px solid var(--border-soft); }
 
 .otp { display:flex; gap:9px; justify-content:space-between; }
-.otp input { width:100%; aspect-ratio:1/1.1; min-height:44px; text-align:center; border-radius:10px;
+.otp input { width:100%; min-width:0; aspect-ratio:1/1.1; min-height:44px; text-align:center; border-radius:10px;
   background:var(--bg-secondary); border:1px solid var(--border-color); color:var(--text-primary);
   font:700 22px/1 var(--font-mono); outline:none; }
 .otp input:focus { border-color:var(--f1-red); box-shadow:0 0 0 4px rgba(225,6,0,.14); }

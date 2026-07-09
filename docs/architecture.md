@@ -251,7 +251,7 @@ FTP_HOST, FTP_USER, FTP_PASS, FTP_ROOT_TEST, FTP_ROOT_LIVE, DRY_RUN
 | Concern | Implementation |
 |---|---|
 | Authentication | bcrypt + `PASSWORD_PEPPER` constant |
-| Multi-factor auth | Opt-in TOTP / email OTP / recovery codes (`includes/mfa.php`). After a correct password, an enrolled member gets only `$_SESSION['mfa_pending']`; a session is granted solely by `mfa_challenge.php` or the `webauthn.php` verify actions. Lockout recovery: admin Users tab can strip all factors (`remove_user_mfa` — logged, member notified by email) |
+| Multi-factor auth | Opt-in passkey / TOTP / email OTP / recovery codes (`includes/mfa.php`). After a correct password, an enrolled member gets only `$_SESSION['mfa_pending']`; a session is granted solely by `mfa_challenge.php` or the `webauthn.php` verify actions. The challenge opens on the member's **preferred** factor (`getMfaDefaultMethod()` — `mfa_default_method`, else priority passkey → totp → email), with every other method reachable via each panel's "Other options" list. Lockout recovery: admin Users tab can strip all factors (`remove_user_mfa` — logged, member notified by email) |
 | Passkeys (WebAuthn) | Vendored lbuchs/WebAuthn (`includes/webauthn/`, no Composer) behind `includes/passkey.php`; JSON endpoint `public/webauthn.php` (6 actions, byte-identical generic errors); rpId = `PASSKEY_RPID` (registrable domain — one-way door, see gotcha #20) |
 | Session fixation | `session_regenerate_id()` after login |
 | CSRF | Per-session token, `csrfField()` + `requireCsrf()` |

@@ -3,6 +3,7 @@ const { test, expect } = require('@playwright/test');
 const crypto = require('crypto');
 const path = require('path');
 const seed = require('../../helpers/seed');
+const mail = require('../../helpers/intercepted-mail');
 
 // Passkey happy paths via Chromium's CDP virtual authenticator (ctap2/internal,
 // resident key + UV, automatic presence). Real credentials cannot be seeded
@@ -39,6 +40,30 @@ async function login(page, email, password) {
     await page.fill('input[name="email"]', email);
     await page.fill('input[name="password"]', password);
     await page.click('button[type="submit"]');
+}
+
+// Read the latest 6-digit code from an intercepted inbox (mirrors 32-mfa-default-method.spec.js).
+async function readOtp(inbox, timeout = 20000) {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
+        const msgs = await mail.getMessages(inbox);
+        if (msgs.length) {
+            const m = msgs[msgs.length - 1];
+            const match = `${m.subject || ''} ${m.text || ''} ${m.html || ''}`.match(/\b(\d{6})\b/);
+            if (match) return match[1];
+        }
+        await new Promise(r => setTimeout(r, 1500));
+    }
+    throw new Error(`No OTP email arrived for ${inbox}`);
+}
+
+// Assert NO email lands within the window — proves login pre-send is suppressed by a passkey.
+async function expectNoEmail(inbox, window = 4000) {
+    const deadline = Date.now() + window;
+    while (Date.now() < deadline) {
+        expect((await mail.getMessages(inbox)).length, 'no email should be pre-sent when a passkey is active').toBe(0);
+        await new Promise(r => setTimeout(r, 800));
+    }
 }
 
 // Attach a virtual authenticator to the page BEFORE any navigator.credentials
@@ -85,7 +110,7 @@ async function submitMfaCode(page, method, code) {
 }
 
 test.describe('Passkey (WebAuthn) authentication', () => {
-    test.describe.configure({ mode: 'serial' }); // shared seeded account — never parallel
+    test.describe.configure({ mode: 'serial', timeout: 25000 }); // shared account; email/SMTP round-trips need headroom
     test.use({ storageState: { cookies: [], origins: [] } });
 
     let user;
@@ -116,7 +141,7 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await expect(page.locator('[data-testid="recovery-codes"]')).toHaveCount(0); // shown once
     });
 
-    test('password login is gated; passkey is not offered on the challenge — recovery is the fallback (CHA-01/CHA-02)', async ({ page }) => {
+    test('passkey is the primary factor on the challenge; tapping it promotes the session (CHA-01/CHA-02)', async ({ page }) => {
         await addVirtualAuthenticator(page);
         await login(page, user.email, user.password);
         await page.waitForURL(/index\.php/);
@@ -127,21 +152,16 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
 
-        // Passkey is retired from the challenge screen (v3.0.0). A passkey-only member who used
-        // the password form (not the login screen's passwordless button) has no other real
-        // factor, so the screen resolves straight to the recovery fallback with a hint pointing
-        // back to login.
-        await expect(page.locator('[data-testid="mfa-view-root"]')).toHaveCount(0);
-        await expect(page.locator('[data-testid="mfa-passkey-btn"]')).toHaveCount(0);
-        await expect(page.locator('[data-testid="mfa-form-recovery"]')).toBeVisible();
-        const hint = page.locator('[data-testid="mfa-footer-link"]');
-        await expect(hint).toBeVisible();
-        await expect(hint).toHaveAttribute('href', '/login.php');
+        // Passkey is offered on the challenge again, as the PRIMARY factor (reverses v3.0.0). Its
+        // panel opens first and the ceremony button is revealed by feature detection.
+        await expect(page.locator('[data-testid="mfa-view-passkey"]')).toBeVisible();
+        const btn = page.locator('[data-testid="mfa-passkey-btn"]');
+        await expect(btn).toBeVisible();
+        // A passkey-only member has no code fallback — only recovery sits beneath the button.
+        await expect(page.locator('[data-testid="mfa-view-passkey"] [data-testid="mfa-method-recovery"]')).toBeVisible();
 
-        // Following that hint back to login and using the passkey button there still works.
-        await hint.click();
-        await page.waitForURL(/login\.php/);
-        await page.click('[data-testid="passkey-login"]');
+        // Tapping the passkey completes the second factor and promotes the session.
+        await btn.click();
         await page.waitForURL(/index\.php/);
         await page.goto('/profile.php');
         await expect(page).toHaveURL(/profile\.php/); // genuinely promoted
@@ -190,8 +210,8 @@ test.describe('Passkey (WebAuthn) authentication', () => {
 
         // Force the stored counter above anything the authenticator reports next. The check
         // lives in the shared passkeyAssertVerify() (includes/passkey.php), used by both the
-        // challenge and the passwordless login_verify action — relocated here since passkey no
-        // longer appears on the challenge screen (v3.0.0; see CHA-01/CHA-02 above).
+        // challenge and the passwordless login_verify action. This case exercises the
+        // passwordless path; SEC-02 covers the same guard on the challenge path.
         await seed.setPasskeySignCount(user.email, 999999);
 
         await page.goto('/login.php');
@@ -200,7 +220,7 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await expect(page).toHaveURL(/login\.php/); // no promotion
     });
 
-    test('passkey never appears on the challenge; TOTP opens directly regardless of preference (CHA-04/CHA-05)', async ({ page }) => {
+    test('the preferred method leads on the challenge; the other is one tap away (CHA-04/CHA-05)', async ({ page }) => {
         await addVirtualAuthenticator(page);
         await login(page, user.email, user.password);
         await page.waitForURL(/index\.php/);
@@ -216,29 +236,145 @@ test.describe('Passkey (WebAuthn) authentication', () => {
         await page.click('[data-testid="totp-confirm-btn"]');
         await expect(page.locator('[data-testid="totp-status"]')).toContainText(/Active|Aktiv/);
 
-        // Passkey + TOTP active, no preference set: passkey is filtered out entirely, leaving
-        // TOTP as the only real candidate — its detail view opens directly, no list, no passkey
-        // button anywhere on the screen.
-        await page.goto('/logout.php');
-        await login(page, user.email, user.password);
-        await page.waitForURL(/mfa_challenge\.php/);
-        await expect(page.locator('[data-testid="mfa-view-root"]')).toHaveCount(0);
-        await expect(page.locator('[data-testid="mfa-passkey-btn"]')).toHaveCount(0);
-        await expect(page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-otp-box"]').first()).toBeVisible();
-        await submitMfaCode(page, 'totp', totp(secret));
-        await page.waitForURL(/index\.php/);
-
-        // Explicitly preferring TOTP is a no-op for the challenge screen here (it was already
-        // the only real candidate) — the preference selector should still accept it without error.
-        await page.goto('/profile.php?tab=tab-security');
+        // Prefer TOTP → TOTP leads on the challenge; the passkey drops to an Other option (an
+        // explicit preference outranks the passkey default).
         await page.selectOption('[data-testid="mfa-default-select"]', 'totp');
         await page.click('[data-testid="mfa-default-save-btn"]');
 
         await page.goto('/logout.php');
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await expect(page.locator('[data-testid="mfa-passkey-btn"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-otp-box"]').first()).toBeVisible();
+        await expect(page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-method-passkey"]')).toBeVisible();
+        await submitMfaCode(page, 'totp', totp(secret)); // verify with the preferred method
+        await page.waitForURL(/index\.php/);
+
+        // Switch the preference to passkey → the passkey panel now leads instead.
+        await page.goto('/profile.php?tab=tab-security');
+        await page.selectOption('[data-testid="mfa-default-select"]', 'passkey');
+        await page.click('[data-testid="mfa-default-save-btn"]');
+
+        await page.goto('/logout.php');
+        await login(page, user.email, user.password);
+        await page.waitForURL(/mfa_challenge\.php/);
+        await expect(page.locator('[data-testid="mfa-view-passkey"]')).toBeVisible();
+        await expect(page.locator('[data-testid="mfa-passkey-btn"]')).toBeVisible();
+        await page.click('[data-testid="mfa-passkey-btn"]');
+        await page.waitForURL(/index\.php/);
+    });
+
+    test('sign-count regression is rejected on the challenge path too (SEC-02)', async ({ page }) => {
+        await addVirtualAuthenticator(page);
+        await login(page, user.email, user.password);
+        await page.waitForURL(/index\.php/);
+        await registerPasskey(page);
+        await dismissRecoveryCodes(page);
+        await page.goto('/logout.php');
+
+        // Same shared guard as SEC-01, exercised through the challenge's passkey button.
+        await seed.setPasskeySignCount(user.email, 999999);
+
+        await login(page, user.email, user.password);
+        await page.waitForURL(/mfa_challenge\.php/);
+        await page.click('[data-testid="mfa-passkey-btn"]');
+        await expect(page.locator('[data-testid="mfa-passkey-error"]')).toBeVisible();
+        await expect(page).toHaveURL(/mfa_challenge\.php/); // no promotion
+    });
+
+    test('default: passkey leads with no email pre-sent; the email fallback shows boxes instantly (CHA-06)', async ({ page }) => {
+        await addVirtualAuthenticator(page);
+        await login(page, user.email, user.password);
+        await page.waitForURL(/index\.php/);
+        await registerPasskey(page);
+        await dismissRecoveryCodes(page);
+
+        // Add email OTP but leave the preference unset — passkey stays the default primary.
+        await mail.purgeInbox();
+        await page.goto('/profile.php?tab=tab-security');
+        await page.click('[data-testid="emailotp-setup-btn"]');
+        const enrollCode = await readOtp(user.email);
+        await page.fill('[data-testid="emailotp-confirm-input"]', enrollCode);
+        await page.click('[data-testid="emailotp-confirm-btn"]');
+        await expect(page.locator('[data-testid="emailotp-status"]')).toContainText(/Active|Aktiv/);
+
+        await mail.purgeInbox();
+        await page.goto('/logout.php');
+        await login(page, user.email, user.password);
+        await page.waitForURL(/mfa_challenge\.php/);
+
+        // Passkey leads (default preference) and nothing is pre-sent (email isn't the top panel).
+        await expect(page.locator('[data-testid="mfa-view-passkey"]')).toBeVisible();
+        await expectNoEmail(user.email);
+
+        // Pick email from the passkey panel's Other options → boxes appear at once; status shows
+        // "sending", then flips to "code sent" once the code actually goes out.
+        await page.locator('[data-testid="mfa-view-passkey"] [data-testid="mfa-method-email"]').click();
+        await expect(page.locator('[data-testid="mfa-form-email"] [data-testid="mfa-otp-box"]').first()).toBeVisible();
+        await expect(page.locator('[data-testid="mfa-form-email"] [data-mfa-code-sending]')).toBeVisible();
+        const code = await readOtp(user.email);
+        await expect(page.locator('[data-testid="mfa-form-email"] .code-sent')).toBeVisible();
+        await expect(page.locator('[data-testid="mfa-form-email"] [data-mfa-code-sending]')).toBeHidden();
+        await submitMfaCode(page, 'email', code);
+        await page.waitForURL(/index\.php/);
+    });
+
+    test('passkey enrolled but WebAuthn unsupported: button hidden, note shown, TOTP fallback works (CHA-07)', async ({ page }) => {
+        await addVirtualAuthenticator(page);
+        await login(page, user.email, user.password);
+        await page.waitForURL(/index\.php/);
+        await registerPasskey(page);
+        await dismissRecoveryCodes(page);
+
+        // Enroll TOTP so there's a usable fallback for the stranded-device scenario.
+        await page.goto('/profile.php?tab=tab-security');
+        await page.click('[data-testid="totp-setup-btn"]');
+        await expect(page.locator('[data-testid="totp-enroll"]')).toBeVisible();
+        const secret = (await page.locator('[data-testid="totp-secret"]').innerText()).replace(/\s/g, '');
+        await page.fill('[data-testid="totp-confirm-input"]', totp(secret));
+        await page.click('[data-testid="totp-confirm-btn"]');
+        await expect(page.locator('[data-testid="totp-status"]')).toContainText(/Active|Aktiv/);
+        await page.goto('/logout.php');
+
+        // Simulate a browser/device that can't use the passkey (no WebAuthn). Applies to every
+        // navigation from here on; feature detection in passkey.js then hides the CTA.
+        await page.addInitScript(() => { try { delete window.PublicKeyCredential; } catch (e) { window.PublicKeyCredential = undefined; } });
+
+        await login(page, user.email, user.password);
+        await page.waitForURL(/mfa_challenge\.php/);
+
+        // The passkey panel still renders (a passkey is enrolled) but the CTA stays hidden and the
+        // unsupported note takes its place — the fallbacks below carry the member through.
+        await expect(page.locator('[data-testid="mfa-view-passkey"]')).toBeVisible();
+        await expect(page.locator('[data-testid="mfa-passkey-btn"]')).toBeHidden();
+        await expect(page.locator('[data-passkey-unsupported]')).toBeVisible();
+
+        await page.locator('[data-testid="mfa-view-passkey"] [data-testid="mfa-method-totp"]').click();
         await submitMfaCode(page, 'totp', totp(secret));
+        await page.waitForURL(/index\.php/);
+    });
+
+    test('recovery code is the break-glass while a passkey is primary (CHA-08)', async ({ page }) => {
+        await addVirtualAuthenticator(page);
+        await login(page, user.email, user.password);
+        await page.waitForURL(/index\.php/);
+
+        // Capture a recovery code from the first-factor reveal before dismissing it.
+        await registerPasskey(page);
+        const codesText = await page.locator('[data-recovery-codes]').innerText();
+        const recoveryCode = codesText.trim().split(/\s+/)[0];
+        expect(recoveryCode).toMatch(/^[0-9a-f]{5}-[0-9a-f]{5}$/i);
+        await page.click('[data-testid="recovery-dismiss-btn"]');
+
+        await page.goto('/logout.php');
+        await login(page, user.email, user.password);
+        await page.waitForURL(/mfa_challenge\.php/);
+
+        // From the passkey panel, drop to recovery and redeem a code.
+        await expect(page.locator('[data-testid="mfa-view-passkey"]')).toBeVisible();
+        await page.locator('[data-testid="mfa-view-passkey"] [data-testid="mfa-method-recovery"]').click();
+        const form = page.locator('[data-testid="mfa-form-recovery"]');
+        await form.locator('input[name="code"]').fill(recoveryCode);
+        await form.locator('button[type="submit"]').click();
         await page.waitForURL(/index\.php/);
     });
 

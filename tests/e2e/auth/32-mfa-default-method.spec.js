@@ -52,17 +52,6 @@ async function expectNoEmail(inbox, window = 4000) {
     }
 }
 
-// Assert the inbox count does not grow past `baseline` within the window (used to prove
-// re-selecting an already-sent method does not re-send / double-burn the rate limit).
-async function expectNoNewEmail(inbox, baseline, window = 4000) {
-    const deadline = Date.now() + window;
-    while (Date.now() < deadline) {
-        const msgs = await mail.getMessages(inbox);
-        expect(msgs.length, 'no additional email should be sent for an already-sent code').toBe(baseline);
-        await new Promise(r => setTimeout(r, 800));
-    }
-}
-
 async function login(page, email, password) {
     await page.goto('/login.php');
     await page.fill('input[name="email"]', email);
@@ -76,8 +65,8 @@ async function submitMfaCode(page, method, code) {
     await wrapper.locator('form').first().locator('button[type="submit"]').click();
 }
 
-test.describe('MFA method list (2+ factors) + on-demand email code', () => {
-    test.describe.configure({ mode: 'serial' });
+test.describe('MFA challenge (2+ factors): preferred method leads + on-demand email code', () => {
+    test.describe.configure({ mode: 'serial', timeout: 25000 }); // email pre-send blocks on SMTP
     test.use({ storageState: { cookies: [], origins: [] } });
 
     let user, secret;
@@ -111,42 +100,46 @@ test.describe('MFA method list (2+ factors) + on-demand email code', () => {
         await expect(page.locator('[data-testid="mfa-default-method"]')).toBeVisible();
     });
 
-    test('2+ factors: challenge always shows the method list, no email until picked (AC-MFA-01/05)', async ({ page }) => {
+    test('2+ factors: the preferred method leads (totp by default); no email until picked (AC-MFA-01/05)', async ({ page }) => {
         await mail.purgeInbox();
         await page.goto('/logout.php');
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
 
-        // The list shows both methods (+ recovery) — no single-method primary block, no
-        // stored-preference skip once 2+ non-passkey factors are enabled.
-        await expect(page.locator('[data-testid="mfa-view-root"]')).toBeVisible();
-        await expect(page.locator('[data-testid="mfa-method-totp"]')).toBeVisible();
-        await expect(page.locator('[data-testid="mfa-method-email"]')).toBeVisible();
-        await expect(page.locator('[data-testid="mfa-method-recovery"]')).toBeVisible();
-        // And nothing was emailed just from landing on the page.
+        // No stored preference → the first active factor (totp) opens on top; email + recovery are
+        // one tap away under "Other options". No neutral list, and nothing emailed from landing.
+        await expect(page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-otp-box"]').first()).toBeVisible();
+        await expect(page.locator('[data-testid="mfa-view-root"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-method-email"]')).toBeVisible();
+        await expect(page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-method-recovery"]')).toBeVisible();
         await expectNoEmail(user.email);
     });
 
-    test('email code is sent only when explicitly requested, then verifies (AC-MFA-04)', async ({ page }) => {
+    test('picking email shows boxes immediately; status flips sending → sent (AC-MFA-04)', async ({ page }) => {
         await mail.purgeInbox();
         await page.goto('/logout.php');
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
 
-        // Tapping the row auto-sends — no separate send button, no expand step.
-        await page.click('[data-testid="mfa-method-email"]');
+        // Pick email from the totp panel's Other options — the boxes appear immediately, and the
+        // status reads "sending" (NOT "sent") while the code is still going out in the background.
+        await page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-method-email"]').click();
+        await expect(page.locator('[data-testid="mfa-form-email"] [data-testid="mfa-otp-box"]').first()).toBeVisible();
+        await expect(page.locator('[data-testid="mfa-form-email"] [data-mfa-code-sending]')).toBeVisible();
+        await expect(page.locator('[data-testid="mfa-form-email"] .code-sent')).toBeHidden();
+
+        // Once the code is actually sent, "sending" hides and "code sent" shows.
         const code = await readOtp(user.email);
         await expect(page.locator('[data-testid="mfa-form-email"] .code-sent')).toBeVisible();
-
+        await expect(page.locator('[data-testid="mfa-form-email"] [data-mfa-code-sending]')).toBeHidden();
         await submitMfaCode(page, 'email', code);
         await page.waitForURL(/index\.php/);
     });
 
-    test('setting email as preferred pre-sends the code at login; re-selecting it does not resend', async ({ page }) => {
-        // Log in fully via TOTP — 2 factors still means the list shows first.
+    test('email as preferred: it opens on top with the code already pre-sent (no resend on browse)', async ({ page }) => {
+        // Log in via TOTP (the default primary while no preference is set) to reach the profile.
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await page.click('[data-testid="mfa-method-totp"]');
         await submitMfaCode(page, 'totp', totp(secret));
         await page.waitForURL(/index\.php/);
 
@@ -154,46 +147,45 @@ test.describe('MFA method list (2+ factors) + on-demand email code', () => {
         await page.selectOption('[data-testid="mfa-default-select"]', 'email');
         await page.click('[data-testid="mfa-default-save-btn"]');
 
-        // Fresh login: the list still shows first (decision: stored preference no longer skips
-        // it), but the email code is already waiting — pre-sent by login.php's default-method
-        // optimization, which this redesign keeps.
+        // Fresh login: email is now preferred → its panel opens on top, and login.php has already
+        // pre-sent the code, so the "code sent" state shows with no extra click.
         await mail.purgeInbox();
         await page.goto('/logout.php');
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
-        await expect(page.locator('[data-testid="mfa-view-root"]')).toBeVisible();
-        const code = await readOtp(user.email);
-        const baseline = (await mail.getMessages(user.email)).length;
-
-        // Selecting the already-sent method must NOT re-send (guards the shared rate-limit
-        // bucket — see security-findings-remaining.md F7 — from being burned by browsing alone).
-        await page.click('[data-testid="mfa-method-email"]');
+        await expect(page.locator('[data-testid="mfa-form-email"] [data-testid="mfa-otp-box"]').first()).toBeVisible();
         await expect(page.locator('[data-testid="mfa-form-email"] .code-sent')).toBeVisible();
-        await expectNoNewEmail(user.email, baseline);
 
+        // Since a code already exists, the email rows carry NO data-mfa-autosend — browsing to email
+        // from another panel is a pure view swap and never re-sends (guards the shared rate-limit
+        // bucket, security-findings-remaining.md F7). Checked on the attribute directly (instant).
+        const emailRowInTotp = page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-method-email"]');
+        expect(await emailRowInTotp.getAttribute('data-mfa-autosend')).toBeNull();
+
+        const code = await readOtp(user.email);
         await submitMfaCode(page, 'email', code);
         await page.waitForURL(/index\.php/);
     });
 
-    test('AC-MFA-09 — no horizontal scroll at 320px; list and OTP boxes keep tap targets', async ({ page }) => {
+    test('AC-MFA-09 — no horizontal scroll at 320px; the open panel keeps its tap targets', async ({ page }) => {
         await page.setViewportSize({ width: 320, height: 700 });
         await login(page, user.email, user.password);
         await page.waitForURL(/mfa_challenge\.php/);
 
         const card = page.locator('.hf-login-card');
-        const hasHScroll = await card.evaluate(el => el.scrollWidth > el.clientWidth);
-        expect(hasHScroll).toBe(false);
+        expect(await card.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(false);
 
-        const totpRow = page.locator('[data-testid="mfa-method-totp"]');
-        await expect(totpRow).toBeVisible();
-        expect((await totpRow.boundingBox()).height).toBeGreaterThanOrEqual(44);
-
-        await totpRow.click();
-        const box = page.locator('[data-testid="mfa-form-totp"] [data-testid="mfa-otp-box"]').first();
+        // Whichever method is preferred opens directly — its boxes, confirm button, and an Other-
+        // options row all keep 44px targets (locators are primary-agnostic so test order can't break them).
+        const openPanel = page.locator('[data-mfa-view]:not([hidden])');
+        const box = openPanel.locator('[data-testid="mfa-otp-box"]').first();
         await expect(box).toBeVisible();
         expect((await box.boundingBox()).height).toBeGreaterThanOrEqual(44);
-        const confirmBtn = page.locator('[data-testid="mfa-form-totp"] button[type="submit"]');
+        const confirmBtn = openPanel.locator('form button[type="submit"]').first();
         expect((await confirmBtn.boundingBox()).height).toBeGreaterThanOrEqual(44);
+        const otherRow = openPanel.locator('[data-mfa-select]').first();
+        await expect(otherRow).toBeVisible();
+        expect((await otherRow.boundingBox()).height).toBeGreaterThanOrEqual(44);
 
         await page.setViewportSize({ width: 1280, height: 720 });
     });

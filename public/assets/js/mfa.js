@@ -122,16 +122,46 @@
             if (focusEl) focusEl.focus();
         }
 
+        // Fire the email code in the background so the 6 boxes appear the instant email is picked,
+        // instead of the page looking frozen while SMTP runs. Toggles the "sending …" / "code sent"
+        // states. The manual resend button stays as the retry path if this fetch fails.
+        function sendEmailCode() {
+            var form = document.querySelector('[data-testid="mfa-resend-form"]');
+            if (!form) return;
+            // A code is issued once per pick — drop autosend from every email row so returning to it
+            // just swaps (the resend button re-sends on demand).
+            document.querySelectorAll('[data-mfa-select="email"]').forEach(function (r) {
+                r.removeAttribute('data-mfa-autosend');
+            });
+            var sending = document.querySelector('[data-mfa-code-sending]');
+            var sent = document.querySelector('[data-mfa-code-sent]');
+            // Toggle style.display, not [hidden]: a display:flex (class or inline) overrides [hidden].
+            if (sent) sent.style.display = 'none';
+            if (sending) sending.style.display = 'flex';
+            fetch(form.getAttribute('action') || window.location.href, {
+                method: 'POST',
+                body: new FormData(form),
+                credentials: 'same-origin'
+            }).then(function () {
+                if (sending) sending.style.display = 'none';
+                if (sent) sent.style.display = 'flex';
+            }).catch(function () {
+                if (sending) sending.style.display = 'none';
+            });
+        }
+
         document.addEventListener('click', function (e) {
             var el = e.target.closest('[data-mfa-select]');
             if (!el) return;
-            if (el.hasAttribute('data-mfa-autosend')) {
-                var form = document.querySelector('[data-testid="mfa-resend-form"]');
-                if (form) { form.requestSubmit(); return; }
-            }
             e.preventDefault();
-            showView(el.getAttribute('data-mfa-select'));
+            var autosend = el.hasAttribute('data-mfa-autosend');
+            showView(el.getAttribute('data-mfa-select')); // swap first — boxes show immediately
+            if (autosend) sendEmailCode();
         });
+
+        // The manual "resend" button goes through the same background path for instant feedback.
+        var resendForm = document.querySelector('[data-testid="mfa-resend-form"]');
+        if (resendForm) resendForm.addEventListener('submit', function (e) { e.preventDefault(); sendEmailCode(); });
     }
 
     function init() {

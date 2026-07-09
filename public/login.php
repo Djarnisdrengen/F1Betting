@@ -65,9 +65,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'email_sent'=> false,                  // set once an email code is issued
                 ];
                 session_regenerate_id(true);               // rotate the pre-auth session id
-                // Only pre-send the email code when it's the member's default method (so it's
-                // waiting in their inbox on arrival). Otherwise it's sent on demand from the
-                // challenge screen — no email until they actually pick that method.
+                // Only pre-send the email code when email is the member's preferred method (so it's
+                // waiting in their inbox as the email panel opens on arrival). Any other preference
+                // (passkey / totp) leads instead, and no email is sent until the member picks the
+                // email fallback on the challenge screen.
                 if (getMfaDefaultMethod($db, $user['id']) === 'email') {
                     try {
                         if (issueEmailOtp($db, $user['id'], 'login')) {
