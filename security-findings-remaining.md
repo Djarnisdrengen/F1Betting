@@ -26,11 +26,16 @@ is no per-account lockout, and the same IP bucket is shared with the MFA challen
   success; give the MFA step its own stricter budget; fix the "3 vs 5" comment.
 - **Effort:** medium. **Files:** `functions.php`, `login.php`, `mfa_challenge.php`.
 
-## F8 — SMTP TLS certificate verification disabled — **Medium**
+## F8 — SMTP TLS certificate verification disabled — **Medium** — ✅ Fixed
 `public/includes/smtp.php:87-90`: `verify_peer=false`, `verify_peer_name=false`,
 `allow_self_signed=true`. The Proton STARTTLS upgrade then proceeds without validation, so an on-path
 attacker could MITM and capture the base64 `AUTH LOGIN` credentials.
-- **Fix:** enable `verify_peer`/`verify_peer_name`; pin or validate the Proton cert. Test send after.
+- **Fix applied:** `verify_peer`/`verify_peer_name` now `true`, `allow_self_signed` now `false`, and an
+  explicit `peer_name` (the configured `SMTP_HOST`) is set on the context — needed because the STARTTLS
+  path connects via `tcp://` first, so PHP has no scheme-derived hostname to check against at the point
+  `stream_socket_enable_crypto` runs. Verified against the real `smtp.protonmail.ch:587` STARTTLS
+  handshake (cert `CN=protonmail.com`, SAN includes `*.protonmail.ch`) — TLS now validates successfully
+  with these settings; previously it silently accepted anything.
 - **Effort:** low. **Files:** `smtp.php`. (Note: `SMTP_PASS` is shared test↔live, which raises the
   stakes here.)
 
