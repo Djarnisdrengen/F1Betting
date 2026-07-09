@@ -17,9 +17,15 @@
   - [09-profile-preferences.spec.js](#09-profile-preferencesspecjs)
   - [admin/10-content.spec.js](#admin10-contentspecjs)
   - [admin/11-invites.spec.js](#admin11-invitesspecjs)
+  - [admin/12-email-delivery.spec.js](#admin12-email-deliveryspecjs)
   - [admin/12-users.spec.js](#admin12-usersspecjs)
   - [admin/13-scoring.spec.js](#admin13-scoringspecjs)
   - [14-race-page.spec.js](#14-race-pagespecjs)
+  - [auth/30-totp-mfa.spec.js](#auth30-totp-mfaspecjs)
+  - [auth/31-email-otp.spec.js](#auth31-email-otpspecjs)
+  - [auth/32-mfa-default-method.spec.js](#auth32-mfa-default-methodspecjs)
+  - [auth/35-passkey.spec.js](#auth35-passkeyspecjs)
+  - [auth/36-passkey-negative.spec.js](#auth36-passkey-negativespecjs)
 - [Email Preview](#email-preview)
 - [Resend Health Check](#resend-health-check)
 - [Security Tests](#security-tests)
@@ -364,6 +370,18 @@ Test env only. Invite email captured via intercept and asserted in-suite.
 
 ---
 
+### `admin/12-email-delivery.spec.js`
+
+Test env only. Toggles **Admin → Settings → Email delivery** between capture and live-send.
+
+| Test | Asserts |
+|---|---|
+| Toggle flips capture ↔ live and reflects status | Starts "Capturing" (global-setup forces it on); click flips to "Sending real"; click again returns to "Capturing" |
+
+`afterAll` force-re-enables interception (`smtp_intercept_on`) regardless of outcome, so later specs in the same run keep capturing mail.
+
+---
+
 ### `admin/12-users.spec.js`
 
 Test env only. Serial. Seeds a user (`seed.e2eUser(language=en)`). Password reset email captured via intercept and asserted in-suite.
@@ -430,6 +448,92 @@ an accented-surname driver, "Hülkenberg").
 
 **Test-seed actions used:** `seed_race_page` / `cleanup_race_page` (creates races *E2E Race Page Open*
 and *E2E Race Page Done*, 3 in-competition users, and the accented-surname driver).
+
+---
+
+### `auth/30-totp-mfa.spec.js`
+
+Test env only. Serial. Fresh user per suite (`seed.authUser()` / `seed.cleanup.authUser()`). Contains a minimal RFC 6238 TOTP generator that mirrors `includes/mfa.php` so the spec can compute valid codes itself.
+
+| Test | Asserts |
+|---|---|
+| Password-only login reaches index (regression) | No factor enrolled → straight to `index.php`, no challenge |
+| Cancel authenticator setup | Enrollment panel closes; setup button reappears; pending enrollment is dropped |
+| Enroll authenticator, see recovery codes once | Recovery-codes panel visible and does **not** auto-hide like an `.alert` (asserted with a deliberate 6s wait); dismiss removes it; a reload does not bring it back |
+| Single factor skips the method list (AC-MFA-05) | Challenge opens directly on the TOTP panel — no `mfa-view-root` list |
+| Protected page denied while pending (bypass guard) | Jumping to `/profile.php` before completing the challenge bounces to `/login.php` — no session from the password step alone |
+| Wrong code rejected inline (AC-MFA-07) | Error alert; stays on `mfa_challenge.php` in the single-method view |
+| Correct code promotes the session | Redirect to `index.php`; `/profile.php` now reachable |
+| Disable requires the password | Correct current password required; status flips to "Not enabled" |
+
+---
+
+### `auth/31-email-otp.spec.js`
+
+Test env only. Serial. Fresh user per suite. Reads OTP codes from the SMTP intercept log (`tests/helpers/intercepted-mail.js`), matching the 6-digit code in the subject/body.
+
+| Test | Asserts |
+|---|---|
+| Cancel email-OTP setup | Enrollment panel closes; setup button reappears |
+| Enable via emailed confirmation code | Code arrives by intercepted mail; status flips to Active; recovery codes shown once (first factor) |
+| Login pre-sends a code, single factor skips the list (AC-MFA-05) | Challenge opens directly on the email panel; `.code-sent` shown; a code is confirmed in the inbox |
+| Protected page denied while awaiting the code (bypass guard) | `/profile.php` bounces to `/login.php` before the code is submitted |
+| Correct emailed code promotes the session | Redirect to `index.php`; `/profile.php` reachable |
+| Wrong emailed code is rejected | Error alert; stays on the challenge |
+| Disable requires the password | Status flips to "Not enabled"; next login has no challenge |
+
+---
+
+### `auth/32-mfa-default-method.spec.js`
+
+Test env only. Serial (25s timeout — email pre-send blocks on SMTP). Fresh user that enrolls **both** TOTP and email OTP, exercising the preferred-method selection described in [gotchas.md #16](gotchas.md#16-mfa-requires-mfa_key-in-config-and-mfa-tables-use-the-legacy-latin1-collation).
+
+| Test | Asserts |
+|---|---|
+| Enrolling a 2nd factor reveals the preferred-method selector | `mfa-default-method` control appears only once ≥2 factors are active |
+| No stored preference → first active factor leads (AC-MFA-01/05) | TOTP panel opens directly; email + recovery reachable via "Other options"; nothing emailed on landing |
+| Picking email from Other options shows boxes immediately (AC-MFA-04) | Status reads "sending" before the code exists, then flips to "code sent" once it arrives — the view is never blocked on SMTP |
+| Setting email as preferred pre-sends on login; no resend on browse | `login.php` sends the code before the challenge renders; switching panels back to the already-sent email view never re-sends (guards the shared rate-limit bucket — see `security-findings-remaining.md` F7) |
+| No horizontal scroll at 320px (AC-MFA-09) | Card doesn't overflow; whichever panel is preferred opens directly, and its boxes, confirm button, and "Other options" row all keep ≥44px tap targets |
+
+---
+
+### `auth/35-passkey.spec.js`
+
+Test env only. Serial (25s timeout — shared account; email/SMTP round-trips need headroom). Fresh user re-seeded `beforeEach` (FKs cascade every factor away). Uses Chromium's CDP virtual authenticator (`ctap2`/`internal`, resident key + user verification, automatic presence) — real credentials can't be seeded server-side, so every test enrolls through the profile UI on its own page. **Not part of smoke.**
+
+| Test | Asserts |
+|---|---|
+| Password-only login reaches index (regression) | No factor yet → straight to `index.php` |
+| Register a passkey; first factor shows recovery codes once (REG-01/REG-02) | Status Active; codes visible once, gone after dismiss + reload |
+| Passkey is primary on the challenge; tapping it promotes the session (CHA-01/CHA-02) | Passkey panel + ceremony button lead (reverses the v3.0.0 removal); only recovery sits beneath the button for a passkey-only member |
+| Passwordless login from the login page (PWL-01) | Feature-detected button; no email/password — straight to a session |
+| Rename a passkey (management) | Friendly name updates in the row |
+| Sign-count regression rejected on the passwordless login path (SEC-01) | Forcing the stored counter above what the authenticator reports next → login error, no promotion |
+| Preferred method leads; the other is one tap away (CHA-04/CHA-05) | An explicit TOTP preference outranks the passkey default and leads the challenge; switching the preference back to passkey flips which panel leads |
+| Sign-count regression rejected on the challenge path too (SEC-02) | Same guard as SEC-01, exercised through the challenge's passkey button |
+| Passkey leads by default with no email pre-sent (CHA-06) | Passkey panel opens (default priority, no explicit preference); nothing emailed until picked from Other options, then boxes appear instantly with a "sending" → "code sent" status flip |
+| WebAuthn unsupported: button hidden, TOTP fallback works (CHA-07) | `window.PublicKeyCredential` deleted client-side → passkey CTA stays hidden, an unsupported note takes its place, and the TOTP fallback still completes the challenge |
+| Recovery code is the break-glass while a passkey is primary (CHA-08) | Dropping to recovery from the passkey panel redeems a code and promotes the session |
+| Admin strips two-step factors; member returns to password-only (support path) | Admin's "remove MFA" action (Users tab) clears the member's passkey; button disappears; the member's next login skips the challenge entirely |
+| Revoke requires the password; removing it restores password-only (REV-01/REV-02) | Wrong password leaves the row in place; correct password removes it and restores password-only login |
+
+---
+
+### `auth/36-passkey-negative.spec.js`
+
+Test env only. Serial. Bypass and enumeration-parity negatives for `webauthn.php` — no virtual authenticator needed, since every case must fail before crypto is ever evaluated. POSTs go through in-page `fetch()` (`page.evaluate`), not `page.request`: the Simply.com WAF challenges non-browser network stacks (see [gotchas.md](gotchas.md) / memory "no curl"), while the browser's own fetch is already past that check. True valid-assertion replay is covered separately by challenge single-use in `tests/unit/passkey-harness.php`.
+
+| Test | Asserts |
+|---|---|
+| Missing CSRF token blocked on every action (SEC-03) | All 6 `webauthn.php` actions reject without a valid token; no session |
+| `challenge_verify` without `mfa_pending` grants nothing (CHA-03) | Error response; no session |
+| `login_verify` without a prior challenge grants nothing (PWL-02) | Error response; no session |
+| Challenge is single-use (PWL-03) | First garbage assertion consumes the challenge; a replay of the same payload also fails — nothing left to consume |
+| `register_options` requires a logged-in session (REG-04) | Error response when logged out |
+| All failure modes return the byte-identical generic body (PWL-04 parity) | 5 distinct failure paths (no-pending, no-challenge, bad-credential after valid options, unknown action, logged-out register) all return the exact same response body — no failure mode is distinguishable from the outside |
+
+`afterAll` also clears `login_attempts` — the garbage `login_verify` posts each record a failed attempt, and would otherwise rate-limit a re-run (or global-setup's admin login) within the 15-minute window.
 
 ---
 

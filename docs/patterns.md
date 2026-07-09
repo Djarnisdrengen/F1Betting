@@ -5,6 +5,7 @@
 - [PHP Page Structure](#php-page-structure)
 - [Input Sanitization and Output Escaping](#input-sanitization-and-output-escaping)
 - [CSRF Protection](#csrf-protection)
+- [Token Comparison (constant-time)](#token-comparison-constant-time)
 - [Auth Guards](#auth-guards)
 - [Reusable Include Pattern (qualifying-display.php)](#reusable-include-pattern-qualifying-displayphp)
 - [Config Constants](#config-constants)
@@ -88,6 +89,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ```
 
 `requireCsrf()` is a one-liner that calls `validateCsrfToken()` and terminates the request on failure.
+
+---
+
+## Token Comparison (constant-time)
+
+Any endpoint that trusts a bare token instead of a session (cron scripts, backup/seed tools, the e2e-only password-reset backdoor) must compare it with `hash_equals()`, never `===`/`==`. A naive string compare leaks timing information an attacker can use to guess the token byte-by-byte.
+
+```php
+// Good
+if (!hash_equals(CRON_SECRET, $_GET['token'] ?? '')) {
+    die('Forbidden');
+}
+
+// Bad — timing side-channel
+if ($_GET['token'] !== CRON_SECRET) {
+    die('Forbidden');
+}
+```
+
+`hash_equals()` is also used for OTP/TOTP code comparison in `includes/mfa.php` and the CSRF check in `functions.php`. This became the codebase-wide convention during the 2026-07-05 security review — see [security-review-log.md](security-review-log.md#2026-07-05--ad-hoc-review-of-token-gated-endpoints-and-cron-auth-f1f12).
 
 ---
 

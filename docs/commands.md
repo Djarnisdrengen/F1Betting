@@ -37,6 +37,8 @@ All terminal commands for the F1 Betting project.
 |---|---|
 | `npm run deploy:test` | Upload to test server + run smoke tests |
 | `npm run deploy:live` | Upload to live server (requires typing `YES`) + run smoke + E2E |
+| `npm run schema:check` | Introspect the test DB against `database/migrations.json`; lists missing tables/columns. Also runs automatically as part of every deploy — see [gotchas.md #18](gotchas.md#18-migrations-are-manual-per-environment--the-deploy-schema-check-catches-forgotten-ones) |
+| `npm run schema:check:live` | Same, against the live DB |
 
 ---
 

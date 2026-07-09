@@ -10,6 +10,8 @@
   - [bets](#bets)
   - [settings (singleton: id=1)](#settings-singleton-id1)
   - [password_resets, login_attempts, invites](#password_resets-login_attempts-invites)
+  - [user_totp, user_recovery_codes, user_email_otp, user_passkeys](#user_totp-user_recovery_codes-user_email_otp-user_passkeys)
+  - [leaderboard_snapshots](#leaderboard_snapshots)
 - [Config System](#config-system)
   - [What each file contains](#what-each-file-contains)
 - [Request Lifecycle](#request-lifecycle)
@@ -36,6 +38,8 @@ F1Betting/
 │   ├── register.php            Invite-only registration
 │   ├── forgot_password.php     Password reset request
 │   ├── reset_password.php      Password reset with token
+│   ├── mfa_challenge.php       Second-factor challenge (passkey/TOTP/email/recovery)
+│   ├── webauthn.php            JSON endpoint for passkey register/challenge/login actions
 │   ├── admin.php               Admin dashboard (drivers, races, users, settings)
 │   ├── profile.php             User profile
 │   ├── leaderboard.php         Full leaderboard
@@ -52,6 +56,9 @@ F1Betting/
 │   │   ├── footer.php          JS includes, mobile menu, countdown timers
 │   │   ├── scoring.php         Points calculation logic
 │   │   ├── smtp.php            SMTP email wrapper
+│   │   ├── mfa.php             TOTP/recovery-code/email-OTP logic, seals secrets with MFA_KEY
+│   │   ├── passkey.php         WebAuthn registration/challenge helpers (wraps vendored lib)
+│   │   ├── webauthn/           Vendored lbuchs/WebAuthn library (no Composer)
 │   │   ├── qualifying-display.php  Reusable P1/P2/P3 result display (include pattern)
 │   │   └── admin/              Admin panel section partials
 │   │       ├── drivers.php
@@ -67,10 +74,12 @@ F1Betting/
 │   │
 │   ├── tools/                  Admin utilities (some excluded from live deploy)
 │   │   ├── setup_admin.php     First-time admin account initialiser
+│   │   ├── seed_f1_admin.php   Seed the service admin account (token-gated, excluded from live)
 │   │   ├── test-seed.php       Seed deterministic test data (integration tests only)
-│   │   ├── db-backup.php       Export all tables as JSON
+│   │   ├── db-backup.php       Export all tables as JSON (token-gated, excludes password_resets)
 │   │   ├── db-restore.php      Restore from a JSON backup
 │   │   ├── sync-from-live.php  Copy live DB into test DB
+│   │   ├── schema-check.php    Introspects DB against database/migrations.json (deploy gate)
 │   │   └── test_smtp.php       SMTP connectivity test
 │   │
 │   ├── lang/                   Translation strings
@@ -88,6 +97,8 @@ F1Betting/
 ├── database/
 │   ├── schema.sql              Full schema — run once on a new database
 │   ├── add_login_attempts.sql  Migration for rate-limiting table
+│   ├── add_mfa.sql             Migration for MFA/passkey tables (idempotent, see gotcha #16)
+│   ├── migrations.json         Objects the deploy-time schema check looks for (see gotcha #18)
 │   └── seasons/
 │       └── data_2026.sql       2026 race calendar seed data
 │
@@ -109,15 +120,13 @@ F1Betting/
 │   └── security-reports/       Security scan output (gitignored)
 │
 ├── tests/
-│   ├── playwright.config.js            E2E config (smoke, admin, cron specs)
+│   ├── playwright.config.js            E2E config
 │   ├── playwright.integration.config.js Integration config (seeds DB first)
 │   ├── smoke.js                        Node.js HTTP smoke runner
 │   ├── reporter.js                     Custom Playwright reporter
-│   ├── e2e/
-│   │   ├── smoke.spec.js               Public pages, translations, login
-│   │   ├── admin.spec.js               Admin functionality
-│   │   ├── integration.spec.js         Points, leaderboard, pool size
-│   │   └── cron.spec.js               Cron endpoint tests
+│   ├── e2e/                            Numbered specs (01-smoke.spec.js … 14-race-page.spec.js)
+│   │   ├── admin/                      Admin-only specs (10-content … 13-scoring)
+│   │   └── auth/                       MFA/passkey specs (30-totp-mfa … 36-passkey-negative)
 │   └── security/
 │       └── security.js                 OWASP + SSL Labs + rate-limit scanner
 │
@@ -132,7 +141,7 @@ F1Betting/
 
 ## Database Schema
 
-Eight tables, all using UUID primary keys (VARCHAR 36) except auto-increment tables.
+Thirteen tables. Core entities use UUID primary keys (VARCHAR 36); a few tables are auto-increment instead (`login_attempts`, `leaderboard_snapshots`, and some MFA tables — see below).
 
 ### users
 | Column | Type | Notes |
@@ -188,6 +197,12 @@ Points schema (p1=25, p2=18, p3=15, wrong_pos=5), betting window hours, bet size
 
 ### password_resets, login_attempts, invites
 Standard security tables. See `database/schema.sql` for full DDL.
+
+### user_totp, user_recovery_codes, user_email_otp, user_passkeys
+MFA factor tables (added by `database/add_mfa.sql`). Their `user_id` (and `user_passkeys.id`) columns are pinned to the legacy `latin1_swedish_ci` character set to satisfy the FK against `users.id` — see [gotchas.md #16](gotchas.md#16-mfa-requires-mfa_key-in-config-and-mfa-tables-use-the-legacy-latin1-collation) for why, and for the full security-model writeup see [Security Model](#security-model) below.
+
+### leaderboard_snapshots
+Per-race rank/points snapshot (`user_id`, `race_id`, `rank`, `points`), written after each race is scored. Powers the rank-delta shown next to a user's leaderboard row.
 
 ---
 

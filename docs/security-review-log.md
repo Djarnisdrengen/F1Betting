@@ -6,6 +6,10 @@
   - [Findings](#findings)
   - [Actions taken](#actions-taken)
   - [Expected result for next monthly report](#expected-result-for-next-monthly-report)
+- [2026-07-05 — Ad-hoc review of token-gated endpoints and cron auth (F1–F12)](#2026-07-05--ad-hoc-review-of-token-gated-endpoints-and-cron-auth-f1f12)
+  - [Findings](#findings-1)
+  - [Actions taken](#actions-taken-1)
+  - [Deferred (F6–F12)](#deferred-f6f12)
 - [Template for future entries](#template-for-future-entries)
 
 ---
@@ -58,6 +62,50 @@ Add a new entry after each monthly report or any ad-hoc review.
 
 - OWASP gaps: **none** (A04 and A09 are exempt)
 - CWE gaps: **none** (all remaining items either covered or exempt)
+
+---
+
+## 2026-07-05 — Ad-hoc review of token-gated endpoints and cron auth (F1–F12)
+
+**Reviewer:** Claude (assisted) + Thomas
+**Trigger:** Ad-hoc code-level review of every endpoint that trusts a bare token (`?token=…`) instead of a session — cron scripts, backup/seed tools, the e2e password-reset backdoor.
+**Report:** No HTML report (not a monthly workflow run). Findings tracked directly in commits and in `security-findings-remaining.md` (repo root).
+
+### Findings
+
+Twelve findings, numbered F1–F12 by severity (Critical/High first). F1–F5 were fixed immediately; F6–F12 (Medium/Low) were deferred.
+
+| # | Issue | Severity |
+|---|---|---|
+| F1 | `forgot_password.php`'s e2e reset-link backdoor was reachable by token alone, with no environment check | Critical |
+| F2 | `db-backup.php` token compare used `===`/`==` (timing side-channel); the backup dump included `password_resets` (live reset tokens at rest in backup artifacts) | High |
+| F3 | `seed_f1_admin.php` token compare was not constant-time and the tool was deployable to live | High |
+| F4 | `import_qualifying.php`'s `?test=true` bypassed `CRON_SECRET` entirely, not just the data source | High |
+| F5 | `INTEGRATION_SEED_TOKEN` is shared between test and live config | Medium |
+| F6–F12 | Tokens in URL query strings; weak MFA/login rate limiting; SMTP TLS verification disabled; latent SMTP header injection; unvalidated bet driver IDs; predictable UUIDs (`mt_rand`); weak password policy / no session timeout | Medium/Low — see [Deferred](#deferred-f6f12) |
+
+### Actions taken
+
+- `forgot_password.php`: backdoor now gated on `APP_ENV === 'test'` **and** `hash_equals()` against `INTEGRATION_SEED_TOKEN` — can never disclose a reset link on live regardless of token (F1)
+- `db-backup.php`: `hash_equals()` token compare; `password_resets` dropped from the dump so reset tokens never sit in backup artifacts (F2)
+- `seed_f1_admin.php`: `hash_equals()` token compare; excluded from live deploy via `.deployignore.live` (F3)
+- `import_qualifying.php`: `CRON_SECRET` is now always required; `?test=true` only selects stub data, no longer bypasses auth; `hash_equals()` compare (F4)
+- E2E: added a case asserting `?test=true` alone is rejected; the import test now supplies a valid token
+- F5 (token de-sharing) is config-only (gitignored `config.*.php`), not code — tracked but not part of any commit
+- Commits: `dd4c1ed` (F1–F4), `34ac54f` (F6–F12 working notes)
+
+**Convention introduced:** every bare-token comparison in the codebase now uses `hash_equals()`, never `===`. See [patterns.md → Token Comparison](patterns.md#token-comparison-constant-time) for new code.
+
+### Deferred (F6–F12)
+
+Tracked in `security-findings-remaining.md` (repo root, not `docs/` — a working file, delete or fold into a tracker once addressed). Summary, ordered by the suggested next-pass priority in that file:
+
+1. **F8** — SMTP TLS certificate verification disabled (`verify_peer=false` in `smtp.php`) — real MITM exposure, worsened by `SMTP_PASS` being shared test↔live
+2. **F7** — Login/MFA rate limiting has no per-account lockout, fails open on DB error, and shares one IP bucket between login and the MFA challenge
+3. **F6** — Tokens still travel in URL query strings (land in access logs / `Referer` headers) even though the compares are now constant-time
+4. **F12 / F9 / F10 / F11** — weak password policy + no session timeout, latent SMTP header injection (not currently exploitable), unvalidated bet driver IDs, `mt_rand`-based UUIDs — batch as low-risk hardening
+
+None of F6–F12 block a live deploy; F1–F5 were the release gate for this review.
 
 ---
 
