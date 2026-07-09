@@ -166,12 +166,19 @@ CREATE TABLE password_resets (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Rate limiting: tracks failed login attempts per IP (sliding 15-minute window)
+-- Rate limiting: tracks failed login/MFA attempts per IP and per account (sliding
+-- 15-minute window). scope separates the password/passkey login step from the MFA
+-- challenge step so exhausting one budget never blocks the other. account is the
+-- submitted email (login scope) or the authenticated user id (mfa scope); NULL when
+-- the target account isn't known yet (e.g. a failed passwordless passkey attempt).
 CREATE TABLE login_attempts (
     id           INT AUTO_INCREMENT PRIMARY KEY,
     ip           VARCHAR(45)  NOT NULL,
+    scope        VARCHAR(10)  NOT NULL DEFAULT 'login',
+    account      VARCHAR(255) NULL,
     attempted_at DATETIME     DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_ip_time (ip, attempted_at)
+    INDEX idx_ip_scope_time (ip, scope, attempted_at),
+    INDEX idx_account_scope_time (account, scope, attempted_at)
 );
 
 -- Invitations (kun admin kan invitere nye brugere)

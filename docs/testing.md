@@ -493,7 +493,7 @@ Test env only. Serial (25s timeout — email pre-send blocks on SMTP). Fresh use
 | Enrolling a 2nd factor reveals the preferred-method selector | `mfa-default-method` control appears only once ≥2 factors are active |
 | No stored preference → first active factor leads (AC-MFA-01/05) | TOTP panel opens directly; email + recovery reachable via "Other options"; nothing emailed on landing |
 | Picking email from Other options shows boxes immediately (AC-MFA-04) | Status reads "sending" before the code exists, then flips to "code sent" once it arrives — the view is never blocked on SMTP |
-| Setting email as preferred pre-sends on login; no resend on browse | `login.php` sends the code before the challenge renders; switching panels back to the already-sent email view never re-sends (guards the shared rate-limit bucket — see `security-findings-remaining.md` F7) |
+| Setting email as preferred pre-sends on login; no resend on browse | `login.php` sends the code before the challenge renders; switching panels back to the already-sent email view never re-sends (guards the MFA-scope rate-limit budget, now separate from login's — see `security-findings-remaining.md` F7) |
 | No horizontal scroll at 320px (AC-MFA-09) | Card doesn't overflow; whichever panel is preferred opens directly, and its boxes, confirm button, and "Other options" row all keep ≥44px tap targets |
 
 ---

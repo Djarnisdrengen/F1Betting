@@ -386,25 +386,59 @@ function verifyPassword($password, $hash) {
 }
 
 // ── Rate limiting ──────────────────────────────────────────────────────────────
-// 3 failed attempts per IP within a 15-minute sliding window triggers a block.
-
-function isRateLimited(PDO $db, string $ip): bool {
-    $stmt = $db->prepare(
-        "SELECT COUNT(*) FROM login_attempts
-         WHERE ip = ? AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)"
-    );
-    $stmt->execute([$ip]);
-    return (int)$stmt->fetchColumn() >= 5;
+// Sliding 15-minute window, checked both per-IP (catches broad abuse from one
+// address) and per-account (catches a distributed attack on one victim regardless
+// of source IP, and lets the rest of a shared/NAT'd IP keep working once its real
+// owner proves who they are). 'login' (password step + passwordless passkey) and
+// 'mfa' (second-factor challenge: code guesses and resends) are separate scopes —
+// separate buckets — so exhausting one budget never blocks the other. The account
+// bucket for 'mfa' is stricter than 'login': a 6-digit OTP/TOTP code has a far
+// smaller keyspace than a password, so a targeted account needs tighter guessing
+// room even though the IP threshold stays the same (shared IPs see normal traffic
+// from both steps).
+function rateLimitThreshold(string $scope, string $bucket): int {
+    if ($bucket === 'account' && $scope === 'mfa') {
+        return 3;
+    }
+    return 5;
 }
 
-function recordLoginAttempt(PDO $db, string $ip): void {
-    $db->prepare("INSERT INTO login_attempts (ip) VALUES (?)")->execute([$ip]);
+function isRateLimited(PDO $db, string $ip, string $scope, string $account): bool {
+    $stmt = $db->prepare(
+        "SELECT COUNT(*) FROM login_attempts
+         WHERE ip = ? AND scope = ? AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)"
+    );
+    $stmt->execute([$ip, $scope]);
+    if ((int)$stmt->fetchColumn() >= rateLimitThreshold($scope, 'ip')) {
+        return true;
+    }
+
+    if ($account === '') {
+        return false; // target account not known yet (e.g. an unresolved passkey assertion)
+    }
+
+    $stmt = $db->prepare(
+        "SELECT COUNT(*) FROM login_attempts
+         WHERE account = ? AND scope = ? AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)"
+    );
+    $stmt->execute([$account, $scope]);
+    return (int)$stmt->fetchColumn() >= rateLimitThreshold($scope, 'account');
+}
+
+function recordLoginAttempt(PDO $db, string $ip, string $scope, string $account): void {
+    $db->prepare("INSERT INTO login_attempts (ip, scope, account) VALUES (?, ?, ?)")
+       ->execute([$ip, $scope, $account !== '' ? $account : null]);
     // Purge records older than 1 hour to keep the table lean
     $db->prepare("DELETE FROM login_attempts WHERE attempted_at < DATE_SUB(NOW(), INTERVAL 1 HOUR)")->execute();
 }
 
-function clearLoginAttempts(PDO $db, string $ip): void {
-    $db->prepare("DELETE FROM login_attempts WHERE ip = ?")->execute([$ip]);
+// Clears only this account's own counter for this scope — proving who you are resets
+// your own lockout. Deliberately never touches the IP-wide bucket: clearing that on
+// every success would let an attacker reset the shared budget by logging into their
+// own account from the same IP mid-attack.
+function clearLoginAttempts(PDO $db, string $scope, string $account): void {
+    if ($account === '') return;
+    $db->prepare("DELETE FROM login_attempts WHERE account = ? AND scope = ?")->execute([$account, $scope]);
 }
 
 // ============================================

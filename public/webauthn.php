@@ -116,10 +116,11 @@ switch ($action) {
         $pending = $_SESSION['mfa_pending'] ?? null;
         if (!$pending || ($pending['exp'] ?? 0) < time()) passkeyJsonFail();
 
+        $rateLimited = true; // fail closed: an unreachable rate-limit table must not be treated as "no limit"
         try {
-            $rateLimited = isRateLimited($db, $ip);
+            $rateLimited = isRateLimited($db, $ip, 'mfa', $pending['uid']);
         } catch (Exception $e) {
-            $rateLimited = false;
+            logToFile(APP_LOG_FILE, '[RATE-LIMIT] mfa passkey check failed, failing closed: ' . $e->getMessage());
         }
         if ($rateLimited) {
             header('Retry-After: 900'); // the one allowed divergence (matches mfa_challenge.php)
@@ -133,7 +134,7 @@ switch ($action) {
             logToFile(APP_LOG_FILE, '[PASSKEY] challenge_verify failed: ' . $e->getMessage());
         }
         if ($uid === null) {
-            try { recordLoginAttempt($db, $ip); } catch (Exception $e) {}
+            try { recordLoginAttempt($db, $ip, 'mfa', $pending['uid']); } catch (Exception $e) {}
             passkeyJsonFail();
         }
 
@@ -141,7 +142,7 @@ switch ($action) {
         $anonTheme = $pending['anonTheme'] ?? 'dark';
         $anonFont  = $pending['anonFont']  ?? 'system';
         unset($_SESSION['mfa_pending']);
-        try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
+        try { clearLoginAttempts($db, 'mfa', $uid); } catch (Exception $e) {}
         passkeyPromoteSession($db, $uid, $anonTheme, $anonFont);
         logLoginMethod('password+passkey', $uid);
 
@@ -165,10 +166,14 @@ switch ($action) {
     case 'login_verify': {
         if (getCurrentUser()) passkeyJsonFail();
 
+        // No account is known yet — a discoverable-credential assertion carries its own
+        // credential id, and we only learn which user it belongs to once passkeyAssertVerify
+        // resolves it below. Failures before that point can only be rate-limited by IP.
+        $rateLimited = true; // fail closed: an unreachable rate-limit table must not be treated as "no limit"
         try {
-            $rateLimited = isRateLimited($db, $ip);
+            $rateLimited = isRateLimited($db, $ip, 'login', '');
         } catch (Exception $e) {
-            $rateLimited = false;
+            logToFile(APP_LOG_FILE, '[RATE-LIMIT] passwordless login check failed, failing closed: ' . $e->getMessage());
         }
         if ($rateLimited) {
             header('Retry-After: 900');
@@ -182,14 +187,14 @@ switch ($action) {
             logToFile(APP_LOG_FILE, '[PASSKEY] login_verify failed: ' . $e->getMessage());
         }
         if ($uid === null) {
-            try { recordLoginAttempt($db, $ip); } catch (Exception $e) {}
+            try { recordLoginAttempt($db, $ip, 'login', ''); } catch (Exception $e) {}
             passkeyJsonFail();
         }
 
         $redirect  = passkeySanitizeRedirect($_POST['redirect'] ?? '/index.php');
         $anonTheme = $_SESSION['theme']      ?? $_COOKIE['f1_theme'] ?? 'dark';
         $anonFont  = $_SESSION['font_stack'] ?? $_COOKIE['f1_font']  ?? 'system';
-        try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
+        try { clearLoginAttempts($db, 'login', $uid); } catch (Exception $e) {}
         passkeyPromoteSession($db, $uid, $anonTheme, $anonFont);
         logLoginMethod('passkey', $uid);
 

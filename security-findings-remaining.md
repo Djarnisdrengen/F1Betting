@@ -17,14 +17,30 @@ the `forgot_password` e2e param, so they land in web-server/proxy access logs an
   `build-deploy/schema-check.js`, `restore-db.js`, Simply cron). Scrub existing access logs.
 - **Effort:** medium (touches CI + cron config). **Files:** `public/tools/*.php`, the Node callers.
 
-## F7 — Login / MFA rate limiting is weak — **Medium**
+## F7 — Login / MFA rate limiting is weak — **Medium** — ✅ Fixed
 `public/includes/functions.php:391-408`: per-IP counter, threshold `>=5`/15 min (comment still says
 "3" — drift), and `login.php:33-36` **fails open** on a DB exception while `:51` clears the IP's
 counter on any successful login. Uses `REMOTE_ADDR` (so *not* `X-Forwarded-For`-spoofable), but there
 is no per-account lockout, and the same IP bucket is shared with the MFA challenge.
-- **Fix:** add per-account throttling/lockout; fail closed on error; don't fully reset the counter on
-  success; give the MFA step its own stricter budget; fix the "3 vs 5" comment.
-- **Effort:** medium. **Files:** `functions.php`, `login.php`, `mfa_challenge.php`.
+- **Fix applied:** `login_attempts` gained two columns, `scope` (`login` | `mfa`) and `account`
+  (submitted email for `login`, user id for `mfa`; `NULL` when the target account isn't known yet,
+  e.g. a failed passwordless passkey assertion) — migration `database/add_login_attempts_scope.sql`,
+  registered in `migrations.json`. `isRateLimited()`/`recordLoginAttempt()`/`clearLoginAttempts()` now
+  take `$scope` + `$account` and check **both** an IP bucket and an account bucket per scope, so a
+  distributed attack on one victim is caught even when it's spread across IPs, and a shared/NAT'd IP
+  keeps working for everyone else once the real account owner proves who they are.
+  `login.php`/`mfa_challenge.php`/`webauthn.php` all fail **closed** now — an `isRateLimited()`
+  exception defaults `$rateLimited = true` and logs to `APP_LOG_FILE` instead of silently letting the
+  attempt through. `clearLoginAttempts()` only ever deletes the calling account's own rows for that
+  scope — it no longer wipes the IP-wide bucket, which used to let an attacker reset the whole IP's
+  budget by logging into their own account mid-attack. `login` and `mfa` are separate buckets end to
+  end (password step + passwordless passkey vs. code/passkey MFA challenge + resend), so exhausting one
+  never blocks the other. MFA's *account* threshold is stricter (3 vs. 5) — a 6-digit OTP/TOTP code has
+  a much smaller keyspace than a password — while its *IP* threshold stays at 5 to tolerate normal
+  multi-user traffic from a shared address (validated against the E2E suite's incidental MFA failures
+  across `tests/e2e/auth/*.spec.js`, which share one CI runner IP). Fixed the "3 vs 5" comment drift.
+- **Effort:** medium. **Files:** `functions.php`, `login.php`, `mfa_challenge.php`, `webauthn.php`,
+  `database/schema.sql`, `database/add_login_attempts_scope.sql`, `database/migrations.json`.
 
 ## F8 — SMTP TLS certificate verification disabled — **Medium** — ✅ Fixed
 `public/includes/smtp.php:87-90`: `verify_peer=false`, `verify_peer_name=false`,

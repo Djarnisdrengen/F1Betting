@@ -29,10 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = sanitizeEmail($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
+    $rateLimited = true; // fail closed: an unreachable rate-limit table must not be treated as "no limit"
     try {
-        $rateLimited = isRateLimited($db, $ip);
+        $rateLimited = isRateLimited($db, $ip, 'login', $email !== false ? $email : '');
     } catch (Exception $e) {
-        $rateLimited = false;
+        if (defined('APP_LOG_FILE')) {
+            logToFile(APP_LOG_FILE, '[RATE-LIMIT] login check failed, failing closed: ' . $e->getMessage());
+        }
     }
 
     if ($rateLimited) {
@@ -48,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
 
         if ($user && verifyPassword($password, $user['password'])) {
-            try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
+            try { clearLoginAttempts($db, 'login', $email); } catch (Exception $e) {}
             $anonTheme = $_SESSION['theme']      ?? $_COOKIE['f1_theme'] ?? 'dark';
             $anonFont  = $_SESSION['font_stack'] ?? $_COOKIE['f1_font']  ?? 'system';
 
@@ -90,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: " . $redirect);
             exit;
         } else {
-            try { recordLoginAttempt($db, $ip); } catch (Exception $e) {}
+            try { recordLoginAttempt($db, $ip, 'login', $email); } catch (Exception $e) {}
             $error = t('invalid_credentials');
         }
     }

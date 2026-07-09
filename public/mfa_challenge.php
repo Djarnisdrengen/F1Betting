@@ -30,25 +30,36 @@ $postMethod = $_SERVER['REQUEST_METHOD'] === 'POST' ? ($_POST['method'] ?? '') :
 
 if ($postMethod === 'resend' && $hasEmailOtp) {
     requireCsrf();
+    $resendLimited = true; // fail closed: an unreachable rate-limit table must not be treated as "no limit"
     try {
-        if (isRateLimited($db, $ip)) {
-            header('Retry-After: 900');
-            $error = t('rate_limited');
-        } else {
-            recordLoginAttempt($db, $ip);
+        $resendLimited = isRateLimited($db, $ip, 'mfa', $uid);
+    } catch (Exception $e) {
+        if (defined('APP_LOG_FILE')) {
+            logToFile(APP_LOG_FILE, '[RATE-LIMIT] mfa resend check failed, failing closed: ' . $e->getMessage());
+        }
+    }
+    if ($resendLimited) {
+        header('Retry-After: 900');
+        $error = t('rate_limited');
+    } else {
+        try { recordLoginAttempt($db, $ip, 'mfa', $uid); } catch (Exception $e) {}
+        try {
             if (issueEmailOtp($db, $uid, 'login')) {
                 $_SESSION['mfa_pending']['email_sent'] = true;
                 $pending['email_sent'] = true;
             }
-        }
-    } catch (Exception $e) {}
+        } catch (Exception $e) {}
+    }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
 
+    $rateLimited = true; // fail closed: an unreachable rate-limit table must not be treated as "no limit"
     try {
-        $rateLimited = isRateLimited($db, $ip);
+        $rateLimited = isRateLimited($db, $ip, 'mfa', $uid);
     } catch (Exception $e) {
-        $rateLimited = false;
+        if (defined('APP_LOG_FILE')) {
+            logToFile(APP_LOG_FILE, '[RATE-LIMIT] mfa check failed, failing closed: ' . $e->getMessage());
+        }
     }
 
     if ($rateLimited) {
@@ -79,7 +90,7 @@ if ($postMethod === 'resend' && $hasEmailOtp) {
             unset($_SESSION['mfa_pending']);
             $_SESSION['user_id'] = $uid;
             session_regenerate_id(true);
-            try { clearLoginAttempts($db, $ip); } catch (Exception $e) {}
+            try { clearLoginAttempts($db, 'mfa', $uid); } catch (Exception $e) {}
             $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$uid]);
             logLoginMethod('password+' . $postMethod, $uid); // $ok only for recovery|email|totp
             setLang($u['language']   ?? 'da');
@@ -89,7 +100,7 @@ if ($postMethod === 'resend' && $hasEmailOtp) {
             exit;
         }
 
-        try { recordLoginAttempt($db, $ip); } catch (Exception $e) {}
+        try { recordLoginAttempt($db, $ip, 'mfa', $uid); } catch (Exception $e) {}
         $error = t('mfa_invalid_code');
     }
 }
