@@ -5,7 +5,7 @@
 - [Nightly Workflow](#nightly-workflow)
   - [What it does](#what-it-does)
 - [Nightly DB Backup Workflow](#nightly-db-backup-workflow)
-- [Cron Trigger Workflows (in migration)](#cron-trigger-workflows-in-migration)
+- [Cron Trigger Workflows](#cron-trigger-workflows)
 - [Monthly Security Review Workflow](#monthly-security-review-workflow)
 - [Required Configuration](#required-configuration)
   - [Variables tab](#variables-tab)
@@ -51,24 +51,26 @@ Find artifacts under **Actions → Nightly DB Backup → (select run) → Artifa
 
 ---
 
-## Cron Trigger Workflows (in migration)
+## Cron Trigger Workflows
 
 **Files:** `.github/workflows/cron-qualifying-import.yml`, `.github/workflows/cron-notifications.yml`
-**Schedule:** none yet — currently `workflow_dispatch:`-only
-**Can be triggered:** manually via the Actions tab → "Run workflow" (optional `dry_run` input)
+**Schedule:** qualifying import `0 13,14,15,16,17 * * 6` (spread across Saturday UTC offsets, no DST awareness); notifications `5 * * * *` (hourly)
+**Can also be triggered:** manually via the Actions tab → "Run workflow" (optional `dry_run` input)
 
 Part of the F6 fix (`security-findings-remaining.md`): `public/cron/import_qualifying.php` and
 `public/cron/notifications.php` used to be triggered by Simply.com's control-panel cron feature,
 which only sends a plain GET with no custom headers — incompatible with the `Authorization:
-Bearer` auth those scripts now use. These two workflows replace that trigger, following the same
-shape as the Nightly DB Backup Workflow above (`vars.BASE_URL_LIVE`, a `secrets.CRON_SECRET`,
-inline `node -e` fetch).
+Bearer` auth those scripts now use. These two workflows replaced that trigger as of 2026-07-09,
+following the same shape as the Nightly DB Backup Workflow above (`vars.BASE_URL_LIVE`, a
+`secrets.CRON_SECRET`, inline `node -e` fetch); the Simply.com control-panel entries have been
+deleted.
 
-**Currently disabled by design.** No `schedule:` trigger is enabled yet — Simply.com's
-control-panel entries are still the live trigger, kept working by a temporary `?token=` shim in
-both cron scripts. The cutover sequence (add the `CRON_SECRET` secret, prove each workflow via
-`workflow_dispatch`, enable `schedule:`, delete the Simply.com entries) is tracked in
-`security-findings-remaining.md` under F6 — check there before assuming either trigger is live.
+Both cron scripts still accept the legacy `?token=` query string as a temporary shim — see
+`security-findings-remaining.md` under F6 for when that's due to be removed (after one full clean
+cycle on this schedule). `dry_run` works for the notifications workflow against live (safe — just
+skips the SMTP send); for qualifying import it's **test-env only** (its stub data file is excluded
+from the live deploy, so it dies partway through against live) — trigger a real run instead to
+verify that one by hand.
 
 **Required secrets/variables:** `BASE_URL_LIVE`, `CRON_SECRET`
 

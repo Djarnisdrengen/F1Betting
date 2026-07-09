@@ -17,27 +17,32 @@ the `forgot_password` e2e param, so they land in web-server/proxy access logs an
   Bearer <token>`. Node callers (`backup.js`, `schema-check.js`, `restore-db.js`,
   `nightly-backup.yml`) updated to send the header. CLI invocation (`argv`) for the cron scripts is
   unaffected — it was never URL/log-exposed.
-- **Cron trigger migration (in progress):** `import_qualifying.php`/`notifications.php` were triggered
-  by Simply.com's control-panel cron feature, which only does a plain GET with no custom headers —
-  incompatible with the header-only fix. Moving their trigger to GitHub Actions instead: new
-  `.github/workflows/cron-qualifying-import.yml` / `cron-notifications.yml`, currently
-  `workflow_dispatch:`-only (no `schedule:` yet — see cutover steps below). Both cron scripts
-  currently carry a **temporary dual-accept shim** — header OR the legacy `?token=` — so Simply's
-  existing control-panel entries keep working until the GitHub Actions replacement is proven and the
-  Simply.com entries are manually deleted. **Remove the `?token=` branch from both scripts** once
-  that happens; don't leave the shim in place long-term.
+- **Cron trigger migration (cutting over 2026-07-09):** `import_qualifying.php`/`notifications.php`
+  were triggered by Simply.com's control-panel cron feature, which only does a plain GET with no
+  custom headers — incompatible with the header-only fix. Trigger moved to GitHub Actions instead:
+  `.github/workflows/cron-qualifying-import.yml` / `cron-notifications.yml`. Both cron scripts still
+  carry a **temporary dual-accept shim** — header OR the legacy `?token=` — kept in place until one
+  full clean cycle has run on the new schedule (see step 4 below). **Remove the `?token=` branch from
+  both scripts** once that happens; don't leave the shim in place long-term.
 - **Deferred, accepted as-is:** `seed_f1_admin.php` (already `hash_equals`-safe, excluded from live
   deploy via `.deployignore.live`, and its only "caller" is a human pasting a URL into a browser — no
   header-carrying client exists for it) and `forgot_password.php`'s `e2e_token` (already
   `hash_equals`-gated and hard-`false` on live regardless of `APP_ENV`). Both stay on `?token=`.
-- **Remaining manual steps (not automatable):**
-  1. Add a `CRON_SECRET` GitHub Actions repo secret (value already in `config.live.php`).
-  2. `workflow_dispatch` both new workflows once by hand, confirm green + expected log text
-     (`Total races updated` / `Notification check complete`).
-  3. Uncomment the `schedule:` block in both new workflow files, then **immediately** delete both
-     Simply.com control-panel cron entries (same sitting — avoid an active race weekend window).
-  4. After one full clean cycle (a Saturday qualifying window + ~24h of hourly notifications),
-     remove the `?token=` shim from both cron scripts and redeploy.
+- **Cutover checklist:**
+  1. ✅ Added the `CRON_SECRET` GitHub Actions repo secret.
+  2. ✅ `workflow_dispatch` both new workflows by hand against live — both green.
+     Notifications: dry run, `Notification check complete`, no sends (nothing due). Qualifying
+     import: **real** run (safe — next race, Belgian GP, is 2026-07-19, no new quali data yet),
+     `Total races updated: 0`, no unexpected writes. (Discovered along the way, unrelated to F6:
+     `dry_run=true` on the qualifying-import workflow doesn't work against live —
+     `tools/f1_testdata.php` is excluded from the live deploy via `.deployignore.live`, so the
+     script dies on a fatal `require()` after the token check passes. `dry_run` on that workflow is
+     test-env only; noted in the workflow file, not fixed here.)
+  3. ✅ `schedule:` enabled in both workflow files (deployed to `main`); Simply.com control-panel
+     entries deleted the same sitting.
+  4. **Next:** after one full clean cycle (a Saturday qualifying window + ~24h of hourly
+     notifications) with no `Unauthorized access` lines in `cron_qualifying.log`/
+     `cron_notifications.log`, remove the `?token=` shim from both cron scripts and redeploy.
   5. Scrub existing access logs of the old `?token=` values if feasible.
 - **Effort:** medium (touches CI + cron config). **Files:** `functions.php`, `public/tools/*.php`,
   `public/cron/*.php`, the Node callers, `.github/workflows/*`, `tests/e2e/07-cron.spec.js`,

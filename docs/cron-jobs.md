@@ -12,7 +12,7 @@
   - [Test mode](#test-mode-1)
   - [Logging](#logging-1)
   - [Suggested schedule](#suggested-schedule-1)
-- [Triggering via GitHub Actions (in migration)](#triggering-via-github-actions-in-migration)
+- [Triggering via GitHub Actions](#triggering-via-github-actions)
 - [Triggering manually (HTTP)](#triggering-manually-http)
 - [Log file locations](#log-file-locations)
 
@@ -20,11 +20,12 @@
 
 Two cron scripts live in `public/cron/`. Both can be triggered via HTTP or from the CLI.
 
-**Trigger mechanism is mid-migration (F6, `security-findings-remaining.md`).** Simply.com's
-control-panel cron feature only sends a plain GET with no custom headers, which is incompatible
-with the header-based auth below — so the trigger is moving to GitHub Actions. Until that
-migration completes, Simply's control-panel entries are still the live trigger, kept working by a
-temporary shim (see [Triggering via GitHub Actions](#triggering-via-github-actions-in-migration)).
+**Trigger moved to GitHub Actions as of 2026-07-09 (F6, `security-findings-remaining.md`).**
+Simply.com's control-panel cron feature only sends a plain GET with no custom headers, which is
+incompatible with the header-based auth below, so both scripts are now scheduled via GitHub
+Actions instead — the Simply.com control-panel entries have been deleted. Both scripts still
+accept the legacy `?token=` as a temporary shim until one full clean cycle has run on the new
+schedule (see [Triggering via GitHub Actions](#triggering-via-github-actions)).
 
 ---
 
@@ -65,9 +66,10 @@ Run twice during qualifying weekend: once around qualifying time and once a few 
 0 18 * * 6 php /home/USERNAME/public_html/cron/import_qualifying.php <CRON_SECRET>
 ```
 
-Once the F6 trigger migration lands, this schedule moves into
+As of the F6 trigger migration, this schedule lives in
 `.github/workflows/cron-qualifying-import.yml` instead — see
-[Triggering via GitHub Actions](#triggering-via-github-actions-in-migration).
+[Triggering via GitHub Actions](#triggering-via-github-actions). The `cron` block above is kept
+for reference (e.g. if the trigger ever needs to move back to server-side crontab).
 
 ---
 
@@ -111,33 +113,38 @@ Run hourly. The script checks all upcoming races and sends only if the current t
 0 * * * * php /home/USERNAME/public_html/cron/notifications.php <CRON_SECRET>
 ```
 
-Once the F6 trigger migration lands, this schedule moves into
+As of the F6 trigger migration, this schedule lives in
 `.github/workflows/cron-notifications.yml` instead — see
-[Triggering via GitHub Actions](#triggering-via-github-actions-in-migration).
+[Triggering via GitHub Actions](#triggering-via-github-actions). The `cron` block above is kept
+for reference (e.g. if the trigger ever needs to move back to server-side crontab).
 
 ---
 
-## Triggering via GitHub Actions (in migration)
+## Triggering via GitHub Actions
 
 Simply.com's control-panel cron feature only does a plain GET to a URL, "as if opened through a
 browser" — no custom headers, no POST, no body. That's incompatible with the header-based auth
-above, so both scripts' trigger is moving from Simply's control panel to GitHub Actions scheduled
+above, so both scripts' trigger moved from Simply's control panel to GitHub Actions scheduled
 workflows: `.github/workflows/cron-qualifying-import.yml` and `cron-notifications.yml`, matching
 the pattern `nightly-backup.yml` already uses (`vars.BASE_URL_LIVE`, a `CRON_SECRET` repo secret,
 an inline `node -e` fetch with the `Authorization` header).
 
-**Current status:** both workflows exist but are `workflow_dispatch:`-only (no `schedule:` yet).
-Simply.com's control-panel entries are still the live trigger for now, kept working by a temporary
-`?token=` shim in both cron scripts. Full cutover sequence, including the manual steps (creating
-the `CRON_SECRET` GitHub secret, deleting the Simply.com entries) is tracked in
-`security-findings-remaining.md` under F6 — check there for current status before assuming either
-trigger is authoritative.
+**Status: cut over 2026-07-09.** Both workflows' `schedule:` triggers are live, and the Simply.com
+control-panel entries have been deleted. Both cron scripts still accept the legacy `?token=` as a
+temporary shim — see `security-findings-remaining.md` under F6 for when that's due to be removed
+(after one full clean cycle on the new schedule).
 
-Once cut over, GitHub's `schedule:` is UTC-only with no DST awareness, so the qualifying-import
-workflow spreads across the plausible local-time range (`0 13,14,15,16,17 * * 6`) rather than
-pinning one offset that would silently drift an hour each spring/autumn — the extra firings are
-harmless no-ops (the script only writes when a race's `quali_p1` is still `NULL`, and self-gates
-to 06:00–23:59 local time).
+GitHub's `schedule:` is UTC-only with no DST awareness, so the qualifying-import workflow spreads
+across the plausible local-time range (`0 13,14,15,16,17 * * 6`) rather than pinning one offset
+that would silently drift an hour each spring/autumn — the extra firings are harmless no-ops (the
+script only writes when a race's `quali_p1` is still `NULL`, and self-gates to 06:00–23:59 local
+time). Notifications run hourly (`5 * * * *`) — the script is itself time-window-gated.
+
+`workflow_dispatch`'s `dry_run` input works for notifications against live (safe — it just skips
+the SMTP send). For qualifying import, `dry_run` is **test-env only**: it loads
+`tools/f1_testdata.php`, which is excluded from the live deploy, so it dies partway through
+against live. Trigger a real (non-dry-run) run against live instead if you need to verify it by
+hand — safe as long as there's no unprocessed qualifying data sitting in the API response.
 
 ---
 

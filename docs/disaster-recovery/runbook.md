@@ -14,7 +14,7 @@
   - [Step 6 — Restore data](#step-6--restore-data)
   - [Step 7 — Verify admin login](#step-7--verify-admin-login)
   - [Step 8 — Verify](#step-8--verify)
-  - [Step 9 — Re-provision Simply.com cron jobs](#step-9--re-provision-simplycom-cron-jobs)
+  - [Step 9 — Re-enable the cron trigger workflows](#step-9--re-enable-the-cron-trigger-workflows)
 - [GitHub Secrets and Variables — re-provisioning checklist](#github-secrets-and-variables--re-provisioning-checklist)
   - [Secrets (Settings → Secrets and variables → Actions → Secrets)](#secrets-settings--secrets-and-variables--actions--secrets)
   - [Variables (Settings → Secrets and variables → Actions → Variables)](#variables-settings--secrets-and-variables--actions--variables)
@@ -130,22 +130,23 @@ Note: `test:smoke` requires the URL passed explicitly — it is not read from `.
 
 Smoke tests verify all pages respond. E2E tests verify login, race display, and betting workflow end-to-end.
 
-### Step 9 — Re-provision Simply.com cron jobs
+### Step 9 — Re-enable the cron trigger workflows
 
-**This step is mid-migration (F6, `security-findings-remaining.md`) — check that file for
-current status before following it.** Simply.com's control-panel cron feature can't send a
-custom header, so the trigger is moving to GitHub Actions (`.github/workflows/cron-qualifying-import.yml`,
-`cron-notifications.yml`). Until that migration's cutover is complete, Simply's control panel is
-still the live trigger, kept working by a temporary `?token=` shim in both cron scripts:
+As of the F6 cutover (2026-07-09, `security-findings-remaining.md`), cron triggering lives in
+GitHub Actions, not Simply.com's control panel — Simply's control-panel cron feature can't send
+the `Authorization` header these scripts now require, and its control-panel entries have been
+deleted. If the GitHub repository must be recreated from scratch, re-provisioning is:
 
-Simply.com control panel → Cron jobs → re-add both endpoints with `CRON_SECRET`:
+1. Re-add the `CRON_SECRET` repo secret (see the checklist below).
+2. Confirm `.github/workflows/cron-qualifying-import.yml` and `cron-notifications.yml` exist with
+   their `schedule:` triggers intact (they're committed to `main`, so a normal repo restore
+   already covers this — just double-check the `schedule:` block wasn't accidentally left
+   commented out, which is how these files ship before their own cutover).
+3. `workflow_dispatch` each once by hand to confirm green before trusting the schedule.
 
-- `https://www.formula-1.dk/cron/import_qualifying.php?token=<CRON_SECRET>`
-- `https://www.formula-1.dk/cron/notifications.php?token=<CRON_SECRET>`
-
-Once F6's cutover is complete, this step changes to: re-add the `CRON_SECRET` GitHub Actions
-repo secret and confirm both workflows' `schedule:` triggers are enabled — no Simply.com
-control-panel entries to re-provision at all.
+Both cron scripts still accept the legacy `?token=` query string as a temporary shim (removal
+tracked in `security-findings-remaining.md` under F6) — so even a botched GitHub Actions
+re-provisioning wouldn't be a hard outage, just a missed scheduled run until fixed.
 
 ---
 
