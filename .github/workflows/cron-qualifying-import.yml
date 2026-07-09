@@ -7,39 +7,70 @@ name: Cron — Qualifying Results Import
 # deleted in the same sitting this schedule was enabled. Remove the ?token= shim from
 # import_qualifying.php after one clean qualifying weekend of scheduled runs.
 #
-# GitHub's schedule: is UTC-only with no DST awareness, so this spreads across the
-# plausible local-time range for Saturday qualifying rather than pin one offset that
-# would silently drift an hour each spring/autumn. The extra firings are harmless
-# no-ops: the script only writes when a race's quali_p1 is still NULL, and it
-# self-gates to 06:00-23:59 local time.
+# GitHub's schedule: is UTC-only with no DST awareness. Rather than pin one offset
+# that would silently drift an hour each spring/autumn, this fires every 5 minutes
+# across the whole 06:00-23:55 UTC span on Saturdays -- covers any plausible local
+# qualifying time regardless of DST, and gets results imported within minutes of the
+# API publishing them. The extra firings are harmless no-ops: the script only writes
+# when a race's quali_p1 is still NULL, and it self-gates to 06:00-23:59 local time.
 #
-# dry_run=true is TEST-ENV ONLY — tools/f1_testdata.php (the stub data it loads) is
-# excluded from the live deploy (.deployignore.live), so dry_run against live dies on
-# a fatal require() partway through (truncated HTTP 200 — headers already flushed by
-# the time the fatal hits). Not an F6 issue; a pre-existing gap, tracked separately.
+# Runs against both environments on the same schedule (full parity, chosen knowingly):
+# on test this calls the real Jolpica API every 5 minutes for ~18h every Saturday and
+# writes into the hpovlsen.dk races table, which test-seed.php periodically wipes for
+# E2E runs -- an unattended import can land mid-reseed. Accepted tradeoff, not a bug.
+#
+# dry_run=true works against test (tools/f1_testdata.php ships there) but NOT against
+# live -- that file is excluded from the live deploy (.deployignore.live), so a live
+# dry run dies on a fatal require() partway through (truncated HTTP 200 -- headers
+# already flushed by the time the fatal hits). Not an F6 issue; a pre-existing gap,
+# tracked separately, not fixed here.
 on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Dry run (?test=true) — TEST ENV ONLY, see comment above"
+        description: "Dry run (?test=true) — works on test only, see comment above"
         required: false
         default: "false"
   schedule:
-    - cron: '0 13,14,15,16,17 * * 6'
+    - cron: '*/5 6-23 * * 6'
 
 jobs:
-  trigger:
+  trigger-live:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Trigger qualifying import cron
+      - name: Trigger qualifying import cron (live)
         env:
-          BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
+          BASE_URL: ${{ vars.BASE_URL_LIVE }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: |
           node -e "
-            const url = process.env.BASE_URL_LIVE + '/cron/import_qualifying.php' + (process.env.DRY_RUN === 'true' ? '?test=true' : '');
+            const url = process.env.BASE_URL + '/cron/import_qualifying.php' + (process.env.DRY_RUN === 'true' ? '?test=true' : '');
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Total races updated')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "
+
+  trigger-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger qualifying import cron (test)
+        env:
+          BASE_URL: ${{ vars.BASE_URL_TEST }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET_TEST }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL + '/cron/import_qualifying.php' + (process.env.DRY_RUN === 'true' ? '?test=true' : '');
             fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
               .then(async r => {
                 const text = await r.text();

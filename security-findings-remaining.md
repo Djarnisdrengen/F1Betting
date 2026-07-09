@@ -39,11 +39,21 @@ the `forgot_password` e2e param, so they land in web-server/proxy access logs an
      script dies on a fatal `require()` after the token check passes. `dry_run` on that workflow is
      test-env only; noted in the workflow file, not fixed here.)
   3. ✅ `schedule:` enabled in both workflow files (deployed to `main`); Simply.com control-panel
-     entries deleted the same sitting.
-  4. **Next:** after one full clean cycle (a Saturday qualifying window + ~24h of hourly
+     entries deleted and confirmed removed by user, same sitting.
+  4. ✅ Added equivalent triggers for hpovlsen.dk (test) at the same cadence — each workflow now
+     runs `trigger-live` and `trigger-test` jobs on one shared `schedule:`. Chosen as full parity
+     over `workflow_dispatch`-only for test, knowingly: outside an E2E run `SMTP_INTERCEPT` isn't
+     active (gotcha #17), so notifications sends real email on test too, and the qualifying import
+     writes real API results into a `races` table `test-seed.php` periodically wipes for E2E
+     fixtures. Needs a `BASE_URL_TEST` variable (added) and a **`CRON_SECRET_TEST` repo secret
+     (not yet added — value is `CRON_SECRET` from `config.test.php`, different from live's)**.
+  5. Schedules tuned from the original spread-hourly-slots design to `*/5 6-23 * * 6` (qualifying
+     import — every 5 min across the Saturday UTC day) and `1 * * * *` (notifications).
+  6. **Next:** after one full clean cycle (a Saturday qualifying window + ~24h of hourly
      notifications) with no `Unauthorized access` lines in `cron_qualifying.log`/
-     `cron_notifications.log`, remove the `?token=` shim from both cron scripts and redeploy.
-  5. Scrub existing access logs of the old `?token=` values if feasible.
+     `cron_notifications.log` on **either** environment, remove the `?token=` shim from both cron
+     scripts and redeploy.
+  7. Scrub existing access logs of the old `?token=` values if feasible.
 - **Effort:** medium (touches CI + cron config). **Files:** `functions.php`, `public/tools/*.php`,
   `public/cron/*.php`, the Node callers, `.github/workflows/*`, `tests/e2e/07-cron.spec.js`,
   `public/.htaccess`.

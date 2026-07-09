@@ -126,25 +126,36 @@ Simply.com's control-panel cron feature only does a plain GET to a URL, "as if o
 browser" — no custom headers, no POST, no body. That's incompatible with the header-based auth
 above, so both scripts' trigger moved from Simply's control panel to GitHub Actions scheduled
 workflows: `.github/workflows/cron-qualifying-import.yml` and `cron-notifications.yml`, matching
-the pattern `nightly-backup.yml` already uses (`vars.BASE_URL_LIVE`, a `CRON_SECRET` repo secret,
-an inline `node -e` fetch with the `Authorization` header).
+the pattern `nightly-backup.yml` already uses (an inline `node -e` fetch with the `Authorization`
+header).
 
 **Status: cut over 2026-07-09.** Both workflows' `schedule:` triggers are live, and the Simply.com
 control-panel entries have been deleted. Both cron scripts still accept the legacy `?token=` as a
 temporary shim — see `security-findings-remaining.md` under F6 for when that's due to be removed
 (after one full clean cycle on the new schedule).
 
-GitHub's `schedule:` is UTC-only with no DST awareness, so the qualifying-import workflow spreads
-across the plausible local-time range (`0 13,14,15,16,17 * * 6`) rather than pinning one offset
-that would silently drift an hour each spring/autumn — the extra firings are harmless no-ops (the
-script only writes when a race's `quali_p1` is still `NULL`, and self-gates to 06:00–23:59 local
-time). Notifications run hourly (`5 * * * *`) — the script is itself time-window-gated.
+Each workflow runs **two jobs on the same schedule**, one per environment: `trigger-live`
+(`vars.BASE_URL_LIVE`, `secrets.CRON_SECRET`) and `trigger-test` (`vars.BASE_URL_TEST`,
+`secrets.CRON_SECRET_TEST`) — full schedule parity, chosen knowingly. On test this means real,
+non-intercepted email sends (`SMTP_INTERCEPT` is only active during an E2E run — gotcha #17) and
+real API writes into a `races` table that `test-seed.php` periodically wipes for E2E fixtures; an
+unattended import can land mid-reseed. Accepted tradeoff for having a working test-env trigger at
+all, not an oversight.
 
-`workflow_dispatch`'s `dry_run` input works for notifications against live (safe — it just skips
-the SMTP send). For qualifying import, `dry_run` is **test-env only**: it loads
-`tools/f1_testdata.php`, which is excluded from the live deploy, so it dies partway through
-against live. Trigger a real (non-dry-run) run against live instead if you need to verify it by
-hand — safe as long as there's no unprocessed qualifying data sitting in the API response.
+GitHub's `schedule:` is UTC-only with no DST awareness, so the qualifying-import workflow fires
+every 5 minutes across the whole 06:00–23:55 UTC span on Saturdays (`*/5 6-23 * * 6`) rather than
+pinning one offset that would silently drift an hour each spring/autumn — this covers any
+plausible local qualifying time regardless of DST and imports results within minutes of the API
+publishing them. The extra firings are harmless no-ops (the script only writes when a race's
+`quali_p1` is still `NULL`, and self-gates to 06:00–23:59 local time). Notifications run hourly
+(`1 * * * *`) — the script is itself time-window-gated.
+
+`workflow_dispatch`'s `dry_run` input works for both notifications jobs (safe — it just skips the
+SMTP send) and for qualifying import's **test** job — `tools/f1_testdata.php` (the stub data it
+loads) ships to test. It does **not** work for qualifying import's **live** job: that file is
+excluded from the live deploy, so it dies partway through. Trigger a real (non-dry-run) run
+against live instead if you need to verify that job by hand — safe as long as there's no
+unprocessed qualifying data sitting in the API response.
 
 ---
 

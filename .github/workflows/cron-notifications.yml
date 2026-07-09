@@ -7,29 +7,58 @@ name: Cron — Email Notifications
 # in the same sitting this schedule was enabled. Remove the ?token= shim from
 # notifications.php after one clean day of scheduled runs (see F6 in
 # security-findings-remaining.md).
+#
+# Runs against both environments on the same schedule. Test-env runs against whatever
+# is currently in the hpovlsen.dk DB — SMTP_INTERCEPT is NOT active outside an E2E
+# run (gotcha #17 in docs/gotchas.md), so this sends real, non-intercepted email on
+# test too; that's an accepted tradeoff for full schedule parity, not an oversight.
 on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Dry run (?test=true) — no real emails sent"
+        description: "Dry run (?test=true) — no real emails sent, either environment"
         required: false
         default: "false"
   schedule:
-    - cron: '5 * * * *'   # hourly; notifications.php is itself time-window-gated
+    - cron: '1 * * * *'   # hourly; notifications.php is itself time-window-gated
 
 jobs:
-  trigger:
+  trigger-live:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Trigger notifications cron
+      - name: Trigger notifications cron (live)
         env:
-          BASE_URL_LIVE: ${{ vars.BASE_URL_LIVE }}
+          BASE_URL: ${{ vars.BASE_URL_LIVE }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: |
           node -e "
-            const url = process.env.BASE_URL_LIVE + '/cron/notifications.php' + (process.env.DRY_RUN === 'true' ? '?test=true' : '');
+            const url = process.env.BASE_URL + '/cron/notifications.php' + (process.env.DRY_RUN === 'true' ? '?test=true' : '');
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Notification check complete')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "
+
+  trigger-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger notifications cron (test)
+        env:
+          BASE_URL: ${{ vars.BASE_URL_TEST }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET_TEST }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL + '/cron/notifications.php' + (process.env.DRY_RUN === 'true' ? '?test=true' : '');
             fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
               .then(async r => {
                 const text = await r.text();
