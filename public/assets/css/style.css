@@ -3125,6 +3125,51 @@ body.font-system {
 .hf-stats-chip.out        .dot { background: var(--text-muted); }
 .hf-stats-chip.out        .v   { color: var(--text-secondary); font-weight: 600; }
 
+.hf-stats-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.hf-stats-metric {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.hf-stats-metric .k {
+    font-family: var(--font-display);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+.hf-stats-metric .v {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+.hf-stats-metric .v .of {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-left: 3px;
+}
+.hf-stats-delta {
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 0 2px;
+    margin-top: -2px;
+}
+
 @media (min-width: 768px) {
     .hf-stats              { gap: 10px; margin: 24px 0 28px; }
     .hf-stats-hero         { padding: 18px 20px; gap: 18px; }
@@ -3133,6 +3178,8 @@ body.font-system {
     .hf-stats-hero-stars   { font-size: 22px; }
     .hf-stats-chip         { padding: 10px 14px; min-height: 52px; }
     .hf-stats-chip .v      { font-size: 14px; }
+    .hf-stats-metric       { padding: 10px 14px; }
+    .hf-stats-metric .v    { font-size: 26px; }
 }
 
 /* v2.3.0 — Single-race page additions (race.php). Additive only. */

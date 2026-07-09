@@ -15,6 +15,36 @@
         <div class="hf-stats-hero-eyebrow"><?= t('season') ?></div>
     </article>
 
+    <?php $statsRankKnown = isset($statsRank) && $statsRank !== null; ?>
+    <div class="hf-stats-metrics" data-testid="stats-metrics">
+        <article class="hf-stats-metric" data-testid="stats-metric-position">
+            <div class="k"><?= t('your_position') ?></div>
+            <div class="v">
+                <?php if ($statsRankKnown): ?>
+                    <?= (int) $statsRank ?><span class="of">/ <?= (int) ($statsTotal ?? 0) ?></span>
+                <?php else: ?>
+                    —
+                <?php endif; ?>
+            </div>
+        </article>
+        <article class="hf-stats-metric" data-testid="stats-metric-bets">
+            <div class="k"><?= t('bets') ?></div>
+            <div class="v"><?= (int) ($statsBets ?? 0) ?></div>
+        </article>
+        <article class="hf-stats-metric" data-testid="stats-metric-rounds">
+            <div class="k"><?= t('rounds_played') ?></div>
+            <div class="v"><?= (int) ($statsRounds ?? 0) ?></div>
+        </article>
+    </div>
+
+    <?php if ($statsRankKnown && $statsDelta !== null):
+        if ($statsDelta > 0)      $deltaText = '↑ ' . $statsDelta . ' ' . t('rank_delta_places');
+        elseif ($statsDelta < 0)  $deltaText = '↓ ' . abs($statsDelta) . ' ' . t('rank_delta_places');
+        else                      $deltaText = t('rank_no_change');
+    ?>
+        <div class="hf-stats-delta" data-testid="stats-delta"><?= escape($deltaText) ?></div>
+    <?php endif; ?>
+
     <div class="hf-stats-chips">
         <article class="hf-stats-chip role-<?= escape($user['role']) ?>" data-testid="stats-chip-role">
             <span class="dot"></span>

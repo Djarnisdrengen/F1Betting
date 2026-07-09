@@ -226,6 +226,35 @@ $flashRecoveryCodes = $_SESSION['flash_recovery_codes'] ?? null;
 $emailOtpEnrolling  = !empty($_SESSION['flash_emailotp_enrolling']);
 unset($_SESSION['flash_recovery_codes'], $_SESSION['flash_emailotp_enrolling']);
 
+// ── Stats box figures (mirror index.php's hero self-card) ───────────────────
+$leaderboard = getLeaderboard($db);
+$statsTotal  = count($leaderboard);
+$statsRank   = null;
+$statsBets   = null;
+$statsDelta  = null;
+foreach ($leaderboard as $i => $entry) {
+    if ($entry['id'] === $currentUser['id']) {
+        $statsRank  = $i + 1;
+        $statsBets  = $entry['bets_count'];
+        $statsDelta = $entry['rank_delta'];
+        break;
+    }
+}
+if ($statsRank === null) {
+    // Not on the leaderboard (e.g. not competing) — fall back to own bet count.
+    $stmt = $db->prepare("SELECT COUNT(*) FROM bets WHERE user_id = ?");
+    $stmt->execute([$currentUser['id']]);
+    $statsBets = (int) $stmt->fetchColumn();
+}
+
+// Rounds played = completed races (result in, started ≥8h ago), per index.php.
+$now = new DateTime();
+$statsRounds = count(array_filter(getRaces($db), function ($r) use ($now) {
+    if (!$r['result_p1']) return false;
+    $raceDateTime = new DateTime($r['race_date'] . ' ' . $r['race_time']);
+    return $raceDateTime <= (clone $now)->modify('-8 hours');
+}));
+
 include __DIR__ . '/includes/header.php';
 ?>
 
