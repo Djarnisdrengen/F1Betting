@@ -1,7 +1,7 @@
 const { test, expect } = require("@playwright/test");
 
 const SEED_TOKEN    = process.env.INTEGRATION_SEED_TOKEN;
-const E2E_USER_EMAIL = "e2e_testing_testuser_f1@test.localhost";
+const E2E_USER_EMAIL = "e2e_testing_testuser_f1@hpovlsen.dk";
 const INITIAL_PW    = "E2ETestPassword2026!";
 const NEW_PW        = "E2EProfileNewPw9!";
 

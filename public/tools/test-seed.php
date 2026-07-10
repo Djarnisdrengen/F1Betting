@@ -20,8 +20,8 @@ if (!defined('APP_ENV') || APP_ENV !== 'test') {
 
 $db = getDB();
 
-$e2eUserEmail   = 'e2e_testing_testuser_f1@test.localhost';
-$e2eInviteEmail = 'e2e_testing_invite_f1@test.localhost';
+$e2eUserEmail   = 'e2e_testing_testuser_f1@hpovlsen.dk';
+$e2eInviteEmail = 'e2e_testing_invite_f1@hpovlsen.dk';
 
 // Action: create_e2e_user — idempotent, used by admin e2e tests
 if (($_GET['action'] ?? '') === 'create_e2e_user') {
@@ -66,7 +66,7 @@ if (($_GET['action'] ?? '') === 'cleanup_e2e_user') {
 // Action: seed_betting_race — in-competition user + open race (race_date 2h from now)
 // Returns: { ok, raceId, email, password, drivers: [{id, name}] }
 if (($_GET['action'] ?? '') === 'seed_betting_race') {
-    $e2eBetEmail = 'e2e_bet_user_f1@test.localhost';
+    $e2eBetEmail = 'e2e_bet_user_f1@hpovlsen.dk';
 
     // Idempotent cleanup
     $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eBetEmail]);
@@ -125,7 +125,7 @@ if (($_GET['action'] ?? '') === 'seed_betting_race') {
 
 // Action: cleanup_betting_race
 if (($_GET['action'] ?? '') === 'cleanup_betting_race') {
-    $e2eBetEmail = 'e2e_bet_user_f1@test.localhost';
+    $e2eBetEmail = 'e2e_bet_user_f1@hpovlsen.dk';
     $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eBetEmail]);
     $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eBetEmail]);
     $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eBetEmail]);
@@ -145,9 +145,9 @@ if (($_GET['action'] ?? '') === 'cleanup_betting_race') {
 // One in-competition login user is returned for the logged-in open-state assertions.
 // Returns: { ok, openRaceId, doneRaceId, email, password, drivers: {p1, p2, p3} }
 if (($_GET['action'] ?? '') === 'seed_race_page') {
-    $loginEmail   = 'e2e_racepage_user_f1@test.localhost';
-    $perfectEmail = 'e2e_racepage_perfect_f1@test.localhost';
-    $otherEmail   = 'e2e_racepage_other_f1@test.localhost';
+    $loginEmail   = 'e2e_racepage_user_f1@hpovlsen.dk';
+    $perfectEmail = 'e2e_racepage_perfect_f1@hpovlsen.dk';
+    $otherEmail   = 'e2e_racepage_other_f1@hpovlsen.dk';
     $allEmails    = [$loginEmail, $perfectEmail, $otherEmail];
     $raceNames    = ['E2E Race Page Open', 'E2E Race Page Done'];
 
@@ -259,9 +259,9 @@ if (($_GET['action'] ?? '') === 'seed_race_page') {
 // Action: cleanup_race_page — removes all data created by seed_race_page
 if (($_GET['action'] ?? '') === 'cleanup_race_page') {
     $allEmails = [
-        'e2e_racepage_user_f1@test.localhost',
-        'e2e_racepage_perfect_f1@test.localhost',
-        'e2e_racepage_other_f1@test.localhost',
+        'e2e_racepage_user_f1@hpovlsen.dk',
+        'e2e_racepage_perfect_f1@hpovlsen.dk',
+        'e2e_racepage_other_f1@hpovlsen.dk',
     ];
     foreach ($allEmails as $em) {
         $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
@@ -279,7 +279,7 @@ if (($_GET['action'] ?? '') === 'cleanup_race_page') {
 // Action: seed_register_invite — creates invite for registration flow test
 // Returns: { ok, token, email }
 if (($_GET['action'] ?? '') === 'seed_register_invite') {
-    $e2eRegEmail = 'e2e_register_f1@test.localhost';
+    $e2eRegEmail = 'e2e_register_f1@hpovlsen.dk';
 
     // Idempotent cleanup
     $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eRegEmail]);
@@ -305,7 +305,7 @@ if (($_GET['action'] ?? '') === 'seed_register_invite') {
 
 // Action: cleanup_register — removes registered test user and any remaining invite
 if (($_GET['action'] ?? '') === 'cleanup_register') {
-    $e2eRegEmail = 'e2e_register_f1@test.localhost';
+    $e2eRegEmail = 'e2e_register_f1@hpovlsen.dk';
     $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eRegEmail]);
     $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eRegEmail]);
     $db->prepare("DELETE FROM invites WHERE email = ?")->execute([$e2eRegEmail]);
@@ -347,9 +347,9 @@ if (($_GET['action'] ?? '') === 'seed_cron_qualifying') {
 //   - pending invite email    → receives pool-reminder with registration link
 // Returns: { ok, raceId, emailCompeting, emailNonCompeting, emailInvited }
 if (($_GET['action'] ?? '') === 'seed_notification_open') {
-    $e2eEmailIn     = 'e2e_notify_open_in_f1@test.localhost';
-    $e2eEmailOut    = 'e2e_notify_open_out_f1@test.localhost';
-    $e2eEmailInvite = 'e2e_notify_open_invite_f1@test.localhost';
+    $e2eEmailIn     = 'e2e_notify_open_in_f1@hpovlsen.dk';
+    $e2eEmailOut    = 'e2e_notify_open_out_f1@hpovlsen.dk';
+    $e2eEmailInvite = 'e2e_notify_open_invite_f1@hpovlsen.dk';
 
     foreach ([$e2eEmailIn, $e2eEmailOut] as $em) {
         $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
@@ -408,9 +408,9 @@ if (($_GET['action'] ?? '') === 'seed_notification_open') {
 
 // Action: cleanup_notification_open
 if (($_GET['action'] ?? '') === 'cleanup_notification_open') {
-    $e2eEmailIn     = 'e2e_notify_open_in_f1@test.localhost';
-    $e2eEmailOut    = 'e2e_notify_open_out_f1@test.localhost';
-    $e2eEmailInvite = 'e2e_notify_open_invite_f1@test.localhost';
+    $e2eEmailIn     = 'e2e_notify_open_in_f1@hpovlsen.dk';
+    $e2eEmailOut    = 'e2e_notify_open_out_f1@hpovlsen.dk';
+    $e2eEmailInvite = 'e2e_notify_open_invite_f1@hpovlsen.dk';
     foreach ([$e2eEmailIn, $e2eEmailOut] as $em) {
         $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
         $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
@@ -426,8 +426,8 @@ if (($_GET['action'] ?? '') === 'cleanup_notification_open') {
 // Creates user A (no bet, should receive notification) and user B (has bet, should be skipped).
 // Returns: { ok, raceId, emailUnbetted, emailBetted }
 if (($_GET['action'] ?? '') === 'seed_notification_close') {
-    $e2eEmailA = 'e2e_notify_close_a_f1@test.localhost';
-    $e2eEmailB = 'e2e_notify_close_b_f1@test.localhost';
+    $e2eEmailA = 'e2e_notify_close_a_f1@hpovlsen.dk';
+    $e2eEmailB = 'e2e_notify_close_b_f1@hpovlsen.dk';
 
     foreach ([$e2eEmailA, $e2eEmailB] as $em) {
         $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
@@ -482,8 +482,8 @@ if (($_GET['action'] ?? '') === 'seed_notification_close') {
 
 // Action: cleanup_notification_close
 if (($_GET['action'] ?? '') === 'cleanup_notification_close') {
-    $e2eEmailA = 'e2e_notify_close_a_f1@test.localhost';
-    $e2eEmailB = 'e2e_notify_close_b_f1@test.localhost';
+    $e2eEmailA = 'e2e_notify_close_a_f1@hpovlsen.dk';
+    $e2eEmailB = 'e2e_notify_close_b_f1@hpovlsen.dk';
     foreach ([$e2eEmailA, $e2eEmailB] as $em) {
         $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$em]);
         $db->prepare("DELETE FROM users WHERE email = ?")->execute([$em]);
@@ -506,7 +506,7 @@ if (($_GET['action'] ?? '') === 'cleanup_cron_qualifying') {
 
 // Action: seed_reset_result — creates a scored race so the reset-result feature can be tested
 if (($_GET['action'] ?? '') === 'seed_reset_result') {
-    $e2eResetUser = 'e2e_reset_race_f1@test.localhost';
+    $e2eResetUser = 'e2e_reset_race_f1@hpovlsen.dk';
 
     // Idempotent cleanup
     $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eResetUser]);
@@ -571,7 +571,7 @@ if (($_GET['action'] ?? '') === 'seed_reset_result') {
 // Race is 12 h away; with 48 h window, betting opened 36 h ago → canDelete = true.
 // Returns: { ok, email, raceName }
 if (($_GET['action'] ?? '') === 'seed_bet_deleted') {
-    $e2eEmail = 'e2e_bet_delete_f1@test.localhost';
+    $e2eEmail = 'e2e_bet_delete_f1@hpovlsen.dk';
 
     $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eEmail]);
     $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eEmail]);
@@ -619,7 +619,7 @@ if (($_GET['action'] ?? '') === 'seed_bet_deleted') {
 
 // Action: cleanup_bet_deleted
 if (($_GET['action'] ?? '') === 'cleanup_bet_deleted') {
-    $e2eEmail = 'e2e_bet_delete_f1@test.localhost';
+    $e2eEmail = 'e2e_bet_delete_f1@hpovlsen.dk';
     $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eEmail]);
     $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eEmail]);
     $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name = 'E2E Bet Delete Race')");
@@ -841,7 +841,7 @@ if (($_GET['action'] ?? '') === 'send_email_preview') {
 
 // Action: cleanup_reset_result — removes data created by seed_reset_result
 if (($_GET['action'] ?? '') === 'cleanup_reset_result') {
-    $e2eResetUser = 'e2e_reset_race_f1@test.localhost';
+    $e2eResetUser = 'e2e_reset_race_f1@hpovlsen.dk';
     $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eResetUser]);
     $db->query("DELETE FROM bets WHERE race_id IN (SELECT id FROM races WHERE name IN ('E2E Reset Race', 'E2E Next Race'))");
     $db->query("DELETE FROM races WHERE name IN ('E2E Reset Race', 'E2E Next Race')");
@@ -853,7 +853,7 @@ if (($_GET['action'] ?? '') === 'cleanup_reset_result') {
 // Action: seed_auth_user — creates test user for auth/forgot-password tests
 // Returns: { ok, email, password }
 if (($_GET['action'] ?? '') === 'seed_auth_user') {
-    $e2eAuthEmail = 'e2e_auth_f1@test.localhost';
+    $e2eAuthEmail = 'e2e_auth_f1@hpovlsen.dk';
 
     $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")
        ->execute([$e2eAuthEmail]);
@@ -868,7 +868,7 @@ if (($_GET['action'] ?? '') === 'seed_auth_user') {
 
 // Action: cleanup_auth_user
 if (($_GET['action'] ?? '') === 'cleanup_auth_user') {
-    $e2eAuthEmail = 'e2e_auth_f1@test.localhost';
+    $e2eAuthEmail = 'e2e_auth_f1@hpovlsen.dk';
     $db->prepare("DELETE FROM password_resets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")
        ->execute([$e2eAuthEmail]);
     $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eAuthEmail]);
@@ -882,7 +882,7 @@ if (($_GET['action'] ?? '') === 'cleanup_auth_user') {
 // depending on that sibling test's UI mutation (MUST-7).
 // Returns: { ok, email, password }
 if (($_GET['action'] ?? '') === 'seed_mfa_enrolled_user') {
-    $e2eMfaEmail = 'e2e_mfa_enrolled_f1@test.localhost';
+    $e2eMfaEmail = 'e2e_mfa_enrolled_f1@hpovlsen.dk';
     $e2eMfaPassword = 'E2EMfaEnrolled2026!';
 
     $db->prepare("DELETE FROM user_totp WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
@@ -905,7 +905,7 @@ if (($_GET['action'] ?? '') === 'seed_mfa_enrolled_user') {
 
 // Action: cleanup_mfa_enrolled_user
 if (($_GET['action'] ?? '') === 'cleanup_mfa_enrolled_user') {
-    $e2eMfaEmail = 'e2e_mfa_enrolled_f1@test.localhost';
+    $e2eMfaEmail = 'e2e_mfa_enrolled_f1@hpovlsen.dk';
     $db->prepare("DELETE FROM user_totp WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
     $db->prepare("DELETE FROM user_recovery_codes WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
     $db->prepare("DELETE FROM user_email_otp WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
@@ -915,11 +915,13 @@ if (($_GET['action'] ?? '') === 'cleanup_mfa_enrolled_user') {
 }
 
 // Action: cleanup_passkeys — drop a test user's passkey rows (mid-suite reset).
-// Only @test.localhost accounts are touched, so a stray call cannot hit real members.
+// Only e2e_*@hpovlsen.dk fixtures are touched — sync:live also rewrites synced
+// live users to @hpovlsen.dk, so the domain alone can't tell them apart; the
+// e2e_ prefix is what guarantees a stray call can't hit a real member.
 if (($_GET['action'] ?? '') === 'cleanup_passkeys') {
-    $email = $_GET['email'] ?? 'e2e_auth_f1@test.localhost';
-    if (!str_ends_with($email, '@test.localhost')) {
-        echo json_encode(['ok' => false, 'error' => 'test.localhost accounts only']);
+    $email = $_GET['email'] ?? 'e2e_auth_f1@hpovlsen.dk';
+    if (!str_starts_with($email, 'e2e_') || !str_ends_with($email, '@hpovlsen.dk')) {
+        echo json_encode(['ok' => false, 'error' => 'e2e_*@hpovlsen.dk fixtures only']);
         exit;
     }
     $st = $db->prepare("DELETE FROM user_passkeys WHERE user_id IN (SELECT id FROM users WHERE email = ?)");
@@ -967,11 +969,13 @@ if (($_GET['action'] ?? '') === 'clear_login_attempts') {
 }
 
 // Action: set_passkey_sign_count — force a stored sign_count (clone-detection test SEC-01).
+// Only e2e_*@hpovlsen.dk fixtures are touched — see cleanup_passkeys above for why
+// the domain alone isn't enough now that sync:live also uses @hpovlsen.dk.
 if (($_GET['action'] ?? '') === 'set_passkey_sign_count') {
-    $email = $_GET['email'] ?? 'e2e_auth_f1@test.localhost';
+    $email = $_GET['email'] ?? 'e2e_auth_f1@hpovlsen.dk';
     $count = (int)($_GET['count'] ?? 0);
-    if (!str_ends_with($email, '@test.localhost')) {
-        echo json_encode(['ok' => false, 'error' => 'test.localhost accounts only']);
+    if (!str_starts_with($email, 'e2e_') || !str_ends_with($email, '@hpovlsen.dk')) {
+        echo json_encode(['ok' => false, 'error' => 'e2e_*@hpovlsen.dk fixtures only']);
         exit;
     }
     $st = $db->prepare("UPDATE user_passkeys SET sign_count = ? WHERE user_id IN (SELECT id FROM users WHERE email = ?)");
@@ -989,9 +993,9 @@ if (($_GET['action'] ?? '') === 'set_passkey_sign_count') {
 //           expectedPoints: [{email, ptsAfterB, ptsAfterReset, star}], poolA, poolB }
 if (($_GET['action'] ?? '') === 'seed_score_race') {
     $e2eEmails = [
-        'alice'   => 'e2e_score_alice_f1@test.localhost',
-        'bob'     => 'e2e_score_bob_f1@test.localhost',
-        'charlie' => 'e2e_score_charlie_f1@test.localhost',
+        'alice'   => 'e2e_score_alice_f1@hpovlsen.dk',
+        'bob'     => 'e2e_score_bob_f1@hpovlsen.dk',
+        'charlie' => 'e2e_score_charlie_f1@hpovlsen.dk',
     ];
 
     // Idempotent cleanup
@@ -1140,9 +1144,9 @@ if (($_GET['action'] ?? '') === 'seed_score_race') {
 // Action: cleanup_score_race — removes all data created by seed_score_race
 if (($_GET['action'] ?? '') === 'cleanup_score_race') {
     $e2eEmails = [
-        'e2e_score_alice_f1@test.localhost',
-        'e2e_score_bob_f1@test.localhost',
-        'e2e_score_charlie_f1@test.localhost',
+        'e2e_score_alice_f1@hpovlsen.dk',
+        'e2e_score_bob_f1@hpovlsen.dk',
+        'e2e_score_charlie_f1@hpovlsen.dk',
     ];
     foreach ($e2eEmails as $email) {
         $db->prepare("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$email]);

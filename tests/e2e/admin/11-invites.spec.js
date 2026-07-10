@@ -5,7 +5,7 @@ const { assertDelivered, getEmailBody } = require('../../helpers/email');
 const { expectMarker } = require('../../helpers/markers');
 
 const SEED_TOKEN       = process.env.INTEGRATION_SEED_TOKEN;
-const E2E_INVITE_EMAIL = 'e2e_testing_invite_f1@test.localhost';
+const E2E_INVITE_EMAIL = 'e2e_testing_invite_f1@hpovlsen.dk';
 
 async function confirmDeleteModal(page) {
     await page.locator('.btn-user-delete-confirm').click();

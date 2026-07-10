@@ -159,7 +159,7 @@ The admin account (`F1_ADMIN_EMAIL`, currently `f1_admin@helvegpovlsen.dk`) is p
 
 Unless SMTP intercept is on, emails to synced users **are sent for real** (captured only if you flip **Admin → Settings → Email delivery** to capture, or `touch /tmp/f1betting_smtp_intercept`). See [testing.md](testing.md). This is intentional for manual testing — but be aware that triggering a bulk action (e.g. running the notification cron) against a large synced user set will fire that many real emails at once into the same inbox.
 
-Automated E2E fixture addresses (`e2e_*_f1@test.localhost`, seeded by `test-seed.php`) are unaffected by this — they keep using `@test.localhost` since those are only ever read back via the SMTP intercept log, not a real inbox, and `test-seed.php`'s destructive actions (`cleanup_passkeys`, `set_passkey_sign_count`) gate on that domain specifically so they can never match a synced or manually created account.
+Automated E2E fixture addresses (`e2e_*_f1@hpovlsen.dk`, seeded by `test-seed.php`) also use `@hpovlsen.dk`, so during automated runs (`SMTP_INTERCEPT=true`) they're captured to the JSONL log exactly like before — interception doesn't check domain — but if intercept is ever off, fixture mail now lands in the same real catch-all inbox as synced accounts instead of failing to deliver. Because fixtures and synced accounts now share a domain, `test-seed.php`'s destructive actions (`cleanup_passkeys`, `set_passkey_sign_count`) can no longer rely on the domain alone to avoid touching a synced or manually created account — they additionally require the email's local-part to start with `e2e_`, which only seeded fixtures use.
 
 
 ---

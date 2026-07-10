@@ -341,13 +341,13 @@ Runs real cron without `?test=true`. Asserts intercepted email delivery.
 
 | Test | Asserts |
 |---|---|
-| Betting-open email delivered to in-competition inbox | Cron output confirms send; `e2e_notify_open_in_f1@test.localhost` receives 1 intercepted message |
+| Betting-open email delivered to in-competition inbox | Cron output confirms send; `e2e_notify_open_in_f1@hpovlsen.dk` receives 1 intercepted message |
 
 **Notifications — betting closing soon (real send)** (serial, seeded)
 
 | Test | Asserts |
 |---|---|
-| Betting-close email delivered to unbetted inbox | Cron output confirms send; `e2e_notify_close_a_f1@test.localhost` receives 1 intercepted message |
+| Betting-close email delivered to unbetted inbox | Cron output confirms send; `e2e_notify_close_a_f1@hpovlsen.dk` receives 1 intercepted message |
 
 ---
 
@@ -763,7 +763,9 @@ Reports saved to `build-deploy/security-reports/` as `.md` and `.json` (two most
 
 ## Test Email Addresses
 
-All seeded test users use `@test.localhost` addresses. Since `SMTP_INTERCEPT=true` on the test server, emails are captured server-side and never sent via SMTP — the domain is a placeholder that prevents accidental real delivery if intercept were ever disabled.
+All seeded test users use `@hpovlsen.dk` addresses — the same domain `sync:live` rewrites synced live users to (catch-all forwarding to a real inbox, see [gotchas.md #15](gotchas.md#15-synclive-rewrites-all-user-emails-to-hpovlsendk)). During automated runs `SMTP_INTERCEPT=true` on the test server, so emails are captured server-side and never actually sent via SMTP regardless of domain — interception is domain-agnostic. The domain choice only matters if intercept is ever manually disabled (e.g. `Admin → Settings → Email delivery`): fixture mail then delivers for real into the same catch-all inbox as synced accounts, instead of silently failing against the old non-routable `test.localhost` placeholder.
+
+Because fixtures and synced live accounts now share a domain, `test-seed.php`'s destructive actions (`cleanup_passkeys`, `set_passkey_sign_count`) gate on the `e2e_` local-part prefix in addition to the domain, so they can still never match a synced or manually created account — see [gotchas.md #15](gotchas.md#15-synclive-rewrites-all-user-emails-to-hpovlsendk).
 
 **Email delivery by command:**
 
@@ -780,27 +782,27 @@ All seeded test users use `@test.localhost` addresses. Since `SMTP_INTERCEPT=tru
 
 | Inbox | Triggered by | Email type |
 |---|---|---|
-| `e2e_auth_f1@test.localhost` | `02-auth.spec.js` | Password reset link |
-| `e2e_testing_invite_f1@test.localhost` | `admin/11-invites.spec.js` | Invite to register |
-| `e2e_testing_testuser_f1@test.localhost` | `admin/12-users.spec.js` | Admin-issued password reset |
-| `e2e_bet_delete_f1@test.localhost` | `admin/12-users.spec.js` | Bet deletion notification |
-| `e2e_notify_open_in_f1@test.localhost` | `07-cron.spec.js` | Betting window open |
-| `e2e_notify_close_a_f1@test.localhost` | `07-cron.spec.js` | Betting window closing soon |
+| `e2e_auth_f1@hpovlsen.dk` | `02-auth.spec.js` | Password reset link |
+| `e2e_testing_invite_f1@hpovlsen.dk` | `admin/11-invites.spec.js` | Invite to register |
+| `e2e_testing_testuser_f1@hpovlsen.dk` | `admin/12-users.spec.js` | Admin-issued password reset |
+| `e2e_bet_delete_f1@hpovlsen.dk` | `admin/12-users.spec.js` | Bet deletion notification |
+| `e2e_notify_open_in_f1@hpovlsen.dk` | `07-cron.spec.js` | Betting window open |
+| `e2e_notify_close_a_f1@hpovlsen.dk` | `07-cron.spec.js` | Betting window closing soon |
 
 ### All seeded inbox addresses
 
 | Inbox | Spec | Role |
 |---|---|---|
-| `e2e_register_f1@test.localhost` | `03-registration.spec.js` | Invite recipient / registering user |
-| `e2e_bet_user_f1@test.localhost` | `04-betting.spec.js` | Betting user |
-| `e2e_score_alice_f1@test.localhost` | `admin/13-scoring.spec.js` | Alice (perfect-bet user) |
-| `e2e_score_bob_f1@test.localhost` | `admin/13-scoring.spec.js` | Bob |
-| `e2e_score_charlie_f1@test.localhost` | `admin/13-scoring.spec.js` | Charlie |
-| `e2e_notify_open_out_f1@test.localhost` | `07-cron.spec.js` | Non-competing user (pool reminder) |
-| `e2e_notify_open_invite_f1@test.localhost` | `07-cron.spec.js` | Pending invite (pool reminder) |
-| `e2e_notify_close_b_f1@test.localhost` | `07-cron.spec.js` | Already-bet user (notification skipped) |
+| `e2e_register_f1@hpovlsen.dk` | `03-registration.spec.js` | Invite recipient / registering user |
+| `e2e_bet_user_f1@hpovlsen.dk` | `04-betting.spec.js` | Betting user |
+| `e2e_score_alice_f1@hpovlsen.dk` | `admin/13-scoring.spec.js` | Alice (perfect-bet user) |
+| `e2e_score_bob_f1@hpovlsen.dk` | `admin/13-scoring.spec.js` | Bob |
+| `e2e_score_charlie_f1@hpovlsen.dk` | `admin/13-scoring.spec.js` | Charlie |
+| `e2e_notify_open_out_f1@hpovlsen.dk` | `07-cron.spec.js` | Non-competing user (pool reminder) |
+| `e2e_notify_open_invite_f1@hpovlsen.dk` | `07-cron.spec.js` | Pending invite (pool reminder) |
+| `e2e_notify_close_b_f1@hpovlsen.dk` | `07-cron.spec.js` | Already-bet user (notification skipped) |
 
-Users synced from live via `sync:live` have their email addresses rewritten to `@hpovlsen.dk` (local-part preserved) — a domain with catch-all forwarding to a real inbox, so MFA challenges and email content can be verified by hand for accounts copied from production. This is separate from the `@test.localhost` fixture addresses above, which stay on the SMTP-intercept placeholder domain. See [gotchas.md #15](gotchas.md#15-synclive-rewrites-all-user-emails-to-hpovlsendk). The admin account (`F1_ADMIN_EMAIL`) is restored unchanged.
+Users synced from live via `sync:live` also have their email addresses rewritten to `@hpovlsen.dk` (local-part preserved), landing in the same catch-all inbox as the e2e fixtures above. The admin account (`F1_ADMIN_EMAIL`) is restored unchanged.
 
 ---
 

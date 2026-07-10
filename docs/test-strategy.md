@@ -164,20 +164,21 @@ expectMarker(text, key, value)  → throws with clear message if missing or wron
 
 ## Test Inboxes (SMTP intercept)
 
-There are no external inboxes. Every test address uses the `@test.localhost` placeholder
-domain; emails are captured server-side to the intercept log (never sent). `global-setup.js`
+Every test address uses the `@hpovlsen.dk` domain (same as `sync:live`-synced users);
+emails are captured server-side to the intercept log during automated runs and never sent
+via SMTP — interception is domain-agnostic, so this holds regardless of domain. `global-setup.js`
 clears the **entire** log once before the suite runs — there is no per-inbox purge and no
 plan/account limit. Assert with `assertDelivered`/`waitForMessages` (absolute count) or
 `waitForNewMessages` (baseline snapshot before triggering the action).
 
 | Inbox | Spec | Email type |
 |---|---|---|
-| `e2e_auth_f1@test.localhost` | `02-auth.spec.js` | Forgot-password reset link |
-| `e2e_testing_invite_f1@test.localhost` | `admin/11-invites.spec.js` | Invite to register |
-| `e2e_testing_testuser_f1@test.localhost` | `admin/12-users.spec.js` | Admin-issued password reset |
-| `e2e_bet_delete_f1@test.localhost` | `admin/12-users.spec.js` | Bet-deletion notification |
-| `e2e_notify_open_in_f1@test.localhost` | `07-cron.spec.js` real-run | Betting window open |
-| `e2e_notify_close_a_f1@test.localhost` | `07-cron.spec.js` real-run | Betting window closing soon |
+| `e2e_auth_f1@hpovlsen.dk` | `02-auth.spec.js` | Forgot-password reset link |
+| `e2e_testing_invite_f1@hpovlsen.dk` | `admin/11-invites.spec.js` | Invite to register |
+| `e2e_testing_testuser_f1@hpovlsen.dk` | `admin/12-users.spec.js` | Admin-issued password reset |
+| `e2e_bet_delete_f1@hpovlsen.dk` | `admin/12-users.spec.js` | Bet-deletion notification |
+| `e2e_notify_open_in_f1@hpovlsen.dk` | `07-cron.spec.js` real-run | Betting window open |
+| `e2e_notify_close_a_f1@hpovlsen.dk` | `07-cron.spec.js` real-run | Betting window closing soon |
 
 `test:email:preview` renders all email types to `F1_ADMIN_EMAIL` via the same intercept and
 writes HTML to `tests/email-previews/`. See [testing.md](testing.md) for the full inbox list.

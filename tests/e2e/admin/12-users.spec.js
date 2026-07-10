@@ -5,10 +5,10 @@ const { assertDelivered } = require('../../helpers/email');
 const { expectMarker } = require('../../helpers/markers');
 
 const SEED_TOKEN           = process.env.INTEGRATION_SEED_TOKEN;
-const E2E_USER_EMAIL       = 'e2e_testing_testuser_f1@test.localhost';
+const E2E_USER_EMAIL       = 'e2e_testing_testuser_f1@hpovlsen.dk';
 const E2E_USER_INITIAL_PW  = 'E2ETestPassword2026!';
 const E2E_USER_NEW_PW      = 'E2ENewPassword456!';
-const E2E_BET_DELETE_EMAIL = 'e2e_bet_delete_f1@test.localhost';
+const E2E_BET_DELETE_EMAIL = 'e2e_bet_delete_f1@hpovlsen.dk';
 
 async function confirmDeleteModal(page) {
     await page.locator('.btn-user-delete-confirm').click();
@@ -64,7 +64,7 @@ test.describe.serial('Reset race result', { tag: '@admin' }, () => {
         await page.goto('/admin.php?tab=users');
         const card = page
             .locator('.card')
-            .filter({ has: page.locator('small', { hasText: 'e2e_reset_race_f1@test.localhost' }) });
+            .filter({ has: page.locator('small', { hasText: 'e2e_reset_race_f1@hpovlsen.dk' }) });
         await expect(card.locator('.text-accent')).toContainText('0 pts');
     });
 });
