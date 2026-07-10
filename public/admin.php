@@ -252,7 +252,9 @@ if (isset($_POST['reset_user_password'])) {
     $userEmail = $_POST['user_email'] ?? '';
     $userName = $_POST['user_name'] ?? '';
 
-    if ($userId && !validatePasswordStrength($newPassword)) {
+    $pwError = validatePasswordStrength($newPassword);
+
+    if ($userId && !$pwError) {
         $hashedPassword = hashPassword($newPassword);
         // F12: also invalidates any of this user's other active sessions on their next
         // request (getCurrentUser()) — appropriate here since an admin-initiated reset
@@ -299,7 +301,7 @@ if (isset($_POST['reset_user_password'])) {
         header("Location: admin.php?tab=users&msg=" . urlencode($message) . $redirectExtra);
         exit;
     } else {
-        $error = t('password_min_6_admin');
+        $error = $pwError ?: t('password_min_length');
     }
 
 }

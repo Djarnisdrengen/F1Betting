@@ -59,7 +59,8 @@
             </div>
         </div>
         <?php if ($user['id'] !== $currentUser['id']): ?>
-            <div id="reset-pw-<?= escape($user['id']) ?>" class="hidden" style="padding: 1rem; border-top: 1px solid var(--border-color);">
+            <?php $keepResetOpen = (!empty($error) && ($userId ?? null) === $user['id']); ?>
+            <div id="reset-pw-<?= escape($user['id']) ?>" class="<?= $keepResetOpen ? '' : 'hidden' ?>" style="padding: 1rem; border-top: 1px solid var(--border-color);">
                 <form method="POST" action="admin.php?tab=users" class="flex gap-1 items-end">
                     <?= csrfField() ?>
                     <?php if (!empty($_GET['e2e_token'])): ?>
@@ -70,7 +71,7 @@
                     <input type="hidden" name="user_name" value="<?= escape($user['display_name']) ?>">
                     <div class="form-group" style="margin:0; flex:1;">
                         <label class="form-label"><?= t('new_password') ?></label>
-                        <input type="password" name="new_password" class="form-input" required minlength="10" placeholder="••••••••">
+                        <input type="password" name="new_password" class="form-input pwd-policy-input" required minlength="10" placeholder="••••••••" data-error-weak="<?= escape(t('password_too_weak')) ?>">
                         <small class="text-muted"><?= t('password_requirements_hint') ?></small>
                     </div>
                     <button type="submit" name="reset_user_password" class="btn btn-primary btn-sm">
@@ -88,6 +89,18 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             document.getElementById('reset-pw-' + this.getAttribute('data-link')).classList.toggle('hidden');
         });
+    });
+    document.querySelectorAll('.pwd-policy-input').forEach(input => {
+        function validate() {
+            const val = input.value;
+            if (val.length >= 10 && (!/[A-Za-z]/.test(val) || !/[0-9]/.test(val))) {
+                input.setCustomValidity(input.dataset.errorWeak);
+            } else {
+                input.setCustomValidity('');
+            }
+        }
+        input.addEventListener('input', validate);
+        validate();
     });
     document.querySelectorAll('.btn-remove-mfa').forEach(button => {
         button.addEventListener('click', function(e) {
