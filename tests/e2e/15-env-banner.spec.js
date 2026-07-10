@@ -9,7 +9,7 @@ const ADMIN_AUTH = path.join(__dirname, "../../.auth/admin.json");
 
 const BANNER_TEXT = /Dette er en testhjemmeside|This is a test website/;
 
-test.describe("Test-environment banner", () => {
+test.describe("Test-environment banner", { tag: "@smoke" }, () => {
     test.skip(process.env.DEPLOY_ENV === "live", "banner is test-env only");
 
     test("renders on public pages (AC-TB-01)", async ({ page }) => {
@@ -65,7 +65,7 @@ test.describe("Test-environment banner", () => {
     });
 });
 
-test.describe("Test-environment banner — admin pages", () => {
+test.describe("Test-environment banner — admin pages", { tag: "@smoke" }, () => {
     test.skip(process.env.DEPLOY_ENV === "live", "banner is test-env only");
     test.use({ storageState: ADMIN_AUTH });
 

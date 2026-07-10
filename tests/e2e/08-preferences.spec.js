@@ -23,7 +23,7 @@ async function login(page, email, pw) {
     await page.waitForURL(/index\.php/, { timeout: 5000 });
 }
 
-test.describe.serial('Preferences', () => {
+test.describe.serial('Preferences', { tag: '@appearance' }, () => {
     test.beforeAll(async ({ browser }) => {
         // Reset Alice + Bob + Charlie to NULL prefs via global seed
         const url = new URL(`${process.env.BASE_URL}/tools/test-seed.php`);

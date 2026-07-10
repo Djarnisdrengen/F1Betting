@@ -13,7 +13,7 @@ async function confirmDeleteModal(page) {
 
 // ─── Invite management ─────────────────────────────────────────────────────────
 
-test.describe('Invite management', () => {
+test.describe('Invite management', { tag: '@registration' }, () => {
     test.beforeAll(async () => {
         await seed.cleanup.e2eInvite();
     });

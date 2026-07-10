@@ -14,7 +14,7 @@ async function loginAs(page, email, password) {
     await page.waitForURL(/index\.php/);
 }
 
-test.describe('Auth flows', () => {
+test.describe('Auth flows', { tag: '@auth' }, () => {
     test.describe.configure({ mode: 'serial' });
 
     let seedData;

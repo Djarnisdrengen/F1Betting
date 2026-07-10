@@ -3,6 +3,7 @@
 ## Contents
 
 - [Overview](#overview)
+- [Suites](#suites)
 - [Smoke Tests](#smoke-tests)
 - [E2E Tests (Playwright)](#e2e-tests-playwright)
   - [Architecture layers](#architecture-layers)
@@ -21,6 +22,7 @@
   - [admin/12-users.spec.js](#admin12-usersspecjs)
   - [admin/13-scoring.spec.js](#admin13-scoringspecjs)
   - [14-race-page.spec.js](#14-race-pagespecjs)
+  - [15-env-banner.spec.js](#15-env-bannerspecjs)
   - [auth/30-totp-mfa.spec.js](#auth30-totp-mfaspecjs)
   - [auth/31-email-otp.spec.js](#auth31-email-otpspecjs)
   - [auth/32-mfa-default-method.spec.js](#auth32-mfa-default-methodspecjs)
@@ -44,8 +46,9 @@ All tests run against the deployed site over HTTP — there is no local test ser
 |---|---|---|---|---|
 | `npm run test:smoke` | B | Key pages return 200 and contain expected content | test or live | ~5s |
 | `npm run test:unit` | B | Mailer transport logic (no network) | local | ~1s |
-| `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery | test | ~5–10 min |
-| `npm run test:e2e:live` | A | `01-smoke.spec.js` only — read-only live health check | live | ~30s |
+| `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery — 11 suites run sequentially | test | ~2.5–3 min (measured) |
+| `npm run test:e2e:<suite>` | A | One suite standalone (see [Suites](#suites) below) | test | a few seconds–~1.5 min |
+| `npm run test:e2e:live` | A | Smoke suite only — read-only live health check | live | ~30s |
 | `npm run test:resend` | B | Sends one email directly via Resend API; verifies backup transport is operational | live | ~5s |
 | `npm run test:email:preview` | B | Renders all 20 email types locally as HTML files for manual visual review | test | ~30s |
 | `npm run test:security` | B | OWASP headers, cookies, access control, CWE Top 25 | test or live | ~30s |
@@ -53,6 +56,46 @@ All tests run against the deployed site over HTTP — there is no local test ser
 
 Stack A = Playwright (browser-based, reads config via `playwright.config.js`).
 Stack B = standalone Node scripts (read config directly from `php-config.js`, fall back to `process.env` on GitHub Actions).
+
+---
+
+## Suites
+
+The 175 E2E tests are partitioned into 11 UX-oriented suites via Playwright's native
+`{ tag: '@slug' }` on each `test.describe` block (`tests/playwright.config.js`'s `projects`
+array greps by tag) — zero files moved, zero test bodies changed. Each suite is independently
+runnable via `npm run test:e2e:<suite>` and produces its own pass/fail result. Full background
+in `epics/Optimize test suite structure/epic-e2e-test-restructure.md` and `plan.md`.
+
+| Suite (npm slug) | Source file(s) | Tests | `:live`? | Measured duration (standalone) |
+|---|---|---|---|---|
+| `smoke` | `01-smoke`, `15-env-banner` | 21 | **Yes** | ~9s |
+| `auth` | `02-auth`, `auth/30,31,32,35,36` | 49 | No | ~99s (slowest — 49 serial tests) |
+| `registration` | `03-registration`, `admin/11-invites` | 6 | No | ~4s |
+| `predictions` | `04-betting` | 5 | No | ~3s |
+| `scoring` | `admin/13-scoring` | 12 | No | ~6s |
+| `race-page` | `14-race-page` | 16 | No | ~3s |
+| `admin` | `admin/10-content`, `admin/12-users`, `admin/12-email-delivery`, `06-emails` | 15 | No | ~8s |
+| `profile` | `05-profile` | 17 | No | ~9s |
+| `appearance` | `08-preferences` | 10 | No | ~9s |
+| `preferences-editor` | `09-profile-preferences` | 15 | No | ~10s |
+| `cron` | `07-cron` | 9 | No | ~5s |
+| `mobile` (standalone only, secondary tag) | 3 inline viewport tests, already inside their home suites | 3 (reused, not double-counted in the full run) | No | ~2s |
+
+Full orchestrated run (`npm run test:e2e:test`, `tests/run-e2e-suites.js`) measured at **~2.5–3
+minutes total**, sequential — well inside the epic's tolerance (no regression vs. the ~5–10 min
+pre-restructure baseline; session-reuse across legs, MUST-5, more than offsets the per-leg
+process-bootstrap cost). Authentication dominates at ~60% of total run time since its 49 tests
+run serially with real SMTP round-trips; it's the first candidate if the full run ever needs to
+get faster.
+
+**`predictions` (5 tests) covers bet *placement*** — pre-race display of odds/pool/countdown
+lives in `race-page` (16 tests). The small count in `predictions` isn't a coverage gap.
+
+**Only `smoke` gets a `:live` script** (`npm run test:e2e:smoke:live`) — every other suite
+mutates data (bets, users, races, passwords), and `docs/test-strategy.md` principle 4 forbids
+mutating Live. `npm run test:e2e:test:legacy` runs the full 175 in one un-tagged invocation
+(pre-restructure behavior, kept as a rollback path).
 
 ---
 
@@ -87,18 +130,35 @@ Runs automatically at the end of every `deploy:test` and `deploy:live`.
 ## E2E Tests (Playwright)
 
 ```bash
-npm run test:e2e:test     # full suite against test env (intercept mode)
-npm run test:e2e:live     # 01-smoke.spec.js only, against live
+npm run test:e2e:test              # full suite against test env — 11 suites, sequential, via the orchestrator
+npm run test:e2e:<suite>           # one suite standalone, e.g. test:e2e:profile — see Suites above
+npm run test:e2e:live              # smoke suite only, against live
+npm run test:e2e:smoke:live        # same as above, explicit
+npm run test:e2e:test:legacy       # single un-tagged invocation, all 175 tests (rollback path)
+npm run test:e2e:test:no-auth      # full run minus Authentication (its ~99s dominates the run)
 ```
 
-Config: `tests/playwright.config.js`. Screenshots on failure: `build-deploy/screenshots/`.
+`E2E_SKIP_SUITES` (comma-separated slugs) drives the exclusion — `test:e2e:test:no-auth` is just
+`E2E_SKIP_SUITES=auth`. Set it yourself for other combinations, e.g.
+`E2E_SKIP_SUITES=auth,cron node tests/run-e2e-suites.js`. Purely a run-scope choice: the
+orphan/drift check (MUST-1) still validates all 175 tests across all 11 tags regardless of what
+this run skips, and cumulative-progress % rescales to whatever subset is actually running.
 
-**Email interception** — real delivery is the default on the test env; interception is opt-in. `tests/global-setup.js` turns it on for the duration of the run (`test-seed.php?action=smtp_intercept_on`, creating `/tmp/f1betting_smtp_intercept`) so emails are captured to `/tmp/f1betting_test_emails.jsonl` and read back via `test-seed.php?action=get_test_emails`; `tests/global-teardown.js` turns it off (`smtp_intercept_off`) at the end. No real emails are sent while the suite runs.
+Config: `tests/playwright.config.js`. Screenshots on failure: `build-deploy/screenshots/`.
+Full-run orchestration: `tests/run-e2e-suites.js` — spawns each suite as its own Playwright
+process, strictly sequential, with cross-suite progress (`Suite k of 11 — cumulative X/175`).
+It self-checks that every test is tagged into exactly one primary suite before running anything
+(an untagged spec or a typo'd tag fails the run loudly rather than silently vanishing), and
+distinguishes a crashed leg from one with real test failures via a paired JSON reporter per leg.
+
+**Email interception** — real delivery is the default on the test env; interception is opt-in. `tests/global-setup.js` turns it on for the duration of the run (`test-seed.php?action=smtp_intercept_on`, creating `/tmp/f1betting_smtp_intercept`) so emails are captured to `/tmp/f1betting_test_emails.jsonl` and read back via `test-seed.php?action=get_test_emails`; `tests/global-teardown.js` turns it off (`smtp_intercept_off`) at the end. No real emails are sent while the suite runs. Under the orchestrator, only the first leg purges/toggles and only the orchestrator's own `finally` block toggles off at the end (so a crashed leg can't strand interception on for other developers); a standalone `npm run test:e2e:<suite>` run always does the full purge/toggle itself, exactly like before this restructuring.
 
 For manual testing, email sends for real by default. To capture instead, flip **Admin → Settings → Email delivery** to "Switch to capture" (or `touch /tmp/f1betting_smtp_intercept` on the server; remove it to resume sending).
 
-**On test:** all `tests/e2e/**/*.spec.js` and `tests/e2e/admin/**/*.spec.js` files matching the numbered glob are run.
-**On live:** `01-smoke.spec.js` only.
+**On test:** all `tests/e2e/**/*.spec.js` and `tests/e2e/admin/**/*.spec.js` files matching the numbered glob are discoverable; which ones actually run is narrowed further by the selected suite's tag (`--project=<slug>`).
+**On live:** the live-safety `testMatch` gate in `tests/playwright.config.js` makes only `01-smoke.spec.js` discoverable at all, regardless of `--project` — defense in depth ahead of the tag/project layer.
+
+**Concurrency:** the orchestrator does not support two runs against the same test env at once — the shared test DB, the cached `.auth/admin.json` session, and the SMTP-intercept toggle are all single-run-at-a-time resources. The session file is written atomically (temp file + rename) so a concurrent run can't observe a half-written file, but that's a corruption guard, not a concurrency guarantee — don't run two `test:e2e:*` invocations against test at the same time.
 
 ### Architecture layers
 
@@ -413,6 +473,16 @@ Race B: day after Race A, no result yet — test enters it via admin UI.
 | Reset button scope | Race A: no reset button; Race B: reset button visible |
 | Reset Race B | Confirm → Race B result gone, reset button gone; leaderboard rolled back to Race A baseline |
 
+**`Scoring — mobile podium`** — a separate `describe` block in the same file, tagged
+`@mobile` alongside `@scoring`. Own seed: `seed.scoreRace({ prescored: true })`, which scores
+Race B directly instead of relying on the "enter Race B result via admin" test above — needed
+so `npm run test:e2e:mobile` can select this one test on its own and still have a scored race
+to check (MUST-7, `epics/Optimize test suite structure/plan.md`).
+
+| Test | Asserts |
+|---|---|
+| Podium visible on mobile viewport (375px) | `.hf-podium-strip` visible against a directly-seeded, already-scored Race B |
+
 ---
 
 ### `14-race-page.spec.js`
@@ -448,6 +518,28 @@ an accented-surname driver, "Hülkenberg").
 
 **Test-seed actions used:** `seed_race_page` / `cleanup_race_page` (creates races *E2E Race Page Open*
 and *E2E Race Page Done*, 3 in-competition users, and the accented-surname driver).
+
+---
+
+### `15-env-banner.spec.js`
+
+Runs on test only (`test.skip` on `DEPLOY_ENV === "live"` in both blocks — the banner is
+server-side gated to `APP_ENV === 'test'`). No seeds.
+
+**Test-environment banner**
+
+| Test | Asserts |
+|---|---|
+| Renders on public pages (AC-TB-01) | `.test-banner` visible with the expected DA/EN text on `/`, `/login.php`, `/races.php` |
+| Stays pinned below the header on scroll (AC-TB-02) | Banner top offset tracks the header's bottom edge after scrolling |
+| No horizontal scroll, single-line plate at 320px (AC-TB-05, AC-TB-06) | `scrollWidth ≤ clientWidth`; `.test-banner-plate` height stays under 36px |
+| Open mobile drawer stacks above the banner (AC-TB-06) | Drawer `z-index` greater than the banner's |
+
+**Test-environment banner — admin pages**
+
+| Test | Asserts |
+|---|---|
+| Renders on the admin panel (AC-TB-01) | `.test-banner` visible with the expected text on `/admin.php?tab=races` |
 
 ---
 
@@ -494,6 +586,16 @@ Test env only. Serial (25s timeout — email pre-send blocks on SMTP). Fresh use
 | No stored preference → first active factor leads (AC-MFA-01/05) | TOTP panel opens directly; email + recovery reachable via "Other options"; nothing emailed on landing |
 | Picking email from Other options shows boxes immediately (AC-MFA-04) | Status reads "sending" before the code exists, then flips to "code sent" once it arrives — the view is never blocked on SMTP |
 | Setting email as preferred pre-sends on login; no resend on browse | `login.php` sends the code before the challenge renders; switching panels back to the already-sent email view never re-sends (guards the MFA-scope rate-limit budget, now separate from login's — see `security-findings-remaining.md` F7) |
+
+**`MFA challenge — mobile (AC-MFA-09)`** — a separate `describe` block in the same file,
+tagged `@mobile` alongside `@auth`. Own seed: `seed.mfaEnrolledUser()`, which creates a user
+with TOTP + email OTP already active directly at the data layer, instead of relying on the
+"enroll BOTH..." test above — needed so `npm run test:e2e:mobile` can select this one test on
+its own and still reach `mfa_challenge.php` (MUST-7, `epics/Optimize test suite structure/plan.md`).
+The assertions are primary-method-agnostic by design, so a fresh pre-enrolled user is equivalent.
+
+| Test | Asserts |
+|---|---|
 | No horizontal scroll at 320px (AC-MFA-09) | Card doesn't overflow; whichever panel is preferred opens directly, and its boxes, confirm button, and "Other options" row all keep ≥44px tap targets |
 
 ---

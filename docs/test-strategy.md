@@ -196,13 +196,20 @@ writes HTML to `tests/email-previews/`. See [testing.md](testing.md) for the ful
 1. Add seed/cleanup action to `test-seed.php` if data is needed
 2. Add typed wrapper to `helpers/seed.js`
 3. Add a numbered spec (e.g. `08-newfeature.spec.js`) — picked up automatically by `testMatch` glob
-4. If the feature sends email: assert with `assertDelivered()` in the feature's spec (the intercept log is cleared automatically by `global-setup.js` — no per-inbox setup needed)
+4. **Tag its `test.describe` block with `{ tag: '@<suite-slug>' }`** — which of the 11 suites in
+   `docs/testing.md`'s [Suites](testing.md#suites) table does this belong to? An untagged spec
+   still runs in the legacy/full-glob path, but silently drops out of its suite's `npm run
+   test:e2e:<suite>` and the orchestrator's per-suite counts — the orchestrator's orphan check
+   (MUST-1, `epics/Optimize test suite structure/plan.md`) will fail the run if you forget.
+5. If the feature sends email: assert with `assertDelivered()` in the feature's spec (the intercept log is cleared automatically by `global-setup.js` — no per-inbox setup needed)
 
 ### New admin feature (Stack A)
 
 1. Same `seed.js` pattern
 2. Add `admin/14-newfeature.spec.js`
 3. Import `{ test, expect }` from `../../fixtures` — admin auth applied automatically
+4. Tag it, same as above (admin specs mostly fall under `@admin` — check `docs/testing.md`'s
+   suite table if unsure)
 
 ### New email type (Stack A)
 

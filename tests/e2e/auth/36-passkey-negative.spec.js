@@ -30,7 +30,7 @@ async function expectNoSession(page) {
     await expect(page).toHaveURL(/login\.php/);
 }
 
-test.describe('Passkey (WebAuthn) negatives', () => {
+test.describe('Passkey (WebAuthn) negatives', { tag: '@auth' }, () => {
     test.describe.configure({ mode: 'serial' });
     test.use({ storageState: { cookies: [], origins: [] } });
 

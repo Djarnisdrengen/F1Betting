@@ -6,7 +6,7 @@
 const { test, expect } = require('@playwright/test');
 const seed = require('../helpers/seed');
 
-test.describe.serial('Single-race page (race.php)', () => {
+test.describe.serial('Single-race page (race.php)', { tag: '@race-page' }, () => {
     let data;
     let anonCtx, anonPage;     // logged-out viewer
     let authCtx, authPage;     // logged-in in-competition viewer
@@ -79,7 +79,7 @@ test.describe.serial('Single-race page (race.php)', () => {
         await expect(authPage.locator('a[href*="bet.php?race="]')).toBeVisible();   // place-bet CTA
     });
 
-    test('open race: no horizontal scroll at 320px', async () => {
+    test('open race: no horizontal scroll at 320px', { tag: '@mobile' }, async () => {
         await anonPage.setViewportSize({ width: 320, height: 700 });
         await anonPage.goto(`/race.php?id=${data.openRaceId}`);
         const overflow = await anonPage.evaluate(

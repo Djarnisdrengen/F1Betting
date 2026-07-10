@@ -5,7 +5,7 @@ const ADMIN_AUTH = path.join(__dirname, "../../.auth/admin.json");
 
 // ─── Public pages ─────────────────────────────────────────────────────────────
 
-test.describe("Public pages", () => {
+test.describe("Public pages", { tag: "@smoke" }, () => {
     test("pages load", async ({ page }) => {
         for (const url of ["/", "/login.php", "/leaderboard.php", "/races.php"]) {
             const res = await page.goto(url);
@@ -57,7 +57,7 @@ test.describe("Public pages", () => {
 
 // ─── Translations ─────────────────────────────────────────────────────────────
 
-test.describe("Translations", () => {
+test.describe("Translations", { tag: "@smoke" }, () => {
     test("login page renders in default language (DA)", async ({ page }) => {
         await page.goto("/login.php");
         await expect(page.locator('button[type="submit"]')).toContainText("Log ind");
@@ -90,7 +90,7 @@ test.describe("Translations", () => {
 
 // ─── Protected pages ──────────────────────────────────────────────────────────
 
-test.describe("Protected pages", () => {
+test.describe("Protected pages", { tag: "@smoke" }, () => {
     test.use({ storageState: ADMIN_AUTH });
 
     test("authenticated index visible", async ({ page }) => {
@@ -137,7 +137,7 @@ test.describe("Protected pages", () => {
 // not destroy the PHP session stored in .auth/admin.json, which all subsequent
 // admin specs depend on.
 
-test.describe("Logout", () => {
+test.describe("Logout", { tag: "@smoke" }, () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
     test("logout clears session and shows login button", async ({ page }) => {

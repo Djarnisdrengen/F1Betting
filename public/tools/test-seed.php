@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../includes/scoring.php';
+require_once __DIR__ . '/../includes/mfa.php';
 
 header('Content-Type: application/json');
 
@@ -875,6 +876,44 @@ if (($_GET['action'] ?? '') === 'cleanup_auth_user') {
     exit;
 }
 
+// Action: seed_mfa_enrolled_user — user with TOTP + email OTP already active, recovery codes
+// generated. Mirrors what auth/32-mfa-default-method.spec.js's own "enroll BOTH..." test does
+// via the UI, so the standalone-mobile AC-MFA-09 check can reach mfa_challenge.php without
+// depending on that sibling test's UI mutation (MUST-7).
+// Returns: { ok, email, password }
+if (($_GET['action'] ?? '') === 'seed_mfa_enrolled_user') {
+    $e2eMfaEmail = 'e2e_mfa_enrolled_f1@test.localhost';
+    $e2eMfaPassword = 'E2EMfaEnrolled2026!';
+
+    $db->prepare("DELETE FROM user_totp WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
+    $db->prepare("DELETE FROM user_recovery_codes WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
+    $db->prepare("DELETE FROM user_email_otp WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eMfaEmail]);
+
+    $uid = seed_uuid();
+    $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars, language) VALUES (?, ?, ?, 'E2E MFA Enrolled', 'user', 0, 0, 0, 'en')")
+       ->execute([$uid, $e2eMfaEmail, hashPassword($e2eMfaPassword)]);
+
+    totpBegin($db, $uid);
+    $db->prepare("UPDATE user_totp SET confirmed_at = NOW() WHERE user_id = ?")->execute([$uid]);
+    setEmailOtpEnabled($db, $uid, true);
+    ensureRecoveryCodes($db, $uid);
+
+    echo json_encode(['ok' => true, 'email' => $e2eMfaEmail, 'password' => $e2eMfaPassword]);
+    exit;
+}
+
+// Action: cleanup_mfa_enrolled_user
+if (($_GET['action'] ?? '') === 'cleanup_mfa_enrolled_user') {
+    $e2eMfaEmail = 'e2e_mfa_enrolled_f1@test.localhost';
+    $db->prepare("DELETE FROM user_totp WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
+    $db->prepare("DELETE FROM user_recovery_codes WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
+    $db->prepare("DELETE FROM user_email_otp WHERE user_id IN (SELECT id FROM users WHERE email = ?)")->execute([$e2eMfaEmail]);
+    $db->prepare("DELETE FROM users WHERE email = ?")->execute([$e2eMfaEmail]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Action: cleanup_passkeys — drop a test user's passkey rows (mid-suite reset).
 // Only @test.localhost accounts are touched, so a stray call cannot hit real members.
 if (($_GET['action'] ?? '') === 'cleanup_passkeys') {
@@ -1043,6 +1082,17 @@ if (($_GET['action'] ?? '') === 'seed_score_race') {
 
     // Score Race A — awards user points and rolls Race A's pool into Race B
     calculateRacePoints($raceAId, $hamId, $verId, $lecId);
+
+    // Opt-in: score Race B too, mirroring exactly what admin.php's update_race handler does
+    // (set result_p1/p2/p3, then calculateRacePoints). Default behavior (no param) leaves
+    // Race B unscored — the main Scoring suite enters its result via the admin UI itself.
+    // Used by the standalone-mobile fixture below, which needs a scored Race B without
+    // depending on that sibling test's UI mutation (MUST-7).
+    if (!empty($_GET['prescored'])) {
+        $db->prepare("UPDATE races SET result_p1 = ?, result_p2 = ?, result_p3 = ? WHERE id = ?")
+           ->execute([$hamId, $verId, $lecId, $raceBId]);
+        calculateRacePoints($raceBId, $hamId, $verId, $lecId);
+    }
 
     // Read back Race B pool (= totalBetters × betSize + poolA, set by calculateRacePoints)
     $stmt = $db->prepare("SELECT bettingpool_size FROM races WHERE id = ?");

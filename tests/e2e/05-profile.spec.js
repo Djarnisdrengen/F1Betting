@@ -12,7 +12,7 @@ function pwForm(page) {
     return page.locator('form').filter({ has: page.locator('input[name="current_password"]') });
 }
 
-test.describe.serial("Profile", () => {
+test.describe.serial("Profile", { tag: "@profile" }, () => {
     test.beforeAll(async ({ browser }) => {
         const page = await browser.newPage();
         const res = await page.goto(
@@ -128,7 +128,7 @@ test.describe.serial("Profile", () => {
     });
 });
 
-test.describe.serial("Profile stats — hero + chips (v2.2.0)", () => {
+test.describe.serial("Profile stats — hero + chips (v2.2.0)", { tag: "@profile" }, () => {
     test.beforeAll(async ({ browser }) => {
         const page = await browser.newPage();
         const res = await page.goto(

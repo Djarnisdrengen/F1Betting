@@ -10,7 +10,7 @@ async function forceCapture() {
     } catch { /* best effort */ }
 }
 
-test.describe('Admin email-delivery toggle (test env)', () => {
+test.describe('Admin email-delivery toggle (test env)', { tag: '@admin' }, () => {
     test.afterAll(forceCapture);
 
     test('toggle flips capture ↔ live and reflects status', async ({ page }) => {

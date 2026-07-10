@@ -7,7 +7,7 @@ async function confirmDeleteModal(page) {
 
 // ─── Race management ───────────────────────────────────────────────────────────
 
-test.describe('Race management', () => {
+test.describe('Race management', { tag: '@admin' }, () => {
     test('create and delete a race', async ({ page }) => {
         await page.goto('/admin.php?tab=races');
 
@@ -38,7 +38,7 @@ test.describe('Race management', () => {
 
 // ─── Driver management ─────────────────────────────────────────────────────────
 
-test.describe('Driver management', () => {
+test.describe('Driver management', { tag: '@admin' }, () => {
     test('create and delete a driver', async ({ page }) => {
         await page.goto('/admin.php?tab=drivers');
 

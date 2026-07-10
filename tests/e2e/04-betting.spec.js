@@ -28,7 +28,7 @@ function assertConfirmationBody(body, driversInOrder) {
     expect(positions[1]).toBeLessThan(positions[2]);
 }
 
-test.describe.serial("Betting", () => {
+test.describe.serial("Betting", { tag: "@predictions" }, () => {
     test.beforeAll(async ({ browser }) => {
         // Idempotent cleanup in case a previous run left state
         const cleanPage = await browser.newPage();

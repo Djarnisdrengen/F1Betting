@@ -26,7 +26,7 @@ async function login(page, email, pw) {
 
 // ─── Layout checks (PP1–PP2): admin auth, no state dependency ────────────────
 
-test.describe('Profile preferences — layout', () => {
+test.describe('Profile preferences — layout', { tag: '@preferences-editor' }, () => {
     test.use({ storageState: ADMIN_AUTH });
 
     // PP1 — bottom nav absent on profile page
@@ -47,7 +47,7 @@ test.describe('Profile preferences — layout', () => {
 
 // ─── State tests (PP3–PP6): Alice, serial, DB assertions ─────────────────────
 
-test.describe.serial('Profile preferences — state', () => {
+test.describe.serial('Profile preferences — state', { tag: '@preferences-editor' }, () => {
     test.beforeAll(async () => {
         // Reset all test users to NULL prefs
         const url = new URL(`${process.env.BASE_URL}/tools/test-seed.php`);
@@ -106,7 +106,7 @@ test.describe.serial('Profile preferences — state', () => {
 
 // ─── Regression (PP7–PP9): authenticated, independent ────────────────────────
 
-test.describe('Profile preferences — regression', () => {
+test.describe('Profile preferences — regression', { tag: '@preferences-editor' }, () => {
     test.use({ storageState: ADMIN_AUTH });
 
     // PP7 — bottom nav present on home
@@ -135,7 +135,7 @@ test.describe('Profile preferences — regression', () => {
 
 // ─── Defect regression (PP-NEW-1 – PP-NEW-5) ─────────────────────────────────
 
-test.describe.serial('Profile preferences — defect regression', () => {
+test.describe.serial('Profile preferences — defect regression', { tag: '@preferences-editor' }, () => {
     test.beforeAll(async () => {
         const url = new URL(`${process.env.BASE_URL}/tools/test-seed.php`);
         url.searchParams.set('token', SEED_TOKEN);
@@ -225,7 +225,7 @@ test.describe.serial('Profile preferences — defect regression', () => {
 
 // ─── Unauthenticated (PP10) ───────────────────────────────────────────────────
 
-test.describe('Profile preferences — unauthenticated', () => {
+test.describe('Profile preferences — unauthenticated', { tag: '@preferences-editor' }, () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
     // PP10 — bottom nav visible with login link for anonymous visitors

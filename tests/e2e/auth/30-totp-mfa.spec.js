@@ -54,7 +54,7 @@ async function enrollTotp(page) {
     return secret;
 }
 
-test.describe('TOTP multi-factor authentication', () => {
+test.describe('TOTP multi-factor authentication', { tag: '@auth' }, () => {
     test.describe.configure({ mode: 'serial' });
     test.use({ storageState: { cookies: [], origins: [] } });
 

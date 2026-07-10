@@ -7,6 +7,7 @@
 - [Nightly DB Backup Workflow](#nightly-db-backup-workflow)
 - [Cron Trigger Workflows](#cron-trigger-workflows)
 - [Monthly Security Review Workflow](#monthly-security-review-workflow)
+- [E2E Orchestrator Workflow (test env)](#e2e-orchestrator-workflow-test-env)
 - [Required Configuration](#required-configuration)
   - [Variables tab](#variables-tab)
   - [Secrets tab](#secrets-tab)
@@ -98,6 +99,29 @@ Find artifacts under **Actions → Monthly Security Review → (select run) → 
 
 ---
 
+## E2E Orchestrator Workflow (test env)
+
+**File:** `.github/workflows/e2e-test-orchestrator.yml`
+**Trigger:** manual only (`workflow_dispatch`) — no schedule, since it mutates the shared test DB the same way a local `npm run test:e2e:test` does.
+
+Runs the full E2E orchestrator (`tests/run-e2e-suites.js`, all 11 suites, 175 tests) against
+the test env. Added as part of the E2E suite restructuring
+(`epics/Optimize test suite structure/plan.md`, SHOULD-3) to give the orchestrator — the
+riskiest new component in that epic, since it repoints `npm run test:e2e:test` — at least one
+automated run before it's trusted, given CI previously only ever exercised live-smoke.
+
+**Required secrets/variables:** `BASE_URL_TEST` (already exists), `CRON_SECRET_TEST` (already
+exists), plus three new secrets — `TEST_USER_EMAIL_TEST`, `TEST_USER_PASSWORD_TEST`,
+`INTEGRATION_SEED_TOKEN_TEST` — see [Required Configuration](#required-configuration) below.
+**This workflow will fail until those three secrets are added** — it isn't wired to anything
+that creates them automatically.
+
+Uploads `build-deploy/screenshots/` as an artifact on failure, same as the nightly workflow.
+
+**Timeout:** 15 minutes per run.
+
+---
+
 ## Required Configuration
 
 The workflow runs against the live site and cannot read `config.live.php` (that file is local only). Required values must be configured in the GitHub repository settings.
@@ -128,9 +152,12 @@ Secrets are encrypted and hidden in logs.
 | `REPORT_TO` | Recipient address for the nightly report email |
 | `TEST_USER_PASSWORD_LIVE` | Admin account password on the live site (used for E2E login) |
 | `CRON_SECRET` | Value of `CRON_SECRET` in `config.live.php` — used by the cron trigger workflows' `trigger-live` jobs |
-| `CRON_SECRET_TEST` | Value of `CRON_SECRET` in `config.test.php` (a different value from the live one) — used by the cron trigger workflows' `trigger-test` jobs |
+| `CRON_SECRET_TEST` | Value of `CRON_SECRET` in `config.test.php` (a different value from the live one) — used by the cron trigger workflows' `trigger-test` jobs, and by the E2E orchestrator workflow |
+| `TEST_USER_EMAIL_TEST` | Admin account email on the test site (E2E orchestrator workflow) — the equivalent of the hardcoded `f1_admin@helvegpovlsen.dk` below, but for whatever admin address `config.test.php` actually uses |
+| `TEST_USER_PASSWORD_TEST` | Admin account password on the test site (E2E orchestrator workflow) |
+| `INTEGRATION_SEED_TOKEN_TEST` | Value of `INTEGRATION_SEED_TOKEN` in `config.test.php` — every `helpers/seed.js` call needs this; without it every seed-dependent suite fails at `beforeAll` (E2E orchestrator workflow) |
 
-`TEST_USER_EMAIL_LIVE` is hardcoded in the workflow (`f1_admin@helvegpovlsen.dk`) and does not need to be a secret.
+`TEST_USER_EMAIL_LIVE` is hardcoded in the workflow (`f1_admin@helvegpovlsen.dk`) and does not need to be a secret. The test env's admin address isn't assumed to be the same, so `TEST_USER_EMAIL_TEST` is a secret instead of being hardcoded the same way.
 
 ---
 

@@ -4,7 +4,7 @@ const SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN;
 
 // ─── Invalid / missing token ───────────────────────────────────────────────
 
-test.describe("Registration — invalid token", () => {
+test.describe("Registration — invalid token", { tag: "@registration" }, () => {
     test("no token shows invite required error", async ({ page }) => {
         await page.goto("/register.php");
         await expect(page.locator(".alert-error")).toBeVisible();
@@ -21,7 +21,7 @@ test.describe("Registration — invalid token", () => {
 
 // ─── Valid invite flow ─────────────────────────────────────────────────────
 
-test.describe.serial("Registration — valid invite", () => {
+test.describe.serial("Registration — valid invite", { tag: "@registration" }, () => {
     let inviteToken;
     let inviteEmail;
 

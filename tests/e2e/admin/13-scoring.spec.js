@@ -28,7 +28,7 @@ function lbRow(page, displayName) {
     return page.locator('.hf-row').filter({ hasText: displayName });
 }
 
-test.describe.serial('Scoring', () => {
+test.describe.serial('Scoring', { tag: '@scoring' }, () => {
     let seedData;
 
     test.beforeAll(async () => {
@@ -96,12 +96,6 @@ test.describe.serial('Scoring', () => {
         await expect(blocks.nth(2)).toHaveClass(/p3/);
     });
 
-    test('podium is visible on mobile viewport (375px)', async ({ page }) => {
-        await page.setViewportSize({ width: 375, height: 667 });
-        await page.goto('/leaderboard.php');
-        await expect(page.locator('.hf-podium-strip')).toBeVisible();
-    });
-
     test('leaderboard list includes all players including ranks 1-3', async ({ page }) => {
         await page.goto('/leaderboard.php');
         const rows = page.locator('.hf-lb-list .hf-row');
@@ -163,5 +157,27 @@ test.describe.serial('Scoring', () => {
             const row = lbRow(page, DISPLAY_NAMES[email]);
             await expect(row.locator('.hf-pts')).toContainText(String(ptsAfterReset));
         }
+    });
+});
+
+// Own describe + own seed (not a sibling of the "Scoring" block above) so this test passes
+// when selected standalone via `--project=mobile` — a `--grep @mobile` run only auto-runs the
+// beforeAll/afterAll of the describe block it selects, never an earlier sibling test's UI
+// mutation (here, scoring Race B via the admin form in the block above). See MUST-7 in
+// epics/Optimize test suite structure/plan.md.
+test.describe.serial('Scoring — mobile podium', { tag: ['@scoring', '@mobile'] }, () => {
+    test.beforeAll(async () => {
+        await seed.cleanup.scoreRace();
+        await seed.scoreRace({ prescored: true });
+    });
+
+    test.afterAll(async () => {
+        await seed.cleanup.scoreRace();
+    });
+
+    test('podium is visible on mobile viewport (375px)', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 667 });
+        await page.goto('/leaderboard.php');
+        await expect(page.locator('.hf-podium-strip')).toBeVisible();
     });
 });

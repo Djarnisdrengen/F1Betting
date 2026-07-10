@@ -22,7 +22,7 @@ function userCard(page) {
 
 // ─── Reset race result ─────────────────────────────────────────────────────────
 
-test.describe.serial('Reset race result', () => {
+test.describe.serial('Reset race result', { tag: '@admin' }, () => {
     let seedData;
 
     test.beforeAll(async () => {
@@ -71,7 +71,7 @@ test.describe.serial('Reset race result', () => {
 
 // ─── Bet deleted notification ──────────────────────────────────────────────────
 
-test.describe.serial('Bet deleted notification', () => {
+test.describe.serial('Bet deleted notification', { tag: '@admin' }, () => {
     let seedData;
 
     test.beforeAll(async () => {
@@ -106,7 +106,7 @@ test.describe.serial('Bet deleted notification', () => {
 
 // ─── User management ──────────────────────────────────────────────────────────
 
-test.describe('User management', () => {
+test.describe('User management', { tag: '@admin' }, () => {
     test.describe.configure({ mode: 'serial' });
 
     test.beforeAll(async () => {

@@ -36,7 +36,7 @@ async function submitMfaCode(page, method, code) {
     await wrapper.locator('form').first().locator('button[type="submit"]').click();
 }
 
-test.describe('Email OTP multi-factor authentication', () => {
+test.describe('Email OTP multi-factor authentication', { tag: '@auth' }, () => {
     test.describe.configure({ mode: 'serial' });
     test.use({ storageState: { cookies: [], origins: [] } });
 

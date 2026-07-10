@@ -1,0 +1,58 @@
+name: E2E Orchestrator (test env)
+
+# SHOULD-3 (epics/Optimize test suite structure/plan.md): the orchestrator
+# (tests/run-e2e-suites.js) repoints `npm run test:e2e:test`, so it's the riskiest new
+# component in that epic and previously had zero automated coverage — CI only ever ran
+# live-smoke. This gives it at least one automated run against the test env before it's
+# trusted as a deploy gate. workflow_dispatch only — not on a schedule, since it mutates
+# the shared test DB (bets, users, races) same as a local `npm run test:e2e:test` does.
+on:
+  workflow_dispatch:
+
+jobs:
+  e2e-orchestrator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DEPLOY_ENV: test
+      EMAIL_BACKEND: intercept
+      PLAYWRIGHT_HOST_PLATFORM_OVERRIDE: ubuntu22.04-x64
+      # BASE_URL_TEST already exists as a repo Variable (used by the cron trigger workflows).
+      BASE_URL_TEST: ${{ vars.BASE_URL_TEST }}
+      # New — see "Required Configuration" in docs/github-actions.md.
+      TEST_USER_EMAIL_TEST: ${{ secrets.TEST_USER_EMAIL_TEST }}
+      TEST_USER_PASSWORD_TEST: ${{ secrets.TEST_USER_PASSWORD_TEST }}
+      INTEGRATION_SEED_TOKEN: ${{ secrets.INTEGRATION_SEED_TOKEN_TEST }}
+      # CRON_SECRET_TEST already exists (used by the cron trigger workflows' trigger-test job).
+      CRON_SECRET: ${{ secrets.CRON_SECRET_TEST }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright (Chromium)
+        run: npx playwright install chromium --with-deps
+
+      - name: Run the E2E orchestrator against test
+        run: node tests/run-e2e-suites.js
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-orchestrator-screenshots-${{ github.run_id }}
+          path: build-deploy/screenshots/
+          retention-days: 14

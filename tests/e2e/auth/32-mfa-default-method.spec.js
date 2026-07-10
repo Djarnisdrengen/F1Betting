@@ -65,7 +65,7 @@ async function submitMfaCode(page, method, code) {
     await wrapper.locator('form').first().locator('button[type="submit"]').click();
 }
 
-test.describe('MFA challenge (2+ factors): preferred method leads + on-demand email code', () => {
+test.describe('MFA challenge (2+ factors): preferred method leads + on-demand email code', { tag: '@auth' }, () => {
     test.describe.configure({ mode: 'serial', timeout: 25000 }); // email pre-send blocks on SMTP
     test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -166,6 +166,21 @@ test.describe('MFA challenge (2+ factors): preferred method leads + on-demand em
         await submitMfaCode(page, 'email', code);
         await page.waitForURL(/index\.php/);
     });
+
+});
+
+// Own describe + own seed (not a sibling of the block above) so this test passes when
+// selected standalone via `--project=mobile` — a `--grep @mobile` run only auto-runs the
+// beforeAll/afterAll of the describe block it selects, never an earlier sibling test's UI
+// enrollment (here, enrolling TOTP + email OTP in the block above). See MUST-7 in
+// epics/Optimize test suite structure/plan.md. The assertions below are primary-method-
+// agnostic by design (see the comment inline), so a fresh user with both factors already
+// active — rather than one enrolled via test 1 and left on a chosen preference — is exactly
+// equivalent for this check.
+test.describe('MFA challenge — mobile (AC-MFA-09)', { tag: ['@auth', '@mobile'] }, () => {
+    let user;
+    test.beforeAll(async () => { user = await seed.mfaEnrolledUser(); });
+    test.afterAll(async () => { await seed.cleanup.mfaEnrolledUser(); });
 
     test('AC-MFA-09 — no horizontal scroll at 320px; the open panel keeps its tap targets', async ({ page }) => {
         await page.setViewportSize({ width: 320, height: 700 });

@@ -109,7 +109,7 @@ async function submitMfaCode(page, method, code) {
     await wrapper.locator('form').first().locator('button[type="submit"]').click();
 }
 
-test.describe('Passkey (WebAuthn) authentication', () => {
+test.describe('Passkey (WebAuthn) authentication', { tag: '@auth' }, () => {
     test.describe.configure({ mode: 'serial', timeout: 25000 }); // shared account; email/SMTP round-trips need headroom
     test.use({ storageState: { cookies: [], origins: [] } });
 

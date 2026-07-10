@@ -7,7 +7,7 @@ const CRON_SECRET = process.env.CRON_SECRET;
 
 // ─── Cron jobs ────────────────────────────────────────────────────────────────
 
-test.describe("Cron jobs", () => {
+test.describe("Cron jobs", { tag: "@cron" }, () => {
     test.describe.serial("import qualifying", () => {
         test.beforeAll(async ({ browser }) => {
             const page = await browser.newPage();

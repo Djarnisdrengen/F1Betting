@@ -6,7 +6,7 @@ const ADMIN_AUTH = path.join(__dirname, '../../.auth/admin.json');
 // ─── SMTP / Resend config (test_smtp.php) ─────────────────────────────────────
 
 // Unauthenticated check runs first in its own isolated context.
-test.describe('SMTP / Resend config — access control', () => {
+test.describe('SMTP / Resend config — access control', { tag: '@admin' }, () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
     test('denies access to unauthenticated users', async ({ page }) => {
@@ -15,7 +15,7 @@ test.describe('SMTP / Resend config — access control', () => {
     });
 });
 
-test.describe('SMTP / Resend config (test_smtp.php)', () => {
+test.describe('SMTP / Resend config (test_smtp.php)', { tag: '@admin' }, () => {
     test.use({ storageState: ADMIN_AUTH });
 
     test('admin can access the page', async ({ page }) => {

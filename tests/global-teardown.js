@@ -11,9 +11,14 @@ try {
     process.env.INTEGRATION_SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN || cfg.integrationSeedToken;
 } catch { /* rely on env vars set during the run */ }
 
+// Orchestrator-only. Any orchestrated leg (E2E_SUITE_LEG set, any value) leaves interception
+// toggling to the orchestrator's own try/finally — a crashed leg's teardown might never run,
+// so per-leg teardown must not be the only thing that can turn interception off (MUST-8).
+const isOrchestratedLeg = process.env.E2E_SUITE_LEG !== undefined;
+
 module.exports = async function globalTeardown() {
     // Restore the test env's default of real delivery — interception was only on for this run.
-    if (env !== 'live') {
+    if (env !== 'live' && !isOrchestratedLeg) {
         try {
             const url = `${process.env.BASE_URL}/tools/test-seed.php`
                 + `?token=${encodeURIComponent(process.env.INTEGRATION_SEED_TOKEN)}&action=smtp_intercept_off`;
