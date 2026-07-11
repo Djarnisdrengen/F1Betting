@@ -220,8 +220,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Auto-hide alerts
-    document.querySelectorAll('.alert').forEach(alert => {
+    // Auto-hide alerts (opt out via data-persist — e.g. login/MFA lockout errors, which
+    // should stay visible until the next attempt or a reload, not vanish after 5s)
+    document.querySelectorAll('.alert:not([data-persist])').forEach(alert => {
         setTimeout(() => {
             alert.style.opacity = '0';
             alert.style.transition = 'opacity 0.5s';

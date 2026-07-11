@@ -577,6 +577,19 @@ if (isset($_POST['update_settings'])) {
     $message = t('settings_saved');
 }
 
+// ============ SECURITY: CLEAR LOGIN ATTEMPTS ============
+// Account-only, same as clearLoginAttempts() itself — there is deliberately no way to
+// clear the IP-wide bucket from here (see the comment on clearLoginAttempts()).
+if (isset($_POST['clear_login_attempts'])) {
+    $scope   = $_POST['scope'] ?? '';
+    $account = $_POST['account'] ?? '';
+    if (in_array($scope, ['login', 'mfa'], true) && $account !== '') {
+        clearLoginAttempts($db, $scope, $account);
+    }
+    header("Location: admin.php?tab=security&msg=" . urlencode(t('login_attempts_cleared')));
+    exit;
+}
+
 $currentTab = $_GET['tab'] ?? 'races';
 
 $tabIcons = [
@@ -585,6 +598,7 @@ $tabIcons = [
     'users'   => 'users',
     'invites' => 'envelope',
     'bets'    => 'trophy',
+    'security'=> 'shield-halved',
     'settings'=> 'cog',
 ];
 
@@ -596,6 +610,29 @@ $tabCounts = [
     'invites' => $db->query("SELECT COUNT(*) FROM invites")->fetchColumn(),
     'bets'    => $db->query("SELECT COUNT(*) FROM bets")->fetchColumn(),
 ];
+
+// Security tab: group login_attempts by IP and by account over the same 15-minute
+// window isRateLimited() checks, so the badge count and the tab body always agree
+// with the actual lockout state. Fetched here (not just in the switch below) so the
+// badge reflects it on every tab, matching the other count badges.
+$ipBuckets = $db->query(
+    "SELECT ip AS bucket_key, scope, COUNT(*) AS attempts, MAX(attempted_at) AS last_attempt
+     FROM login_attempts
+     WHERE attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)
+     GROUP BY ip, scope
+     ORDER BY attempts DESC, last_attempt DESC"
+)->fetchAll();
+$acctBuckets = $db->query(
+    "SELECT account AS bucket_key, scope, COUNT(*) AS attempts, MAX(attempted_at) AS last_attempt
+     FROM login_attempts
+     WHERE account IS NOT NULL AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)
+     GROUP BY account, scope
+     ORDER BY attempts DESC, last_attempt DESC"
+)->fetchAll();
+$securityLockedCount = 0;
+foreach ($ipBuckets as $b)   if ($b['attempts'] >= rateLimitThreshold($b['scope'], 'ip'))      $securityLockedCount++;
+foreach ($acctBuckets as $b) if ($b['attempts'] >= rateLimitThreshold($b['scope'], 'account')) $securityLockedCount++;
+$tabCounts['security'] = $securityLockedCount;
 
 // $drivers always needed: races add/edit dropdowns and bets display
 [$drivers, $driversById] = fetchDrivers($db);
@@ -621,6 +658,11 @@ switch ($currentTab) {
         break;
     case 'invites':
         $invites = $db->query("SELECT i.*, u.display_name as created_by_name, u.email as created_by_email FROM invites i JOIN users u ON i.created_by = u.id ORDER BY i.created_at DESC")->fetchAll();
+        break;
+    case 'security':
+        // $ipBuckets / $acctBuckets already fetched above (needed for the tab badge on every page load).
+        // Resolve scope='mfa' accounts (user UUIDs) to an email/display name for display.
+        $usersById = array_column($db->query("SELECT id, email, display_name FROM users")->fetchAll(), null, 'id');
         break;
     // settings and drivers tabs: $settings + $drivers already loaded
 }
@@ -659,7 +701,7 @@ include __DIR__ . '/includes/header.php';
     
     
     <?php
-    $allowedTabs = ['races', 'drivers', 'users', 'bets', 'invites', 'settings'];
+    $allowedTabs = ['races', 'drivers', 'users', 'bets', 'invites', 'security', 'settings'];
     if (in_array($currentTab, $allowedTabs)) {
         include __DIR__ . "/includes/admin/{$currentTab}.php";
     }

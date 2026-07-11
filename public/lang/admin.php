@@ -103,6 +103,17 @@ return [
         'email_delivery_intercept'   => 'Opsamler (sender ikke)',
         'email_delivery_switch_live' => 'Slå ægte afsendelse til',
         'email_delivery_switch_intercept' => 'Skift til opsamling',
+
+        // Security / login attempts
+        'security_by_ip'            => 'Efter IP-adresse',
+        'security_by_account'       => 'Efter konto',
+        'security_scope_login'      => 'Login',
+        'security_scope_mfa'        => 'To-trins',
+        'security_locked'           => 'Låst',
+        'security_last_attempt'     => 'Seneste forsøg:',
+        'security_clear'            => 'Nulstil',
+        'security_no_attempts'      => 'Ingen forsøg inden for de sidste 15 minutter',
+        'login_attempts_cleared'    => 'Loginforsøg nulstillet!',
     ],
     'en' => [
         // Tab labels
@@ -207,5 +218,16 @@ return [
         'email_delivery_intercept'   => 'Capturing (not sending)',
         'email_delivery_switch_live' => 'Turn on real delivery',
         'email_delivery_switch_intercept' => 'Switch to capture',
+
+        // Security / login attempts
+        'security_by_ip'            => 'By IP address',
+        'security_by_account'       => 'By account',
+        'security_scope_login'      => 'Login',
+        'security_scope_mfa'        => 'Two-step',
+        'security_locked'           => 'Locked',
+        'security_last_attempt'     => 'Last attempt:',
+        'security_clear'            => 'Clear',
+        'security_no_attempts'      => 'No attempts in the last 15 minutes',
+        'login_attempts_cleared'    => 'Login attempts cleared!',
     ],
 ];

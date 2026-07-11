@@ -66,6 +66,7 @@ F1Betting/
 │   │       ├── bets.php
 │   │       ├── users.php
 │   │       ├── invites.php
+│   │       ├── security.php    Login-attempt/lockout visibility (see Security Model)
 │   │       └── settings.php
 │   │
 │   ├── cron/                   Scripts triggered by server cron or HTTP
@@ -271,7 +272,7 @@ FTP_HOST, FTP_USER, FTP_PASS, FTP_ROOT_TEST, FTP_ROOT_LIVE, DRY_RUN
 | Passkeys (WebAuthn) | Vendored lbuchs/WebAuthn (`includes/webauthn/`, no Composer) behind `includes/passkey.php`; JSON endpoint `public/webauthn.php` (6 actions, byte-identical generic errors); rpId = `PASSKEY_RPID` (registrable domain — one-way door, see gotcha #20) |
 | Session fixation | `session_regenerate_id()` after login |
 | CSRF | Per-session token, `csrfField()` + `requireCsrf()` |
-| Rate limiting | `login_attempts` table, sliding 15-min window, checked per-IP **and** per-account (`scope` = `login` \| `mfa`, `account` = submitted email or user id). Login: 5/IP, 5/account. MFA challenge (code + passkey + resend): 5/IP, 3/account — separate bucket from login, so exhausting one never blocks the other. `isRateLimited()` fails **closed** on a DB error. A successful login/verification clears only that account's own bucket for that scope, never the IP-wide one. Also updates `users.last_login` and logs `[LOGIN] method=…` to `APP_LOG_FILE` via `logLoginMethod()` (passkey-adoption metrics); no separate audit log exists |
+| Rate limiting | `login_attempts` table, sliding 15-min window, checked per-IP **and** per-account (`scope` = `login` \| `mfa`, `account` = submitted email or user id). Login: 5/IP, 5/account. MFA challenge (code + passkey + resend): 5/IP, 3/account — separate bucket from login, so exhausting one never blocks the other. `isRateLimited()` fails **closed** on a DB error. A successful login/verification clears only that account's own bucket for that scope, never the IP-wide one. Also updates `users.last_login` and logs `[LOGIN] method=…` to `APP_LOG_FILE` via `logLoginMethod()` (passkey-adoption metrics); no separate audit log exists. Admin panel's Security tab (`includes/admin/security.php`) surfaces current buckets grouped by IP and by account against the same thresholds, and lets an admin manually clear a stuck account's bucket (`clear_login_attempts` POST, still account-only — never the IP-wide bucket) |
 | XSS | `escape()` on all output, CSP with per-request nonce |
 | Clickjacking | `X-Frame-Options: DENY`, CSP `frame-ancestors 'none'` |
 | SQL injection | PDO prepared statements everywhere |

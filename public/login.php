@@ -103,7 +103,7 @@ include __DIR__ . '/includes/header.php';
 
 <div class="hf-container">
     <?php if ($error): ?>
-        <div class="alert alert-error" role="alert"><i class="fas fa-exclamation-triangle"></i> <?= escape($error) ?></div>
+        <div class="alert alert-error" role="alert" data-persist><i class="fas fa-exclamation-triangle"></i> <?= escape($error) ?></div>
     <?php endif; ?>
     <div class="hf-login-grid">
         <div class="hf-login-intro">
