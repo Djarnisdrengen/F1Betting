@@ -42,8 +42,13 @@ const SECTION_NAMES = {
 async function runE2E() {
     console.log('[nightly] E2E tests (live)…');
     try {
+        // --project=smoke pins this to the one live-safe project. Without it, the "all"
+        // project's blanket testMatch also picks up 01-smoke.spec.js (the only file live's
+        // testMatch allows), silently doubling live test execution — including a second real
+        // admin login that can land after the concurrent security scan's rate-limit probe
+        // (security.js --ratelimit) has tripped the shared per-IP login lockout.
         const { stdout, stderr } = await execFileAsync(
-            'npx', ['playwright', 'test', '--config', 'tests/playwright.config.js'],
+            'npx', ['playwright', 'test', '--project=smoke', '--config', 'tests/playwright.config.js'],
             { cwd: ROOT, env: { ...process.env, DEPLOY_ENV: 'live' }, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024, timeout: 180_000 }
         );
         const output = stdout + (stderr ? '\n' + stderr : '');

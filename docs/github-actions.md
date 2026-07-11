@@ -30,7 +30,7 @@
 3. Caches and installs Playwright (Chromium only)
 4. Runs `node build-deploy/nightly-report.js`, which:
    - Runs Playwright E2E tests against live (`smoke.spec.js`)
-   - Runs the security scanner against live (basic checks, no rate-limit or SSL Labs)
+   - Runs the security scanner against live (`--ssllabs --ratelimit`: full checks including SSL Labs and the rate-limit probe)
    - Sends a summary email to `REPORT_TO`
 5. Uploads test artifacts (reports, screenshots, security reports) — retained 30 days
 
