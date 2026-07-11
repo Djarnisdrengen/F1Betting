@@ -108,10 +108,14 @@ function parseE2ERows(cleanText) {
         if (!line.trim() || line.includes('E2E tests ')) continue;
         const indent = line.search(/\S/);
         const t = line.trim();
-        if (t.startsWith('✅')) {
-            rows.push({ kind: 'pass', name: t.replace(/^✅\s*/, '').trim(), indent });
-        } else if (t.startsWith('❌')) {
-            const raw  = t.replace(/^❌\s*/, '').trim();
+        // reporter.js prefixes each result line with "[idx/total · pct%] " before the
+        // icon (added by the suite restructure) — strip it before checking for ✅/❌, or
+        // every test line falls through to 'header' and the pass/fail counts read 0/0.
+        const unprefixed = t.replace(/^\[\d+\/\d+\s*·\s*\d+%\]\s*/, '');
+        if (unprefixed.startsWith('✅')) {
+            rows.push({ kind: 'pass', name: unprefixed.replace(/^✅\s*/, '').trim(), indent });
+        } else if (unprefixed.startsWith('❌')) {
+            const raw  = unprefixed.replace(/^❌\s*/, '').trim();
             const name = raw.replace(/\s*→.*$/, '').trim();
             const msg  = raw.includes('→') ? raw.split(/\s*→\s*/).slice(1).join(' → ') : '';
             rows.push({ kind: 'fail', name, msg, indent });
