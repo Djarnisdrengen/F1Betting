@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS challenge_answers (
 -- Prediction Duels
 CREATE TABLE IF NOT EXISTS duels (
     id VARCHAR(36) PRIMARY KEY,
-    race_id VARCHAR(36) NOT NULL,
+    race_id VARCHAR(36) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
     challenger_id VARCHAR(36) NOT NULL,
     opponent_id VARCHAR(36) NOT NULL,
     is_quick_match TINYINT(1) DEFAULT 0,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS duels (
 
 -- Quick Match waiting room — one open request per participant per race
 CREATE TABLE IF NOT EXISTS duel_quickmatch (
-    race_id VARCHAR(36) NOT NULL,
+    race_id VARCHAR(36) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
     participant_id VARCHAR(36) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uniq_race_participant (race_id, participant_id),
