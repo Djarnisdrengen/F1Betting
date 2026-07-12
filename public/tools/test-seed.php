@@ -1193,6 +1193,101 @@ if (($_GET['action'] ?? '') === 'clear_test_emails') {
     exit;
 }
 
+// ============================================================
+// Challenges seed actions
+// ============================================================
+
+// Action: seed_challenge_participant — creates a guest or core-linked participant
+if (($_GET['action'] ?? '') === 'seed_challenge_participant') {
+    require_once __DIR__ . '/../includes/challenges.php';
+
+    $email = $_GET['email'] ?? 'guest@test.localhost';
+    $coreUserId = $_GET['core_user_id'] ?? null;
+    $displayName = $_GET['display_name'] ?? null;
+    $status = $_GET['status'] ?? 'verified';
+    $lang = $_GET['language'] ?? 'da';
+
+    $participantId = seed_uuid();
+    $db->prepare("
+        INSERT INTO challenge_participants
+        (id, email, core_user_id, display_name, language, status, verified_at, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+    ")->execute([
+        $participantId,
+        $email && strpos($email, '@') !== false ? $email : null,
+        $coreUserId,
+        $displayName,
+        $lang,
+        $status
+    ]);
+
+    echo json_encode(['ok' => true, 'participant_id' => $participantId]);
+    exit;
+}
+
+// Action: seed_challenge_magic_link — creates a magic link token (with backdatable expiry)
+if (($_GET['action'] ?? '') === 'seed_challenge_magic_link') {
+    $participantId = $_GET['participant_id'] ?? '';
+    $expiresIn = intval($_GET['expires_in'] ?? 1800);
+    $used = intval($_GET['used'] ?? 0);
+
+    if (!$participantId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'participant_id required']);
+        exit;
+    }
+
+    $token = bin2hex(random_bytes(32));
+    $expiresAt = date('Y-m-d H:i:s', time() + $expiresIn);
+
+    $db->prepare("
+        INSERT INTO challenge_magic_links
+        (participant_id, token, expires_at, used, created_at)
+        VALUES (?, ?, ?, ?, NOW())
+    ")->execute([$participantId, $token, $expiresAt, $used]);
+
+    echo json_encode(['ok' => true, 'token' => $token]);
+    exit;
+}
+
+// Action: seed_challenge_points — creates CP ledger entries
+if (($_GET['action'] ?? '') === 'seed_challenge_points') {
+    $participantId = $_GET['participant_id'] ?? '';
+    $points = intval($_GET['points'] ?? 0);
+    $game = $_GET['game'] ?? 'rumor_or_not';
+    $sourceRef = $_GET['source_ref'] ?? 'test:' . bin2hex(random_bytes(8));
+
+    if (!$participantId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'participant_id required']);
+        exit;
+    }
+
+    $id = seed_uuid();
+    $db->prepare("
+        INSERT INTO challenge_points
+        (id, participant_id, game, points, source_ref, awarded_at)
+        VALUES (?, ?, ?, ?, ?, NOW())
+    ")->execute([$id, $participantId, $game, $points, $sourceRef]);
+
+    echo json_encode(['ok' => true, 'cp_id' => $id]);
+    exit;
+}
+
+// Action: cleanup_challenges — deletes all challenge data for e2e participants
+if (($_GET['action'] ?? '') === 'cleanup_challenges') {
+    $db->query("DELETE FROM challenge_points WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    $db->query("DELETE FROM challenge_answers WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    $db->query("DELETE FROM challenge_trivia_answers WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    $db->query("DELETE FROM duel_predictions WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    $db->query("DELETE FROM duels WHERE challenger_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost') OR opponent_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    $db->query("DELETE FROM duel_quickmatch WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    $db->query("DELETE FROM challenge_magic_links WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    $db->query("DELETE FROM challenge_participants WHERE email LIKE '%@test.localhost'");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Action: get_prefs — returns theme, font_stack, language, display_name for a given user email
 if (($_GET['action'] ?? '') === 'get_prefs') {
     $email = $_GET['email'] ?? '';
