@@ -694,11 +694,11 @@ return [
 
         // Challenges — join flow
         'ch_join_title'         => 'Join Challenges',
-        'ch_join_subtitle'      => 'Play today's games with just your email',
+        'ch_join_subtitle'      => 'Play today\'s games with just your email',
         'ch_join_send_magic_link' => 'Send Magic Link',
         'ch_join_success_check_email' => 'Check your email for a magic link (check spam too)',
         'ch_join_core_member_prompt' => 'You already have an account. Log in to access Challenges.',
-        'ch_join_didnt_receive' => 'Didn't receive the link? Try again.',
+        'ch_join_didnt_receive' => 'Didn\'t receive the link? Try again.',
         'rate_limited'          => 'Too many attempts. Please wait and try again later.',
 
         // Challenges — verify flow
