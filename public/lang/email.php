@@ -90,6 +90,22 @@ return [
         'email_bet_confirm_intro_updated'   => 'Dit bet på <strong>%s</strong> er opdateret.',
         'email_bet_confirm_picks'           => 'Dine valg:',
         'email_bet_confirm_meta'            => 'Registreret på %s: %s',
+
+        // Magic link email (Challenges)
+        'email_magic_subject'               => 'Din Challenges login-link',
+        'email_magic_greeting'              => 'Hej,',
+        'email_magic_intro'                 => 'Klik på linket nedenfor for at logge ind på Challenges.',
+        'email_magic_button'                => 'Log ind på Challenges',
+        'email_magic_expiry'                => 'Dette link udløber om 30 minutter.',
+        'email_magic_ignore'                => 'Hvis du ikke anmodede om dette, kan du ignorere denne email.',
+
+        // Duel result email
+        'email_duel_result_subject'         => 'Duellen er afsluttet: %s',
+        'email_duel_result_greeting'        => 'Hej %s,',
+        'email_duel_result_won'             => 'Du vandt duellen mod %s! +15 CP',
+        'email_duel_result_lost'            => 'Du tabte duellen mod %s. +5 CP',
+        'email_duel_result_tie'             => 'Duellen mod %s endte uafgjort. +10 CP',
+        'email_duel_result_void'            => 'Duellen mod %s blev annulleret (ufuldstendig).',
     ],
     'en' => [
         // MFA email OTP
@@ -181,5 +197,21 @@ return [
         'email_bet_confirm_intro_updated'   => 'Your bet on <strong>%s</strong> has been updated.',
         'email_bet_confirm_picks'           => 'Your picks:',
         'email_bet_confirm_meta'            => 'Recorded on %s: %s',
+
+        // Magic link email (Challenges)
+        'email_magic_subject'               => 'Your Challenges login link',
+        'email_magic_greeting'              => 'Hi,',
+        'email_magic_intro'                 => 'Click the link below to sign in to Challenges.',
+        'email_magic_button'                => 'Sign in to Challenges',
+        'email_magic_expiry'                => 'This link expires in 30 minutes.',
+        'email_magic_ignore'                => 'If you did not request this, you can ignore this email.',
+
+        // Duel result email
+        'email_duel_result_subject'         => 'Duel complete: %s',
+        'email_duel_result_greeting'        => 'Hi %s,',
+        'email_duel_result_won'             => 'You won the duel against %s! +15 CP',
+        'email_duel_result_lost'            => 'You lost the duel against %s. +5 CP',
+        'email_duel_result_tie'             => 'Your duel against %s ended in a tie. +10 CP',
+        'email_duel_result_void'            => 'Your duel against %s was voided (incomplete).',
     ],
 ];

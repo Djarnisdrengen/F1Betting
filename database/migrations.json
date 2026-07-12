@@ -10,6 +10,16 @@
     { "migration": "add_mfa.sql", "table": "user_recovery_codes" },
     { "migration": "add_mfa.sql", "table": "user_email_otp" },
     { "migration": "add_mfa.sql", "table": "user_passkeys" },
-    { "migration": "add_password_changed_at.sql", "table": "users", "columns": ["password_changed_at"] }
+    { "migration": "add_password_changed_at.sql", "table": "users", "columns": ["password_changed_at"] },
+    { "migration": "add_challenges.sql", "table": "challenge_participants" },
+    { "migration": "add_challenges.sql", "table": "challenge_points" },
+    { "migration": "add_challenges.sql", "table": "challenge_magic_links" },
+    { "migration": "add_challenges.sql", "table": "challenge_items" },
+    { "migration": "add_challenges.sql", "table": "challenge_answers" },
+    { "migration": "add_challenges.sql", "table": "duels" },
+    { "migration": "add_challenges.sql", "table": "duel_quickmatch" },
+    { "migration": "add_challenges.sql", "table": "duel_predictions" },
+    { "migration": "add_challenges.sql", "table": "challenge_trivia_questions" },
+    { "migration": "add_challenges.sql", "table": "challenge_trivia_answers" }
   ]
 }
