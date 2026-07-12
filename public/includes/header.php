@@ -76,6 +76,16 @@ if (!isset($_COOKIE['f1_lang'])) {
 $currentUser = getCurrentUser();
 $settings = getSettings();
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
+
+require_once __DIR__ . '/challenges.php';
+$challengeParticipant = getChallengeParticipant();
+$challengeCP = 0;
+if ($challengeParticipant) {
+    $stmt = getDB()->prepare("SELECT SUM(points) as total FROM challenge_points WHERE participant_id = ?");
+    $stmt->execute([$challengeParticipant['id']]);
+    $row = $stmt->fetch();
+    $challengeCP = intval($row['total'] ?? 0);
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?= $lang ?>">
@@ -99,6 +109,12 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             <span class="yr"><?= escape($settings['app_year']) ?></span>
         </span>
     </a>
+    <?php if ($challengeParticipant): ?>
+    <a href="/challenges.php" class="hf-cp-chip" title="<?= t('ch_challenge_points') ?>">
+        <i class="fas fa-bolt"></i>
+        <span><?= intval($challengeCP) ?></span>
+    </a>
+    <?php endif; ?>
     <button class="hf-hamburger" id="hf-hamburger" aria-label="Menu" aria-expanded="false" aria-controls="hf-drawer">
         <span class="bars"><span></span><span></span><span></span></span>
     </button>
