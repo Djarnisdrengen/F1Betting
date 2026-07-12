@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/_ds_bundle.js"></script>
+  <style>
+    @keyframes pp-pop { from { opacity:0; transform:translateY(12px) scale(.98);} to { opacity:1; transform:none;} }
+    @keyframes pp-drop { from { opacity:0; transform:translateY(-8px);} to { opacity:1; transform:none;} }
+    @keyframes pp-fade { from { opacity:0;} to { opacity:1;} }
+  </style>
+</helmet>
+<div class="hf-frame hf-frame-xs" style="width:100%;height:100%;border-radius:0;border:none;box-shadow:none;background:var(--bg-primary);position:relative">
+
+  <!-- ================= TOP BAR (site pages) ================= -->
+  <sc-if value="{{ siteChrome }}" hint-placeholder-val="{{ true }}">
+    <div class="hf-top">
+      <a class="hf-logo" style="cursor:pointer" onClick="{{ goHome }}"><span class="hf-logo-mark">F1</span><span class="hf-logo-text">Frederikssund F1<span class="yr">'26</span></span></a>
+      <div style="display:flex;align-items:center;gap:10px">
+        <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(225,6,0,.14);border:1px solid rgba(225,6,0,.4);color:var(--f1-red-light);padding:5px 11px;border-radius:9999px;font-size:12px;font-family:var(--mono);font-weight:700;cursor:pointer" onClick="{{ goChallenges }}"><i class="fa-solid fa-bolt"></i>{{ cp }} CP</span>
+        </sc-if>
+        <button class="hf-hamburger" onClick="{{ openMenu }}"><span class="bars"><span></span><span></span><span></span></span></button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ================= HOME ================= -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch">
+
+      <!-- BETWEEN RACES → challenges hero on top -->
+      <sc-if value="{{ betweenRaces }}" hint-placeholder-val="{{ true }}">
+        <div style="position:relative;padding:32px 16px 26px;overflow:hidden;background:radial-gradient(circle at 84% -15%, rgba(225,6,0,.4), transparent 55%), radial-gradient(circle at 5% 125%, rgba(251,191,36,.14), transparent 50%), var(--bg-secondary);border-bottom:1px solid var(--border-soft)">
+          <span class="hf-hero-eyebrow">{{ tHeroEyebrow }}</span>
+          <div style="font-family:var(--display);font-weight:900;font-size:36px;line-height:.98;letter-spacing:-.02em;margin-top:14px">Paddock<br>Challenges</div>
+          <div class="text-secondary" style="font-size:14px;margin-top:12px;max-width:30ch">{{ tHeroSub }}</div>
+          <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:20px;margin-top:18px">
+              <div><div style="font-family:var(--display);font-weight:900;font-size:26px;color:var(--gold);line-height:1">{{ cp }}</div><div class="hf-stat-l">{{ tYourCp }}</div></div>
+              <div><div style="font-family:var(--display);font-weight:900;font-size:26px;line-height:1">P4</div><div class="hf-stat-l">{{ tRank }}</div></div>
+              <div><div style="font-family:var(--display);font-weight:900;font-size:26px;color:var(--f1-red-light);line-height:1"><i class="fa-solid fa-fire" style="font-size:20px"></i> 5</div><div class="hf-stat-l">{{ tStreak }}</div></div>
+            </div>
+          </sc-if>
+          <button class="hf-cta-primary" style="margin-top:20px" onClick="{{ goChallenges }}">{{ tPlayNow }} <span class="arrow">&rarr;</span></button>
+        </div>
+        <div class="hf-container">
+          <div class="hf-section-h" style="margin-top:20px"><h2>{{ tNextRace }}</h2><a onClick="{{ goRaces }}" style="cursor:pointer">{{ tRaces }}</a></div>
+          <div class="hf-racecard" onClick="{{ goRaces }}"><div class="hf-racenum">13</div><div style="flex:1"><div class="hf-racename">Hungarian GP</div><div class="hf-racemeta">Hungaroring · {{ tInDays }}</div></div><span class="hf-badge done">{{ tNotOpen }}</span></div>
+          <div class="hf-section-h" style="margin-top:22px"><h2>{{ tLeaderboard }}</h2><a onClick="{{ goBoard }}" style="cursor:pointer">{{ tFullBoard }}</a></div>
+          <sc-for list="{{ boardTop }}" as="r" hint-placeholder-count="3">
+            <div class="hf-row {{ r.selfClass }}" style="grid-template-columns:32px 32px 1fr auto"><div class="hf-rank {{ r.rankClass }}">{{ r.rank }}</div><div class="hf-avatar">{{ r.initial }}</div><div class="hf-who"><div class="hf-who-name">{{ r.name }}</div></div><div class="hf-pts">{{ r.cp }}</div></div>
+          </sc-for>
+          <div style="height:16px"></div>
+        </div>
+      </sc-if>
+
+      <!-- RACE WEEKEND → race hero on top, challenges as strip -->
+      <sc-if value="{{ raceWeekendOn }}" hint-placeholder-val="{{ false }}">
+        <div class="hf-hero">
+          <span class="hf-hero-eyebrow">{{ tRaceEyebrow }}</span>
+          <div class="hf-hero-title" style="font-size:34px">British Grand Prix</div>
+          <div class="hf-hero-meta"><span><i class="fa-solid fa-map-marker-alt"></i> Silverstone</span><span class="dot"></span><span>6 Jul · 15:00</span></div>
+          <div class="hf-countdown">
+            <div class="hf-cd-cell"><div class="hf-cd-num">03</div><div class="hf-cd-label">Days</div></div>
+            <div class="hf-cd-cell"><div class="hf-cd-num">14</div><div class="hf-cd-label">Hrs</div></div>
+            <div class="hf-cd-cell"><div class="hf-cd-num">22</div><div class="hf-cd-label">Min</div></div>
+            <div class="hf-cd-cell"><div class="hf-cd-num">08</div><div class="hf-cd-label">Sec</div></div>
+          </div>
+          <button class="hf-cta-primary">{{ tPlaceBet }} <span class="arrow">&rarr;</span></button>
+        </div>
+        <div class="hf-container">
+          <div style="margin-top:18px;border-radius:12px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border-color);display:flex;align-items:center;gap:12px;cursor:pointer" onClick="{{ goChallenges }}">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(225,6,0,.14);color:var(--f1-red-light);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0"><i class="fa-solid fa-gamepad"></i></div>
+            <div style="flex:1;min-width:0"><div style="font-family:var(--display);font-weight:800;font-size:14px">Challenges</div><div class="text-muted" style="font-size:11.5px">{{ cp }} CP · trivia live · a duel waiting</div></div>
+            <i class="fa-solid fa-chevron-right text-muted" style="font-size:12px"></i>
+          </div>
+          <div class="hf-section-h" style="margin-top:22px"><h2>{{ tUpcoming }}</h2><a onClick="{{ goRaces }}" style="cursor:pointer">All</a></div>
+          <div class="hf-racecard"><div class="hf-racenum">13</div><div style="flex:1"><div class="hf-racename">Hungarian GP</div><div class="hf-racemeta">Hungaroring · 20 Jul</div></div><span class="hf-badge soon">Soon</span></div>
+          <div style="height:16px"></div>
+        </div>
+      </sc-if>
+
+    </div>
+  </sc-if>
+
+  <!-- ================= RACES (stub) ================= -->
+  <sc-if value="{{ isRaces }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;min-height:0;overflow-y:auto">
+      <div class="hf-container">
+        <div class="hf-pageh"><div class="crumb">{{ tSeason }}</div><h1 style="font-size:28px">{{ tRaces }}</h1></div>
+        <div class="hf-racecard"><div class="hf-racenum">12</div><div style="flex:1"><div class="hf-racename">British GP</div><div class="hf-racemeta">Silverstone · 6 Jul</div></div><span class="hf-badge open">Open</span></div>
+        <div class="hf-racecard"><div class="hf-racenum">13</div><div style="flex:1"><div class="hf-racename">Hungarian GP</div><div class="hf-racemeta">Hungaroring · 20 Jul</div></div><span class="hf-badge soon">Soon</span></div>
+        <div class="hf-racecard"><div class="hf-racenum">14</div><div style="flex:1"><div class="hf-racename">Belgian GP</div><div class="hf-racemeta">Spa · 27 Jul</div></div><span class="hf-badge soon">Soon</span></div>
+        <div class="hf-racecard"><div class="hf-racenum">11</div><div style="flex:1"><div class="hf-racename">Austrian GP</div><div class="hf-racemeta">Red Bull Ring · 29 Jun</div></div><span class="hf-badge done">Done</span></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ================= BOARD (stub) ================= -->
+  <sc-if value="{{ isBoard }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;min-height:0;overflow-y:auto">
+      <div class="hf-container">
+        <div class="hf-pageh"><div class="crumb">{{ tSeason }}</div><h1 style="font-size:28px">{{ tLeaderboard }}</h1><p class="lede">{{ tBoardLede }}</p></div>
+        <sc-for list="{{ boardFull }}" as="r" hint-placeholder-count="6">
+          <div class="hf-row {{ r.selfClass }}" style="grid-template-columns:32px 32px 1fr auto auto"><div class="hf-rank {{ r.rankClass }}">{{ r.rank }}</div><div class="hf-avatar">{{ r.initial }}</div><div class="hf-who"><div class="hf-who-name" style="display:flex;align-items:center;gap:7px">{{ r.name }}<sc-if value="{{ r.isYou }}" hint-placeholder-val="{{ false }}"><span class="rp-you-tag">{{ tYou }}</span></sc-if></div><div class="hf-who-sub">{{ r.sub }}</div></div><div class="hf-stars">&#9733;{{ r.stars }}</div><div class="hf-pts">{{ r.cp }}</div></div>
+        </sc-for>
+        <div style="height:16px"></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ================= CHALLENGES HUB (arena) ================= -->
+  <sc-if value="{{ isChallenges }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:radial-gradient(circle at 100% -4%, rgba(225,6,0,.30), transparent 44%), radial-gradient(circle at -12% 110%, rgba(251,191,36,.10), transparent 46%), repeating-linear-gradient(135deg, transparent 0 23px, rgba(255,255,255,.014) 23px 24px), #0b0b0d;animation:pp-fade .25s ease">
+
+      <div style="height:7px;background:repeating-conic-gradient(#f5f5f7 0 25%, #0b0b0d 0 50%) 0 0/14px 14px;flex-shrink:0"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:linear-gradient(90deg,#17171b,#0d0d10);border-bottom:2px solid var(--f1-red);flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:11px">
+          <i class="fa-solid fa-chevron-left" style="color:var(--text-muted);font-size:14px;cursor:pointer" onClick="{{ goHome }}"></i>
+          <span style="width:30px;height:30px;border-radius:8px;background:var(--f1-red);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 3px 10px rgba(225,6,0,.5)"><i class="fa-solid fa-gamepad"></i></span>
+          <div style="line-height:1.05">
+            <div style="font-family:var(--display);font-weight:700;font-size:9px;letter-spacing:.14em;color:var(--f1-red-light)">{{ tGamesZone }}</div>
+            <div style="font-family:var(--display);font-weight:900;font-size:17px;letter-spacing:-.01em;color:#f5f5f7">Paddock Challenges</div>
+          </div>
+        </div>
+        <button class="hf-hamburger" style="width:34px;height:34px;color:#f5f5f7" onClick="{{ openMenu }}"><span class="bars"><span></span><span></span><span></span></span></button>
+      </div>
+
+      <div style="padding:12px 14px 10px;flex-shrink:0">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+          <button style="{{ segOverviewStyle }}" onClick="{{ segToOverview }}">{{ tOverview }}</button>
+          <button style="{{ segRumorsStyle }}" onClick="{{ segToRumors }}">{{ tRumors }}</button>
+          <button style="{{ segDuelsStyle }}" onClick="{{ segToDuels }}">{{ tDuels }}</button>
+          <button style="{{ segTriviaStyle }}" onClick="{{ segToTrivia }}">{{ tTrivia }}</button>
+        </div>
+      </div>
+
+      <div style="flex:1;min-height:0;overflow-y:auto;padding:2px 14px 16px">
+
+        <!-- OVERVIEW -->
+        <sc-if value="{{ segOverview }}" hint-placeholder-val="{{ true }}">
+          <div style="border-radius:16px;overflow:hidden;border:1px solid rgba(225,6,0,.4);background:linear-gradient(160deg, rgba(225,6,0,.20), rgba(22,22,26,.55));box-shadow:0 0 34px rgba(225,6,0,.16)">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 15px;border-bottom:1px solid rgba(225,6,0,.28)">
+              <span class="hf-stat-l" style="color:#ff8a86">{{ tYourStanding }}</span>
+              <span style="font-family:var(--display);font-weight:900;font-size:12px;color:#fff;background:var(--f1-red);padding:3px 9px;border-radius:6px">P4 / 8</span>
+            </div>
+            <div style="padding:15px 15px 8px;display:flex;align-items:flex-end;gap:12px">
+              <div style="font-family:var(--display);font-weight:900;font-size:50px;line-height:.8;color:var(--gold);text-shadow:0 0 24px rgba(251,191,36,.4);font-variant-numeric:tabular-nums">{{ cp }}</div>
+              <div style="padding-bottom:5px"><div class="hf-stat-l">{{ tChallengePts }}</div><div style="font-family:var(--display);font-weight:700;font-size:12px;color:var(--status-success)"><i class="fa-solid fa-arrow-trend-up"></i> +{{ earned }} {{ tThisWeek }}</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:9px 15px;border-top:1px solid rgba(255,255,255,.06);color:var(--f1-red-light);font-family:var(--display);font-weight:700;font-size:12px"><i class="fa-solid fa-fire"></i>{{ tStreakLine }}</div>
+          </div>
+
+          <div style="border-radius:14px;padding:13px 15px;margin-top:12px;background:linear-gradient(120deg, rgba(251,191,36,.14), rgba(22,22,26,.5));border:1px solid rgba(251,191,36,.32)">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-family:var(--display);font-weight:800;font-size:13px;display:flex;align-items:center;gap:8px;color:#f5f5f7"><i class="fa-solid fa-star" style="color:var(--gold)"></i>{{ tPerfectWeek }}</div><span class="label-mono" style="font-size:11px;color:var(--text-secondary)">{{ pwCount }} / 6</span></div>
+            <div style="display:flex;gap:5px;margin-top:11px">
+              <sc-for list="{{ pwCells }}" as="c" hint-placeholder-count="6"><div style="flex:1;height:7px;border-radius:4px;background:{{ c.bg }}"></div></sc-for>
+            </div>
+          </div>
+
+          <div class="hf-stat-l" style="margin:20px 0 11px">{{ tGamesLive }}</div>
+
+          <div style="position:relative;border-radius:14px;background:rgba(35,35,40,.62);border:1px solid var(--border-color);padding:15px 14px 14px;margin-bottom:10px;overflow:hidden;cursor:pointer" onClick="{{ segToRumors }}">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--f1-red)"></div>
+            <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:11px;background:rgba(225,6,0,.16);color:var(--f1-red-light);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0"><i class="fa-solid fa-circle-question"></i></div><div style="flex:1;min-width:0"><div style="font-family:var(--display);font-weight:800;font-size:14px;color:#f5f5f7">Rumor or Not</div><div class="text-muted" style="font-size:11.5px">+10 CP each</div></div><span class="label-mono" style="font-size:12px;color:var(--text-secondary)">{{ rProgress }}</span></div>
+            <div style="height:6px;border-radius:4px;background:rgba(255,255,255,.08);margin-top:11px;overflow:hidden"><div style="height:100%;width:{{ rPct }};background:var(--f1-red)"></div></div>
+          </div>
+
+          <div style="position:relative;border-radius:14px;background:rgba(35,35,40,.62);border:1px solid var(--border-color);padding:15px 14px 14px;margin-bottom:10px;overflow:hidden;cursor:pointer" onClick="{{ segToTrivia }}">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#3b82f6"></div>
+            <div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:11px;background:rgba(59,130,246,.18);color:#7fb2ff;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0"><i class="fa-solid fa-brain"></i></div><div style="flex:1;min-width:0"><div style="font-family:var(--display);font-weight:800;font-size:14px;color:#f5f5f7">Paddock Trivia</div><div class="text-muted" style="font-size:11.5px">+5 CP · +20 perfect week</div></div><span class="label-mono" style="font-size:12px;color:var(--text-secondary)">{{ tProgress }}</span></div>
+            <div style="height:6px;border-radius:4px;background:rgba(255,255,255,.08);margin-top:11px;overflow:hidden"><div style="height:100%;width:{{ tPct }};background:#3b82f6"></div></div>
+          </div>
+
+          <div style="position:relative;border-radius:14px;background:rgba(35,35,40,.62);border:1px solid rgba(245,158,11,.4);padding:15px 14px 14px;overflow:hidden;cursor:pointer" onClick="{{ segToDuels }}">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--status-warning)"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:12px;min-width:0"><div style="width:40px;height:40px;border-radius:11px;background:rgba(245,158,11,.18);color:var(--status-warning);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0"><i class="fa-solid fa-bolt"></i></div><div style="min-width:0"><div style="font-family:var(--display);font-weight:800;font-size:14px;color:#f5f5f7">Prediction Duels</div><div class="text-muted" style="font-size:11.5px">Henrik challenged you</div></div></div><span class="hf-badge soon" style="font-size:9px">{{ tYourMove }}</span></div>
+          </div>
+        </sc-if>
+
+        <!-- RUMORS -->
+        <sc-if value="{{ segRumors }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ rActive }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;justify-content:space-between"><span class="hf-stat-l">Today's deck</span><span class="label-mono" style="font-size:12px;color:var(--text-secondary)">{{ rProgress }}</span></div>
+            <div style="border-radius:16px;background:rgba(35,35,40,.7);border:1.5px solid {{ rCardBorder }};padding:20px 18px;margin-top:12px;animation:pp-pop .28s ease">
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="hf-badge" style="background:rgba(225,6,0,.14);color:var(--f1-red-light);border:1px solid rgba(225,6,0,.4)">{{ rContext }}</span><sc-if value="{{ rAnswered }}" hint-placeholder-val="{{ false }}"><span style="font-family:var(--display);font-weight:800;font-size:12px;padding:4px 10px;border-radius:7px;background:{{ rStampBg }};color:#fff">{{ rStamp }}</span></sc-if></div>
+              <div style="font-family:var(--display);font-weight:800;font-size:18px;line-height:1.32;margin-top:15px;color:#f5f5f7">{{ rText }}</div>
+              <sc-if value="{{ rAnswered }}" hint-placeholder-val="{{ false }}"><div style="margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.08)"><div style="display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:14px;color:{{ rRevealColor }}"><i class="{{ rRevealIcon }}"></i>{{ rRevealTitle }} · {{ rRevealCp }}</div><div class="text-secondary" style="font-size:12.5px;line-height:1.5;margin-top:7px">{{ rExplain }}</div></div></sc-if>
+            </div>
+            <sc-if value="{{ rUnanswered }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+                <button onClick="{{ guessRumor }}" style="height:56px;border-radius:14px;border:1.5px solid var(--f1-red);background:rgba(225,6,0,.12);color:var(--f1-red-light);font-family:var(--display);font-weight:800;font-size:15px;cursor:pointer">Rumor</button>
+                <button onClick="{{ guessReal }}" style="height:56px;border-radius:14px;border:1.5px solid var(--status-success);background:rgba(16,185,129,.12);color:#34d399;font-family:var(--display);font-weight:800;font-size:15px;cursor:pointer">Real</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ rAnswered }}" hint-placeholder-val="{{ false }}"><button class="hf-cta-primary" style="width:100%;margin-top:16px" onClick="{{ nextRumor }}">{{ rNextLabel }} <span class="arrow">&rarr;</span></button></sc-if>
+          </sc-if>
+          <sc-if value="{{ rDone }}" hint-placeholder-val="{{ false }}"><div style="text-align:center;padding:44px 12px"><div style="font-size:38px;color:var(--gold)"><i class="fa-solid fa-champagne-glasses"></i></div><div style="font-family:var(--display);font-weight:800;font-size:19px;margin-top:12px;color:#f5f5f7">Deck cleared</div><div class="text-secondary" style="font-size:13px;margin-top:6px">Fresh cards drop tomorrow.</div><button class="hf-cta-primary" style="margin-top:16px" onClick="{{ segToOverview }}">Back to overview</button></div></sc-if>
+        </sc-if>
+
+        <!-- TRIVIA -->
+        <sc-if value="{{ segTrivia }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ triviaActive }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;justify-content:space-between"><span class="hf-stat-l">This week's quiz</span><span class="label-mono" style="font-size:12px;color:var(--text-secondary)">{{ tProgress }}</span></div>
+            <div style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid var(--border-color);padding:20px 18px;margin-top:12px;animation:pp-pop .28s ease">
+              <span class="hf-badge" style="background:rgba(59,130,246,.14);color:#7fb2ff;border:1px solid rgba(59,130,246,.35)">{{ qContext }}</span>
+              <div style="font-family:var(--display);font-weight:800;font-size:18px;line-height:1.3;margin-top:14px;color:#f5f5f7">{{ qText }}</div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+                <sc-for list="{{ qOptions }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:11px;text-align:left;padding:13px 14px;border-radius:12px;background:{{ o.bg }};border:1.5px solid {{ o.border }};color:{{ o.color }};font-family:var(--body);font-weight:600;font-size:14px;cursor:pointer;pointer-events:{{ o.pe }}"><span style="width:22px;height:22px;flex-shrink:0;border-radius:6px;background:rgba(255,255,255,.06);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:11px">{{ o.letter }}</span><span style="flex:1">{{ o.text }}</span><sc-if value="{{ o.hasIcon }}" hint-placeholder-val="{{ false }}"><i class="{{ o.icon }}" style="color:{{ o.iconColor }}"></i></sc-if></button></sc-for>
+              </div>
+              <sc-if value="{{ qAnswered }}" hint-placeholder-val="{{ false }}"><div style="margin-top:14px;padding:13px;border-radius:11px;background:{{ qRevealBg }};border:1px solid {{ qRevealBorder }}"><div style="display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:14px;color:{{ qRevealColor }}"><i class="{{ qRevealIcon }}"></i>{{ qRevealTitle }} · {{ qRevealCp }}</div><div class="text-secondary" style="font-size:12.5px;line-height:1.5;margin-top:7px">{{ qExplain }}</div></div><button class="hf-cta-primary" style="width:100%;margin-top:13px" onClick="{{ nextQ }}">{{ qNextLabel }} <span class="arrow">&rarr;</span></button></sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{ triviaDone }}" hint-placeholder-val="{{ false }}"><div style="text-align:center;padding:44px 12px"><div style="font-size:38px;color:var(--gold)"><i class="{{ tvDoneIcon }}"></i></div><div style="font-family:var(--display);font-weight:800;font-size:19px;margin-top:12px;color:#f5f5f7">{{ tvDoneTitle }}</div><div class="text-secondary" style="font-size:13px;margin-top:6px">{{ tvDoneSub }}</div><button class="hf-cta-primary" style="margin-top:16px" onClick="{{ segToOverview }}">Back to overview</button></div></sc-if>
+        </sc-if>
+
+        <!-- DUELS -->
+        <sc-if value="{{ segDuels }}" hint-placeholder-val="{{ false }}">
+          <div style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid rgba(245,158,11,.4);padding:16px;animation:pp-pop .28s ease">
+            <div style="display:flex;align-items:center;justify-content:space-between"><span class="label-mono" style="font-size:11px;color:var(--text-muted)">British GP</span><span class="hf-badge soon" style="font-size:9px">{{ tYourMove }}</span></div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:14px">
+              <div style="flex:1;text-align:center"><div style="width:44px;height:44px;border-radius:50%;margin:0 auto;background:var(--bg-hover);color:#f5f5f7;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:15px">HE</div><div style="font-family:var(--display);font-weight:700;font-size:13px;margin-top:6px;color:#f5f5f7">Henrik</div><div class="label-mono" style="font-size:11px;color:var(--text-secondary);margin-top:5px">VER · NOR · LEC</div></div>
+              <div style="font-family:var(--display);font-weight:900;font-size:15px;color:var(--gold)">VS</div>
+              <div style="flex:1;text-align:center"><div style="width:44px;height:44px;border-radius:50%;margin:0 auto;background:var(--f1-red);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:15px">TH</div><div style="font-family:var(--display);font-weight:700;font-size:13px;margin-top:6px;color:#f5f5f7">You</div><div class="label-mono" style="font-size:11px;color:var(--text-muted);margin-top:5px">{{ duelPick }}</div></div>
+            </div>
+            <button class="hf-cta-primary" style="width:100%;margin-top:16px" onClick="{{ respondDuel }}">{{ duelBtnLabel }} <span class="arrow">&rarr;</span></button>
+          </div>
+          <div class="hf-stat-l" style="margin:20px 0 10px">Settled</div>
+          <div style="border-radius:14px;background:rgba(35,35,40,.62);border:1px solid var(--border-color);padding:14px"><div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:var(--bg-hover);color:#f5f5f7;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:12px">SØ</div><div><div style="font-family:var(--display);font-weight:700;font-size:13px;color:#f5f5f7">vs Søren</div><div class="text-muted" style="font-size:11px">Austrian GP</div></div></div><span style="font-family:var(--display);font-weight:800;font-size:13px;color:var(--status-success)">Won +15</span></div></div>
+        </sc-if>
+
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ================= BOTTOM BAR ================= -->
+  <div class="hf-bottom" style="grid-template-columns:repeat(4,1fr);{{ bottomBarBg }}">
+    <button class="{{ navHomeCls }}" onClick="{{ goHome }}"><span class="hf-bb-icon"><i class="fa-solid fa-house"></i></span>{{ tNavHome }}</button>
+    <button class="{{ navRacesCls }}" onClick="{{ goRaces }}"><span class="hf-bb-icon"><i class="fa-solid fa-flag"></i></span>{{ tNavRaces }}</button>
+    <button class="{{ navBoardCls }}" onClick="{{ goBoard }}"><span class="hf-bb-icon"><i class="fa-solid fa-trophy"></i></span>{{ tNavBoard }}</button>
+    <button class="{{ navChCls }}" onClick="{{ goChallenges }}"><span class="hf-bb-icon" style="background:var(--f1-red);color:#fff;border-radius:9px;width:30px;height:30px;box-shadow:0 3px 10px rgba(225,6,0,.5)"><i class="fa-solid fa-gamepad"></i></span>{{ tNavChallenges }}</button>
+  </div>
+
+  <!-- ================= BURGER MENU ================= -->
+  <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:60" onClick="{{ closeMenu }}">
+      <div class="hf-drawer" style="max-height:calc(100% - 24px);overflow-y:auto" onClick="{{ stop }}">
+        <a class="{{ mHomeCls }}" style="cursor:pointer" onClick="{{ goHome }}"><i class="fa-solid fa-house"></i> {{ tNavHome }}</a>
+        <a class="hf-drawer-row" style="cursor:pointer" onClick="{{ goRaces }}"><i class="fa-solid fa-flag"></i> {{ tNavRaces }}</a>
+        <a class="{{ mBoardCls }}" style="cursor:pointer" onClick="{{ goBoard }}"><i class="fa-solid fa-trophy"></i> {{ tLeaderboard }}</a>
+        <a class="hf-drawer-row" style="cursor:pointer"><i class="fa-solid fa-book"></i> {{ tRules }}</a>
+        <a class="{{ mChCls }}" style="cursor:pointer;color:var(--text-primary)" onClick="{{ goChallenges }}"><i class="fa-solid fa-gamepad" style="color:var(--f1-red)"></i> Challenges <span class="hf-badge open" style="margin-left:auto;padding:2px 8px;font-size:9px">New</span></a>
+        <a class="hf-drawer-row" style="cursor:pointer"><i class="fa-solid fa-arrow-up-right-from-square"></i> {{ tPublicBoard }}</a>
+        <div class="hf-divider"></div>
+
+        <div style="border-radius:12px;padding:6px 4px 8px">
+          <div class="hf-toc-title" style="padding:6px 12px 4px">{{ tPreferences }}</div>
+          <div class="hf-drawer-row" style="justify-content:space-between;padding:9px 12px"><span><i class="fa-solid fa-circle-half-stroke"></i> {{ tTheme }}</span><div class="hf-seg" style="padding:2px"><button class="{{ themeDarkCls }}" style="padding:6px 11px" onClick="{{ setDark }}"><i class="fa-solid fa-moon"></i></button><button class="{{ themeLightCls }}" style="padding:6px 11px" onClick="{{ setLight }}"><i class="fa-solid fa-sun"></i></button></div></div>
+          <div class="hf-drawer-row" style="justify-content:space-between;padding:9px 12px"><span><i class="fa-solid fa-globe"></i> {{ tLanguage }}</span><div class="hf-seg" style="padding:2px"><button class="{{ langDaCls }}" style="padding:6px 12px;font-size:12px" onClick="{{ setDa }}">DA</button><button class="{{ langEnCls }}" style="padding:6px 12px;font-size:12px" onClick="{{ setEn }}">EN</button></div></div>
+          <div class="hf-drawer-row" style="justify-content:space-between;padding:9px 12px"><span><i class="fa-solid fa-font"></i> {{ tFont }}</span><div class="hf-seg" style="padding:2px"><button class="{{ fontBrandCls }}" style="padding:6px 12px;font-size:12px" onClick="{{ setBrand }}">{{ tBrand }}</button><button class="{{ fontSysCls }}" style="padding:6px 12px;font-size:12px" onClick="{{ setSystem }}">{{ tSystem }}</button></div></div>
+        </div>
+        <div class="hf-divider"></div>
+        <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
+          <a class="hf-drawer-row" style="cursor:pointer"><i class="fa-solid fa-user"></i> {{ tProfile }}</a>
+          <a class="hf-drawer-row" style="cursor:pointer;color:var(--text-muted)" onClick="{{ signOut }}"><i class="fa-solid fa-right-from-bracket"></i> {{ tSignOut }}</a>
+        </sc-if>
+        <sc-if value="{{ signedOut }}" hint-placeholder-val="{{ false }}">
+          <a class="hf-drawer-row" style="cursor:pointer;color:var(--f1-red-light)" onClick="{{ signIn }}"><i class="fa-solid fa-right-to-bracket" style="color:var(--f1-red)"></i> {{ tSignIn }}</a>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ================= TOAST ================= -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:50%;bottom:84px;transform:translateX(-50%);z-index:70;background:var(--bg-card);border:1px solid var(--gold);color:var(--text-primary);padding:11px 18px;border-radius:9999px;font-family:var(--display);font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.45);white-space:nowrap;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-bolt" style="color:var(--gold)"></i>{{ toast }}</div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:402,&quot;height&quot;:874},&quot;raceWeekend&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;signedIn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+class Component extends DCLogic {
+  state = {
+    tab:'home', hubSeg:'overview', menuOpen:false,
+    theme:'dark', lang:'en', font:'brand', signedIn:true,
+    cp:215, earned:40,
+    rIdx:0, rAns:{},
+    tIdx:0, tAns:{},
+    duelResponded:false,
+    toast:null,
+  };
+
+  L = {
+    en:{ navHome:'Home', navRaces:'Races', navBoard:'Board', navChallenges:'Challenges',
+      heroEyebrow:'No race this week · Challenges live', heroSub:'Three quick games, no race needed. Keep your points climbing.',
+      yourCp:'Your CP', rank:'Rank', streak:'Day streak', playNow:'Play now',
+      raceEyebrow:'Betting open · Round 12', placeBet:'Place your bet', nextRace:'Next race', races:'Races',
+      inDays:'in 9 days', notOpen:'Not open', leaderboard:'Leaderboard', fullBoard:'Full board', upcoming:'Upcoming races',
+      season:'Season 2026', boardLede:'Rumor or Not + Duels + Trivia, combined.', you:'You',
+      rules:'Rules', publicBoard:'Public CP leaderboard', preferences:'Preferences', theme:'Theme', language:'Language', font:'Font', brand:'Brand', system:'System',
+      profile:'Profile', signOut:'Sign out', signIn:'Sign in',
+      gamesZone:'GAMES ZONE · LIVE', yourStanding:'Your standing', challengePts:'Challenge points', thisWeek:'this week',
+      perfectWeek:'Perfect Week', gamesLive:'Games live now', overview:'Overview', rumors:'Rumors', duels:'Duels', trivia:'Trivia', yourMove:'Your move' },
+    da:{ navHome:'Hjem', navRaces:'Løb', navBoard:'Stilling', navChallenges:'Challenges',
+      heroEyebrow:'Ingen løb i denne uge · Challenges live', heroSub:'Tre hurtige spil, intet løb nødvendigt. Hold dine point stigende.',
+      yourCp:'Dine CP', rank:'Plads', streak:'Dages stime', playNow:'Spil nu',
+      raceEyebrow:'Betting åben · Runde 12', placeBet:'Placér dit bet', nextRace:'Næste løb', races:'Løb',
+      inDays:'om 9 dage', notOpen:'Ikke åben', leaderboard:'Stilling', fullBoard:'Hele tavlen', upcoming:'Kommende løb',
+      season:'Sæson 2026', boardLede:'Rumor or Not + Duels + Trivia, lagt sammen.', you:'DIG',
+      rules:'Regler', publicBoard:'Offentlig CP-tavle', preferences:'Præferencer', theme:'Tema', language:'Sprog', font:'Skrift', brand:'Brand', system:'System',
+      profile:'Profil', signOut:'Log ud', signIn:'Log ind',
+      gamesZone:'SPILZONE · LIVE', yourStanding:'Din placering', challengePts:'Challenge points', thisWeek:'i denne uge',
+      perfectWeek:'Perfekt uge', gamesLive:'Spil live nu', overview:'Oversigt', rumors:'Rygter', duels:'Dueller', trivia:'Trivia', yourMove:'Din tur' },
+  };
+
+  RUMORS = [
+    { id:'r1', context:'Grid expansion', isReal:true,  text:'Cadillac enters F1 in 2026 as the 11th team, running a Ferrari power unit for its first seasons.', explain:'Real — Cadillac joins the grid in 2026 as an 11th team with a Ferrari customer engine deal.' },
+    { id:'r2', context:'Silly season', isReal:false, text:'McLaren has a secret clause letting Max Verstappen test their 2026 car over the summer break.', explain:'Rumor — a synthetic leak. No such clause exists.' },
+    { id:'r3', context:'Technical rules', isReal:true, text:'2026 cars feature active aerodynamics, with movable front and rear wings.', explain:'Real — active aero is core to the 2026 car concept.' },
+  ];
+  TRIVIA = [
+    { id:'q1', context:'History', q:'Which team has won the most Constructors\u2019 Championships?', options:['McLaren','Ferrari','Mercedes'], answer:1, explain:'Ferrari leads with 16 Constructors\u2019 titles.' },
+    { id:'q2', context:'Scoring', q:'How many points does a race win score?', options:['10','18','25','30'], answer:2, explain:'A win is worth 25 points.' },
+    { id:'q3', context:'Flags', q:'Which flag signals the end of a session?', options:['Yellow','Chequered','Blue'], answer:1, explain:'The chequered flag marks the end of a session or race.' },
+  ];
+  BASE = [
+    { name:'Henrik', cp:285, core:true, stars:3 },
+    { name:'Søren', cp:240, core:true, stars:2 },
+    { name:'Guest 4471', cp:195, core:false, stars:1 },
+    { name:'Mette', cp:150, core:true, stars:1 },
+    { name:'Guest 8802', cp:90, core:false, stars:0 },
+  ];
+
+  componentDidMount(){ if(this.props.raceWeekend!==undefined){} if(this.props.signedIn===false) this.setState({signedIn:false}); }
+
+  initialsOf(n){ const p=n.trim().split(/\s+/); return p.length>1?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase(); }
+  flash(m){ this.setState({toast:m}); clearTimeout(this._t); this._t=setTimeout(()=>this.setState({toast:null}),1600); }
+  goTab(t){ return ()=>this.setState({tab:t, menuOpen:false}); }
+
+  segStyle(active){
+    return active
+      ? 'border-radius:8px;padding:8px 4px;font-family:var(--display);font-size:12px;cursor:pointer;border:none;background:var(--f1-red);color:#fff;font-weight:700;box-shadow:0 3px 10px rgba(225,6,0,.4)'
+      : 'border-radius:8px;padding:8px 4px;font-family:var(--display);font-size:12px;cursor:pointer;border:1px solid var(--border-color);background:rgba(255,255,255,.03);color:var(--text-secondary);font-weight:600';
+  }
+
+  answerRumor(guessReal){
+    const s=this.state, cur=this.RUMORS[s.rIdx]; if(!cur||cur.id in s.rAns) return;
+    const correct=(guessReal===cur.isReal), gain=correct?10:0;
+    this.setState(st=>({ rAns:{...st.rAns,[cur.id]:correct}, cp:st.cp+gain, earned:st.earned+gain }));
+    this.flash(correct?'+10 CP':'No points — next');
+  }
+  answerTrivia(idx){
+    const s=this.state, q=this.TRIVIA[s.tIdx]; if(!q||q.id in s.tAns) return;
+    const correct=(idx===q.answer), gain=correct?5:0;
+    this.setState(st=>({ tAns:{...st.tAns,[q.id]:idx}, cp:st.cp+gain, earned:st.earned+gain }));
+    this.flash(correct?'+5 CP':'No points — next');
+  }
+
+  renderVals(){
+    const s=this.state, t=this.L[s.lang];
+    const raceWeekend=this.props.raceWeekend===true;
+    const isHome=s.tab==='home', isRaces=s.tab==='races', isBoard=s.tab==='board', isCh=s.tab==='challenges';
+
+    // board
+    const list=this.BASE.map(b=>({...b}));
+    if(s.signedIn) list.push({name:'Thomas',cp:s.cp,core:true,stars:1,isYou:true});
+    list.sort((a,b)=>b.cp-a.cp);
+    const mkRow=(r,i)=>({ rank:i+1, name:r.name, cp:r.cp, stars:r.stars, initial:this.initialsOf(r.name), isYou:!!r.isYou,
+      selfClass:r.isYou?'self':'', rankClass:i===0?'r1':i===1?'r2':i===2?'r3':'', sub:r.core?'Core member':'Guest' });
+    const boardFull=list.map(mkRow);
+    const boardTop=list.slice(0,3).map(mkRow);
+
+    // rumor
+    const rTotal=this.RUMORS.length, rCount=Object.keys(s.rAns).length, rDone=s.rIdx>=rTotal;
+    const rCur=rDone?null:this.RUMORS[s.rIdx];
+    const rAnsd=rCur?(rCur.id in s.rAns):false, rCorrect=rCur&&rAnsd?s.rAns[rCur.id]:false;
+
+    // trivia
+    const qTotal=this.TRIVIA.length, qCount=Object.keys(s.tAns).length, qDone=s.tIdx>=qTotal;
+    const q=qDone?null:this.TRIVIA[s.tIdx];
+    const qAnsd=q?(q.id in s.tAns):false, qChosen=qAnsd?s.tAns[q.id]:-1, qCorrect=qAnsd&&qChosen===q.answer;
+    const qCorrectCount=Object.entries(s.tAns).filter(([id,ix])=>{const x=this.TRIVIA.find(z=>z.id===id);return x&&x.answer===ix;}).length;
+    const qOptions=q?q.options.map((text,idx)=>{
+      let bg='rgba(255,255,255,.03)',border='var(--border-color)',color='#f5f5f7',icon='',iconColor='';
+      if(qAnsd){ if(idx===q.answer){bg='rgba(16,185,129,.14)';border='var(--status-success)';color='#34d399';icon='fa-solid fa-circle-check';iconColor='var(--status-success)';}
+        else if(idx===qChosen){bg='rgba(225,6,0,.14)';border='var(--f1-red)';color='var(--f1-red-light)';icon='fa-solid fa-circle-xmark';iconColor='var(--f1-red)';}
+        else {color='var(--text-muted)';} }
+      return { text, letter:String.fromCharCode(65+idx), bg, border, color, icon, iconColor, hasIcon:!!icon, pe:qAnsd?'none':'auto', pick:()=>this.answerTrivia(idx) };
+    }):[];
+
+    // perfect week cells (rumor+trivia progress feeding the 6)
+    const pwCount=Math.min(6, rCount+qCount);
+    const pwCells=[0,1,2,3,4,5].map(i=>({ bg:i<pwCount?'var(--gold)':'rgba(255,255,255,.08)' }));
+
+    const dark=s.theme==='dark', light=s.theme==='light', da=s.lang==='da', en=s.lang==='en', brand=s.font==='brand', sys=s.font==='system';
+
+    return {
+      siteChrome:isHome||isRaces||isBoard,
+      isHome, isRaces, isBoard, isChallenges:isCh,
+      betweenRaces:isHome&&!raceWeekend, raceWeekendOn:isHome&&raceWeekend,
+      signedIn:s.signedIn, signedOut:!s.signedIn, cp:s.cp, earned:s.earned,
+
+      // nav
+      goHome:this.goTab('home'), goRaces:this.goTab('races'), goBoard:this.goTab('board'), goChallenges:this.goTab('challenges'),
+      navHomeCls:'hf-bb-item'+(isHome?' active':''), navRacesCls:'hf-bb-item'+(isRaces?' active':''),
+      navBoardCls:'hf-bb-item'+(isBoard?' active':''), navChCls:'hf-bb-item'+(isCh?' active':''),
+      bottomBarBg:isCh?'background:rgba(13,13,16,.95)':'',
+
+      // i18n chrome
+      tNavHome:t.navHome, tNavRaces:t.navRaces, tNavBoard:t.navBoard, tNavChallenges:t.navChallenges,
+      tHeroEyebrow:t.heroEyebrow, tHeroSub:t.heroSub, tYourCp:t.yourCp, tRank:t.rank, tStreak:t.streak, tPlayNow:t.playNow,
+      tRaceEyebrow:t.raceEyebrow, tPlaceBet:t.placeBet, tNextRace:t.nextRace, tRaces:t.races, tInDays:t.inDays, tNotOpen:t.notOpen,
+      tLeaderboard:t.leaderboard, tFullBoard:t.fullBoard, tUpcoming:t.upcoming, tSeason:t.season, tBoardLede:t.boardLede, tYou:t.you,
+      tRules:t.rules, tPublicBoard:t.publicBoard, tPreferences:t.preferences, tTheme:t.theme, tLanguage:t.language, tFont:t.font, tBrand:t.brand, tSystem:t.system,
+      tProfile:t.profile, tSignOut:t.signOut, tSignIn:t.signIn,
+      tGamesZone:t.gamesZone, tYourStanding:t.yourStanding, tChallengePts:t.challengePts, tThisWeek:t.thisWeek,
+      tPerfectWeek:t.perfectWeek, tGamesLive:t.gamesLive, tOverview:t.overview, tRumors:t.rumors, tDuels:t.duels, tTrivia:t.trivia, tYourMove:t.yourMove,
+      tStreakLine:(da?'5-dages stime · hold den i live':'5-day streak · keep it alive tonight'),
+
+      boardFull, boardTop,
+
+      // hub seg
+      segOverview:s.hubSeg==='overview', segRumors:s.hubSeg==='rumors', segDuels:s.hubSeg==='duels', segTrivia:s.hubSeg==='trivia',
+      segOverviewStyle:this.segStyle(s.hubSeg==='overview'), segRumorsStyle:this.segStyle(s.hubSeg==='rumors'),
+      segDuelsStyle:this.segStyle(s.hubSeg==='duels'), segTriviaStyle:this.segStyle(s.hubSeg==='trivia'),
+      segToOverview:()=>this.setState({hubSeg:'overview'}), segToRumors:()=>this.setState({hubSeg:'rumors'}),
+      segToDuels:()=>this.setState({hubSeg:'duels'}), segToTrivia:()=>this.setState({hubSeg:'trivia'}),
+      pwCount, pwCells,
+      rProgress:rCount+'/'+rTotal, rPct:Math.round(rCount/rTotal*100)+'%',
+      tProgress:qCount+'/'+qTotal, tPct:Math.round(qCount/qTotal*100)+'%',
+
+      // rumor screen
+      rActive:!rDone, rDone:rDone,
+      rContext:rCur?rCur.context:'', rText:rCur?rCur.text:'', rExplain:rCur?rCur.explain:'',
+      rUnanswered:!!rCur&&!rAnsd, rAnswered:!!rCur&&rAnsd,
+      rCardBorder:rAnsd?(rCorrect?'var(--status-success)':'var(--f1-red)'):'var(--border-color)',
+      rStamp:rAnsd?(rCur.isReal?'REAL':'RUMOR'):'', rStampBg:rAnsd?(rCur.isReal?'var(--status-success)':'var(--f1-red)'):'transparent',
+      rRevealTitle:rCorrect?'Correct':'Missed it', rRevealCp:rCorrect?'+10 CP':'+0 CP',
+      rRevealIcon:rCorrect?'fa-solid fa-circle-check':'fa-solid fa-circle-xmark', rRevealColor:rCorrect?'#34d399':'var(--f1-red-light)',
+      rNextLabel:(s.rIdx>=rTotal-1)?'Finish deck':'Next card',
+      guessReal:()=>this.answerRumor(true), guessRumor:()=>this.answerRumor(false), nextRumor:()=>this.setState(st=>({rIdx:st.rIdx+1})),
+
+      // trivia screen
+      triviaActive:!qDone, triviaDone:qDone,
+      qContext:q?q.context:'', qText:q?q.q:'', qOptions, qAnswered:qAnsd, qExplain:q?q.explain:'',
+      qRevealTitle:qCorrect?'Correct':'Not quite', qRevealCp:qCorrect?'+5 CP':'+0 CP',
+      qRevealIcon:qCorrect?'fa-solid fa-circle-check':'fa-solid fa-circle-xmark', qRevealColor:qCorrect?'#34d399':'var(--f1-red-light)',
+      qRevealBg:qCorrect?'rgba(16,185,129,.10)':'rgba(225,6,0,.10)', qRevealBorder:qCorrect?'rgba(16,185,129,.4)':'rgba(225,6,0,.4)',
+      qNextLabel:(s.tIdx>=qTotal-1)?'Finish quiz':'Next question', nextQ:()=>this.setState(st=>({tIdx:st.tIdx+1})),
+      tvDoneIcon:qCorrectCount===qTotal?'fa-solid fa-star':'fa-solid fa-clipboard-check',
+      tvDoneTitle:qCorrectCount===qTotal?'Perfect Week':'Quiz complete',
+      tvDoneSub:qCorrectCount===qTotal?('All correct — including the +20 bonus.'):('You got '+qCorrectCount+' of '+qTotal+' right.'),
+
+      // duels
+      duelPick:s.duelResponded?'VER · PIA · LEC':'Tap to pick',
+      duelBtnLabel:s.duelResponded?'Locked in':'Accept & lock your podium',
+      respondDuel:()=>{ if(this.state.duelResponded)return; this.setState({duelResponded:true}); this.flash('Duel locked in'); },
+
+      // menu
+      menuOpen:s.menuOpen, openMenu:()=>this.setState({menuOpen:true}), closeMenu:()=>this.setState({menuOpen:false}), stop:(e)=>e.stopPropagation(),
+      mHomeCls:'hf-drawer-row'+(isHome?' active':''), mBoardCls:'hf-drawer-row'+(isBoard?' active':''), mChCls:'hf-drawer-row'+(isCh?' active':''),
+      themeDarkCls:dark?'active':'', themeLightCls:light?'active':'',
+      langDaCls:da?'active':'', langEnCls:en?'active':'',
+      fontBrandCls:brand?'active':'', fontSysCls:sys?'active':'',
+      setDark:()=>this.setTheme('dark'), setLight:()=>this.setTheme('light'),
+      setDa:()=>this.setState({lang:'da'}), setEn:()=>this.setState({lang:'en'}),
+      setBrand:()=>this.setFont('brand'), setSystem:()=>this.setFont('system'),
+      signIn:()=>{ this.setState({signedIn:true, menuOpen:false, cp:15}); this.flash('Signed in'); },
+      signOut:()=>{ this.setState({signedIn:false, menuOpen:false}); },
+
+      toast:s.toast,
+    };
+  }
+
+  setTheme(v){ this.setState({theme:v}); try{ document.body.classList.toggle('light', v==='light'); }catch(e){} }
+  setFont(v){ this.setState({font:v}); try{ document.body.classList.toggle('font-system', v==='system'); }catch(e){} }
+}
+</script>
+</body>
+</html>

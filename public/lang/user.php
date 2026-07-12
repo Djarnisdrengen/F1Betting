@@ -322,6 +322,53 @@ return [
         'ch_trivia'             => 'Trivia',
         'ch_your_move'          => 'Din tur',
         'ch_streak_line'        => '%d-dages stime · hold den i live',
+
+        // Challenges — join flow
+        'ch_join_title'         => 'Join Challenges',
+        'ch_join_subtitle'      => 'Spil dagens spil med kun din email',
+        'ch_join_send_magic_link' => 'Send Magical Link',
+        'ch_join_success_check_email' => 'Tjek din email for et magisk link (tjek også spam)',
+        'ch_join_core_member_prompt' => 'Du har allerede en konto. Log ind for at få adgang til Challenges.',
+        'ch_join_didnt_receive' => 'Modtog du ikke linket? Prøv igen.',
+        'rate_limited'          => 'For mange forsøg. Vent venligst og prøv igen senere.',
+
+        // Challenges — verify flow
+        'ch_verify_title'       => 'Godkend din email',
+        'ch_verify_subtitle'    => 'Klik på linket i din email eller angiv dine detaljer nedenfor',
+        'ch_verify_token_invalid' => 'Dit link er udløbet eller allerede brugt.',
+        'ch_verify_request_new_link' => 'Anmod om nyt link',
+        'ch_verify_display_name_label' => 'Dit navn (valgfrit)',
+        'ch_verify_display_name_placeholder' => 'f.eks. Jan D.',
+        'ch_verify_display_name_hint' => 'Dit navn som det vises på scoringstavlen',
+        'ch_verify_go_to_challenges' => 'Gå til Challenges',
+        'ch_verify_get_started'  => 'Kom i gang',
+        'ch_verify_loading'      => 'Indlæser…',
+
+        // Challenges — email
+        'ch_email_magic_subject' => 'Dit magiske Challenges-link',
+        'ch_email_greeting'      => 'Hej!',
+        'ch_email_magic_button'  => 'Åbn Challenges',
+        'ch_email_link_expires'  => 'Dette link udløber om 30 minutter',
+
+        // Challenges — conversion
+        'ch_upgrade_title'       => 'Opgrader til fuld konto',
+        'ch_upgrade_subtitle'    => 'Konverter din gæstesession til en permanent konto',
+        'ch_upgrade_password_label' => 'Adgangskode',
+        'ch_upgrade_password_hint' => 'Mindst 10 tegn, med store bogstaver, tal og symboler',
+        'ch_upgrade_confirm_password' => 'Bekræft adgangskode',
+        'ch_upgrade_create_account' => 'Opret konto',
+        'ch_upgrade_success'     => 'Tillykke! Din konto er oprettet.',
+        'ch_upgrade_requires_verified' => 'Du skal først godkende din email.',
+
+        // Shared auth messages
+        'go_to_login'           => 'Gå til login',
+        'back_home'             => 'Tilbage til forsiden',
+        'enter_valid_email'     => 'Angiv en gyldig email-adresse',
+        'password_reset_done'   => 'Din adgangskode er nulstillet',
+        'passwords_no_match'    => 'Adgangskoderne stemmer ikke overens',
+        'new_password'          => 'Ny adgangskode',
+        'confirm_password'      => 'Bekræft adgangskode',
+        'token_invalid_expired' => 'Dette link er ugyldigt eller udløbet',
     ],
     'en' => [
         // Test-environment banner
@@ -644,5 +691,52 @@ return [
         'ch_trivia'             => 'Trivia',
         'ch_your_move'          => 'Your move',
         'ch_streak_line'        => '%d-day streak · keep it alive tonight',
+
+        // Challenges — join flow
+        'ch_join_title'         => 'Join Challenges',
+        'ch_join_subtitle'      => 'Play today's games with just your email',
+        'ch_join_send_magic_link' => 'Send Magic Link',
+        'ch_join_success_check_email' => 'Check your email for a magic link (check spam too)',
+        'ch_join_core_member_prompt' => 'You already have an account. Log in to access Challenges.',
+        'ch_join_didnt_receive' => 'Didn't receive the link? Try again.',
+        'rate_limited'          => 'Too many attempts. Please wait and try again later.',
+
+        // Challenges — verify flow
+        'ch_verify_title'       => 'Verify your email',
+        'ch_verify_subtitle'    => 'Click the link in your email or enter your details below',
+        'ch_verify_token_invalid' => 'Your link has expired or already been used.',
+        'ch_verify_request_new_link' => 'Request a new link',
+        'ch_verify_display_name_label' => 'Your name (optional)',
+        'ch_verify_display_name_placeholder' => 'e.g. John D.',
+        'ch_verify_display_name_hint' => 'How your name appears on the leaderboard',
+        'ch_verify_go_to_challenges' => 'Go to Challenges',
+        'ch_verify_get_started'  => 'Get started',
+        'ch_verify_loading'      => 'Loading...',
+
+        // Challenges — email
+        'ch_email_magic_subject' => 'Your Challenges magic link',
+        'ch_email_greeting'      => 'Hi!',
+        'ch_email_magic_button'  => 'Open Challenges',
+        'ch_email_link_expires'  => 'This link expires in 30 minutes',
+
+        // Challenges — conversion
+        'ch_upgrade_title'       => 'Upgrade to full account',
+        'ch_upgrade_subtitle'    => 'Convert your guest session to a permanent account',
+        'ch_upgrade_password_label' => 'Password',
+        'ch_upgrade_password_hint' => 'At least 10 characters, with uppercase, numbers and symbols',
+        'ch_upgrade_confirm_password' => 'Confirm password',
+        'ch_upgrade_create_account' => 'Create account',
+        'ch_upgrade_success'     => 'Congratulations! Your account has been created.',
+        'ch_upgrade_requires_verified' => 'You must verify your email first.',
+
+        // Shared auth messages
+        'go_to_login'           => 'Go to login',
+        'back_home'             => 'Back to home',
+        'enter_valid_email'     => 'Please enter a valid email address',
+        'password_reset_done'   => 'Your password has been reset',
+        'passwords_no_match'    => 'Passwords do not match',
+        'new_password'          => 'New password',
+        'confirm_password'      => 'Confirm password',
+        'token_invalid_expired' => 'This link is invalid or expired',
     ],
 ];
