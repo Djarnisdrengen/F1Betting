@@ -4,47 +4,51 @@
 // ============================================
 
 function getChallengeParticipant() {
-    $db = getDB();
+    try {
+        $db = getDB();
 
-    if (!empty($_SESSION['user_id'])) {
-        $stmt = $db->prepare("
-            SELECT cp.* FROM challenge_participants cp
-            WHERE cp.core_user_id = ?
-        ");
-        $stmt->execute([$_SESSION['user_id']]);
-        $participant = $stmt->fetch();
+        if (!empty($_SESSION['user_id'])) {
+            $stmt = $db->prepare("
+                SELECT cp.* FROM challenge_participants cp
+                WHERE cp.core_user_id = ?
+            ");
+            $stmt->execute([$_SESSION['user_id']]);
+            $participant = $stmt->fetch();
 
-        if ($participant) {
-            return $participant;
+            if ($participant) {
+                return $participant;
+            }
+
+            $user = getCurrentUser();
+            if (!is_array($user)) return null;
+
+            $participantId = generateUUID();
+            $db->prepare("
+                INSERT INTO challenge_participants
+                (id, core_user_id, display_name, language, status, verified_at, created_at)
+                VALUES (?, ?, ?, ?, 'verified', NOW(), NOW())
+            ")->execute([
+                $participantId,
+                $user['id'],
+                $user['display_name'] ?: null,
+                $user['language'] ?? 'da'
+            ]);
+
+            return $db->prepare("SELECT * FROM challenge_participants WHERE id = ?")
+                      ->execute([$participantId])
+                      ->fetch();
         }
 
-        $user = getCurrentUser();
-        if (!is_array($user)) return null;
+        if (!empty($_SESSION['challenge_participant_id'])) {
+            $stmt = $db->prepare("SELECT * FROM challenge_participants WHERE id = ?");
+            $stmt->execute([$_SESSION['challenge_participant_id']]);
+            return $stmt->fetch();
+        }
 
-        $participantId = generateUUID();
-        $db->prepare("
-            INSERT INTO challenge_participants
-            (id, core_user_id, display_name, language, status, verified_at, created_at)
-            VALUES (?, ?, ?, ?, 'verified', NOW(), NOW())
-        ")->execute([
-            $participantId,
-            $user['id'],
-            $user['display_name'] ?: null,
-            $user['language'] ?? 'da'
-        ]);
-
-        return $db->prepare("SELECT * FROM challenge_participants WHERE id = ?")
-                  ->execute([$participantId])
-                  ->fetch();
+        return null;
+    } catch (Exception $e) {
+        return null;
     }
-
-    if (!empty($_SESSION['challenge_participant_id'])) {
-        $stmt = $db->prepare("SELECT * FROM challenge_participants WHERE id = ?");
-        $stmt->execute([$_SESSION['challenge_participant_id']]);
-        return $stmt->fetch();
-    }
-
-    return null;
 }
 
 function requireChallengeParticipant() {

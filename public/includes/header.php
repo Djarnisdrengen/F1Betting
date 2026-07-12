@@ -77,14 +77,19 @@ $currentUser = getCurrentUser();
 $settings = getSettings();
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 
-require_once __DIR__ . '/challenges.php';
-$challengeParticipant = getChallengeParticipant();
+$challengeParticipant = null;
 $challengeCP = 0;
-if ($challengeParticipant) {
-    $stmt = getDB()->prepare("SELECT SUM(points) as total FROM challenge_points WHERE participant_id = ?");
-    $stmt->execute([$challengeParticipant['id']]);
-    $row = $stmt->fetch();
-    $challengeCP = intval($row['total'] ?? 0);
+try {
+    require_once __DIR__ . '/challenges.php';
+    $challengeParticipant = getChallengeParticipant();
+    if ($challengeParticipant) {
+        $stmt = getDB()->prepare("SELECT SUM(points) as total FROM challenge_points WHERE participant_id = ?");
+        $stmt->execute([$challengeParticipant['id']]);
+        $row = $stmt->fetch();
+        $challengeCP = intval($row['total'] ?? 0);
+    }
+} catch (Exception $e) {
+    // Silently fail — challenges not critical to site functionality
 }
 ?>
 <!DOCTYPE html>

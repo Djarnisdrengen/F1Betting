@@ -39,7 +39,10 @@
       "Bash(curl -sv https://www.hpovlsen.dk/f1-intelligence/query.php)",
       "Bash(admin\\\\|Challenges tab\\\\|admin)",
       "Bash(\" feature.md | head -30)",
-      "Bash(grep -n \"D8\\\\|REQ-006\\\\|REQ-108\\\\|⚠\\\\|admin tab\\\\|challenges` admin\\\\|Challenges tab\\\\|admin `challenges`\" feature.md | head -30)"
+      "Bash(grep -n \"D8\\\\|REQ-006\\\\|REQ-108\\\\|⚠\\\\|admin tab\\\\|challenges` admin\\\\|Challenges tab\\\\|admin `challenges`\" feature.md | head -30)",
+      "Bash(git commit -m 'Fix: add_challenges.sql — pin race_id collation for FK compatibility *)",
+      "Bash(git commit -m 'Fix: add_challenges.sql — pin driver FKs collation in duel_predictions *)",
+      "Bash(php -l public/includes/header.php)"
     ],
     "additionalDirectories": [
       "/tmp"
