@@ -143,6 +143,77 @@ if ($section === 'trivia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// Duels need a verified identity (an opponent has to be able to find/be notified of you) —
+// unlike Rumor or Not / Trivia, anonymous play is not offered here (REQ-301's "guest" means
+// a verified guest, not the pending/email-null rows getOrCreateAnonymousParticipant() makes).
+if ($section === 'duels' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrf();
+    $action = $_POST['action'] ?? '';
+
+    if ($participant && $participant['status'] === 'verified') {
+        $duelRace = getNextDuelRace($db);
+
+        if ($action === 'quick_match' && $duelRace && !isDuelRaceLocked($duelRace)) {
+            $newDuelId = tryQuickMatchPairing($db, $participant['id'], $duelRace['id']);
+            header('Location: challenges.php?section=duels' . ($newDuelId ? '&duel=' . urlencode($newDuelId) : '&queued=1'));
+            exit;
+        }
+
+        if ($action === 'challenge_friend' && $duelRace && !isDuelRaceLocked($duelRace)) {
+            $opponentId = sanitizeString($_POST['opponent_id'] ?? '');
+            $validOpponent = false;
+            if ($opponentId && $opponentId !== $participant['id']) {
+                $chk = $db->prepare("SELECT id FROM challenge_participants WHERE id = ?");
+                $chk->execute([$opponentId]);
+                $validOpponent = (bool) $chk->fetch();
+            }
+            if ($validOpponent) {
+                $newDuelId = createDirectDuel($db, $duelRace['id'], $participant['id'], $opponentId);
+                header('Location: challenges.php?section=duels&duel=' . urlencode($newDuelId));
+                exit;
+            }
+            header('Location: challenges.php?section=duels&mode=challenge&error=1');
+            exit;
+        }
+
+        if ($action === 'submit_pick') {
+            $duelId = sanitizeString($_POST['duel_id'] ?? '');
+            $dStmt = $db->prepare("
+                SELECT d.*, r.race_date, r.race_time FROM duels d JOIN races r ON r.id = d.race_id
+                WHERE d.id = ? AND (d.challenger_id = ? OR d.opponent_id = ?)
+            ");
+            $dStmt->execute([$duelId, $participant['id'], $participant['id']]);
+            $pickDuel = $dStmt->fetch();
+
+            if ($pickDuel && !isDuelRaceLocked($pickDuel)) {
+                [, $pickDriversById] = fetchDrivers($db);
+                $p1 = sanitizeString($_POST['p1'] ?? '');
+                $p2 = sanitizeString($_POST['p2'] ?? '');
+                $p3 = sanitizeString($_POST['p3'] ?? '');
+                $pickError = validateDuelPick($p1, $p2, $p3, array_keys($pickDriversById));
+
+                if (!$pickError) {
+                    try {
+                        $db->prepare("
+                            INSERT INTO duel_predictions (id, duel_id, participant_id, p1, p2, p3, submitted_at)
+                            VALUES (?, ?, ?, ?, ?, ?, NOW())
+                        ")->execute([generateUUID(), $duelId, $participant['id'], $p1, $p2, $p3]);
+                    } catch (Exception $e) {
+                        // UNIQUE(duel_id, participant_id) — already picked (double-submit); no-op.
+                    }
+                    header('Location: challenges.php?section=duels&duel=' . urlencode($duelId));
+                    exit;
+                }
+                header('Location: challenges.php?section=duels&duel=' . urlencode($duelId) . '&pickerror=1');
+                exit;
+            }
+        }
+    }
+
+    header('Location: challenges.php?section=duels');
+    exit;
+}
+
 if ($section === 'rumors') {
     $revealedItem = null;
     $revealedId   = $_GET['revealed'] ?? '';
@@ -209,6 +280,75 @@ if ($section === 'trivia') {
         $weekAnswered = (int)$weekAnswered;
         $weekCorrect  = (int)$weekCorrect;
     }
+}
+
+if ($section === 'duels') {
+    $duelRace = getNextDuelRace($db);
+    $duelRaceLocked = $duelRace ? isDuelRaceLocked($duelRace) : false;
+    $isVerifiedParticipant = $participant && $participant['status'] === 'verified';
+
+    $duelMode    = $_GET['mode'] ?? '';
+    $viewDuelId  = $_GET['duel'] ?? '';
+    $friendQuery = trim($_GET['q'] ?? '');
+    $friendResults = [];
+
+    $needsPickDuels = [];
+    $waitingDuels    = [];
+    $settledDuels    = [];
+    $viewDuel        = null;
+
+    if ($isVerifiedParticipant) {
+        $stmt = $db->prepare("
+            SELECT d.*, r.name AS race_name, r.race_date, r.race_time,
+                   cp_c.display_name AS challenger_name, cp_o.display_name AS opponent_name
+            FROM duels d
+            JOIN races r ON r.id = d.race_id
+            JOIN challenge_participants cp_c ON cp_c.id = d.challenger_id
+            JOIN challenge_participants cp_o ON cp_o.id = d.opponent_id
+            WHERE d.challenger_id = ? OR d.opponent_id = ?
+            ORDER BY d.created_at DESC
+        ");
+        $stmt->execute([$participant['id'], $participant['id']]);
+        $myDuels = $stmt->fetchAll();
+
+        $picksByDuel = [];
+        if ($myDuels) {
+            $duelIds = array_column($myDuels, 'id');
+            $ph = implode(',', array_fill(0, count($duelIds), '?'));
+            $pStmt = $db->prepare("SELECT * FROM duel_predictions WHERE duel_id IN ($ph)");
+            $pStmt->execute($duelIds);
+            foreach ($pStmt->fetchAll() as $p) {
+                $picksByDuel[$p['duel_id']][$p['participant_id']] = $p;
+            }
+        }
+
+        foreach ($myDuels as $d) {
+            $isChallenger = $d['challenger_id'] === $participant['id'];
+            $d['other_id']    = $isChallenger ? $d['opponent_id']   : $d['challenger_id'];
+            $d['other_name']  = $isChallenger ? $d['opponent_name'] : $d['challenger_name'];
+            $d['my_pick']     = $picksByDuel[$d['id']][$participant['id']] ?? null;
+            $d['other_pick']  = $picksByDuel[$d['id']][$d['other_id']] ?? null;
+            $d['locked']      = isDuelRaceLocked($d);
+
+            if ($d['id'] === $viewDuelId) {
+                $viewDuel = $d;
+            }
+
+            if (in_array($d['status'], ['resolved', 'void'], true)) {
+                $settledDuels[] = $d;
+            } elseif (!$d['my_pick'] && !$d['locked']) {
+                $needsPickDuels[] = $d;
+            } else {
+                $waitingDuels[] = $d;
+            }
+        }
+
+        if ($duelMode === 'challenge' && $friendQuery !== '') {
+            $friendResults = searchChallengeParticipants($db, $friendQuery, $participant['id']);
+        }
+    }
+
+    [$duelDrivers, $duelDriversById] = fetchDrivers($db);
 }
 
 include __DIR__ . '/includes/header.php';
@@ -527,6 +667,229 @@ include __DIR__ . '/includes/header.php';
                         <a href="?section=trivia" data-testid="trivia-next" class="btn btn-primary" style="width:100%;margin-top:13px;display:block;text-align:center;">
                             <?= $triviaCurrent ? t('ch_next_question') : t('ch_finish_quiz') ?> <span aria-hidden="true">&rarr;</span>
                         </a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($section === 'duels'): ?>
+            <?php if (!$isVerifiedParticipant): ?>
+                <div data-testid="duel-verify-prompt" style="text-align:center;padding:40px 20px;">
+                    <p style="font-size:14px;color:#a1a1aa;margin-bottom:20px;"><?= t('ch_duel_verify_prompt') ?></p>
+                    <a href="challenges-join.php" class="btn btn-primary"><?= t('ch_play_now') ?></a>
+                </div>
+
+            <?php elseif ($duelMode === 'challenge'): ?>
+                <div data-testid="duel-search" style="padding-top:8px;">
+                    <form method="GET" style="display:flex;gap:8px;margin-bottom:16px;">
+                        <input type="hidden" name="section" value="duels">
+                        <input type="hidden" name="mode" value="challenge">
+                        <input type="text" name="q" value="<?= escape($friendQuery) ?>" placeholder="<?= t('ch_duel_search_placeholder') ?>" data-testid="duel-search-input" style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid rgba(245,245,247,.15);background:rgba(35,35,40,.7);color:#f5f5f7;">
+                        <button type="submit" class="btn btn-primary"><?= t('ch_duel_search') ?></button>
+                    </form>
+
+                    <?php if ($friendQuery !== '' && empty($friendResults)): ?>
+                        <p data-testid="duel-no-results" style="color:#a1a1aa;font-size:13px;"><?= t('ch_duel_no_results') ?></p>
+                    <?php endif; ?>
+
+                    <?php foreach ($friendResults as $fr): ?>
+                        <div data-testid="duel-search-result" data-participant-id="<?= escape($fr['id']) ?>" style="display:flex;align-items:center;justify-content:space-between;background:rgba(35,35,40,.7);border-radius:12px;padding:12px 16px;margin-bottom:8px;">
+                            <span style="font-weight:700;color:#f5f5f7;"><?= escape($fr['display_name']) ?></span>
+                            <form method="POST">
+                                <?= csrfField() ?>
+                                <input type="hidden" name="action" value="challenge_friend">
+                                <input type="hidden" name="opponent_id" value="<?= escape($fr['id']) ?>">
+                                <button type="submit" data-testid="duel-challenge-btn" class="btn btn-primary btn-sm"><?= t('ch_duel_challenge_button') ?></button>
+                            </form>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <div style="margin-top:16px;">
+                        <a href="?section=duels" style="color:#a1a1aa;font-size:13px;"><?= t('ch_back') ?></a>
+                    </div>
+                </div>
+
+            <?php elseif ($viewDuel): ?>
+                <?php
+                    $showBothPicks = ($viewDuel['locked'] || in_array($viewDuel['status'], ['resolved', 'void'], true)) && $viewDuel['my_pick'];
+                    $meInitials    = strtoupper(substr($participant['display_name'] ?: '?', 0, 2));
+                    $otherInitials = strtoupper(substr($viewDuel['other_name'] ?: '?', 0, 2));
+                ?>
+                <div data-testid="duel-detail" data-duel-id="<?= escape($viewDuel['id']) ?>" data-status="<?= escape($viewDuel['status']) ?>" style="padding-top:8px;">
+                    <div style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid rgba(245,158,11,.4);padding:20px 18px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span class="label-mono" style="font-size:11px;color:#a1a1aa;"><?= escape($viewDuel['race_name']) ?></span>
+                            <?php if ($viewDuel['status'] === 'void'): ?>
+                                <span class="hf-badge" style="background:rgba(161,161,170,.15);color:#a1a1aa;border:1px solid rgba(161,161,170,.3);"><?= t('ch_duel_void') ?></span>
+                            <?php elseif ($viewDuel['status'] === 'resolved'): ?>
+                                <span class="hf-badge open"><?= t('ch_settled') ?></span>
+                            <?php elseif ($viewDuel['locked']): ?>
+                                <span class="hf-badge soon"><?= t('ch_race_started') ?></span>
+                            <?php else: ?>
+                                <span class="hf-badge open"><?= t('ch_duel_waiting') ?></span>
+                            <?php endif; ?>
+                        </div>
+
+                        <div style="display:flex;align-items:center;gap:12px;margin-top:14px;">
+                            <div style="flex:1;text-align:center;">
+                                <div style="width:44px;height:44px;border-radius:50%;margin:0 auto;background:var(--f1-red,#e10600);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;"><?= escape($meInitials) ?></div>
+                                <div style="font-weight:700;font-size:13px;margin-top:6px;color:#f5f5f7;"><?= t('ch_you') ?></div>
+                            </div>
+                            <div style="font-weight:900;font-size:15px;color:var(--gold,#fbbf24);">VS</div>
+                            <div style="flex:1;text-align:center;">
+                                <div style="width:44px;height:44px;border-radius:50%;margin:0 auto;background:rgba(255,255,255,.1);color:#f5f5f7;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;"><?= escape($otherInitials) ?></div>
+                                <div style="font-weight:700;font-size:13px;margin-top:6px;color:#f5f5f7;"><?= escape($viewDuel['other_name'] ?: '?') ?></div>
+                            </div>
+                        </div>
+
+                        <?php if ($showBothPicks): ?>
+                            <div data-testid="duel-picks-comparison" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px;">
+                                <div>
+                                    <?php foreach (['p1', 'p2', 'p3'] as $key): ?>
+                                        <div data-testid="duel-my-<?= $key ?>" style="font-size:13px;color:#f5f5f7;padding:4px 0;"><?= driverLastName($duelDriversById[$viewDuel['my_pick'][$key]] ?? ['name' => '?']) ?></div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <div>
+                                    <?php if ($viewDuel['other_pick']): ?>
+                                        <?php foreach (['p1', 'p2', 'p3'] as $key): ?>
+                                            <div data-testid="duel-other-<?= $key ?>" style="font-size:13px;color:#f5f5f7;padding:4px 0;"><?= driverLastName($duelDriversById[$viewDuel['other_pick'][$key]] ?? ['name' => '?']) ?></div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <div style="font-size:13px;color:#a1a1aa;"><?= t('ch_duel_void') ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($viewDuel['status'] === 'resolved'): ?>
+                            <?php
+                                $myScore    = $viewDuel['my_pick']['score'] ?? 0;
+                                $otherScore = $viewDuel['other_pick']['score'] ?? 0;
+                                $tied       = $viewDuel['winner_id'] === null;
+                                $iWon       = !$tied && $viewDuel['winner_id'] === $participant['id'];
+                                $cp         = $tied ? 10 : ($iWon ? 15 : 5);
+                                $outcome    = $tied ? 'tie' : ($iWon ? 'won' : 'lost');
+                            ?>
+                            <div data-testid="duel-result" data-outcome="<?= $outcome ?>" style="margin-top:14px;text-align:center;">
+                                <div style="font-weight:800;font-size:16px;color:<?= $tied ? 'var(--gold, #fbbf24)' : ($iWon ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)') ?>;">
+                                    <?= $tied ? t('ch_duel_tied') : ($iWon ? t('ch_duel_won') : t('ch_duel_lost')) ?> · <?= sprintf(t('ch_reveal_cp'), $cp) ?>
+                                </div>
+                                <div style="font-size:13px;color:#a1a1aa;margin-top:4px;"><?= (int)$myScore ?> – <?= (int)$otherScore ?></div>
+                            </div>
+                        <?php elseif ($viewDuel['status'] === 'void'): ?>
+                            <div data-testid="duel-result" data-outcome="void" style="margin-top:14px;text-align:center;color:#a1a1aa;font-size:13px;">
+                                <?= t('ch_duel_void') ?>
+                            </div>
+                        <?php elseif (!$viewDuel['my_pick']): ?>
+                            <?php if ($viewDuel['locked']): ?>
+                                <div style="margin-top:14px;text-align:center;color:#a1a1aa;font-size:13px;"><?= t('ch_race_started') ?></div>
+                            <?php else: ?>
+                                <form method="POST" data-testid="duel-pick-form" style="margin-top:16px;">
+                                    <?= csrfField() ?>
+                                    <input type="hidden" name="action" value="submit_pick">
+                                    <input type="hidden" name="duel_id" value="<?= escape($viewDuel['id']) ?>">
+                                    <div style="display:flex;flex-direction:column;gap:10px;">
+                                        <?php foreach ([1 => 'p1', 2 => 'p2', 3 => 'p3'] as $pos => $key): ?>
+                                            <div style="display:flex;align-items:center;gap:10px;">
+                                                <span class="hf-badge" style="background:rgba(225,6,0,.14);color:#ff8a80;border:1px solid rgba(225,6,0,.4);padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;">P<?= $pos ?></span>
+                                                <select name="<?= $key ?>" required data-testid="duel-pick-<?= $key ?>" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(245,245,247,.15);background:rgba(35,35,40,.7);color:#f5f5f7;">
+                                                    <option value=""><?= t('select_driver') ?></option>
+                                                    <?php foreach ($duelDrivers as $drv): ?>
+                                                        <option value="<?= escape($drv['id']) ?>"><?= driverLastName($drv) ?></option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <button type="submit" data-testid="duel-pick-submit" class="btn btn-primary" style="width:100%;margin-top:14px;"><?= t('ch_accept_lock') ?></button>
+                                </form>
+                                <?php if (!empty($_GET['pickerror'])): ?>
+                                    <div class="alert alert-error" style="margin-top:10px;"><?= t('ch_duel_pick_error') ?></div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <div data-testid="duel-locked-in" style="margin-top:14px;text-align:center;">
+                                <span class="hf-badge open"><?= t('ch_locked_in') ?></span>
+                                <?php if (!$viewDuel['locked']): ?>
+                                    <div style="font-size:12px;color:#a1a1aa;margin-top:8px;"><?= sprintf(t('ch_duel_waiting_for'), $viewDuel['other_name']) ?></div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div style="margin-top:16px;">
+                        <a href="?section=duels" style="color:#a1a1aa;font-size:13px;"><?= t('ch_back') ?></a>
+                    </div>
+                </div>
+
+            <?php else: ?>
+                <div data-testid="duel-list" style="padding-top:8px;">
+                    <?php if (!empty($_GET['queued'])): ?>
+                        <div class="alert alert-success" data-testid="duel-queued-msg"><?= t('ch_duel_queued') ?></div>
+                    <?php endif; ?>
+
+                    <?php if ($duelRace && !$duelRaceLocked): ?>
+                        <div style="display:flex;gap:10px;margin-bottom:20px;">
+                            <form method="POST" style="flex:1;">
+                                <?= csrfField() ?>
+                                <input type="hidden" name="action" value="quick_match">
+                                <button type="submit" data-testid="duel-quick-match-btn" class="btn btn-primary" style="width:100%;"><?= t('ch_quick_match') ?></button>
+                            </form>
+                            <a href="?section=duels&mode=challenge" data-testid="duel-challenge-friend-link" class="btn btn-secondary" style="flex:1;text-align:center;"><?= t('ch_challenge_a_friend') ?></a>
+                        </div>
+                    <?php elseif (!$duelRace): ?>
+                        <p style="color:#a1a1aa;font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_duel_no_race') ?></p>
+                    <?php endif; ?>
+
+                    <?php if ($needsPickDuels): ?>
+                        <div class="hf-stat-l" style="margin:16px 0 10px;"><?= t('ch_your_move') ?></div>
+                        <?php foreach ($needsPickDuels as $d): ?>
+                            <a href="?section=duels&duel=<?= urlencode($d['id']) ?>" data-testid="duel-card" data-duel-id="<?= escape($d['id']) ?>" data-bucket="needs-pick" style="display:block;text-decoration:none;border-radius:14px;background:rgba(35,35,40,.62);border:1px solid rgba(245,158,11,.4);padding:14px;margin-bottom:10px;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <span style="font-weight:700;font-size:13px;color:#f5f5f7;">vs <?= escape($d['other_name'] ?: '?') ?></span>
+                                    <span class="hf-badge soon" style="font-size:9px;"><?= t('ch_your_move') ?></span>
+                                </div>
+                                <div style="font-size:11px;color:#a1a1aa;margin-top:4px;"><?= escape($d['race_name']) ?></div>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <?php if ($waitingDuels): ?>
+                        <div class="hf-stat-l" style="margin:16px 0 10px;"><?= t('ch_duel_waiting') ?></div>
+                        <?php foreach ($waitingDuels as $d): ?>
+                            <a href="?section=duels&duel=<?= urlencode($d['id']) ?>" data-testid="duel-card" data-duel-id="<?= escape($d['id']) ?>" data-bucket="waiting" style="display:block;text-decoration:none;border-radius:14px;background:rgba(35,35,40,.62);border:1px solid var(--border-color, rgba(245,245,247,.15));padding:14px;margin-bottom:10px;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <span style="font-weight:700;font-size:13px;color:#f5f5f7;">vs <?= escape($d['other_name'] ?: '?') ?></span>
+                                    <span class="hf-badge" style="font-size:9px;background:rgba(255,255,255,.06);color:#a1a1aa;"><?= $d['locked'] ? t('ch_race_started') : t('ch_locked_in') ?></span>
+                                </div>
+                                <div style="font-size:11px;color:#a1a1aa;margin-top:4px;"><?= escape($d['race_name']) ?></div>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <?php if ($settledDuels): ?>
+                        <div class="hf-stat-l" style="margin:16px 0 10px;"><?= t('ch_settled') ?></div>
+                        <?php foreach ($settledDuels as $d): ?>
+                            <?php
+                                $dTied = $d['status'] === 'resolved' && $d['winner_id'] === null;
+                                $dWon  = $d['status'] === 'resolved' && $d['winner_id'] === $participant['id'];
+                                $dCp   = $d['status'] === 'void' ? 0 : ($dTied ? 10 : ($dWon ? 15 : 5));
+                            ?>
+                            <a href="?section=duels&duel=<?= urlencode($d['id']) ?>" data-testid="duel-card" data-duel-id="<?= escape($d['id']) ?>" data-bucket="settled" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-radius:14px;background:rgba(35,35,40,.62);border:1px solid var(--border-color, rgba(245,245,247,.15));padding:14px;margin-bottom:10px;">
+                                <div>
+                                    <span style="font-weight:700;font-size:13px;color:#f5f5f7;">vs <?= escape($d['other_name'] ?: '?') ?></span>
+                                    <div style="font-size:11px;color:#a1a1aa;margin-top:4px;"><?= escape($d['race_name']) ?></div>
+                                </div>
+                                <span style="font-weight:800;font-size:13px;color:<?= $d['status'] === 'void' ? '#a1a1aa' : ($dTied ? 'var(--gold, #fbbf24)' : ($dWon ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)')) ?>;">
+                                    <?= $d['status'] === 'void' ? t('ch_duel_void') : ($dTied ? t('ch_duel_tied') : ($dWon ? t('ch_duel_won') : t('ch_duel_lost'))) ?>
+                                    <?php if ($d['status'] !== 'void'): ?> +<?= $dCp ?><?php endif; ?>
+                                </span>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <?php if (!$needsPickDuels && !$waitingDuels && !$settledDuels): ?>
+                        <p data-testid="duel-empty" style="color:#a1a1aa;font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_all_caught_up') ?></p>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>

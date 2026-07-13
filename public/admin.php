@@ -2,6 +2,8 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/scoring.php';
+require_once __DIR__ . '/includes/challenges.php';
+require_once __DIR__ . '/includes/smtp.php';
 requireAdmin();
 
 $db = getDB();
@@ -143,6 +145,8 @@ if (isset($_POST['update_race'])) {
         // Beregn point hvis resultater er sat
         if ($result_p1 && $result_p2 && $result_p3) {
             calculateRacePoints($id, $result_p1, $result_p2, $result_p3);
+            // Additive, isolated from core scoring (REQ-309) — never touches bets/points/pool.
+            resolveDuelsForRace($db, $id, [$result_p1, $result_p2, $result_p3]);
         }
 
         $message = t('race_updated');
@@ -196,6 +200,8 @@ if (isset($_POST['reset_race_result'])) {
         $db->prepare("UPDATE races SET result_p1 = NULL, result_p2 = NULL, result_p3 = NULL, bettingpool_won = NULL WHERE id = ?")
            ->execute([$id]);
         $db->prepare("DELETE FROM leaderboard_snapshots WHERE race_id = ?")->execute([$id]);
+        // Additive, isolated from core scoring (REQ-310) — never touches bets/points/pool.
+        resetDuelsForRace($db, $id);
 
         $resetMsg = t('result_reset');
         header("Location: admin.php?tab=races&edit=" . urlencode($id) . "&msg=" . urlencode($resetMsg));

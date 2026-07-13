@@ -417,6 +417,231 @@ function scoreDuelPrediction(array $picks, array $result): int {
     return $score;
 }
 
+// ============================================
+// PREDICTION DUELS (Phase 5)
+// ============================================
+
+/** The single race duels attach to (REQ-301) — the next one that hasn't started yet. */
+function getNextDuelRace(PDO $db): ?array {
+    $stmt = $db->query("
+        SELECT * FROM races
+        WHERE TIMESTAMP(race_date, race_time) > NOW()
+        ORDER BY race_date ASC, race_time ASC LIMIT 1
+    ");
+    return $stmt->fetch() ?: null;
+}
+
+/** True once picks are locked for a duel's race — race start, same boundary as core betting (REQ-304). */
+function isDuelRaceLocked(array $race): bool {
+    $status = getBettingStatus($race);
+    return in_array($status['status'], ['closed', 'completed'], true);
+}
+
+/**
+ * Participants a challenger can search by display name (REQ-301's "challenge a friend"
+ * picker). Anonymous participants never set a display_name, so they're naturally excluded —
+ * reachable only via Quick Match, not by direct search.
+ */
+function searchChallengeParticipants(PDO $db, string $query, string $excludeParticipantId, int $limit = 10): array {
+    $stmt = $db->prepare("
+        SELECT id, display_name FROM challenge_participants
+        WHERE display_name IS NOT NULL AND display_name LIKE ? AND id != ?
+        ORDER BY display_name ASC LIMIT ?
+    ");
+    $stmt->bindValue(1, '%' . $query . '%', PDO::PARAM_STR);
+    $stmt->bindValue(2, $excludeParticipantId, PDO::PARAM_STR);
+    $stmt->bindValue(3, $limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+/** Direct "challenge a friend" duel creation — live immediately, no separate accept step. */
+function createDirectDuel(PDO $db, string $raceId, string $challengerId, string $opponentId): string {
+    $duelId = generateUUID();
+    $db->prepare("
+        INSERT INTO duels (id, race_id, challenger_id, opponent_id, is_quick_match, status, created_at)
+        VALUES (?, ?, ?, ?, 0, 'active', NOW())
+    ")->execute([$duelId, $raceId, $challengerId, $opponentId]);
+    return $duelId;
+}
+
+/**
+ * Quick Match (REQ-302): queues the participant, then tries to pair with the oldest other
+ * waiting entry for the same race. A MySQL named lock scopes the whole check-and-pair
+ * critical section per race, so two concurrent requests can never both see the same
+ * opponent row and both create a duel — exactly one duel comes out regardless of timing.
+ * Returns the new duel id once paired, or null if still waiting.
+ */
+function tryQuickMatchPairing(PDO $db, string $participantId, string $raceId): ?string {
+    $lockName = 'duel_qm_' . $raceId;
+    $db->prepare("SELECT GET_LOCK(?, 10)")->execute([$lockName]);
+
+    try {
+        try {
+            $db->prepare("INSERT INTO duel_quickmatch (race_id, participant_id, created_at) VALUES (?, ?, NOW())")
+               ->execute([$raceId, $participantId]);
+        } catch (PDOException $e) {
+            // UNIQUE(race_id, participant_id) — already queued from an earlier click; fine,
+            // still try to pair below.
+        }
+
+        $stmt = $db->prepare("
+            SELECT participant_id FROM duel_quickmatch
+            WHERE race_id = ? AND participant_id != ?
+            ORDER BY created_at ASC LIMIT 1 FOR UPDATE
+        ");
+        $stmt->execute([$raceId, $participantId]);
+        $opponent = $stmt->fetchColumn();
+
+        if (!$opponent) {
+            return null;
+        }
+
+        $db->prepare("DELETE FROM duel_quickmatch WHERE race_id = ? AND participant_id IN (?, ?)")
+           ->execute([$raceId, $participantId, $opponent]);
+
+        return createDirectDuel($db, $raceId, $opponent, $participantId);
+    } finally {
+        $db->prepare("SELECT RELEASE_LOCK(?)")->execute([$lockName]);
+    }
+}
+
+/** Presence/duplicate/valid-driver checks only (NFR-302) — none of core betting's extra rules. */
+function validateDuelPick(string $p1, string $p2, string $p3, array $validDriverIds): string {
+    if (!$p1 || !$p2 || !$p3) {
+        return t('select_all_positions');
+    }
+    if (!in_array($p1, $validDriverIds, true) || !in_array($p2, $validDriverIds, true) || !in_array($p3, $validDriverIds, true)) {
+        return t('invalid_driver');
+    }
+    if ($p1 === $p2 || $p1 === $p3 || $p2 === $p3) {
+        return t('no_same_driver');
+    }
+    return '';
+}
+
+/**
+ * Resolves every open duel for a race after results are entered (REQ-309), called from the
+ * admin `update_race` handler right after `calculateRacePoints()`. Skips duels already
+ * `resolved`/`void` — re-saving results is a no-op for settled duels (REQ-309/DUEL-08);
+ * changing a result requires `reset_race_result` first. Either side missing a pick by race
+ * start voids the duel, no CP either way (REQ-308).
+ */
+function resolveDuelsForRace(PDO $db, string $raceId, array $result): void {
+    $stmt = $db->prepare("SELECT * FROM duels WHERE race_id = ? AND status NOT IN ('resolved', 'void')");
+    $stmt->execute([$raceId]);
+    $duels = $stmt->fetchAll();
+
+    foreach ($duels as $duel) {
+        $duelId = $duel['id'];
+        $pStmt = $db->prepare("SELECT * FROM duel_predictions WHERE duel_id = ?");
+        $pStmt->execute([$duelId]);
+        $picksByParticipant = [];
+        foreach ($pStmt->fetchAll() as $p) {
+            $picksByParticipant[$p['participant_id']] = $p;
+        }
+
+        $challengerPick = $picksByParticipant[$duel['challenger_id']] ?? null;
+        $opponentPick   = $picksByParticipant[$duel['opponent_id']] ?? null;
+
+        if (!$challengerPick || !$opponentPick) {
+            $db->prepare("UPDATE duels SET status = 'void', resolved_at = NOW() WHERE id = ?")->execute([$duelId]);
+            continue;
+        }
+
+        $challengerScore = scoreDuelPrediction([$challengerPick['p1'], $challengerPick['p2'], $challengerPick['p3']], $result);
+        $opponentScore   = scoreDuelPrediction([$opponentPick['p1'], $opponentPick['p2'], $opponentPick['p3']], $result);
+
+        $db->prepare("UPDATE duel_predictions SET score = ? WHERE id = ?")->execute([$challengerScore, $challengerPick['id']]);
+        $db->prepare("UPDATE duel_predictions SET score = ? WHERE id = ?")->execute([$opponentScore, $opponentPick['id']]);
+
+        if ($challengerScore === $opponentScore) {
+            $winnerId = null;
+            awardChallengePoints($db, $duel['challenger_id'], 'duel', 10, "duel:$duelId");
+            awardChallengePoints($db, $duel['opponent_id'], 'duel', 10, "duel:$duelId");
+        } elseif ($challengerScore > $opponentScore) {
+            $winnerId = $duel['challenger_id'];
+            awardChallengePoints($db, $duel['challenger_id'], 'duel', 15, "duel:$duelId");
+            awardChallengePoints($db, $duel['opponent_id'], 'duel', 5, "duel:$duelId");
+        } else {
+            $winnerId = $duel['opponent_id'];
+            awardChallengePoints($db, $duel['opponent_id'], 'duel', 15, "duel:$duelId");
+            awardChallengePoints($db, $duel['challenger_id'], 'duel', 5, "duel:$duelId");
+        }
+
+        $db->prepare("UPDATE duels SET status = 'resolved', winner_id = ?, resolved_at = NOW() WHERE id = ?")
+           ->execute([$winnerId, $duelId]);
+
+        sendDuelOutcomeEmails($db, $duel, $challengerScore, $opponentScore, $winnerId);
+    }
+}
+
+/**
+ * Reverses duel resolution for a race (REQ-310): deletes the CP ledger rows (matched by
+ * `source_ref`, both sides share one), clears scores/winner, returns the duel to `active` —
+ * it remains functionally locked (the race already started) but is no longer settled, so
+ * re-entering results can resolve it again. Void duels are untouched: they voided because a
+ * pick was missing by race start, which a result reset can never change, so they stay void.
+ */
+function resetDuelsForRace(PDO $db, string $raceId): void {
+    $stmt = $db->prepare("SELECT id FROM duels WHERE race_id = ? AND status = 'resolved'");
+    $stmt->execute([$raceId]);
+
+    foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $duelId) {
+        $db->prepare("DELETE FROM challenge_points WHERE source_ref = ?")->execute(["duel:$duelId"]);
+        $db->prepare("UPDATE duel_predictions SET score = NULL WHERE duel_id = ?")->execute([$duelId]);
+        $db->prepare("UPDATE duels SET status = 'active', winner_id = NULL, resolved_at = NULL WHERE id = ?")->execute([$duelId]);
+    }
+}
+
+/** Outcome email to both sides (REQ-311) — best effort, never blocks resolution; skipped for a
+ *  side with no email (anonymous participants). Requires includes/smtp.php already loaded. */
+function sendDuelOutcomeEmails(PDO $db, array $duel, int $challengerScore, int $opponentScore, ?string $winnerId): void {
+    if (!function_exists('sendEmail') || !function_exists('getEmailTemplate')) {
+        return;
+    }
+
+    $stmt = $db->prepare("SELECT * FROM challenge_participants WHERE id IN (?, ?)");
+    $stmt->execute([$duel['challenger_id'], $duel['opponent_id']]);
+    $byId = [];
+    foreach ($stmt->fetchAll() as $p) {
+        $byId[$p['id']] = $p;
+    }
+
+    $sides = [
+        ['id' => $duel['challenger_id'], 'own_score' => $challengerScore, 'opp_id' => $duel['opponent_id'], 'opp_score' => $opponentScore],
+        ['id' => $duel['opponent_id'],   'own_score' => $opponentScore,   'opp_id' => $duel['challenger_id'], 'opp_score' => $challengerScore],
+    ];
+
+    foreach ($sides as $side) {
+        $participant = $byId[$side['id']] ?? null;
+        if (!$participant || empty($participant['email'])) {
+            continue;
+        }
+        $opponent = $byId[$side['opp_id']] ?? null;
+        $pLang    = $participant['language'] ?: 'da';
+        $oppName  = ($opponent['display_name'] ?? '') ?: t('ch_your_opponent', $pLang);
+
+        if ($winnerId === null) {
+            $outcomeKey = 'email_duel_result_tie';
+        } elseif ($winnerId === $participant['id']) {
+            $outcomeKey = 'email_duel_result_won';
+        } else {
+            $outcomeKey = 'email_duel_result_lost';
+        }
+
+        $footer = sprintf(t('email_footer', $pLang), defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : '');
+        $html = getEmailTemplate(
+            sprintf(t('email_duel_result_greeting', $pLang), $participant['display_name'] ?: $participant['email']),
+            sprintf(t($outcomeKey, $pLang), $oppName, $side['own_score'], $side['opp_score']),
+            t('email_duel_result_button', $pLang),
+            (defined('SITE_URL') ? SITE_URL : '') . '/challenges.php?section=duels',
+            '', '', $footer, defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : ''
+        );
+        sendEmail($participant['email'], t('email_duel_result_subject', $pLang), $html);
+    }
+}
+
 function isRaceHeroWindow(array $race, array $settings = null, DateTime $now = null): bool {
     if ($now === null) {
         $now = new DateTime();

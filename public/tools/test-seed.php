@@ -1422,6 +1422,91 @@ if (($_GET['action'] ?? '') === 'seed_trivia_week') {
     exit;
 }
 
+// Action: seed_duel_race — a race in a chosen temporal state, for duel lock/void fixtures.
+// 'open' (default): 2h in the future, pickable. 'started': 10min in the past, no result yet
+// — locked (REQ-304) but unresolved, for late-pick-blocked (DUEL-05) and never-picked-so-void
+// (DUEL-04) tests. Distinct from seed_betting_race's fixture, which drives the actual
+// update_race/reset_race_result admin flow for DUEL-02/03/08.
+if (($_GET['action'] ?? '') === 'seed_duel_race') {
+    $state  = $_GET['state'] ?? 'open';
+    $raceId = seed_uuid();
+    $offset = $state === 'started' ? '-10 minutes' : '+2 hours';
+    $raceDate = (new DateTime($offset))->format('Y-m-d');
+    $raceTime = (new DateTime($offset))->format('H:i:s');
+    $db->prepare("
+        INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size)
+        VALUES (?, 'E2E Duel Test Race', 'Test Circuit', ?, ?, 0)
+    ")->execute([$raceId, $raceDate, $raceTime]);
+
+    // Same known-driver ensure-exist as seed_betting_race, so callers always get stable ids
+    // to build picks/results with, whether or not that other fixture has run first.
+    $driverDefs = [
+        [44, 'Lewis Hamilton',  'Mercedes'],
+        [1,  'Max Verstappen',  'Red Bull'],
+        [16, 'Charles Leclerc', 'Ferrari'],
+    ];
+    $driverIds = [];
+    foreach ($driverDefs as [$num, $fullName, $team]) {
+        $parts    = explode(' ', $fullName);
+        $lastName = end($parts);
+        $stmt = $db->prepare("SELECT id FROM drivers WHERE LOWER(name) LIKE LOWER(?)");
+        $stmt->execute(['%' . $lastName . '%']);
+        $row = $stmt->fetch();
+        if ($row) {
+            $driverIds[] = ['id' => $row['id'], 'name' => $fullName];
+        } else {
+            $newId = seed_uuid();
+            $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")
+               ->execute([$newId, $fullName, $team, $num]);
+            $driverIds[] = ['id' => $newId, 'name' => $fullName];
+        }
+    }
+
+    echo json_encode(['ok' => true, 'race_id' => $raceId, 'drivers' => $driverIds]);
+    exit;
+}
+
+// Action: seed_duel — a duels row between two already-seeded participants against an
+// already-seeded race, optionally pre-filled with either side's pick (p1,p2,p3 driver ids)
+// and/or a specific status. Composable with seed_challenge_participant/seed_betting_race/
+// seed_duel_race rather than a monolithic fixture, matching this file's existing convention.
+if (($_GET['action'] ?? '') === 'seed_duel') {
+    $raceId       = $_GET['race_id'] ?? '';
+    $challengerId = $_GET['challenger_id'] ?? '';
+    $opponentId   = $_GET['opponent_id'] ?? '';
+    $status       = in_array($_GET['status'] ?? '', ['pending', 'active', 'resolved', 'void'], true) ? $_GET['status'] : 'active';
+    $challengerPick = isset($_GET['challenger_pick']) ? explode(',', $_GET['challenger_pick']) : null;
+    $opponentPick   = isset($_GET['opponent_pick']) ? explode(',', $_GET['opponent_pick']) : null;
+
+    if (!$raceId || !$challengerId || !$opponentId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'race_id, challenger_id, opponent_id required']);
+        exit;
+    }
+
+    $duelId = seed_uuid();
+    $db->prepare("
+        INSERT INTO duels (id, race_id, challenger_id, opponent_id, is_quick_match, status, created_at)
+        VALUES (?, ?, ?, ?, 0, ?, NOW())
+    ")->execute([$duelId, $raceId, $challengerId, $opponentId, $status]);
+
+    if ($challengerPick) {
+        $db->prepare("
+            INSERT INTO duel_predictions (id, duel_id, participant_id, p1, p2, p3, submitted_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        ")->execute([seed_uuid(), $duelId, $challengerId, $challengerPick[0], $challengerPick[1], $challengerPick[2]]);
+    }
+    if ($opponentPick) {
+        $db->prepare("
+            INSERT INTO duel_predictions (id, duel_id, participant_id, p1, p2, p3, submitted_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        ")->execute([seed_uuid(), $duelId, $opponentId, $opponentPick[0], $opponentPick[1], $opponentPick[2]]);
+    }
+
+    echo json_encode(['ok' => true, 'duel_id' => $duelId]);
+    exit;
+}
+
 // Action: seed_converted_guest — an admin-approved participant already linked to a fresh core
 // user (in_competition=0), skipping the Approve transaction itself (ADM-03/04 exercise that
 // directly) — for the converted-guests list / users-tab-exclusion cases (ADM-01/02).
@@ -1532,6 +1617,10 @@ if (($_GET['action'] ?? '') === 'cleanup_challenges') {
     // source_ref column, so topic='e2e-seed' is the fixture marker instead. Cascades to any
     // remaining challenge_trivia_answers pointing at them.
     $db->query("DELETE FROM challenge_trivia_questions WHERE topic = 'e2e-seed'");
+    // seed_duel_race's fixture race — cascades to any duels/duel_predictions still pointing at
+    // it (races.id ON DELETE CASCADE on both), covering duels between two @test.localhost
+    // participants that the deletes above already handle independently too.
+    $db->query("DELETE FROM races WHERE name = 'E2E Duel Test Race'");
     echo json_encode(['ok' => true]);
     exit;
 }

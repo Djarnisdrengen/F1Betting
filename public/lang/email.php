@@ -54,6 +54,14 @@ return [
         'email_reset_ignore'        => 'Hvis du ikke har anmodet om dette, kan du ignorere denne email.',
         'email_footer'              => 'Med venlig hilsen,<br>%s',
 
+        // Duel result email
+        'email_duel_result_subject'  => 'Resultatet af din duel',
+        'email_duel_result_greeting' => 'Hej %s,',
+        'email_duel_result_won'      => 'Du besejrede %1$s! Du scorede %2$d point mod deres %3$d.',
+        'email_duel_result_lost'     => '%1$s besejrede dig denne gang. Du scorede %2$d point mod deres %3$d.',
+        'email_duel_result_tie'      => 'Du spillede uafgjort med %1$s — %2$d point hver!',
+        'email_duel_result_button'   => 'Se Challenges',
+
         // Invite email
         'email_invite_subject'      => 'Du er inviteret til %s!',
         'email_invite_greeting'     => 'Hej!',
@@ -182,6 +190,14 @@ return [
         'email_reset_expiry'        => 'This link expires in 1 hour.',
         'email_reset_ignore'        => "If you didn't request this, you can ignore this email.",
         'email_footer'              => 'Best regards,<br>%s',
+
+        // Duel result email
+        'email_duel_result_subject'  => 'Your duel result',
+        'email_duel_result_greeting' => 'Hi %s,',
+        'email_duel_result_won'      => 'You beat %1$s! You scored %2$d points to their %3$d.',
+        'email_duel_result_lost'     => '%1$s beat you this time. You scored %2$d points to their %3$d.',
+        'email_duel_result_tie'      => 'You tied with %1$s — %2$d points each!',
+        'email_duel_result_button'   => 'View Challenges',
 
         // Invite email
         'email_invite_subject'      => "You're invited to %s!",

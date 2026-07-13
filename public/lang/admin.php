@@ -169,6 +169,14 @@ return [
         'admin_ch_trivia_saved'      => 'Spørgsmål gemt.',
         'admin_ch_trivia_published'  => 'Udgivet.',
         'admin_ch_trivia_deleted'    => 'Spørgsmål slettet.',
+        'admin_ch_duels'             => 'Dueloversigt',
+        'admin_ch_duels_empty'       => 'Ingen dueller endnu.',
+        'admin_ch_duel_status_open'  => 'Åben',
+        'admin_ch_duel_status_locked' => 'Låst',
+        'admin_ch_duel_status_settled' => 'Afgjort',
+        'admin_ch_duel_status_void'  => 'Annulleret',
+        'admin_ch_duel_picked'       => 'Har valgt',
+        'admin_ch_duel_not_picked'   => 'Mangler',
     ],
     'en' => [
         // Tab labels
@@ -339,5 +347,13 @@ return [
         'admin_ch_trivia_saved'      => 'Question saved.',
         'admin_ch_trivia_published'  => 'Published.',
         'admin_ch_trivia_deleted'    => 'Question deleted.',
+        'admin_ch_duels'             => 'Duel oversight',
+        'admin_ch_duels_empty'       => 'No duels yet.',
+        'admin_ch_duel_status_open'  => 'Open',
+        'admin_ch_duel_status_locked' => 'Locked',
+        'admin_ch_duel_status_settled' => 'Settled',
+        'admin_ch_duel_status_void'  => 'Void',
+        'admin_ch_duel_picked'       => 'Picked',
+        'admin_ch_duel_not_picked'   => 'Not yet',
     ],
 ];

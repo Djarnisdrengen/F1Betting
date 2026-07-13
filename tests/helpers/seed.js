@@ -127,6 +127,19 @@ module.exports = {
     //   'e2e-seed'. Not participant-scoped — not swept by cleanup.challenges by participant,
     //   but topic='e2e-seed' IS the cleanup marker (the table has no source_ref column).
 
+    duelRace: (params = {}) => call('seed_duel_race', params),
+    // params: { state?: 'open' (default, 2h future) | 'started' (10min past, no result yet —
+    //           locked but unresolved, for DUEL-04/DUEL-05) } → { ok, race_id }
+    //   Distinct from seed_betting_race, which drives the actual update_race/reset_race_result
+    //   admin flow (DUEL-02/03/08) — use that one instead when you need real resolution.
+
+    duel: (params = {}) => call('seed_duel', params),
+    // params: { race_id, challenger_id, opponent_id, status?: 'active' (default)|'pending'|
+    //           'resolved'|'void', challenger_pick?: 'p1id,p2id,p3id', opponent_pick?: same }
+    //   → { ok, duel_id }
+    //   Composable with challengeParticipant/duelRace/seed_betting_race rather than a
+    //   monolithic fixture.
+
     convertedGuest: (params = {}) => call('seed_converted_guest', params),
     // params: { email?, display_name?, in_competition?, link_participant? (0 → users row only,
     //           an email-collision fixture for ADM-07) } → { ok, user_id, participant_id, email }
