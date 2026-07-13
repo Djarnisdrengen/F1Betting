@@ -114,6 +114,24 @@ return [
         'security_clear'            => 'Nulstil',
         'security_no_attempts'      => 'Ingen forsøg inden for de sidste 15 minutter',
         'login_attempts_cleared'    => 'Loginforsøg nulstillet!',
+
+        // Paddock Challenges — promotion queue (Feature 4) + suppressions (Feature 5)
+        'admin_ch_title'             => 'Challenges — medlemskab',
+        'admin_ch_promotion_queue'   => 'Anmodninger om fuldt medlemskab',
+        'admin_ch_queue_empty'       => 'Ingen afventende anmodninger.',
+        'admin_ch_permanent'         => 'Permanent',
+        'admin_ch_verified_only'     => 'Kun godkendt',
+        'admin_ch_approve'           => 'Godkend',
+        'admin_ch_reject'            => 'Afvis',
+        'admin_ch_promo_approved'    => 'Anmodning godkendt — nyt medlem oprettet.',
+        'admin_ch_promo_rejected'    => 'Anmodning afvist.',
+        'admin_ch_promo_conflict'    => 'Kan ikke godkende — e-mailen findes allerede som konto.',
+        'admin_ch_converted_guests'  => 'Konverterede gæster',
+        'admin_ch_no_converted_guests' => 'Ingen konverterede gæster endnu.',
+        'admin_ch_suppressions'      => 'Afmeldte e-mails',
+        'admin_ch_suppressions_count' => '%d e-mail(s) på afmeldingslisten.',
+        'admin_ch_suppress_add'      => 'Tilføj',
+        'admin_ch_suppress_added'    => 'E-mail tilføjet til afmeldingslisten.',
     ],
     'en' => [
         // Tab labels
@@ -229,5 +247,23 @@ return [
         'security_clear'            => 'Clear',
         'security_no_attempts'      => 'No attempts in the last 15 minutes',
         'login_attempts_cleared'    => 'Login attempts cleared!',
+
+        // Paddock Challenges — promotion queue (Feature 4) + suppressions (Feature 5)
+        'admin_ch_title'             => 'Challenges — membership',
+        'admin_ch_promotion_queue'   => 'Full-membership requests',
+        'admin_ch_queue_empty'       => 'No pending requests.',
+        'admin_ch_permanent'         => 'Permanent',
+        'admin_ch_verified_only'     => 'Verified only',
+        'admin_ch_approve'           => 'Approve',
+        'admin_ch_reject'            => 'Reject',
+        'admin_ch_promo_approved'    => 'Request approved — new member created.',
+        'admin_ch_promo_rejected'    => 'Request rejected.',
+        'admin_ch_promo_conflict'    => "Can't approve — that email already has an account.",
+        'admin_ch_converted_guests'  => 'Converted guests',
+        'admin_ch_no_converted_guests' => 'No converted guests yet.',
+        'admin_ch_suppressions'      => 'Opted-out emails',
+        'admin_ch_suppressions_count' => '%d email(s) on the suppression list.',
+        'admin_ch_suppress_add'      => 'Add',
+        'admin_ch_suppress_added'    => 'Email added to the suppression list.',
     ],
 ];

@@ -1214,14 +1214,17 @@ if (($_GET['action'] ?? '') === 'seed_challenge_participant') {
     $emailVal     = ($email && strpos($email, '@') !== false) ? $email : null;
     $verifiedAt   = $status === 'verified' ? date('Y-m-d H:i:s') : null;
     $passwordHash = $password !== '' ? hashPassword($password) : null;
+    // Feature 4 queue fixtures: a pending-review participant without a round trip
+    // through the Account tab's "request core membership" action.
+    $promotionRequestedAt = !empty($_GET['promotion_requested_at']) ? date('Y-m-d H:i:s') : null;
 
     $participantId = seed_uuid();
     $db->prepare("
         INSERT INTO challenge_participants
-        (id, email, core_user_id, display_name, language, status, password_hash, verified_at, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        (id, email, core_user_id, display_name, language, status, password_hash, promotion_requested_at, verified_at, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     ")->execute([
-        $participantId, $emailVal, $coreUserId ?: null, $displayName, $lang, $status, $passwordHash, $verifiedAt
+        $participantId, $emailVal, $coreUserId ?: null, $displayName, $lang, $status, $passwordHash, $promotionRequestedAt, $verifiedAt
     ]);
 
     echo json_encode(['ok' => true, 'participant_id' => $participantId, 'email' => $emailVal]);
@@ -1248,6 +1251,10 @@ if (($_GET['action'] ?? '') === 'seed_challenge_access_token') {
 }
 
 // Action: seed_challenge_invite — beat-my-score invite in a chosen state, known friend_token.
+// count > 1 pre-seeds N prior sends from the same challenger inside the last 24h (Feature 5
+// daily-cap fixture, INV-05) — each to a distinct friend_email so the per-friend dedupe check
+// never masks the daily-cap check being exercised. created_hours_ago backdates created_at so
+// INV-05 can also prove the cap clears once the oldest of the N is >24h old.
 if (($_GET['action'] ?? '') === 'seed_challenge_invite') {
     $challengerId = $_GET['challenger_id'] ?? '';
     $game        = $_GET['game'] ?? 'rumor_or_not';
@@ -1258,22 +1265,109 @@ if (($_GET['action'] ?? '') === 'seed_challenge_invite') {
     if (!in_array($status, ['sent', 'accepted', 'completed', 'expired'], true)) $status = 'sent';
     $expiresIn   = intval($_GET['expires_in'] ?? 60 * 60 * 24 * 14);
     $itemIds     = isset($_GET['item_ids']) && $_GET['item_ids'] !== '' ? explode(',', $_GET['item_ids']) : [];
+    $count       = max(1, intval($_GET['count'] ?? 1));
+    $createdAt   = date('Y-m-d H:i:s', time() - intval(floatval($_GET['created_hours_ago'] ?? 0) * 3600));
     if (!$challengerId) {
         http_response_code(400);
         echo json_encode(['ok' => false, 'error' => 'challenger_id required']);
         exit;
     }
-    $id = seed_uuid();
-    $friendToken = bin2hex(random_bytes(32));
+    $ids = [];
+    $tokens = [];
+    for ($i = 0; $i < $count; $i++) {
+        $id = seed_uuid();
+        $friendToken = bin2hex(random_bytes(32));
+        $rowFriendEmail = $count > 1 ? "cap{$i}_" . $friendEmail : $friendEmail;
+        $db->prepare("
+            INSERT INTO challenge_invites
+            (id, challenger_id, game, item_ids, challenger_score, friend_email, friend_token, status, created_at, expires_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ")->execute([
+            $id, $challengerId, $game, json_encode($itemIds), $score, $rowFriendEmail, $friendToken, $status,
+            $createdAt, date('Y-m-d H:i:s', time() + $expiresIn),
+        ]);
+        $ids[] = $id;
+        $tokens[] = $friendToken;
+    }
+    echo json_encode(['ok' => true, 'invite_id' => $ids[0], 'friend_token' => $tokens[0], 'invite_ids' => $ids, 'friend_tokens' => $tokens]);
+    exit;
+}
+
+// Action: seed_challenge_suppression — direct insert into challenge_email_suppressions,
+// skipping the opt-out round trip (Feature 5 dedupe/suppression fixtures, INV-01/04).
+if (($_GET['action'] ?? '') === 'seed_challenge_suppression') {
+    $email  = $_GET['email'] ?? '';
+    $reason = $_GET['reason'] ?? 'opt_out';
+    if (!in_array($reason, ['opt_out', 'complaint', 'bounce', 'admin'], true)) $reason = 'opt_out';
+    if (!$email) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'email required']);
+        exit;
+    }
     $db->prepare("
-        INSERT INTO challenge_invites
-        (id, challenger_id, game, item_ids, challenger_score, friend_email, friend_token, status, created_at, expires_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
-    ")->execute([
-        $id, $challengerId, $game, json_encode($itemIds), $score, $friendEmail, $friendToken, $status,
-        date('Y-m-d H:i:s', time() + $expiresIn),
-    ]);
-    echo json_encode(['ok' => true, 'invite_id' => $id, 'friend_token' => $friendToken]);
+        INSERT INTO challenge_email_suppressions (email, reason) VALUES (?, ?)
+        ON DUPLICATE KEY UPDATE reason = VALUES(reason)
+    ")->execute([$email, $reason]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: seed_challenge_answer — one played item for a participant (a real challenge_answers
+// row), so playedSet() in challenges-invite.php sees a non-empty set. Reuses one fixed,
+// idempotently-inserted challenge_items fixture row across runs (net-new items aren't cleaned
+// up by cleanup_challenges since they aren't participant/email-scoped).
+if (($_GET['action'] ?? '') === 'seed_challenge_answer') {
+    $participantId = $_GET['participant_id'] ?? '';
+    $correct       = intval($_GET['correct'] ?? 1);
+    if (!$participantId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'participant_id required']);
+        exit;
+    }
+    $itemId = 'e2e00000-0000-4000-8000-000000000001';
+    $db->prepare("
+        INSERT IGNORE INTO challenge_items
+        (id, text_da, text_en, context_da, context_en, explain_da, explain_en, is_real, status, source_ref)
+        VALUES (?, 'E2E fixture item', 'E2E fixture item', 'test', 'test', 'test', 'test', 1, 'published', 'e2e-fixture')
+    ")->execute([$itemId]);
+    $answerId = seed_uuid();
+    $db->prepare("
+        INSERT INTO challenge_answers (id, participant_id, item_id, guess_real, correct)
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE correct = VALUES(correct)
+    ")->execute([$answerId, $participantId, $itemId, $correct, $correct]);
+    echo json_encode(['ok' => true, 'item_id' => $itemId]);
+    exit;
+}
+
+// Action: seed_converted_guest — an admin-approved participant already linked to a fresh core
+// user (in_competition=0), skipping the Approve transaction itself (ADM-03/04 exercise that
+// directly) — for the converted-guests list / users-tab-exclusion cases (ADM-01/02).
+// link_participant=0 creates only the `users` row (no paired challenge_participants row) —
+// an email-collision fixture for ADM-07, where the collision email must remain free for a
+// separately-seeded pending participant to own (challenge_participants.email is UNIQUE).
+if (($_GET['action'] ?? '') === 'seed_converted_guest') {
+    $email          = $_GET['email'] ?? ('guest_' . bin2hex(random_bytes(4)) . '@test.localhost');
+    $displayName    = $_GET['display_name'] ?? 'E2E Converted Guest';
+    $inCompetition  = intval($_GET['in_competition'] ?? 0);
+    $linkParticipant = ($_GET['link_participant'] ?? '1') !== '0';
+
+    $userId = seed_uuid();
+    $db->prepare("
+        INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars)
+        VALUES (?, ?, ?, ?, 'user', ?, 0, 0)
+    ")->execute([$userId, $email, hashPassword('Integration2026!'), $displayName, $inCompetition]);
+
+    $participantId = null;
+    if ($linkParticipant) {
+        $participantId = seed_uuid();
+        $db->prepare("
+            INSERT INTO challenge_participants (id, email, core_user_id, display_name, status, verified_at, created_at)
+            VALUES (?, ?, ?, ?, 'verified', NOW(), NOW())
+        ")->execute([$participantId, $email, $userId, $displayName]);
+    }
+
+    echo json_encode(['ok' => true, 'user_id' => $userId, 'participant_id' => $participantId, 'email' => $email]);
     exit;
 }
 
@@ -1337,7 +1431,13 @@ if (($_GET['action'] ?? '') === 'cleanup_challenges') {
     $db->query("DELETE FROM challenge_magic_links WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
     $db->query("DELETE FROM challenge_access_tokens WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
     $db->query("DELETE FROM challenge_invites WHERE friend_email LIKE '%@test.localhost' OR challenger_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    // Core users created by Feature 4 flows (seed_converted_guest, admin approve, or an
+    // unlinked email-collision fixture) — @test.localhost is never used by the fixed
+    // e2e fixtures (those live on @hpovlsen.dk / @test.local), so this is a safe filter.
+    // password_resets cascades on this delete (FK ON DELETE CASCADE).
+    $db->query("DELETE FROM users WHERE email LIKE '%@test.localhost'");
     $db->query("DELETE FROM challenge_participants WHERE email LIKE '%@test.localhost'");
+    $db->query("DELETE FROM challenge_email_suppressions WHERE email LIKE '%@test.localhost'");
     echo json_encode(['ok' => true]);
     exit;
 }

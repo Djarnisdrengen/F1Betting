@@ -380,6 +380,22 @@ return [
         'ch_promote_button'      => 'Anmod om fuldt medlemskab',
         'ch_promote_requested'   => 'Din anmodning er sendt og afventer godkendelse.',
 
+        // Participant profile (Feature 3)
+        'ch_profile_title'       => 'Din profil',
+        'ch_save_spot_prompt'    => 'Gem din plads for at få en profil du kan administrere.',
+        'ch_save_spot_cta'       => 'Gem din plads',
+        'ch_tab_account'         => 'Konto',
+        'ch_sessions_title'      => 'Enheder',
+        'ch_signout'             => 'Log ud på denne enhed',
+        'ch_signout_all'         => 'Log ud overalt',
+        'ch_stale_form'          => 'Din status har ændret sig — genindlæs siden og prøv igen.',
+
+        // Invite opt-out (Feature 5)
+        'ch_optout_confirmed_title' => 'Afmeldt',
+        'ch_optout_confirmed_body'  => 'Du bliver ikke kontaktet igen fra Paddock Challenges.',
+        'ch_optout_invalid_title'   => 'Linket er ugyldigt',
+        'ch_optout_invalid_body'    => 'Dette link er ugyldigt eller allerede brugt.',
+
         // Shared auth messages
         'go_to_login'           => 'Gå til login',
         'back_home'             => 'Tilbage til forsiden',
@@ -768,6 +784,22 @@ return [
         'ch_promote_hint'        => 'Want to be a full member and play for the pool? Send a request — an admin approves it.',
         'ch_promote_button'      => 'Request full membership',
         'ch_promote_requested'   => 'Your request has been sent and is awaiting approval.',
+
+        // Participant profile (Feature 3)
+        'ch_profile_title'       => 'Your profile',
+        'ch_save_spot_prompt'    => 'Save your spot to get a profile you can manage.',
+        'ch_save_spot_cta'       => 'Save your spot',
+        'ch_tab_account'         => 'Account',
+        'ch_sessions_title'      => 'Devices',
+        'ch_signout'             => 'Sign out on this device',
+        'ch_signout_all'         => 'Sign out everywhere',
+        'ch_stale_form'          => 'Your status just changed — reload the page and try again.',
+
+        // Invite opt-out (Feature 5)
+        'ch_optout_confirmed_title' => 'Opted out',
+        'ch_optout_confirmed_body'  => "You won't hear from Paddock Challenges again.",
+        'ch_optout_invalid_title'   => 'Link not valid',
+        'ch_optout_invalid_body'    => 'This link is invalid or has already been used.',
 
         // Shared auth messages
         'go_to_login'           => 'Go to login',

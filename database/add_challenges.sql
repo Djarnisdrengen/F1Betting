@@ -192,3 +192,19 @@ CREATE TABLE IF NOT EXISTS challenge_invites (
     FOREIGN KEY (challenger_id) REFERENCES challenge_participants(id) ON DELETE CASCADE,
     FOREIGN KEY (friend_participant_id) REFERENCES challenge_participants(id) ON DELETE SET NULL
 );
+
+-- ============================================================
+-- Invite guardrails & consent (2026-07-13, Feature 5 / REQ-801-812)
+-- Additive — safe to run after the participant-model block above.
+-- ============================================================
+
+-- Suppression / opt-out / complaint / bounce list — checked before every friend send (REQ-802).
+CREATE TABLE IF NOT EXISTS challenge_email_suppressions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    reason ENUM('opt_out','complaint','bounce','admin') NOT NULL DEFAULT 'opt_out',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Per-sender daily cap on friend invites (REQ-806).
+ALTER TABLE settings ADD COLUMN challenge_invite_daily_cap INT NOT NULL DEFAULT 5;

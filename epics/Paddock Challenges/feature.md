@@ -3,6 +3,11 @@
 Epic: `paddock-challenges-epic.md` · Plan: `plan.md` · Test plan: `test-plan.md`
 Design handoff: `design_handoff_paddock_challenges/` (README + `Paddock Prototype.dc.html` — the hifi spec)
 
+**Participant-model features** — full specs: **Feature 1 & 2** below in §B; **Feature 3** (Participant
+Profile) → `feature-3-participant-profile.md`; **Feature 4** (Request to Become a Core Member) →
+`feature-4-core-member-request.md`; **Feature 5** (Invite Guardrails & Consent) →
+`feature-5-invite-guardrails.md`.
+
 Refined 2026-07-12 against the design handoff, via the design-handoff-implementer skill. Supersedes the
 feature blocks previously embedded in the epic file.
 
@@ -89,6 +94,14 @@ Rewritten 2026-07-12 (participant-model refinement, decisions D11–D14): full s
 Access Link + Optional Password**. Supersedes the email-first / ephemeral-session / self-serve-
 conversion model previously in this section.
 
+> The three follow-on participant-model features have their own spec files:
+> **Feature 3 — Participant Profile & Identity Management** (`feature-3-participant-profile.md`,
+> the participant home page that hosts B4's set-password and B6's promotion entry — "profile parity
+> minus the History tab", REQ-128); **Feature 4 — Request to Become a Core Member**
+> (`feature-4-core-member-request.md`, the admin-approved promotion loop behind REQ-108/B6);
+> **Feature 5 — Invite Guardrails & Consent** (`feature-5-invite-guardrails.md`, the caps /
+> rate-limits / suppression / opt-out that REQ-119 requires before any friend invite is sent).
+
 **Identity tiers** — all live in `challenge_participants`, never `users`:
 
 | Tier | How reached | Return path | Rights |
@@ -116,7 +129,7 @@ Functional:
   3. sends the **friend** an invite email — "[owner] challenged you to beat their score on [game]" — with a Play link.
 - [REQ-115] Clicking the **owner-confirmation** link verifies the owner (`status='verified'`, `verified_at=NOW()`), establishes their session, and issues a persistent access token + device cookie (B3). The challenge they already played is already on their row — nothing is re-attached. Until they confirm, the owner stays unverified and off the CP board, but the friend invite is already valid.
 - [REQ-116] Clicking the **friend-invite** link creates (or resolves, if the address already maps to a participant) the friend's participant as **verified** — the click proves ownership of that address — establishes their session, issues an access token + device cookie, marks the invite `accepted`, and drops them into the **same item set** to play.
-- [REQ-117] When the friend finishes, the invite is `completed`: both scores are stored (`challenger_score`, `friend_score`) and a **head-to-head result** (who won / tie) is shown to the friend and surfaced to the owner on their next visit. Each player earns only their **normal per-game CP** for the items they answered — the head-to-head awards **no additional CP in v1** (no CP-economy change; a "challenge win" bonus is explicitly out of v1 scope — open decision if desired later).
+- [REQ-117] When the friend finishes, the invite is `completed`: both scores are stored (`challenger_score`, `friend_score`) and a **head-to-head result** (who won / tie) is shown to the friend and surfaced to the owner on their next visit. Each player earns only their **normal per-game CP** for the items they answered — the head-to-head awards **no additional CP, permanently** (D15, 2026-07-13: no CP-economy change; a "challenge win" bonus was considered and rejected — bragging rights only).
 - [REQ-118] A `friend_token` is long-lived (expires at the next race start or 14 days out, whichever is later) and single-accept: after `accepted`, re-clicks return the friend to the challenge rather than creating a second participant.
 - [REQ-119] Invite-send guardrails — per-sender caps, per-IP and per-friend-email rate limiting, one-time transactional friend emails with a clear "why you received this" line, and an opt-out/suppression path — are specified in **Feature 5 (Invite Guardrails & Consent)**. Section B requires that no invite email is sent without passing those checks and that a suppressed/opted-out address is never re-emailed. Because the friend is a third party who gave no prior consent, this is a must-have (EU/Danish compliance), not polish.
 

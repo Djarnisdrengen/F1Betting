@@ -147,15 +147,16 @@ CREATE TABLE settings (
     points_wrong_pos INT DEFAULT 5,
     betting_window_hours INT DEFAULT 48,
     bet_size INT DEFAULT 10,
-    challenge_rumor_deck_size INT DEFAULT 3
+    challenge_rumor_deck_size INT DEFAULT 3,
+    challenge_invite_daily_cap INT NOT NULL DEFAULT 5
 );
 
 -- Indsæt standard indstillinger
-INSERT INTO settings (id, app_title, app_year, hero_title_en, hero_title_da, hero_text_en, hero_text_da, points_p1, points_p2, points_p3, points_wrong_pos, betting_window_hours, bet_size, challenge_rumor_deck_size) VALUES
+INSERT INTO settings (id, app_title, app_year, hero_title_en, hero_title_da, hero_text_en, hero_text_da, points_p1, points_p2, points_p3, points_wrong_pos, betting_window_hours, bet_size, challenge_rumor_deck_size, challenge_invite_daily_cap) VALUES
 (1, 'F1 Betting', '2025', 'Predict the Podium', 'Forudsig Podiet',
 'Compete with friends by predicting top 3 for each Grand Prix. Earn points for correct predictions.',
 'Konkurrér med venner ved at forudsige top 3 for hvert Grand Prix. Optjen point for korrekte forudsigelser.',
-25, 18, 15, 5, 48, 10, 3);
+25, 18, 15, 5, 48, 10, 3, 5);
 
 -- Password reset tokens
 CREATE TABLE password_resets (
@@ -297,6 +298,14 @@ CREATE TABLE IF NOT EXISTS challenge_invites (
     KEY idx_challenger (challenger_id),
     FOREIGN KEY (challenger_id) REFERENCES challenge_participants(id) ON DELETE CASCADE,
     FOREIGN KEY (friend_participant_id) REFERENCES challenge_participants(id) ON DELETE SET NULL
+);
+
+-- Suppression / opt-out / complaint / bounce list — checked before every friend send (REQ-802).
+CREATE TABLE IF NOT EXISTS challenge_email_suppressions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    reason ENUM('opt_out','complaint','bounce','admin') NOT NULL DEFAULT 'opt_out',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Rumor or Not — items (real facts or synthetic rumors)

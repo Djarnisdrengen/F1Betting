@@ -99,12 +99,27 @@ return [
         'email_magic_expiry'                => 'Dette link udløber om 30 minutter.',
         'email_magic_ignore'                => 'Hvis du ikke anmodede om dette, kan du ignorere denne email.',
 
-        // Challenge invite email (beat my score)
-        'email_invite_subject'              => 'Du er blevet udfordret i Paddock Challenges',
-        'email_invite_greeting'             => 'Hej,',
-        'email_invite_intro'                => '%s har udfordret dig til at slå deres score i %s. Klik nedenfor for at spille.',
-        'email_invite_button'               => 'Tag udfordringen',
-        'email_invite_ignore'               => 'Kender du ikke afsenderen? Så kan du bare ignorere denne email.',
+        // Challenge invite email (beat my score) — keys prefixed ch_ so they never collide with
+        // the core admin invite-a-member keys above (email_invite_*); a same-name collision here
+        // previously made the core invite email render this copy instead (fixed 2026-07-13).
+        'ch_email_invite_subject'           => 'Du er blevet udfordret i Paddock Challenges',
+        'ch_email_invite_greeting'          => 'Hej,',
+        'ch_email_invite_intro'             => '%s har udfordret dig til at slå deres score i %s. Klik nedenfor for at spille.',
+        'ch_email_invite_button'            => 'Tag udfordringen',
+        'ch_email_invite_ignore'            => 'Kender du ikke afsenderen? Så kan du bare ignorere denne email.',
+        'ch_email_invite_whyline'           => '%s udfordrede dig på Paddock Picks. Ikke interesseret?',
+        'ch_email_invite_optout'            => 'Afmeld — du bliver ikke kontaktet igen',
+
+        // Promotion approved emails (Feature 4)
+        'ch_email_promoted_subject'         => 'Din adgang til Paddock Picks er klar',
+        'ch_email_promoted_greeting'        => 'Hej %s,',
+        'ch_email_promoted_intro'           => 'Din anmodning om at blive fuldt medlem er godkendt! Du kan nu logge ind med din eksisterende e-mail og adgangskode.',
+        'ch_email_promoted_button'          => 'Log ind',
+        'ch_email_setpassword_subject'      => 'Vælg en adgangskode til din nye konto',
+        'ch_email_setpassword_greeting'     => 'Hej %s,',
+        'ch_email_setpassword_intro'        => 'Din anmodning om at blive fuldt medlem er godkendt! Vælg en adgangskode for at komme i gang.',
+        'ch_email_setpassword_button'       => 'Vælg adgangskode',
+        'ch_email_setpassword_expiry'       => 'Dette link udløber om 1 time.',
 
         // Duel result email
         'email_duel_result_subject'         => 'Duellen er afsluttet: %s',
@@ -213,12 +228,25 @@ return [
         'email_magic_expiry'                => 'This link expires in 30 minutes.',
         'email_magic_ignore'                => 'If you did not request this, you can ignore this email.',
 
-        // Challenge invite email (beat my score)
-        'email_invite_subject'              => 'You have been challenged in Paddock Challenges',
-        'email_invite_greeting'             => 'Hi,',
-        'email_invite_intro'                => '%s has challenged you to beat their score in %s. Click below to play.',
-        'email_invite_button'               => 'Take the challenge',
-        'email_invite_ignore'               => "Don't know the sender? You can safely ignore this email.",
+        // Challenge invite email (beat my score) — ch_ prefix, see da block above for why.
+        'ch_email_invite_subject'           => 'You have been challenged in Paddock Challenges',
+        'ch_email_invite_greeting'          => 'Hi,',
+        'ch_email_invite_intro'             => '%s has challenged you to beat their score in %s. Click below to play.',
+        'ch_email_invite_button'            => 'Take the challenge',
+        'ch_email_invite_ignore'            => "Don't know the sender? You can safely ignore this email.",
+        'ch_email_invite_whyline'           => '%s challenged you on Paddock Picks. Not interested?',
+        'ch_email_invite_optout'            => "Opt out — you won't be emailed again",
+
+        // Promotion approved emails (Feature 4)
+        'ch_email_promoted_subject'         => 'Your Paddock Picks access is ready',
+        'ch_email_promoted_greeting'        => 'Hi %s,',
+        'ch_email_promoted_intro'           => 'Your request to become a full member has been approved! You can now log in with your existing email and password.',
+        'ch_email_promoted_button'          => 'Log in',
+        'ch_email_setpassword_subject'      => 'Choose a password for your new account',
+        'ch_email_setpassword_greeting'     => 'Hi %s,',
+        'ch_email_setpassword_intro'        => 'Your request to become a full member has been approved! Choose a password to get started.',
+        'ch_email_setpassword_button'       => 'Choose password',
+        'ch_email_setpassword_expiry'       => 'This link expires in 1 hour.',
 
         // Duel result email
         'email_duel_result_subject'         => 'Duel complete: %s',

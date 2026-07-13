@@ -46,20 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     [$itemIds, $score] = playedSet($db, $participant['id'], $game);
 
-    // Rate-limit friend sends (scope 'invite'), fail closed (NFR-107).
-    $rateLimited = true;
-    try {
-        $rateLimited = isRateLimited($db, $ip, 'invite', $friendEmail !== false ? $friendEmail : '');
-    } catch (Exception $e) {
-        if (defined('APP_LOG_FILE')) {
-            logToFile(APP_LOG_FILE, '[RATE-LIMIT] invite check failed, failing closed: ' . $e->getMessage());
-        }
-    }
-
-    if ($rateLimited) {
-        header('Retry-After: 900');
-        $error = t('rate_limited');
-    } elseif (!$friendEmail) {
+    if (!$friendEmail) {
         $error = t('enter_valid_email');
     } elseif (empty($itemIds)) {
         $error = t('ch_invite_nothing_played');
@@ -71,55 +58,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$ownEmail) {
                 $error = t('enter_valid_email');
             } else {
-                // Guard: an email that is a core account, or already another participant, is never
-                // (re)claimed here (REQ-111). The response stays identical (NFR-106) either way.
-                $isCore = $db->prepare("SELECT id FROM users WHERE email = ?");
-                $isCore->execute([$ownEmail]);
-                $taken = $db->prepare("SELECT id FROM challenge_participants WHERE email = ? AND id <> ?");
-                $taken->execute([$ownEmail, $participant['id']]);
+                // Owner-confirm email is rate-limited independently under scope 'magic'
+                // (REQ-809) — this is the owner's own action, visible to them, and decoupled
+                // from the friend-side guardrails below (NFR-107 pattern, see login.php).
+                $ownerRateLimited = true;
+                try {
+                    $ownerRateLimited = isRateLimited($db, $ip, 'magic', $ownEmail);
+                } catch (Exception $e) {
+                    if (defined('APP_LOG_FILE')) {
+                        logToFile(APP_LOG_FILE, '[RATE-LIMIT] magic check failed, failing closed: ' . $e->getMessage());
+                    }
+                }
 
-                if (!$isCore->fetch() && !$taken->fetch()) {
-                    $db->prepare("UPDATE challenge_participants SET email = ? WHERE id = ?")
-                       ->execute([$ownEmail, $participant['id']]);
-                    $ownerEmail = $ownEmail;
+                if ($ownerRateLimited) {
+                    header('Retry-After: 900');
+                    $error = t('rate_limited');
+                } else {
+                    // Guard: an email that is a core account, or already another participant, is never
+                    // (re)claimed here (REQ-111). The response stays identical (NFR-106) either way.
+                    $isCore = $db->prepare("SELECT id FROM users WHERE email = ?");
+                    $isCore->execute([$ownEmail]);
+                    $taken = $db->prepare("SELECT id FROM challenge_participants WHERE email = ? AND id <> ?");
+                    $taken->execute([$ownEmail, $participant['id']]);
 
-                    // Owner-confirmation link (reuse challenge_magic_links, 30-min, single-use).
-                    $mt = bin2hex(random_bytes(32));
-                    $db->prepare("DELETE FROM challenge_magic_links WHERE participant_id = ?")->execute([$participant['id']]);
-                    $db->prepare("
-                        INSERT INTO challenge_magic_links (participant_id, token, expires_at, created_at)
-                        VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 MINUTE), NOW())
-                    ")->execute([$participant['id'], $mt]);
+                    if (!$isCore->fetch() && !$taken->fetch()) {
+                        $db->prepare("UPDATE challenge_participants SET email = ? WHERE id = ?")
+                           ->execute([$ownEmail, $participant['id']]);
+                        $ownerEmail = $ownEmail;
 
-                    $confirmUrl = SITE_URL . "/challenges-verify.php?token=" . $mt;
-                    $confirmHtml = "<p>" . t('email_magic_greeting') . "</p><p>" . t('email_magic_intro') . "</p>"
-                        . "<p><a href=\"$confirmUrl\" style=\"display:inline-block;padding:10px 20px;background:#e60600;color:#fff;text-decoration:none;border-radius:6px;\">"
-                        . t('email_magic_button') . "</a></p><p><small>" . t('email_magic_expiry') . "</small></p>";
-                    sendEmail($ownEmail, t('email_magic_subject'), $confirmHtml);
+                        // Owner-confirmation link (reuse challenge_magic_links, 30-min, single-use).
+                        $mt = bin2hex(random_bytes(32));
+                        $db->prepare("DELETE FROM challenge_magic_links WHERE participant_id = ?")->execute([$participant['id']]);
+                        $db->prepare("
+                            INSERT INTO challenge_magic_links (participant_id, token, expires_at, created_at)
+                            VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 MINUTE), NOW())
+                        ")->execute([$participant['id'], $mt]);
+
+                        $confirmUrl = SITE_URL . "/challenges-verify.php?token=" . $mt;
+                        $confirmHtml = "<p>" . t('email_magic_greeting') . "</p><p>" . t('email_magic_intro') . "</p>"
+                            . "<p><a href=\"$confirmUrl\" style=\"display:inline-block;padding:10px 20px;background:#e60600;color:#fff;text-decoration:none;border-radius:6px;\">"
+                            . t('email_magic_button') . "</a></p><p><small>" . t('email_magic_expiry') . "</small></p>";
+                        sendEmail($ownEmail, t('email_magic_subject'), $confirmHtml);
+                        try { recordLoginAttempt($db, $ip, 'magic', $ownEmail); } catch (Exception $e) {}
+                    }
                 }
             }
         }
 
         if (!$error) {
-            // Send the friend invite unless the friend email is a core account (REQ-111) — the
-            // click-side guard in challenges-verify catches it too, but skip the mint here.
-            $friendIsCore = $db->prepare("SELECT id FROM users WHERE email = ?");
-            $friendIsCore->execute([$friendEmail]);
-
-            if (!$friendIsCore->fetch()) {
+            // Friend-send path — gated by canSendInvite() (suppression, already-core, dedupe,
+            // daily cap, rate limit; REQ-801). Both branches render the identical success view
+            // below: no $error is ever set from this guardrail's result (REQ-810).
+            if (canSendInvite($db, $participant['id'], $ip, $friendEmail)) {
                 $displayName = $participant['display_name'] ?: t('ch_a_friend');
                 [$inviteId, $friendToken] = createChallengeInvite($db, $participant['id'], $game, $itemIds, $score, $friendEmail);
 
-                $inviteUrl  = SITE_URL . "/challenges-verify.php?invite=" . $friendToken;
-                $gameName   = $game === 'trivia' ? t('ch_trivia') : t('ch_rumors');
-                $inviteHtml = "<p>" . t('email_invite_greeting') . "</p>"
-                    . "<p>" . sprintf(t('email_invite_intro'), escape($displayName), escape($gameName)) . "</p>"
+                $inviteUrl   = SITE_URL . "/challenges-verify.php?invite=" . $friendToken;
+                $gameName    = $game === 'trivia' ? t('ch_trivia') : t('ch_rumors');
+                $optoutToken = hash_hmac('sha256', strtolower(trim($friendEmail)), CHALLENGE_INVITE_SECRET);
+                $optoutUrl   = SITE_URL . "/challenges-optout.php?e=" . urlencode($friendEmail) . "&t=" . $optoutToken;
+                $inviteHtml  = "<p>" . t('ch_email_invite_greeting') . "</p>"
+                    . "<p>" . sprintf(t('ch_email_invite_intro'), escape($displayName), escape($gameName)) . "</p>"
                     . "<p><a href=\"$inviteUrl\" style=\"display:inline-block;padding:10px 20px;background:#e60600;color:#fff;text-decoration:none;border-radius:6px;\">"
-                    . t('email_invite_button') . "</a></p><p><small>" . t('email_invite_ignore') . "</small></p>";
-                sendEmail($friendEmail, t('email_invite_subject'), $inviteHtml);
+                    . t('ch_email_invite_button') . "</a></p><p><small>" . t('ch_email_invite_ignore') . "</small></p>"
+                    . "<p style=\"color:#888;font-size:12px;\">" . sprintf(t('ch_email_invite_whyline'), escape($displayName))
+                    . " <a href=\"$optoutUrl\">" . t('ch_email_invite_optout') . "</a></p>";
+                sendEmail($friendEmail, t('ch_email_invite_subject'), $inviteHtml);
+                try { recordLoginAttempt($db, $ip, 'invite', $friendEmail); } catch (Exception $e) {}
             }
-
-            try { recordLoginAttempt($db, $ip, 'invite', $friendEmail); } catch (Exception $e) {}
             $done = true;
         }
     }

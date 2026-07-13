@@ -75,6 +75,12 @@ require a race to be happening, plus a public on-ramp so new people can join wit
 | D13 | **Persistent return** via a hashed, rotating **access token** — an emailed access link plus a 90-day device cookie, resolved in `getChallengeParticipant()` after the session marker | Removes the "request a new magic link every visit" friction that made the email-only model cumbersome; the shared PHP session lifetime is left untouched. |
 | D14 | **Two save-your-spot options; promotion is admin-gated**: a verified participant may set a **password** to become a *permanent participant* (stays in `challenge_participants`, unified `/login.php`, no core rights); becoming a **core member** is a *request an admin approves*, never self-serve. **Supersedes D4's self-serve mechanism** (its `in_competition=0` pool default is kept). Full admin flow = Feature 4 | Keeps the ~10-seat money pool admin-controlled while giving participants a durable, password-backed identity that is cleanly separate from core members. |
 
+**2026-07-13** (Feature 3/4/5 specs — closes an open item from REQ-117):
+
+| # | Decision | Why |
+| --- | --- | --- |
+| D15 | **A "challenge a friend" win pays no bonus CP — permanently, not just in v1.** Both sides earn only their normal per-game CP for the items they answered; the head-to-head result (win/lose/tie) is bragging rights only. **Closes REQ-117's "open decision if desired later."** | Confirmed 2026-07-13. Keeps the invite loop (Feature 1/B2) a pure growth mechanic with zero CP-economy surface — nothing to balance, exploit, or explain, and no overlap with Duels (which is the CP-earning head-to-head game). |
+
 ---
 
 ## Shared architecture (details in `feature.md`)

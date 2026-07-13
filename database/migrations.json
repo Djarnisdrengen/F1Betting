@@ -23,6 +23,8 @@
     { "migration": "add_challenges.sql", "table": "challenge_trivia_answers" },
     { "migration": "add_challenges.sql (participant-model refinement)", "table": "challenge_participants", "columns": ["password_hash", "promotion_requested_at"] },
     { "migration": "add_challenges.sql (participant-model refinement)", "table": "challenge_access_tokens" },
-    { "migration": "add_challenges.sql (participant-model refinement)", "table": "challenge_invites" }
+    { "migration": "add_challenges.sql (participant-model refinement)", "table": "challenge_invites" },
+    { "migration": "add_challenges.sql (invite guardrails)", "table": "challenge_email_suppressions" },
+    { "migration": "add_challenges.sql (invite guardrails)", "table": "settings", "columns": ["challenge_invite_daily_cap"] }
   ]
 }

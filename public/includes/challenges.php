@@ -216,6 +216,57 @@ function createChallengeInvite(PDO $db, string $challengerId, string $game, arra
     return [$id, $friendToken];
 }
 
+/**
+ * Guardrail gate for every friend-invite send (REQ-801, Feature 5). All checks fail-closed
+ * and are checked in this order: suppressed, already-core, per-friend dedupe, per-sender
+ * daily cap, IP/email rate limit. Callers must not send a friend email when this is false.
+ */
+function canSendInvite(PDO $db, string $senderParticipantId, string $ip, string $friendEmail): bool {
+    // 1. Suppressed — absolute, never re-emailed once opted out (REQ-802).
+    $stmt = $db->prepare("SELECT 1 FROM challenge_email_suppressions WHERE email = ?");
+    $stmt->execute([$friendEmail]);
+    if ($stmt->fetch()) {
+        return false;
+    }
+
+    // 2. Already a core account — never solicited as a friend invite (REQ-111 territory).
+    $stmt = $db->prepare("SELECT 1 FROM users WHERE email = ?");
+    $stmt->execute([$friendEmail]);
+    if ($stmt->fetch()) {
+        return false;
+    }
+
+    // 3. Per-friend dedupe — one pending ask per friend at a time (REQ-805).
+    $stmt = $db->prepare("
+        SELECT 1 FROM challenge_invites
+        WHERE friend_email = ? AND status = 'sent' AND expires_at > NOW()
+              AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        LIMIT 1
+    ");
+    $stmt->execute([$friendEmail]);
+    if ($stmt->fetch()) {
+        return false;
+    }
+
+    // 4. Per-sender daily cap (REQ-806).
+    $cap = (int) (getSettings()['challenge_invite_daily_cap'] ?? 5);
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM challenge_invites
+        WHERE challenger_id = ? AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+    ");
+    $stmt->execute([$senderParticipantId]);
+    if ((int) $stmt->fetchColumn() >= $cap) {
+        return false;
+    }
+
+    // 5. Per-IP and per-friend-email rate limit, scope 'invite' (REQ-807).
+    if (isRateLimited($db, $ip, 'invite', $friendEmail)) {
+        return false;
+    }
+
+    return true;
+}
+
 function requireChallengeParticipant() {
     if (!getChallengeParticipant()) {
         header("HTTP/1.1 403 Forbidden");

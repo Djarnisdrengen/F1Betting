@@ -34,6 +34,8 @@ define('MFA_KEY',                'change-me-64-random-hex-chars');
 // passkey.php fails loud if this doesn't match the domain derived from SITE_URL.
 define('PASSKEY_RPID',           'example.dk');
 define('INTEGRATION_SEED_TOKEN', 'change-me');
+// HMAC key for Challenges friend-invite opt-out links (verified without a DB lookup). 64 hex chars.
+define('CHALLENGE_INVITE_SECRET', 'change-me-64-random-hex-chars');
 
 // ── SMTP (Proton Mail — primary) ──────────────────────────────────────
 define('SMTP_HOST',       'smtp.example.dk');

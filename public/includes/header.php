@@ -164,6 +164,12 @@ try {
     <a href="profile.php" class="hf-drawer-row <?= $currentPage === 'profile' ? 'active' : '' ?>">
         <i class="fas fa-user"></i><span><?= t('profile') ?></span>
     </a>
+    <?php elseif ($challengeParticipant): ?>
+    <a href="challenges-profile.php" class="hf-drawer-row <?= $currentPage === 'challenges-profile' ? 'active' : '' ?>">
+        <i class="fas fa-user"></i><span><?= t('profile') ?></span>
+    </a>
+    <?php endif; ?>
+    <?php if ($currentUser): ?>
     <a href="logout.php" class="hf-drawer-row">
         <i class="fas fa-sign-out-alt"></i><span><?= t('logout') ?></span>
     </a>

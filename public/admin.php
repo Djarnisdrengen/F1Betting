@@ -606,10 +606,19 @@ $tabIcons = [
 $tabCounts = [
     'races'   => $db->query("SELECT COUNT(*) FROM races")->fetchColumn(),
     'drivers' => $db->query("SELECT COUNT(*) FROM drivers")->fetchColumn(),
-    'users'   => $db->query("SELECT COUNT(*) FROM users")->fetchColumn(),
+    'users'   => $db->query("SELECT COUNT(*) FROM users u WHERE u.id NOT IN (
+                    SELECT core_user_id FROM challenge_participants
+                    WHERE core_user_id IS NOT NULL AND email IS NOT NULL
+                  )")->fetchColumn(),
     'invites' => $db->query("SELECT COUNT(*) FROM invites")->fetchColumn(),
     'bets'    => $db->query("SELECT COUNT(*) FROM bets")->fetchColumn(),
 ];
+
+// Pending Challenges promotion requests — badges the standalone admin-challenges.php link below.
+$challengesPromoCount = (int) $db->query("
+    SELECT COUNT(*) FROM challenge_participants
+    WHERE promotion_requested_at IS NOT NULL AND core_user_id IS NULL
+")->fetchColumn();
 
 // Security tab: group login_attempts by IP and by account over the same 15-minute
 // window isRateLimited() checks, so the badge count and the tab body always agree
@@ -645,11 +654,19 @@ switch ($currentTab) {
         $lastCompletedRaceId = $db->query("SELECT id FROM races WHERE result_p1 IS NOT NULL ORDER BY race_date DESC LIMIT 1")->fetchColumn() ?: null;
         break;
     case 'users':
+        // Converted guests (promoted via the Challenges admin-approval queue, REQ-506) live
+        // on admin-challenges.php's converted-guests list instead — excluded here so they
+        // aren't shown twice under two different management flows.
         $users = $db->query("SELECT u.*,
             (EXISTS (SELECT 1 FROM user_passkeys p WHERE p.user_id = u.id)
              OR EXISTS (SELECT 1 FROM user_totp tt WHERE tt.user_id = u.id AND tt.confirmed_at IS NOT NULL)
              OR u.email_otp_enabled = 1) AS has_mfa
-            FROM users u ORDER BY u.points DESC")->fetchAll();
+            FROM users u
+            WHERE u.id NOT IN (
+                SELECT core_user_id FROM challenge_participants
+                WHERE core_user_id IS NOT NULL AND email IS NOT NULL
+            )
+            ORDER BY u.points DESC")->fetchAll();
         break;
     case 'bets':
         $races      = $db->query("SELECT * FROM races ORDER BY race_date ASC")->fetchAll();
@@ -697,9 +714,16 @@ include __DIR__ . '/includes/header.php';
                 <?php endif; ?>
             </a>
         <?php endforeach; ?>
+        <a href="admin-challenges.php" class="admin-nav-tab">
+            <i class="fas fa-user-check"></i>
+            <span><?= t('admin_ch_title') ?></span>
+            <?php if ($challengesPromoCount > 0): ?>
+                <span class="admin-nav-count"><?= $challengesPromoCount ?></span>
+            <?php endif; ?>
+        </a>
     </nav>
-    
-    
+
+
     <?php
     $allowedTabs = ['races', 'drivers', 'users', 'bets', 'invites', 'security', 'settings'];
     if (in_array($currentTab, $allowedTabs)) {
