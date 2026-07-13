@@ -140,6 +140,15 @@ module.exports = {
     //   Composable with challengeParticipant/duelRace/seed_betting_race rather than a
     //   monolithic fixture.
 
+    heroRace: (params = {}) => call('seed_hero_race', params),
+    // params: { offset_hours? (int, default 2; negative = race already started),
+    //           betting_window_hours? (int, default 48) } → { ok, race_id }
+    //   Single named race ('E2E Hero Race') at an arbitrary hour offset from now — for
+    //   isRaceHeroWindow() boundary checks (HERO-01) on the home page. Idempotent (deletes
+    //   any prior fixture race). Since "now" can't be injected into index.php, boundary
+    //   cases are hit by choosing the race offset relative to the (real) current time, not
+    //   the other way around — see 49-home-hero.spec.js for the exact offsets used.
+
     convertedGuest: (params = {}) => call('seed_converted_guest', params),
     // params: { email?, display_name?, in_competition?, link_participant? (0 → users row only,
     //           an email-collision fixture for ADM-07) } → { ok, user_id, participant_id, email }
@@ -174,5 +183,6 @@ module.exports = {
         passkeys:       (email) => call('cleanup_passkeys', email ? { email } : {}),
         loginAttempts:  () => call('clear_login_attempts'),
         challenges:     () => call('cleanup_challenges'),
+        heroRace:       () => call('cleanup_hero_race'),
     },
 };

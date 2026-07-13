@@ -201,7 +201,7 @@ if ($section === 'duels' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     } catch (Exception $e) {
                         // UNIQUE(duel_id, participant_id) — already picked (double-submit); no-op.
                     }
-                    header('Location: challenges.php?section=duels&duel=' . urlencode($duelId));
+                    header('Location: challenges.php?section=duels&duel=' . urlencode($duelId) . '&picked=1');
                     exit;
                 }
                 header('Location: challenges.php?section=duels&duel=' . urlencode($duelId) . '&pickerror=1');
@@ -355,7 +355,10 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <style>
-.hf-arena-base { background-color: #0b0b0d; }
+@keyframes pp-fade { from { opacity:0; } to { opacity:1; } }
+@keyframes pp-pop  { from { opacity:0; transform:translateY(12px) scale(.98); } to { opacity:1; transform:none; } }
+@keyframes pp-drop { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+.hf-arena-base { background-color: #0b0b0d; animation: pp-fade .25s ease; }
 .hf-arena-header {
     background: linear-gradient(90deg, #17171b, #0d0d10);
     padding: 16px;
@@ -403,6 +406,7 @@ include __DIR__ . '/includes/header.php';
     padding: 20px;
     margin: 16px 0;
     box-shadow: 0 0 34px rgba(225, 6, 0, .16);
+    animation: pp-pop .28s ease;
 }
 </style>
 
@@ -463,7 +467,7 @@ include __DIR__ . '/includes/header.php';
                                 <?= t('ch_your_cp') ?>
                             </div>
                             <div style="font-size:28px;font-weight:700;color:#f5f5f7;text-shadow:0 0 24px rgba(251,191,36,.4);">
-                                <?= intval($participant['total_cp'] ?? 0) ?>
+                                <?= getChallengeCpTotal($db, $participant['id']) ?>
                             </div>
                         </div>
 
@@ -472,7 +476,7 @@ include __DIR__ . '/includes/header.php';
                                 <?= t('ch_streak') ?>
                             </div>
                             <div style="font-size:28px;font-weight:700;color:#34d399;">
-                                0
+                                <?= getChallengeStreak($db, $participant['id']) ?>
                             </div>
                         </div>
                     </div>
@@ -521,7 +525,7 @@ include __DIR__ . '/includes/header.php';
                     <span style="font-size:13px;color:#a1a1aa;font-weight:600;"><?= t('ch_todays_deck') ?></span>
                     <span style="font-size:12px;color:#a1a1aa;font-family:monospace;"><?= $answeredToday ?> / <?= $deckSize ?></span>
                 </div>
-                <div data-testid="rumor-card" style="border-radius:16px;background:rgba(35,35,40,.7);border:1.5px solid <?= $answered ? ($card['correct'] ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)') : 'rgba(245,245,247,.15)' ?>;padding:20px 18px;margin-top:12px;">
+                <div data-testid="rumor-card" style="border-radius:16px;background:rgba(35,35,40,.7);border:1.5px solid <?= $answered ? ($card['correct'] ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)') : 'rgba(245,245,247,.15)' ?>;padding:20px 18px;margin-top:12px;animation:pp-pop .28s ease;">
                     <div style="display:flex;align-items:center;justify-content:space-between;">
                         <span class="hf-badge" style="background:rgba(225,6,0,.14);color:#ff8a80;border:1px solid rgba(225,6,0,.4);padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;">
                             <?= escape($card['context_' . $lang] ?: $card['context_da']) ?>
@@ -548,6 +552,10 @@ include __DIR__ . '/includes/header.php';
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <?php if ($answered): ?>
+                    <script nonce="<?= $nonce ?>">hfToast(<?= json_encode($card['correct'] ? sprintf(t('ch_toast_cp'), 10) : t('ch_toast_miss')) ?>);</script>
+                <?php endif; ?>
 
                 <?php if (!$answered): ?>
                     <form method="POST" style="margin-top:16px;">
@@ -615,7 +623,7 @@ include __DIR__ . '/includes/header.php';
                     <span style="font-size:13px;color:#a1a1aa;font-weight:600;"><?= t('ch_weekly_quiz') ?></span>
                     <span style="font-size:12px;color:#a1a1aa;font-family:monospace;"><?= $weekAnswered ?> / <?= $weekTotal ?></span>
                 </div>
-                <div data-testid="trivia-card" style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid rgba(245,245,247,.15);padding:20px 18px;margin-top:12px;">
+                <div data-testid="trivia-card" style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid rgba(245,245,247,.15);padding:20px 18px;margin-top:12px;animation:pp-pop .28s ease;">
                     <span class="hf-badge" style="background:rgba(59,130,246,.14);color:#7fb2ff;border:1px solid rgba(59,130,246,.35);padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;">
                         <?= escape(strtoupper($q['topic'])) ?>
                     </span>
@@ -667,12 +675,16 @@ include __DIR__ . '/includes/header.php';
                         <a href="?section=trivia" data-testid="trivia-next" class="btn btn-primary" style="width:100%;margin-top:13px;display:block;text-align:center;">
                             <?= $triviaCurrent ? t('ch_next_question') : t('ch_finish_quiz') ?> <span aria-hidden="true">&rarr;</span>
                         </a>
+                        <script nonce="<?= $nonce ?>">hfToast(<?= json_encode($q['correct'] ? sprintf(t('ch_toast_cp'), 5) : t('ch_toast_miss')) ?>);</script>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($section === 'duels'): ?>
+            <?php if (($_GET['picked'] ?? '') === '1'): ?>
+                <script nonce="<?= $nonce ?>">hfToast(<?= json_encode(t('ch_toast_duel_locked')) ?>);</script>
+            <?php endif; ?>
             <?php if (!$isVerifiedParticipant): ?>
                 <div data-testid="duel-verify-prompt" style="text-align:center;padding:40px 20px;">
                     <p style="font-size:14px;color:#a1a1aa;margin-bottom:20px;"><?= t('ch_duel_verify_prompt') ?></p>
@@ -716,7 +728,7 @@ include __DIR__ . '/includes/header.php';
                     $otherInitials = strtoupper(substr($viewDuel['other_name'] ?: '?', 0, 2));
                 ?>
                 <div data-testid="duel-detail" data-duel-id="<?= escape($viewDuel['id']) ?>" data-status="<?= escape($viewDuel['status']) ?>" style="padding-top:8px;">
-                    <div style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid rgba(245,158,11,.4);padding:20px 18px;">
+                    <div style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid rgba(245,158,11,.4);padding:20px 18px;animation:pp-pop .28s ease;">
                         <div style="display:flex;align-items:center;justify-content:space-between;">
                             <span class="label-mono" style="font-size:11px;color:#a1a1aa;"><?= escape($viewDuel['race_name']) ?></span>
                             <?php if ($viewDuel['status'] === 'void'): ?>

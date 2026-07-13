@@ -17,6 +17,7 @@
 - [Request Lifecycle](#request-lifecycle)
 - [Security Model](#security-model)
 - [Localisation & Theme](#localisation--theme)
+- [Home Page Hero (Paddock Challenges)](#home-page-hero-paddock-challenges)
 
 ---
 
@@ -312,3 +313,16 @@ Toggle redirects (`?toggle_theme=1`, `?toggle_lang=1`, `?toggle_font=1`) are han
 Colour palette (`broadcast`/`clubhouse`) is session-only — toggled via `?toggle_palette=1`.
 
 Strings are loaded from `public/lang/user.php`, `admin.php`, and `email.php` via `t($key)`. Email functions pass the recipient's language explicitly: `t($key, $lang)`.
+
+---
+
+## Home Page Hero (Paddock Challenges)
+
+`public/index.php`'s hero is context-aware (Paddock Challenges epic, Phase 6, feature.md REQ-006/007, decision D9): it shows one of two mutually exclusive branches, chosen by `$showRaceHero = $heroRace ? isRaceHeroWindow($heroRace, $settings, $now) : false;`.
+
+- **Race hero** (`$showRaceHero === true`): the existing countdown/CTA hero, unchanged. A slim "Challenges" strip (`data-testid="challenges-strip"`) is added directly below it, linking to `challenges.php`.
+- **Challenges hero** (`$showRaceHero === false`, including whenever there's no upcoming race at all): "Paddock Challenges" title, a CP/Rank/Streak stat row for an active challenge identity, a "Play now" CTA, a next-race card, and a top-3 CP section linking to `challenges-board.php`.
+
+`isRaceHeroWindow(array $race, ?array $settings, ?DateTime $now): bool` (`public/includes/challenges.php`) is the pure boundary function: the race hero's window runs from `windowOpen − 24h` through `raceStart + 3h`, where `windowOpen = raceStart − betting_window_hours`. Exhaustively unit-tested in `tests/unit/hero-window-harness.php`; `tests/e2e/challenges/49-home-hero.spec.js` spot-checks the wiring end-to-end.
+
+The hero's CP/rank/streak stats and the CP top-3 section reuse `getChallengeCpTotal()`, `getChallengeStreak()`, and `getCpLeaderboard()` from `public/includes/challenges.php` — the same helpers the Challenges hub's own Overview scoreboard uses (REQ-109 requires the streak in both places).

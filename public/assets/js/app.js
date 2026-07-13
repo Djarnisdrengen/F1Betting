@@ -249,6 +249,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ── Paddock Challenges toast (CP gains, duel lock) ───────────────────────────
+(function () {
+    let toastEl = null;
+    let toastTimer = null;
+
+    window.hfToast = function (message) {
+        if (!toastEl) {
+            toastEl = document.createElement('div');
+            toastEl.id = 'hf-toast';
+            toastEl.innerHTML = '<i class="fa-solid fa-bolt"></i><span class="hf-toast-msg"></span>';
+            document.body.appendChild(toastEl);
+
+            const style = document.createElement('style');
+            style.textContent = [
+                '#hf-toast { position:fixed; left:50%; bottom:84px; z-index:1000;',
+                'background:var(--bg-card); border:1px solid var(--gold, #fbbf24); color:var(--text-primary);',
+                'padding:11px 18px; border-radius:9999px; font-family:var(--display); font-weight:700; font-size:14px;',
+                'box-shadow:0 8px 24px rgba(0,0,0,.45); white-space:nowrap; display:flex; align-items:center; gap:8px;',
+                'opacity:0; pointer-events:none; transform:translateX(-50%) translateY(8px);',
+                'transition:opacity .2s ease, transform .2s ease; }',
+                '#hf-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }',
+                '#hf-toast i { color:var(--gold, #fbbf24); }',
+            ].join('');
+            document.head.appendChild(style);
+        }
+
+        toastEl.querySelector('.hf-toast-msg').textContent = message;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1600);
+    };
+}());
+
 // ── Profile page tabs, counters & toggles ────────────────────────────────────
 (function () {
     const tabs = document.querySelector('[data-testid="profile-tabs"]');

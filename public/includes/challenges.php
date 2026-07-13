@@ -299,6 +299,8 @@ function awardChallengePoints(PDO $db, string $participantId, string $game, int 
 }
 
 function getCpLeaderboard(PDO $db, int $limit = null): array {
+    // Anonymous/pending participants never appear here — REQ-106 keeps the public board and any
+    // reuse of this function (home top-3 section) limited to verified/core-linked identities.
     $sql = "
         SELECT
             cp.participant_id,
@@ -309,6 +311,7 @@ function getCpLeaderboard(PDO $db, int $limit = null): array {
             COUNT(DISTINCT cp.source_ref) as awards_count
         FROM challenge_points cp
         JOIN challenge_participants p ON cp.participant_id = p.id
+        WHERE p.status = 'verified'
         GROUP BY cp.participant_id
         ORDER BY total_cp DESC, p.created_at ASC
     ";
@@ -325,8 +328,12 @@ function getChallengeStreak(PDO $db, string $participantId): int {
     $today = new DateTime('today', $tz);
     $yesterday = (clone $today)->modify('-1 day');
 
+    // No CONVERT_TZ: the DB server's NOW()/CURRENT_TIMESTAMP already returns Europe/Copenhagen
+    // local time (config.shared.php sets the same PHP-side default), so answered_at/submitted_at
+    // are already local — converting again double-shifted the hour, pushing the date into
+    // tomorrow during the hour before local midnight and silently zeroing the streak then.
     $stmt = $db->prepare("
-        SELECT DISTINCT DATE(CONVERT_TZ(answered_at, '+00:00', '+01:00')) as action_date
+        SELECT DISTINCT DATE(answered_at) as action_date
         FROM (
             SELECT answered_at FROM challenge_answers WHERE participant_id = ?
             UNION

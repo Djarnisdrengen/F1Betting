@@ -323,6 +323,9 @@ return [
         'ch_trivia'             => 'Trivia',
         'ch_your_move'          => 'Din tur',
         'ch_streak_line'        => '%d-dages stime · hold den i live',
+        'ch_toast_cp'           => '+%d CP',
+        'ch_toast_miss'         => 'Ingen point — videre',
+        'ch_toast_duel_locked'  => 'Duel låst fast',
 
         // Challenges — Rumor or Not
         'ch_todays_deck'        => 'Dagens bunke',
@@ -781,6 +784,9 @@ return [
         'ch_trivia'             => 'Trivia',
         'ch_your_move'          => 'Your move',
         'ch_streak_line'        => '%d-day streak · keep it alive tonight',
+        'ch_toast_cp'           => '+%d CP',
+        'ch_toast_miss'         => 'No points — next',
+        'ch_toast_duel_locked'  => 'Duel locked in',
 
         // Challenges — Rumor or Not
         'ch_todays_deck'        => "Today's deck",

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/challenges.php';
 
 $db = getDB();
 $currentUser = getCurrentUser();
@@ -46,6 +47,11 @@ if ($heroRace) {
     }
     $heroPool = $heroRace['bettingpool_size'] ?: null;
 }
+
+// Context-aware hero (REQ-006, D9): the race hero shows only inside its window
+// (windowOpen-24h through raceStart+3h); the Challenges hero shows the rest of the time,
+// and always when there's no upcoming race at all.
+$showRaceHero = $heroRace ? isRaceHeroWindow($heroRace, $settings, $now) : false;
 
 // My rank for home card
 $myRank       = null;
@@ -99,6 +105,23 @@ $errorMessages = [
 $flashSuccess = $successMessages[$_GET['success'] ?? ''] ?? null;
 $flashError   = $errorMessages[$_GET['error']   ?? ''] ?? null;
 
+// Challenges-hero stats (REQ-006/109) — only computed outside the race-hero window.
+// $challengeParticipant/$challengeCP come from header.php, resolved only for an active
+// (verified/core-linked) identity — same rule as the CP chip (REQ-005).
+$cpTop3    = [];
+$myCpRank  = null;
+$myStreak  = 0;
+if (!$showRaceHero) {
+    $cpLeaderboardFull = getCpLeaderboard($db);
+    $cpTop3 = array_slice($cpLeaderboardFull, 0, 3);
+    if ($challengeParticipant) {
+        foreach ($cpLeaderboardFull as $i => $row) {
+            if ($row['participant_id'] === $challengeParticipant['id']) { $myCpRank = $i + 1; break; }
+        }
+        $myStreak = getChallengeStreak($db, $challengeParticipant['id']);
+    }
+}
+
 // Inline countdown snippet (reused twice in the hero)
 function renderHfCountdown(string $target, array $labels, string $extraClass = ''): string {
     $cells = '';
@@ -110,8 +133,9 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
 }
 ?>
 
-<!-- Hero -->
-<section class="hf-hero">
+<?php if ($showRaceHero): ?>
+<!-- Race hero -->
+<section class="hf-hero" data-testid="hero-race">
     <div class="hf-container">
         <div class="hf-hero-inner">
             <div class="hf-hero-left">
@@ -161,6 +185,83 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
         </div>
     </div>
 </section>
+
+<!-- Challenges slim strip (REQ-007) -->
+<div class="hf-container">
+    <a href="challenges.php" class="clickable-card" data-testid="challenges-strip" style="margin-top:18px;border-radius:12px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border-color);display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(225,6,0,.14);color:var(--f1-red-light);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">
+            <i class="fas fa-gamepad"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+            <div style="font-family:var(--display);font-weight:800;font-size:14px;"><?= t('ch_nav_challenges') ?></div>
+            <div class="text-muted" style="font-size:11.5px;">
+                <?php if ($challengeParticipant): ?><?= $challengeCP ?> CP &middot; <?php endif; ?><?= t('ch_games_live') ?>
+            </div>
+        </div>
+        <i class="fas fa-chevron-right text-muted" style="font-size:12px;"></i>
+    </a>
+</div>
+
+<?php else: ?>
+<!-- Challenges hero (REQ-006, between races) -->
+<section class="hf-hero" data-testid="challenges-hero" style="background:radial-gradient(circle at 84% -15%, rgba(225,6,0,.4), transparent 55%), radial-gradient(circle at 5% 125%, rgba(251,191,36,.14), transparent 50%), var(--bg-secondary);">
+    <div class="hf-container">
+        <div class="hf-hero-inner">
+            <div class="hf-hero-left">
+                <span class="hf-hero-eyebrow"><?= t('ch_hero_eyebrow') ?></span>
+                <h1 class="hf-hero-title">Paddock<br>Challenges</h1>
+                <div style="font-size:14px;margin-top:12px;max-width:30ch;color:var(--text-secondary);"><?= t('ch_hero_sub') ?></div>
+
+                <?php if ($challengeParticipant): ?>
+                <div data-testid="challenges-hero-stats" style="display:flex;gap:20px;margin-top:18px;">
+                    <div>
+                        <div data-testid="hero-stat-cp" style="font-family:var(--display);font-weight:900;font-size:26px;color:var(--gold);line-height:1;"><?= $challengeCP ?></div>
+                        <div class="hf-stat-l"><?= t('ch_your_cp') ?></div>
+                    </div>
+                    <div>
+                        <div data-testid="hero-stat-rank" style="font-family:var(--display);font-weight:900;font-size:26px;line-height:1;"><?= $myCpRank ? 'P' . $myCpRank : '—' ?></div>
+                        <div class="hf-stat-l"><?= t('ch_rank') ?></div>
+                    </div>
+                    <div>
+                        <div data-testid="hero-stat-streak" style="font-family:var(--display);font-weight:900;font-size:26px;color:var(--f1-red-light);line-height:1;"><i class="fa-solid fa-fire" style="font-size:20px;"></i> <?= $myStreak ?></div>
+                        <div class="hf-stat-l"><?= t('ch_streak') ?></div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <a href="challenges.php" class="hf-cta-primary" style="margin-top:20px;"><?= t('ch_play_now') ?> <span class="arrow">→</span></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="hf-container">
+    <?php if (!empty($upcomingRaces)): ?>
+        <?php $nextRace = $upcomingRaces[0]; $nextRaceStatus = getBettingStatus($nextRace, $settings); ?>
+        <div class="hf-section-h" style="margin-top:20px;"><h2><?= t('upcoming_races') ?></h2><a href="races.php"><?= t('see_all') ?></a></div>
+        <div class="hf-racecard clickable-card" data-href="race.php?id=<?= escape($nextRace['id']) ?>">
+            <div>
+                <div class="hf-racename"><?= escape($nextRace['name']) ?></div>
+                <div class="hf-racemeta"><?= escape($nextRace['location']) ?> &middot; <?= formatRaceDateTime($nextRace['race_date'], $nextRace['race_time']) ?></div>
+            </div>
+            <span class="hf-badge <?= $badgeMap[$nextRaceStatus['class']] ?? 'done' ?>"><?= $nextRaceStatus['label'] ?></span>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($cpTop3)): ?>
+        <div class="hf-section-h" style="margin-top:22px;"><h2><?= t('ch_challenge_points') ?></h2><a href="challenges-board.php"><?= t('ch_full_board') ?></a></div>
+        <?php foreach ($cpTop3 as $i => $row): ?>
+            <?php $isSelfCp = $challengeParticipant && $row['participant_id'] === $challengeParticipant['id']; ?>
+            <div class="hf-row<?= $isSelfCp ? ' self' : '' ?>" style="grid-template-columns:32px 32px 1fr auto;">
+                <div class="hf-rank r<?= $i + 1 ?>"><?= $i + 1 ?></div>
+                <div class="hf-avatar"><?= $row['display_name'] ? escape(strtoupper(substr($row['display_name'], 0, 1))) : 'G' ?></div>
+                <div class="hf-who"><div class="hf-who-name"><?= $row['display_name'] ? escape($row['display_name']) : 'Guest ' . substr($row['id'], -4) ?></div></div>
+                <div class="hf-pts"><?= intval($row['total_cp']) ?></div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
 
 <?php if ($flashSuccess): ?>
     <div class="hf-container"><div class="alert alert-success"><i class="fas fa-check-circle"></i> <?= escape($flashSuccess) ?></div></div>

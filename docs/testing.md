@@ -45,7 +45,7 @@ All tests run against the deployed site over HTTP — there is no local test ser
 | Command | Stack | What it checks | Target | Duration |
 |---|---|---|---|---|
 | `npm run test:smoke` | B | Key pages return 200 and contain expected content | test or live | ~5s |
-| `npm run test:unit` | B | Mailer transport logic (no network) | local | ~1s |
+| `npm run test:unit` | B | Mailer transport logic (no network), plus small PHP CLI harnesses: passkey vectors, duel 5/2/0 scoring, `isRaceHeroWindow()` D9 boundaries | local | ~1s |
 | `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery — 11 suites run sequentially | test | ~2.5–3 min (measured) |
 | `npm run test:e2e:<suite>` | A | One suite standalone (see [Suites](#suites) below) | test | a few seconds–~1.5 min |
 | `npm run test:e2e:live` | A | Smoke suite only — read-only live health check | live | ~30s |

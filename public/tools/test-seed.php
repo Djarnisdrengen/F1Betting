@@ -1587,6 +1587,37 @@ if (($_GET['action'] ?? '') === 'seed_challenge_points') {
     exit;
 }
 
+// Action: seed_hero_race — a single named race at an arbitrary hour offset from now, for
+// exercising isRaceHeroWindow()'s D9 boundaries (HERO-01) on the home page. Idempotent
+// (deletes any prior fixture race first). betting_window_hours defaults to 48 (same
+// precedent as seed_betting_race) but can be overridden — the E2E spot-check needs a
+// narrow window to land "now" on either side of windowStart using small, safe race offsets.
+if (($_GET['action'] ?? '') === 'seed_hero_race') {
+    $offsetHours = isset($_GET['offset_hours']) ? intval($_GET['offset_hours']) : 2;
+    $bettingWindowHours = isset($_GET['betting_window_hours']) ? intval($_GET['betting_window_hours']) : 48;
+
+    $db->query("DELETE FROM races WHERE name = 'E2E Hero Race'");
+    $db->prepare("UPDATE settings SET betting_window_hours = ? WHERE id = 1")->execute([$bettingWindowHours]);
+
+    $raceDateTime = (new DateTime())->modify(($offsetHours >= 0 ? '+' : '') . $offsetHours . ' hours');
+    $raceId = seed_uuid();
+    $db->prepare("
+        INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size)
+        VALUES (?, 'E2E Hero Race', 'Test Circuit', ?, ?, 0)
+    ")->execute([$raceId, $raceDateTime->format('Y-m-d'), $raceDateTime->format('H:i:s')]);
+
+    echo json_encode(['ok' => true, 'race_id' => $raceId]);
+    exit;
+}
+
+// Action: cleanup_hero_race
+if (($_GET['action'] ?? '') === 'cleanup_hero_race') {
+    $db->query("DELETE FROM races WHERE name = 'E2E Hero Race'");
+    $db->query("UPDATE settings SET betting_window_hours = 48 WHERE id = 1");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Action: cleanup_challenges — deletes all challenge data for e2e participants
 if (($_GET['action'] ?? '') === 'cleanup_challenges') {
     $db->query("DELETE FROM challenge_points WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
@@ -1621,6 +1652,7 @@ if (($_GET['action'] ?? '') === 'cleanup_challenges') {
     // it (races.id ON DELETE CASCADE on both), covering duels between two @test.localhost
     // participants that the deletes above already handle independently too.
     $db->query("DELETE FROM races WHERE name = 'E2E Duel Test Race'");
+    $db->query("DELETE FROM races WHERE name = 'E2E Hero Race'");
     echo json_encode(['ok' => true]);
     exit;
 }
