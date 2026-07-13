@@ -203,3 +203,62 @@ test.describe('Admin promotion queue & converted guests', { tag: '@challenges' }
         await expect(cardFor(page, email)).toContainText('Permanent');
     });
 });
+
+// ─── Rumor drafts (Phase 3, REQ-502) ────────────────────────────────────────────
+
+test.describe('Admin rumor drafts', { tag: '@challenges' }, () => {
+    test.beforeEach(async () => { await seed.cleanup.challenges(); });
+    test.afterAll(async () => { await seed.cleanup.challenges(); });
+
+    function draftCard(page, itemId) {
+        return page.locator(`[data-testid="rumor-draft"][data-item-id="${itemId}"]`);
+    }
+
+    // Draft is listed with its bilingual fields; Save persists edits without publishing.
+    test('lists a draft and Save persists edits without publishing', async ({ page }) => {
+        const { draft_item_id } = await seed.rumorDeck({ real: [1] });
+
+        await page.goto('/admin-challenges.php');
+        const card = draftCard(page, draft_item_id);
+        await expect(card).toBeVisible();
+        await expect(card.locator('textarea[name="text_da"]')).toHaveValue('Test draft item');
+
+        await card.locator('textarea[name="text_en"]').fill('Edited claim text');
+        await card.locator('button[name="action"][value="save_rumor_draft"]').click();
+
+        await page.waitForURL(/admin-challenges\.php/);
+        const savedCard = draftCard(page, draft_item_id);
+        await expect(savedCard).toBeVisible();
+        await expect(savedCard.locator('textarea[name="text_en"]')).toHaveValue('Edited claim text');
+    });
+
+    // Publish removes it from the drafts list and makes it immediately playable on the
+    // public page — the admin→player pipeline this whole screen exists to feed.
+    test('Publish makes the item playable on the public page', async ({ page }) => {
+        const { draft_item_id } = await seed.rumorDeck({ real: [] });
+
+        await page.goto('/admin-challenges.php');
+        const card = draftCard(page, draft_item_id);
+        await card.locator('select[name="is_real"]').selectOption('1');
+        await card.locator('button[name="action"][value="publish_rumor_draft"]').click();
+
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(draftCard(page, draft_item_id)).toHaveCount(0);
+
+        await page.context().clearCookies();
+        await page.goto('/challenges.php?section=rumors');
+        await expect(page.getByTestId('rumor-card')).toContainText('Test draft item');
+    });
+
+    // Veto deletes the draft outright — never reaches the public page.
+    test('Veto deletes the draft', async ({ page }) => {
+        const { draft_item_id } = await seed.rumorDeck({ real: [] });
+
+        await page.goto('/admin-challenges.php');
+        const card = draftCard(page, draft_item_id);
+        await card.locator('button[name="action"][value="veto_rumor_draft"]').click();
+
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(draftCard(page, draft_item_id)).toHaveCount(0);
+    });
+});

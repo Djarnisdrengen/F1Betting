@@ -107,6 +107,16 @@ module.exports = {
     //   One played item (real challenge_answers row against a shared e2e-fixture item), so
     //   challenges-invite.php's playedSet() sees a non-empty set.
 
+    rumorDeck: (params = {}) => call('seed_rumor_deck', {
+        ...params,
+        ...(params.real ? { real: params.real.join(',') } : {}),
+    }),
+    // params: { real?: number[] (is_real per item, default [1,0,1]), publish_date? (YYYY-MM-DD,
+    //           default today — pass yesterday for RUM-04 rollover) }
+    //   → { ok, items: [{id, is_real}], draft_item_id }
+    //   N published Rumor or Not items in deck order, plus one status='draft' item (never
+    //   playable). Fresh ids every call — not participant-scoped, not swept by cleanup.challenges.
+
     convertedGuest: (params = {}) => call('seed_converted_guest', params),
     // params: { email?, display_name?, in_competition?, link_participant? (0 → users row only,
     //           an email-collision fixture for ADM-07) } → { ok, user_id, participant_id, email }

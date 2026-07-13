@@ -324,6 +324,22 @@ return [
         'ch_your_move'          => 'Din tur',
         'ch_streak_line'        => '%d-dages stime · hold den i live',
 
+        // Challenges — Rumor or Not
+        'ch_todays_deck'        => 'Dagens bunke',
+        'ch_guess_rumor'        => 'Rygte',
+        'ch_guess_real'         => 'Rigtigt',
+        'ch_stamp_real'         => 'RIGTIGT',
+        'ch_stamp_rumor'        => 'RYGTE',
+        'ch_reveal_correct'     => 'Korrekt',
+        'ch_reveal_missed'      => 'Forkert',
+        'ch_reveal_cp'          => '%d CP',
+        'ch_next_card'          => 'Næste kort',
+        'ch_finish_deck'        => 'Afslut bunke',
+        'ch_deck_cleared'       => 'Bunke ryddet',
+        'ch_deck_cleared_sub'   => 'Nye kort lander i morgen.',
+        'ch_back_to_overview'   => 'Tilbage til oversigt',
+        'ch_challenge_a_friend' => 'Udfordr en ven',
+
         // Challenges — join flow
         'ch_join_title'         => 'Join Challenges',
         'ch_join_subtitle'      => 'Spil dagens spil med kun din email',
@@ -729,6 +745,22 @@ return [
         'ch_trivia'             => 'Trivia',
         'ch_your_move'          => 'Your move',
         'ch_streak_line'        => '%d-day streak · keep it alive tonight',
+
+        // Challenges — Rumor or Not
+        'ch_todays_deck'        => "Today's deck",
+        'ch_guess_rumor'        => 'Rumor',
+        'ch_guess_real'         => 'Real',
+        'ch_stamp_real'         => 'REAL',
+        'ch_stamp_rumor'        => 'RUMOR',
+        'ch_reveal_correct'     => 'Correct',
+        'ch_reveal_missed'      => 'Missed',
+        'ch_reveal_cp'          => '%d CP',
+        'ch_next_card'          => 'Next card',
+        'ch_finish_deck'        => 'Finish deck',
+        'ch_deck_cleared'       => 'Deck cleared',
+        'ch_deck_cleared_sub'   => 'Fresh cards drop tomorrow.',
+        'ch_back_to_overview'   => 'Back to overview',
+        'ch_challenge_a_friend' => 'Challenge a friend',
 
         // Challenges — join flow
         'ch_join_title'         => 'Join Challenges',

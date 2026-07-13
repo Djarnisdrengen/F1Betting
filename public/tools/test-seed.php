@@ -1340,6 +1340,40 @@ if (($_GET['action'] ?? '') === 'seed_challenge_answer') {
     exit;
 }
 
+// Action: seed_rumor_deck — N published Rumor or Not items with known is_real flags, plus one
+// draft item (verifies drafts never leak into the play queue). Fresh random ids every call
+// (unlike seed_challenge_answer's fixed fixture row) since RUM-04 (rollover) needs an explicit
+// publish_date per call and items aren't participant-scoped for cleanup_challenges to reap.
+if (($_GET['action'] ?? '') === 'seed_rumor_deck') {
+    $realFlags   = array_filter(explode(',', $_GET['real'] ?? '1,0,1'), fn($v) => $v !== '');
+    $publishDate = $_GET['publish_date'] ?? date('Y-m-d');
+
+    $items = [];
+    foreach (array_values($realFlags) as $i => $flag) {
+        $isReal = intval($flag) ? 1 : 0;
+        $id = seed_uuid();
+        $db->prepare("
+            INSERT INTO challenge_items
+            (id, text_da, text_en, context_da, context_en, explain_da, explain_en, is_real, status, publish_date, source_ref)
+            VALUES (?, ?, ?, 'Test', 'Test', ?, ?, ?, 'published', ?, 'e2e-seed')
+        ")->execute([
+            $id, "Test rumor item #$i", "Test rumor item #$i",
+            "Test explanation #$i", "Test explanation #$i", $isReal, $publishDate,
+        ]);
+        $items[] = ['id' => $id, 'is_real' => $isReal];
+    }
+
+    $draftId = seed_uuid();
+    $db->prepare("
+        INSERT INTO challenge_items
+        (id, text_da, text_en, context_da, context_en, explain_da, explain_en, is_real, status, source_ref)
+        VALUES (?, 'Test draft item', 'Test draft item', 'Test', 'Test', 'Test', 'Test', 1, 'draft', 'e2e-seed')
+    ")->execute([$draftId]);
+
+    echo json_encode(['ok' => true, 'items' => $items, 'draft_item_id' => $draftId]);
+    exit;
+}
+
 // Action: seed_converted_guest — an admin-approved participant already linked to a fresh core
 // user (in_competition=0), skipping the Approve transaction itself (ADM-03/04 exercise that
 // directly) — for the converted-guests list / users-tab-exclusion cases (ADM-01/02).
@@ -1438,6 +1472,14 @@ if (($_GET['action'] ?? '') === 'cleanup_challenges') {
     $db->query("DELETE FROM users WHERE email LIKE '%@test.localhost'");
     $db->query("DELETE FROM challenge_participants WHERE email LIKE '%@test.localhost'");
     $db->query("DELETE FROM challenge_email_suppressions WHERE email LIKE '%@test.localhost'");
+    // Anonymous participants (email IS NULL) never match the @test.localhost filters above —
+    // getOrCreateAnonymousParticipant() (REQ-101/CH-13) never sets an email. This DB is
+    // test-only (APP_ENV==='test' gate above), so any pending/unlinked anonymous row here is
+    // e2e noise, never a real player. Cascades to their challenge_answers/challenge_points.
+    $db->query("DELETE FROM challenge_participants WHERE email IS NULL AND core_user_id IS NULL");
+    // Rumor items from seed_rumor_deck aren't participant-scoped; cascades to any remaining
+    // challenge_answers pointing at them (FK ON DELETE CASCADE).
+    $db->query("DELETE FROM challenge_items WHERE source_ref = 'e2e-seed'");
     echo json_encode(['ok' => true]);
     exit;
 }

@@ -123,6 +123,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         header('Location: admin-challenges.php');
         exit;
+
+    } elseif ($action === 'save_rumor_draft' || $action === 'publish_rumor_draft') {
+        $itemId = sanitizeString($_POST['item_id'] ?? '');
+        $fields = [
+            'text_da'    => sanitizeString($_POST['text_da'] ?? ''),
+            'text_en'    => sanitizeString($_POST['text_en'] ?? ''),
+            'context_da' => sanitizeString($_POST['context_da'] ?? ''),
+            'context_en' => sanitizeString($_POST['context_en'] ?? ''),
+            'explain_da' => sanitizeString($_POST['explain_da'] ?? ''),
+            'explain_en' => sanitizeString($_POST['explain_en'] ?? ''),
+            'is_real'    => ($_POST['is_real'] ?? '0') === '1' ? 1 : 0,
+            'publish_date' => sanitizeString($_POST['publish_date'] ?? '') ?: date('Y-m-d'),
+        ];
+        $status = $action === 'publish_rumor_draft' ? 'published' : 'draft';
+
+        $db->prepare("
+            UPDATE challenge_items
+            SET text_da = ?, text_en = ?, context_da = ?, context_en = ?,
+                explain_da = ?, explain_en = ?, is_real = ?, publish_date = ?, status = ?
+            WHERE id = ? AND status = 'draft'
+        ")->execute([
+            $fields['text_da'], $fields['text_en'], $fields['context_da'], $fields['context_en'],
+            $fields['explain_da'], $fields['explain_en'], $fields['is_real'], $fields['publish_date'],
+            $status, $itemId,
+        ]);
+
+        $_SESSION['flash_success'] = $status === 'published' ? t('admin_ch_rumor_published') : t('admin_ch_rumor_saved');
+        header('Location: admin-challenges.php');
+        exit;
+
+    } elseif ($action === 'veto_rumor_draft') {
+        $itemId = sanitizeString($_POST['item_id'] ?? '');
+        $db->prepare("DELETE FROM challenge_items WHERE id = ? AND status = 'draft'")->execute([$itemId]);
+        $_SESSION['flash_success'] = t('admin_ch_rumor_vetoed');
+        header('Location: admin-challenges.php');
+        exit;
     }
 }
 
@@ -150,6 +186,11 @@ $convertedGuests = $db->query("
 ")->fetchAll();
 
 $suppressionCount = (int) $db->query("SELECT COUNT(*) FROM challenge_email_suppressions")->fetchColumn();
+
+// Rumor drafts (REQ-502) — oldest first, so generator batches review in submission order.
+$rumorDrafts = $db->query("
+    SELECT * FROM challenge_items WHERE status = 'draft' ORDER BY created_at ASC
+")->fetchAll();
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -254,6 +295,71 @@ include __DIR__ . '/includes/header.php';
             </div>
             <button type="submit" class="btn btn-secondary btn-sm"><?= t('admin_ch_suppress_add') ?></button>
         </form>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h2 style="margin-bottom:16px;"><?= t('admin_ch_rumor_drafts') ?></h2>
+
+        <?php if (empty($rumorDrafts)): ?>
+            <p class="text-muted"><?= t('admin_ch_rumor_drafts_empty') ?></p>
+        <?php else: ?>
+            <?php foreach ($rumorDrafts as $draft): ?>
+                <div class="card mb-2" data-testid="rumor-draft" data-item-id="<?= escape($draft['id']) ?>">
+                    <div class="card-body">
+                        <form method="POST">
+                            <?= csrfField() ?>
+                            <input type="hidden" name="item_id" value="<?= escape($draft['id']) ?>">
+
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_rumor_text_da') ?></label>
+                                <textarea name="text_da" class="form-input" rows="2"><?= escape($draft['text_da']) ?></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_rumor_text_en') ?></label>
+                                <textarea name="text_en" class="form-input" rows="2"><?= escape($draft['text_en']) ?></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_rumor_context_da') ?></label>
+                                <input type="text" name="context_da" class="form-input" value="<?= escape($draft['context_da']) ?>">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_rumor_context_en') ?></label>
+                                <input type="text" name="context_en" class="form-input" value="<?= escape($draft['context_en']) ?>">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_rumor_explain_da') ?></label>
+                                <textarea name="explain_da" class="form-input" rows="2"><?= escape($draft['explain_da']) ?></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_rumor_explain_en') ?></label>
+                                <textarea name="explain_en" class="form-input" rows="2"><?= escape($draft['explain_en']) ?></textarea>
+                            </div>
+                            <div class="flex gap-1">
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label"><?= t('admin_ch_rumor_is_real') ?></label>
+                                    <select name="is_real" class="form-input">
+                                        <option value="1" <?= $draft['is_real'] ? 'selected' : '' ?>><?= t('admin_ch_rumor_real') ?></option>
+                                        <option value="0" <?= !$draft['is_real'] ? 'selected' : '' ?>><?= t('admin_ch_rumor_rumor') ?></option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label"><?= t('admin_ch_rumor_publish_date') ?></label>
+                                    <input type="date" name="publish_date" class="form-input" value="<?= escape($draft['publish_date']) ?>">
+                                </div>
+                            </div>
+
+                            <div class="flex gap-1">
+                                <button type="submit" name="action" value="save_rumor_draft" class="btn btn-secondary btn-sm"><?= t('admin_ch_rumor_save') ?></button>
+                                <button type="submit" name="action" value="publish_rumor_draft" class="btn btn-primary btn-sm"><?= t('admin_ch_rumor_publish') ?></button>
+                                <button type="submit" name="action" value="veto_rumor_draft" class="btn btn-sm" style="background:var(--f1-red);color:#fff;border:none;"><?= t('admin_ch_rumor_veto') ?></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 </div>
 

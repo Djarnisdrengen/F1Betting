@@ -39,7 +39,9 @@
     "backup:live": "node build-deploy/backup.js",
     "restore:db": "node build-deploy/restore-db.js",
     "nightly": "node build-deploy/nightly-report.js",
-    "security:review": "node build-deploy/security-review.js"
+    "security:review": "node build-deploy/security-review.js",
+    "generate:rumors:test": "node bin/generate-rumor-items.js --env=test",
+    "generate:rumors:live": "node bin/generate-rumor-items.js --env=live"
   },
   "dependencies": {
     "archiver": "^7.0.1",
