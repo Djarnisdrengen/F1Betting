@@ -40,6 +40,31 @@ function nextRumorItem(PDO $db, ?array $participant): ?array {
     return $stmt->fetch() ?: null;
 }
 
+// Next unanswered trivia question in the current ISO week (published, publish_date <= today).
+// Unlike rumors, trivia never rolls over past its ISO week (REQ-402) — this query is scoped
+// to the current week only; a stale prior-week question_id is rejected in the POST handler.
+function nextTriviaQuestion(PDO $db, ?array $participant): ?array {
+    if ($participant) {
+        $stmt = $db->prepare("
+            SELECT * FROM challenge_trivia_questions
+            WHERE status='published' AND publish_date <= CURDATE()
+                  AND YEARWEEK(publish_date, 3) = YEARWEEK(CURDATE(), 3)
+                  AND id NOT IN (SELECT question_id FROM challenge_trivia_answers WHERE participant_id = ?)
+            ORDER BY publish_date ASC, id ASC LIMIT 1
+        ");
+        $stmt->execute([$participant['id']]);
+    } else {
+        $stmt = $db->prepare("
+            SELECT * FROM challenge_trivia_questions
+            WHERE status='published' AND publish_date <= CURDATE()
+                  AND YEARWEEK(publish_date, 3) = YEARWEEK(CURDATE(), 3)
+            ORDER BY publish_date ASC, id ASC LIMIT 1
+        ");
+        $stmt->execute();
+    }
+    return $stmt->fetch() ?: null;
+}
+
 if ($section === 'rumors' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
 
@@ -77,6 +102,47 @@ if ($section === 'rumors' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+if ($section === 'trivia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrf();
+
+    $questionId = sanitizeString($_POST['question_id'] ?? '');
+    $chosen     = intval($_POST['chosen_option'] ?? -1);
+
+    // Scoped to the current ISO week — a stale prior-week question_id (a form left open over
+    // the weekend, or a forged one) is silently rejected, never recorded (REQ-402).
+    $stmt = $db->prepare("
+        SELECT * FROM challenge_trivia_questions
+        WHERE id = ? AND status='published' AND publish_date <= CURDATE()
+              AND YEARWEEK(publish_date, 3) = YEARWEEK(CURDATE(), 3)
+    ");
+    $stmt->execute([$questionId]);
+    $answeredQuestion = $stmt->fetch();
+
+    if ($answeredQuestion && $chosen >= 0) {
+        $participant = getOrCreateAnonymousParticipant($db);
+        $correct = ((int)$chosen === (int)$answeredQuestion['correct_option']) ? 1 : 0;
+
+        try {
+            $db->prepare("
+                INSERT INTO challenge_trivia_answers (id, participant_id, question_id, chosen_option, correct, answered_at)
+                VALUES (?, ?, ?, ?, ?, NOW())
+            ")->execute([generateUUID(), $participant['id'], $questionId, $chosen, $correct]);
+
+            if ($correct) {
+                awardChallengePoints($db, $participant['id'], 'trivia', 5, "trivia:$questionId");
+            }
+        } catch (Exception $e) {
+            // UNIQUE(participant_id, question_id) — already answered (double-submit); no-op, just reveal it.
+        }
+
+        header('Location: challenges.php?section=trivia&revealed=' . urlencode($questionId));
+        exit;
+    }
+
+    header('Location: challenges.php?section=trivia');
+    exit;
+}
+
 if ($section === 'rumors') {
     $revealedItem = null;
     $revealedId   = $_GET['revealed'] ?? '';
@@ -102,6 +168,46 @@ if ($section === 'rumors') {
         $countStmt = $db->prepare("SELECT COUNT(*) FROM challenge_answers WHERE participant_id = ? AND DATE(answered_at) = CURDATE()");
         $countStmt->execute([$participant['id']]);
         $answeredToday = (int)$countStmt->fetchColumn();
+    }
+}
+
+if ($section === 'trivia') {
+    $revealedQuestion = null;
+    $revealedQId      = $_GET['revealed'] ?? '';
+    if ($revealedQId && $participant) {
+        $stmt = $db->prepare("
+            SELECT tq.*, ta.chosen_option, ta.correct
+            FROM challenge_trivia_questions tq
+            JOIN challenge_trivia_answers ta ON ta.question_id = tq.id
+            WHERE tq.id = ? AND ta.participant_id = ?
+        ");
+        $stmt->execute([$revealedQId, $participant['id']]);
+        $revealedQuestion = $stmt->fetch() ?: null;
+    }
+
+    $triviaCurrent = nextTriviaQuestion($db, $participant);
+    $triviaDone    = !$revealedQuestion && !$triviaCurrent;
+
+    // This week's published total + this participant's progress against it — drives the deck
+    // counter and the done-state title (all-caught-up vs quiz-complete vs Perfect Week, REQ-405/407).
+    $weekTotal = (int)$db->query("
+        SELECT COUNT(*) FROM challenge_trivia_questions
+        WHERE status='published' AND YEARWEEK(publish_date, 3) = YEARWEEK(CURDATE(), 3)
+    ")->fetchColumn();
+
+    $weekAnswered = 0;
+    $weekCorrect  = 0;
+    if ($participant) {
+        $progressStmt = $db->prepare("
+            SELECT COUNT(*), COALESCE(SUM(ta.correct),0)
+            FROM challenge_trivia_answers ta
+            JOIN challenge_trivia_questions tq ON tq.id = ta.question_id
+            WHERE ta.participant_id = ? AND YEARWEEK(tq.publish_date, 3) = YEARWEEK(CURDATE(), 3)
+        ");
+        $progressStmt->execute([$participant['id']]);
+        [$weekAnswered, $weekCorrect] = $progressStmt->fetch(PDO::FETCH_NUM);
+        $weekAnswered = (int)$weekAnswered;
+        $weekCorrect  = (int)$weekCorrect;
     }
 }
 
@@ -240,10 +346,11 @@ include __DIR__ . '/includes/header.php';
                     <h2 style="margin:0 0 16px;font-size:16px;font-weight:700;">
                         <?= t('ch_perfect_week') ?>
                     </h2>
-                    <div style="display:flex;gap:8px;">
+                    <?php $pwCount = getTriviaCorrectThisWeek($db, $participant['id']); ?>
+                    <div data-testid="perfect-week-tracker" data-filled="<?= $pwCount ?>" style="display:flex;gap:8px;">
                         <?php for ($i = 0; $i < 6; $i++): ?>
-                            <div style="width:40px;height:40px;background:rgba(35,35,40,.7);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#f5f5f7;font-weight:600;font-size:12px;">
-                                <?= ($i + 1) ?>
+                            <div style="width:40px;height:40px;background:<?= $i < $pwCount ? 'var(--gold, #fbbf24)' : 'rgba(35,35,40,.7)' ?>;border-radius:8px;display:flex;align-items:center;justify-content:center;color:<?= $i < $pwCount ? '#1a1a1a' : '#f5f5f7' ?>;font-weight:700;font-size:12px;">
+                                <?php if ($i < $pwCount): ?><i class="fa-solid fa-check"></i><?php else: ?><?= ($i + 1) ?><?php endif; ?>
                             </div>
                         <?php endfor; ?>
                     </div>
@@ -320,6 +427,108 @@ include __DIR__ . '/includes/header.php';
                         <?= $rumorCurrent ? t('ch_next_card') : t('ch_finish_deck') ?> <span aria-hidden="true">&rarr;</span>
                     </a>
                 <?php endif; ?>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($section === 'trivia'): ?>
+            <?php if ($triviaDone): ?>
+                <?php
+                    $weekFinished = $weekTotal > 0 && $weekAnswered === $weekTotal;
+                    $weekPerfect  = $weekFinished && $weekCorrect === $weekTotal;
+                ?>
+                <div data-testid="trivia-done" data-perfect="<?= $weekPerfect ? '1' : '0' ?>" style="text-align:center;padding:44px 12px;">
+                    <div style="font-size:38px;color:var(--gold, #fbbf24);">
+                        <i class="fa-solid <?= $weekPerfect ? 'fa-star' : 'fa-clipboard-check' ?>"></i>
+                    </div>
+                    <div style="font-family:var(--display, inherit);font-weight:800;font-size:19px;margin-top:12px;color:#f5f5f7;">
+                        <?php if ($weekPerfect): ?>
+                            <?= t('ch_perfect_week') ?>
+                        <?php elseif ($weekFinished): ?>
+                            <?= t('ch_quiz_complete') ?>
+                        <?php else: ?>
+                            <?= t('ch_all_caught_up') ?>
+                        <?php endif; ?>
+                    </div>
+                    <div style="font-size:13px;margin-top:6px;color:#a1a1aa;">
+                        <?php if ($weekPerfect): ?>
+                            <?= t('ch_perfect_week_sub') ?>
+                        <?php elseif ($weekFinished): ?>
+                            <?= sprintf(t('ch_quiz_complete_sub'), $weekCorrect, $weekTotal) ?>
+                        <?php else: ?>
+                            <?= t('ch_all_caught_up_sub') ?>
+                        <?php endif; ?>
+                    </div>
+                    <a href="challenges-invite.php?game=trivia" class="btn btn-primary" style="margin-top:16px;display:inline-block;">
+                        <?= t('ch_challenge_a_friend') ?>
+                    </a>
+                    <div style="margin-top:12px;">
+                        <a href="?section=overview" style="color:#a1a1aa;font-size:13px;"><?= t('ch_back_to_overview') ?></a>
+                    </div>
+                </div>
+            <?php else: ?>
+                <?php
+                    $q = $revealedQuestion ?: $triviaCurrent;
+                    $answered = (bool)$revealedQuestion;
+                    $options = json_decode($q['options_' . $lang] ?: $q['options_da'], true) ?: [];
+                ?>
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:13px;color:#a1a1aa;font-weight:600;"><?= t('ch_weekly_quiz') ?></span>
+                    <span style="font-size:12px;color:#a1a1aa;font-family:monospace;"><?= $weekAnswered ?> / <?= $weekTotal ?></span>
+                </div>
+                <div data-testid="trivia-card" style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid rgba(245,245,247,.15);padding:20px 18px;margin-top:12px;">
+                    <span class="hf-badge" style="background:rgba(59,130,246,.14);color:#7fb2ff;border:1px solid rgba(59,130,246,.35);padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;">
+                        <?= escape(strtoupper($q['topic'])) ?>
+                    </span>
+                    <div style="font-weight:800;font-size:18px;line-height:1.3;margin-top:14px;color:#f5f5f7;">
+                        <?= escape($q['question_' . $lang] ?: $q['question_da']) ?>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+                        <?php foreach ($options as $idx => $optionText): ?>
+                            <?php
+                                $isCorrectOpt  = $answered && $idx === (int)$q['correct_option'];
+                                $isChosenWrong = $answered && !$isCorrectOpt && $idx === (int)$q['chosen_option'];
+                                $bg = 'rgba(255,255,255,.03)'; $border = 'rgba(245,245,247,.15)'; $color = '#f5f5f7';
+                                if ($isCorrectOpt) { $bg = 'rgba(16,185,129,.14)'; $border = 'var(--status-success, #10b981)'; $color = '#34d399'; }
+                                elseif ($isChosenWrong) { $bg = 'rgba(225,6,0,.14)'; $border = 'var(--f1-red, #e10600)'; $color = '#ff8a80'; }
+                                elseif ($answered) { $color = '#71717a'; }
+                            ?>
+                            <?php if ($answered): ?>
+                                <div data-testid="trivia-option" data-idx="<?= $idx ?>" style="display:flex;align-items:center;gap:11px;text-align:left;padding:13px 14px;border-radius:12px;background:<?= $bg ?>;border:1.5px solid <?= $border ?>;color:<?= $color ?>;font-weight:600;font-size:14px;">
+                                    <span style="width:22px;height:22px;flex-shrink:0;border-radius:6px;background:rgba(255,255,255,.06);color:#a1a1aa;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;"><?= chr(65 + $idx) ?></span>
+                                    <span style="flex:1;"><?= escape($optionText) ?></span>
+                                    <?php if ($isCorrectOpt): ?><i class="fa-solid fa-circle-check" style="color:var(--status-success, #10b981);"></i><?php endif; ?>
+                                    <?php if ($isChosenWrong): ?><i class="fa-solid fa-circle-xmark" style="color:var(--f1-red, #e10600);"></i><?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <form method="POST">
+                                    <?= csrfField() ?>
+                                    <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
+                                    <input type="hidden" name="chosen_option" value="<?= $idx ?>">
+                                    <button type="submit" data-testid="trivia-option" data-idx="<?= $idx ?>" style="width:100%;display:flex;align-items:center;gap:11px;text-align:left;padding:13px 14px;border-radius:12px;background:<?= $bg ?>;border:1.5px solid <?= $border ?>;color:<?= $color ?>;font-weight:600;font-size:14px;cursor:pointer;">
+                                        <span style="width:22px;height:22px;flex-shrink:0;border-radius:6px;background:rgba(255,255,255,.06);color:#a1a1aa;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;"><?= chr(65 + $idx) ?></span>
+                                        <span style="flex:1;"><?= escape($optionText) ?></span>
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <?php if ($answered): ?>
+                        <div data-testid="trivia-result" data-correct="<?= $q['correct'] ? '1' : '0' ?>" style="margin-top:14px;padding:13px;border-radius:11px;background:<?= $q['correct'] ? 'rgba(16,185,129,.10)' : 'rgba(225,6,0,.10)' ?>;border:1px solid <?= $q['correct'] ? 'rgba(16,185,129,.4)' : 'rgba(225,6,0,.4)' ?>;">
+                            <div style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:<?= $q['correct'] ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)' ?>;">
+                                <i class="fa-solid <?= $q['correct'] ? 'fa-check' : 'fa-xmark' ?>"></i>
+                                <?= $q['correct'] ? t('ch_reveal_correct') : t('ch_trivia_wrong') ?>
+                                <?php if ($q['correct']): ?> · <?= sprintf(t('ch_reveal_cp'), 5) ?><?php endif; ?>
+                            </div>
+                            <div style="font-size:12.5px;line-height:1.5;margin-top:7px;color:#a1a1aa;">
+                                <?= escape($q['explain_' . $lang] ?: $q['explain_da']) ?>
+                            </div>
+                        </div>
+                        <a href="?section=trivia" data-testid="trivia-next" class="btn btn-primary" style="width:100%;margin-top:13px;display:block;text-align:center;">
+                            <?= $triviaCurrent ? t('ch_next_question') : t('ch_finish_quiz') ?> <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    <?php endif; ?>
+                </div>
             <?php endif; ?>
         <?php endif; ?>
     </div>

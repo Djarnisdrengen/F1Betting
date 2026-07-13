@@ -117,6 +117,16 @@ module.exports = {
     //   N published Rumor or Not items in deck order, plus one status='draft' item (never
     //   playable). Fresh ids every call — not participant-scoped, not swept by cleanup.challenges.
 
+    triviaWeek: (params = {}) => call('seed_trivia_week', params),
+    // params: { week_offset? (0=current ISO week [default], -1=previous week — cron tests),
+    //           participant_id?, correct? (comma list of 0/1, one per day, e.g. '1,1,1,1,1,0' —
+    //           only takes effect together with participant_id, backdating that participant's
+    //           answers directly, bypassing the play-flow POST handler) }
+    //   → { ok, question_ids: [...] (6, Mon-Sat order), iso_week }
+    //   6 published questions, fixed options ['A','B','C'] with correct_option=0 (A), topic
+    //   'e2e-seed'. Not participant-scoped — not swept by cleanup.challenges by participant,
+    //   but topic='e2e-seed' IS the cleanup marker (the table has no source_ref column).
+
     convertedGuest: (params = {}) => call('seed_converted_guest', params),
     // params: { email?, display_name?, in_competition?, link_participant? (0 → users row only,
     //           an email-collision fixture for ADM-07) } → { ok, user_id, participant_id, email }

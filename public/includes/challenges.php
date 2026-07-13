@@ -373,6 +373,23 @@ function getChallengeStreak(PDO $db, string $participantId): int {
     return $streak;
 }
 
+/** ISO-8601 "<year>-W<week>" key, e.g. "2026-W28" — the trivia_week: source_ref format (REQ-405). */
+function isoWeekKey(DateTime $dt): string {
+    return $dt->format('o') . '-W' . $dt->format('W');
+}
+
+/** Correct trivia answers for the current ISO week (Perfect Week tracker, REQ-407). */
+function getTriviaCorrectThisWeek(PDO $db, string $participantId): int {
+    $stmt = $db->prepare("
+        SELECT COALESCE(SUM(ta.correct), 0)
+        FROM challenge_trivia_answers ta
+        JOIN challenge_trivia_questions tq ON tq.id = ta.question_id
+        WHERE ta.participant_id = ? AND YEARWEEK(tq.publish_date, 3) = YEARWEEK(CURDATE(), 3)
+    ");
+    $stmt->execute([$participantId]);
+    return (int) $stmt->fetchColumn();
+}
+
 function scoreDuelPrediction(array $picks, array $result): int {
     $score = 0;
 

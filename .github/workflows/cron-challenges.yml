@@ -1,0 +1,59 @@
+name: Cron — Weekly Challenges
+
+# Perfect Week evaluation + pending-participant purge (public/cron/challenge_weekly.php,
+# REQ-405/406/110). Bearer CRON_SECRET auth, modeled on cron-notifications.yml.
+#
+# Schedule is UTC 05:00 Monday, which is 06:00 CET in winter and 07:00 CEST in summer —
+# the script itself resolves "the previous ISO week" from Europe/Copenhagen, so the exact
+# run time only affects how soon after week-close it fires, never which week gets scored.
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 5 * * 1'
+
+jobs:
+  trigger-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger weekly challenges cron (live)
+        env:
+          BASE_URL: ${{ vars.BASE_URL_LIVE }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL + '/cron/challenge_weekly.php';
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Weekly challenge cron complete')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "
+
+  trigger-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger weekly challenges cron (test)
+        env:
+          BASE_URL: ${{ vars.BASE_URL_TEST }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET_TEST }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL + '/cron/challenge_weekly.php';
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Weekly challenge cron complete')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "

@@ -262,3 +262,83 @@ test.describe('Admin rumor drafts', { tag: '@challenges' }, () => {
         await expect(draftCard(page, draft_item_id)).toHaveCount(0);
     });
 });
+
+// ─── Trivia authoring (Phase 4, REQ-503) ────────────────────────────────────────
+
+test.describe('Admin trivia authoring', { tag: '@challenges' }, () => {
+    test.beforeEach(async () => { await seed.cleanup.challenges(); });
+    test.afterAll(async () => { await seed.cleanup.challenges(); });
+
+    // The blank "add question" form always renders first, with an empty question_id.
+    function newQuestionForm(page) {
+        return page.locator('[data-testid="trivia-question"][data-question-id=""]');
+    }
+
+    function questionCard(page, text) {
+        return page.locator('[data-testid="trivia-question"]').filter({ hasText: text });
+    }
+
+    // topic='e2e-seed' doubles as the cleanup marker (challenge_trivia_questions has no
+    // source_ref column to reuse, unlike challenge_items) — same convention seed_trivia_week
+    // uses, so admin-authored fixtures here are swept by cleanup.challenges() too.
+    async function fillNewQuestion(page, questionText) {
+        const form = newQuestionForm(page);
+        await form.locator('textarea[name="question_da"]').fill(questionText);
+        await form.locator('textarea[name="question_en"]').fill(questionText);
+        await form.locator('input[name="option1_da"]').fill('McLaren');
+        await form.locator('input[name="option1_en"]').fill('McLaren');
+        await form.locator('input[name="option2_da"]').fill('Ferrari');
+        await form.locator('input[name="option2_en"]').fill('Ferrari');
+        await form.locator('select[name="correct_option"]').selectOption('1');
+        await form.locator('input[name="topic"]').fill('e2e-seed');
+        await form.locator('textarea[name="explain_da"]').fill('Test explanation');
+        await form.locator('textarea[name="explain_en"]').fill('Test explanation');
+        await form.locator('input[name="publish_date"]').fill(new Date().toISOString().slice(0, 10));
+        return form;
+    }
+
+    // Save without Publish persists a new draft row (visible here, never on the public page).
+    test('creating a question saves it as a draft', async ({ page }) => {
+        const text = `E2E trivia question ${Date.now()}`;
+        await page.goto('/admin-challenges.php');
+        const form = await fillNewQuestion(page, text);
+        await form.locator('button[name="action"][value="save_trivia_question"]').click();
+
+        await page.waitForURL(/admin-challenges\.php/);
+        const card = questionCard(page, text);
+        await expect(card).toHaveCount(1);
+        await expect(card).toHaveAttribute('data-status', 'draft');
+    });
+
+    // Publish makes the question immediately playable on the public page — the admin→player
+    // pipeline this screen exists to feed, mirroring the rumor-drafts Publish test above.
+    test('Publish makes the question playable on the public page', async ({ page }) => {
+        const text = `E2E trivia question ${Date.now()}`;
+        await page.goto('/admin-challenges.php');
+        const form = await fillNewQuestion(page, text);
+        await form.locator('button[name="action"][value="publish_trivia_question"]').click();
+
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(questionCard(page, text)).toHaveAttribute('data-status', 'published');
+
+        await page.context().clearCookies();
+        await page.goto('/challenges.php?section=trivia');
+        await expect(page.getByTestId('trivia-card')).toContainText(text);
+    });
+
+    // Delete only ever applies to a draft (the form hides the button once published) —
+    // removes it outright, never reaches the public page.
+    test('Delete removes a draft question', async ({ page }) => {
+        const text = `E2E trivia question ${Date.now()}`;
+        await page.goto('/admin-challenges.php');
+        const form = await fillNewQuestion(page, text);
+        await form.locator('button[name="action"][value="save_trivia_question"]').click();
+
+        await page.waitForURL(/admin-challenges\.php/);
+        const card = questionCard(page, text);
+        await card.locator('button[name="action"][value="delete_trivia_question"]').click();
+
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(questionCard(page, text)).toHaveCount(0);
+    });
+});

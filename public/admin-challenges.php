@@ -159,6 +159,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['flash_success'] = t('admin_ch_rumor_vetoed');
         header('Location: admin-challenges.php');
         exit;
+
+    } elseif ($action === 'save_trivia_question' || $action === 'publish_trivia_question') {
+        $questionId = sanitizeString($_POST['question_id'] ?? '');
+
+        // Options are collected pairwise (da/en); an option only counts once both language
+        // fields are filled, so a blank trailing row (REQ-401 allows 2-4 options) drops cleanly.
+        $optionsDa = [];
+        $optionsEn = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $da = trim(sanitizeString($_POST["option{$i}_da"] ?? ''));
+            $en = trim(sanitizeString($_POST["option{$i}_en"] ?? ''));
+            if ($da !== '' && $en !== '') {
+                $optionsDa[] = $da;
+                $optionsEn[] = $en;
+            }
+        }
+
+        $fields = [
+            'question_da'    => sanitizeString($_POST['question_da'] ?? ''),
+            'question_en'    => sanitizeString($_POST['question_en'] ?? ''),
+            'options_da'     => json_encode($optionsDa),
+            'options_en'     => json_encode($optionsEn),
+            'correct_option' => intval($_POST['correct_option'] ?? 0),
+            'topic'          => sanitizeString($_POST['topic'] ?? ''),
+            'explain_da'     => sanitizeString($_POST['explain_da'] ?? ''),
+            'explain_en'     => sanitizeString($_POST['explain_en'] ?? ''),
+            'publish_date'   => sanitizeString($_POST['publish_date'] ?? '') ?: date('Y-m-d'),
+        ];
+
+        if ($questionId) {
+            $sql = "
+                UPDATE challenge_trivia_questions
+                SET question_da = ?, question_en = ?, options_da = ?, options_en = ?,
+                    correct_option = ?, topic = ?, explain_da = ?, explain_en = ?, publish_date = ?"
+                . ($action === 'publish_trivia_question' ? ", status = 'published'" : "") . "
+                WHERE id = ?
+            ";
+            $db->prepare($sql)->execute([
+                $fields['question_da'], $fields['question_en'], $fields['options_da'], $fields['options_en'],
+                $fields['correct_option'], $fields['topic'], $fields['explain_da'], $fields['explain_en'],
+                $fields['publish_date'], $questionId,
+            ]);
+        } else {
+            $questionId = generateUUID();
+            $status = $action === 'publish_trivia_question' ? 'published' : 'draft';
+            $db->prepare("
+                INSERT INTO challenge_trivia_questions
+                (id, question_da, question_en, options_da, options_en, correct_option, topic, explain_da, explain_en, status, publish_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ")->execute([
+                $questionId, $fields['question_da'], $fields['question_en'], $fields['options_da'], $fields['options_en'],
+                $fields['correct_option'], $fields['topic'], $fields['explain_da'], $fields['explain_en'],
+                $status, $fields['publish_date'],
+            ]);
+        }
+
+        $_SESSION['flash_success'] = $action === 'publish_trivia_question' ? t('admin_ch_trivia_published') : t('admin_ch_trivia_saved');
+        header('Location: admin-challenges.php');
+        exit;
+
+    } elseif ($action === 'delete_trivia_question') {
+        $questionId = sanitizeString($_POST['question_id'] ?? '');
+        $db->prepare("DELETE FROM challenge_trivia_questions WHERE id = ? AND status = 'draft'")->execute([$questionId]);
+        $_SESSION['flash_success'] = t('admin_ch_trivia_deleted');
+        header('Location: admin-challenges.php');
+        exit;
     }
 }
 
@@ -190,6 +256,12 @@ $suppressionCount = (int) $db->query("SELECT COUNT(*) FROM challenge_email_suppr
 // Rumor drafts (REQ-502) — oldest first, so generator batches review in submission order.
 $rumorDrafts = $db->query("
     SELECT * FROM challenge_items WHERE status = 'draft' ORDER BY created_at ASC
+")->fetchAll();
+
+// Trivia questions (REQ-503) — most recent publish date first, so this week's authoring
+// session (both drafts and already-published) sits at the top.
+$triviaQuestions = $db->query("
+    SELECT * FROM challenge_trivia_questions ORDER BY publish_date DESC, created_at DESC
 ")->fetchAll();
 
 include __DIR__ . '/includes/header.php';
@@ -360,6 +432,110 @@ include __DIR__ . '/includes/header.php';
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h2 style="margin-bottom:16px;"><?= t('admin_ch_trivia_questions') ?></h2>
+
+        <?php
+            // One form renderer for both the blank "add new" row and every existing question —
+            // the only difference is which array the field values come from.
+            function renderTriviaForm(?array $q): void {
+                $q = $q ?: [
+                    'id' => '', 'question_da' => '', 'question_en' => '',
+                    'options_da' => '[]', 'options_en' => '[]', 'correct_option' => 0,
+                    'topic' => '', 'explain_da' => '', 'explain_en' => '',
+                    'publish_date' => date('Y-m-d'), 'status' => 'draft',
+                ];
+                $optDa = json_decode($q['options_da'], true) ?: [];
+                $optEn = json_decode($q['options_en'], true) ?: [];
+                ?>
+                <div class="card mb-2" data-testid="trivia-question" data-question-id="<?= escape($q['id']) ?>" data-status="<?= escape($q['status']) ?>">
+                    <div class="card-body">
+                        <form method="POST">
+                            <?= csrfField() ?>
+                            <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
+
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_trivia_question_da') ?></label>
+                                <textarea name="question_da" class="form-input" rows="2"><?= escape($q['question_da']) ?></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_trivia_question_en') ?></label>
+                                <textarea name="question_en" class="form-input" rows="2"><?= escape($q['question_en']) ?></textarea>
+                            </div>
+
+                            <?php for ($i = 0; $i < 4; $i++): ?>
+                                <div class="flex gap-1">
+                                    <div class="form-group" style="flex:1;">
+                                        <label class="form-label"><?= sprintf(t('admin_ch_trivia_option_da'), $i + 1) ?></label>
+                                        <input type="text" name="option<?= $i + 1 ?>_da" class="form-input" value="<?= escape($optDa[$i] ?? '') ?>">
+                                    </div>
+                                    <div class="form-group" style="flex:1;">
+                                        <label class="form-label"><?= sprintf(t('admin_ch_trivia_option_en'), $i + 1) ?></label>
+                                        <input type="text" name="option<?= $i + 1 ?>_en" class="form-input" value="<?= escape($optEn[$i] ?? '') ?>">
+                                    </div>
+                                </div>
+                            <?php endfor; ?>
+
+                            <div class="flex gap-1">
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label"><?= t('admin_ch_trivia_correct') ?></label>
+                                    <select name="correct_option" class="form-input">
+                                        <?php for ($i = 0; $i < 4; $i++): ?>
+                                            <option value="<?= $i ?>" <?= (int)$q['correct_option'] === $i ? 'selected' : '' ?>><?= chr(65 + $i) ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label"><?= t('admin_ch_trivia_topic') ?></label>
+                                    <input type="text" name="topic" class="form-input" value="<?= escape($q['topic']) ?>">
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label"><?= t('admin_ch_trivia_publish_date') ?></label>
+                                    <input type="date" name="publish_date" class="form-input" value="<?= escape($q['publish_date']) ?>">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_trivia_explain_da') ?></label>
+                                <textarea name="explain_da" class="form-input" rows="2"><?= escape($q['explain_da']) ?></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><?= t('admin_ch_trivia_explain_en') ?></label>
+                                <textarea name="explain_en" class="form-input" rows="2"><?= escape($q['explain_en']) ?></textarea>
+                            </div>
+
+                            <div class="flex gap-1 items-center">
+                                <button type="submit" name="action" value="save_trivia_question" class="btn btn-secondary btn-sm"><?= t('admin_ch_trivia_save') ?></button>
+                                <?php if ($q['status'] !== 'published'): ?>
+                                    <button type="submit" name="action" value="publish_trivia_question" class="btn btn-primary btn-sm"><?= t('admin_ch_trivia_publish') ?></button>
+                                <?php endif; ?>
+                                <?php if ($q['id'] && $q['status'] === 'draft'): ?>
+                                    <button type="submit" name="action" value="delete_trivia_question" class="btn btn-sm" style="background:var(--f1-red);color:#fff;border:none;"><?= t('admin_ch_trivia_delete') ?></button>
+                                <?php endif; ?>
+                                <?php if ($q['status'] === 'published'): ?>
+                                    <span class="hf-badge open" style="margin-left:auto;"><?= t('admin_ch_trivia_status_published') ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <?php
+            }
+
+            echo '<h3 style="font-size:13px;margin:0 0 8px;color:var(--text-muted);text-transform:uppercase;">' . escape(t('admin_ch_trivia_add')) . '</h3>';
+            renderTriviaForm(null);
+
+            if (empty($triviaQuestions)) {
+                echo '<p class="text-muted">' . escape(t('admin_ch_trivia_list_empty')) . '</p>';
+            }
+            foreach ($triviaQuestions as $tq) {
+                renderTriviaForm($tq);
+            }
+        ?>
     </div>
 </div>
 

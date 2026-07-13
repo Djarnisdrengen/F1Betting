@@ -340,6 +340,17 @@ return [
         'ch_back_to_overview'   => 'Tilbage til oversigt',
         'ch_challenge_a_friend' => 'Udfordr en ven',
 
+        // Challenges — Trivia
+        'ch_weekly_quiz'        => 'Ugens quiz',
+        'ch_trivia_wrong'       => 'Ikke helt',
+        'ch_next_question'      => 'Næste spørgsmål',
+        'ch_finish_quiz'        => 'Afslut quiz',
+        'ch_quiz_complete'      => 'Quiz gennemført',
+        'ch_quiz_complete_sub'  => 'Du fik %d ud af %d rigtige.',
+        'ch_perfect_week_sub'   => 'Alle rigtige — inklusiv +20 bonus.',
+        'ch_all_caught_up'      => 'Ajour',
+        'ch_all_caught_up_sub'  => 'Næste spørgsmål lander i morgen.',
+
         // Challenges — join flow
         'ch_join_title'         => 'Join Challenges',
         'ch_join_subtitle'      => 'Spil dagens spil med kun din email',
@@ -761,6 +772,17 @@ return [
         'ch_deck_cleared_sub'   => 'Fresh cards drop tomorrow.',
         'ch_back_to_overview'   => 'Back to overview',
         'ch_challenge_a_friend' => 'Challenge a friend',
+
+        // Challenges — Trivia
+        'ch_weekly_quiz'        => "This week's quiz",
+        'ch_trivia_wrong'       => 'Not quite',
+        'ch_next_question'      => 'Next question',
+        'ch_finish_quiz'        => 'Finish quiz',
+        'ch_quiz_complete'      => 'Quiz complete',
+        'ch_quiz_complete_sub'  => 'You got %d of %d right.',
+        'ch_perfect_week_sub'   => 'All correct — including the +20 bonus.',
+        'ch_all_caught_up'      => 'All caught up',
+        'ch_all_caught_up_sub'  => 'Next question drops tomorrow.',
 
         // Challenges — join flow
         'ch_join_title'         => 'Join Challenges',

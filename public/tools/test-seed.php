@@ -1374,6 +1374,54 @@ if (($_GET['action'] ?? '') === 'seed_rumor_deck') {
     exit;
 }
 
+// Action: seed_trivia_week — 6 published trivia questions publish-dated Mon-Sat of a chosen
+// ISO week (week_offset=0 current week, -1 previous week — cron idempotency tests). Optional
+// participant_id + correct (comma list of 0/1, one per day) also backdates that participant's
+// answers directly into challenge_trivia_answers, bypassing the play-flow POST handler — the
+// cron only cares which week's questions were answered and their correctness, not how.
+// Fixed options ['A','B','C'] with correct_option=0, topic='e2e-seed' (also the cleanup marker,
+// since challenge_trivia_questions has no source_ref column to reuse).
+if (($_GET['action'] ?? '') === 'seed_trivia_week') {
+    require_once __DIR__ . '/../includes/challenges.php';
+
+    $weekOffset    = intval($_GET['week_offset'] ?? 0);
+    $participantId = $_GET['participant_id'] ?? null;
+    $correctPattern = isset($_GET['correct']) ? explode(',', $_GET['correct']) : null;
+
+    $tz = new DateTimeZone('Europe/Copenhagen');
+    $monday = (new DateTime('today', $tz))->modify('monday this week')->modify(($weekOffset * 7) . ' days');
+    $isoWeek = isoWeekKey($monday);
+
+    $questionIds = [];
+    for ($i = 0; $i < 6; $i++) {
+        $publishDate = (clone $monday)->modify("+$i days")->format('Y-m-d');
+        $id = seed_uuid();
+        $db->prepare("
+            INSERT INTO challenge_trivia_questions
+            (id, question_da, question_en, options_da, options_en, correct_option, topic, explain_da, explain_en, status, publish_date)
+            VALUES (?, ?, ?, ?, ?, 0, 'e2e-seed', ?, ?, 'published', ?)
+        ")->execute([
+            $id, "Test question #$i", "Test question #$i",
+            json_encode(['A', 'B', 'C']), json_encode(['A', 'B', 'C']),
+            "Test explanation #$i", "Test explanation #$i", $publishDate,
+        ]);
+        $questionIds[] = $id;
+
+        if ($participantId && $correctPattern !== null) {
+            // correct_option is 0 ("A") — choose 0 for a correct answer, 1 for a wrong one.
+            $chosen  = intval($correctPattern[$i] ?? 0) ? 0 : 1;
+            $correct = $chosen === 0 ? 1 : 0;
+            $db->prepare("
+                INSERT INTO challenge_trivia_answers (id, participant_id, question_id, chosen_option, correct, answered_at)
+                VALUES (?, ?, ?, ?, ?, NOW())
+            ")->execute([seed_uuid(), $participantId, $id, $chosen, $correct]);
+        }
+    }
+
+    echo json_encode(['ok' => true, 'question_ids' => $questionIds, 'iso_week' => $isoWeek]);
+    exit;
+}
+
 // Action: seed_converted_guest — an admin-approved participant already linked to a fresh core
 // user (in_competition=0), skipping the Approve transaction itself (ADM-03/04 exercise that
 // directly) — for the converted-guests list / users-tab-exclusion cases (ADM-01/02).
@@ -1480,6 +1528,10 @@ if (($_GET['action'] ?? '') === 'cleanup_challenges') {
     // Rumor items from seed_rumor_deck aren't participant-scoped; cascades to any remaining
     // challenge_answers pointing at them (FK ON DELETE CASCADE).
     $db->query("DELETE FROM challenge_items WHERE source_ref = 'e2e-seed'");
+    // Trivia questions from seed_trivia_week aren't participant-scoped either; the table has no
+    // source_ref column, so topic='e2e-seed' is the fixture marker instead. Cascades to any
+    // remaining challenge_trivia_answers pointing at them.
+    $db->query("DELETE FROM challenge_trivia_questions WHERE topic = 'e2e-seed'");
     echo json_encode(['ok' => true]);
     exit;
 }
