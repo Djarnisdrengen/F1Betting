@@ -297,6 +297,7 @@ return [
         // Paddock Challenges
         'ch_nav_board'          => 'Stilling',
         'ch_nav_challenges'     => 'Challenges',
+        'ch_new_badge'          => 'Ny',
         'ch_hero_eyebrow'       => 'Ingen løb i denne uge · Challenges live',
         'ch_hero_sub'           => 'Tre hurtige spil, intet løb nødvendigt. Hold dine point stigende.',
         'ch_your_cp'            => 'Dine CP',
@@ -702,6 +703,7 @@ return [
         // Paddock Challenges
         'ch_nav_board'          => 'Board',
         'ch_nav_challenges'     => 'Challenges',
+        'ch_new_badge'          => 'New',
         'ch_hero_eyebrow'       => 'No race this week · Challenges live',
         'ch_hero_sub'           => 'Three quick games, no race needed. Keep your points climbing.',
         'ch_your_cp'            => 'Your CP',

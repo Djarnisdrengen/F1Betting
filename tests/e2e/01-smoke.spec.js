@@ -150,6 +150,7 @@ test.describe("Logout", { tag: "@smoke" }, () => {
         await page.click('.hf-hamburger');
         await page.click('a[href="logout.php"]');
         await page.waitForURL(/index\.php/);
-        await expect(page.locator('.hf-bottom a[href="login.php"]')).toBeVisible();
+        await page.click('.hf-hamburger');
+        await expect(page.locator('.hf-drawer a[href="login.php"]')).toBeVisible();
     });
 });

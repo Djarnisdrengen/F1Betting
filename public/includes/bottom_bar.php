@@ -1,35 +1,23 @@
 <?php
-$avatarInitial = $currentUser
-    ? mb_strtoupper(mb_substr($currentUser['display_name'], 0, 1))
-    : '';
-$firstName = $currentUser
-    ? mb_strtoupper(explode(' ', trim($currentUser['display_name']))[0])
-    : '';
+$arenaTint = $currentPage === 'challenges' ? 'background: rgba(13,13,16,.95);' : '';
 ?>
-<nav class="hf-bottom">
-    <?php if ($currentUser): ?>
-    <a href="profile.php" class="hf-bb-item <?= $currentPage === 'profile' ? 'active' : '' ?>">
-        <div class="hf-bb-avatar"><?= escape($avatarInitial) ?></div>
-        <span><?= escape($firstName) ?></span>
+<nav class="hf-bottom" style="<?= $arenaTint ?>">
+    <a href="/" class="hf-bb-item <?= $currentPage === 'index' ? 'active' : '' ?>">
+        <div class="hf-bb-icon"><i class="fas fa-home"></i></div>
+        <span><?= t('home') ?></span>
     </a>
-    <?php else: ?>
-    <a href="login.php" class="hf-bb-item">
-        <div class="hf-bb-icon" style="color: var(--f1-red);"><i class="fas fa-sign-in-alt"></i></div>
-        <span><?= t('login') ?></span>
+    <a href="races.php" class="hf-bb-item <?= $currentPage === 'races' ? 'active' : '' ?>">
+        <div class="hf-bb-icon"><i class="fas fa-flag"></i></div>
+        <span><?= t('races') ?></span>
     </a>
-    <?php endif; ?>
-    <a href="?toggle_theme=1" class="hf-bb-item" title="Theme">
-        <div class="hf-bb-icon">
-            <i class="fas <?= $theme === 'dark' ? 'fa-moon' : 'fa-sun' ?>"></i>
+    <a href="leaderboard.php" class="hf-bb-item <?= $currentPage === 'leaderboard' ? 'active' : '' ?>">
+        <div class="hf-bb-icon"><i class="fas fa-trophy"></i></div>
+        <span><?= t('ch_nav_board') ?></span>
+    </a>
+    <a href="challenges.php" class="hf-bb-item <?= $currentPage === 'challenges' ? 'active' : '' ?>">
+        <div class="hf-bb-icon" style="background:var(--f1-red);color:#fff;border-radius:9px;width:30px;height:30px;box-shadow:0 3px 10px rgba(225,6,0,.5);">
+            <i class="fas fa-gamepad"></i>
         </div>
-        <span><?= strtoupper(t('theme')) ?></span>
-    </a>
-    <a href="?toggle_lang=1" class="hf-bb-item" title="Language">
-        <div class="hf-bb-icon"><i class="fas fa-globe"></i></div>
-        <span><?= strtoupper($lang) ?></span>
-    </a>
-    <a href="?toggle_font=1" class="hf-bb-item">
-        <div class="hf-bb-icon"><i class="fas fa-font"></i></div>
-        <span><?= $fontStack === 'editorial' ? 'EDIT' : 'SYS' ?></span>
+        <span><?= t('ch_nav_challenges') ?></span>
     </a>
 </nav>

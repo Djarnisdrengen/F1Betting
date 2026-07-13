@@ -193,18 +193,20 @@ test.describe.serial('Preferences', { tag: '@appearance' }, () => {
         await ctx2.close();
     });
 
-    // AC11 — theme icon reflects current state (moon = dark, sun = light)
-    test('AC11 — theme icon reflects current state', async ({ browser }) => {
+    // AC11 — drawer's Theme segmented control reflects current state (moon = dark, sun = light)
+    test('AC11 — theme control reflects current state', async ({ browser }) => {
         const ctx  = await browser.newContext();
         const page = await ctx.newPage();
-        // Dark mode: moon icon visible
+        // Dark mode: moon button active
         await page.goto('/');
         await expect(page.locator('body')).toHaveClass(/\bdark\b/);
-        await expect(page.locator('.hf-bb-item[title="Theme"] i')).toHaveClass(/fa-moon/);
-        // Toggle to light: sun icon visible
+        await page.click('.hf-hamburger');
+        await expect(page.locator('.hf-seg a[href="?toggle_theme=1"].active i')).toHaveClass(/fa-moon/);
+        // Toggle to light: sun button active
         await page.goto('/?toggle_theme=1');
         await expect(page.locator('body')).toHaveClass(/\blight\b/);
-        await expect(page.locator('.hf-bb-item[title="Theme"] i')).toHaveClass(/fa-sun/);
+        await page.click('.hf-hamburger');
+        await expect(page.locator('.hf-seg a[href="?toggle_theme=1"].active i')).toHaveClass(/fa-sun/);
         await ctx.close();
     });
 });

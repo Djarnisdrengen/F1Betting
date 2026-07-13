@@ -155,6 +155,13 @@ try {
         <i class="fas fa-book"></i><span><?= t('rules') ?></span>
     </a>
     <?php endif; ?>
+    <a href="challenges.php" class="hf-drawer-row <?= $currentPage === 'challenges' ? 'active' : '' ?>" style="position:relative;">
+        <i class="fas fa-gamepad" style="color:var(--f1-red);"></i><span><?= t('ch_nav_challenges') ?></span>
+        <span class="hf-badge open" style="margin-left:auto;padding:2px 8px;font-size:9px;"><?= t('ch_new_badge') ?></span>
+    </a>
+    <a href="challenges-board.php" class="hf-drawer-row">
+        <i class="fas fa-arrow-up-right-from-square"></i><span><?= t('ch_public_board') ?></span>
+    </a>
     <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
     <a href="admin.php" class="hf-drawer-row <?= $currentPage === 'admin' ? 'active' : '' ?>">
         <i class="fas fa-cog"></i><span><?= t('admin') ?></span>
@@ -178,6 +185,30 @@ try {
         <i class="fas fa-sign-in-alt"></i><span><?= t('login') ?></span>
     </a>
     <?php endif; ?>
+
+    <div class="hf-divider"></div>
+    <div class="hf-toc-title" style="padding:6px 12px 4px;"><?= t('ch_preferences') ?></div>
+    <div class="hf-drawer-row" style="justify-content:space-between;padding:9px 12px;">
+        <span><i class="fas fa-circle-half-stroke"></i> <?= t('theme') ?></span>
+        <div class="hf-seg" style="padding:2px;">
+            <a href="?toggle_theme=1" style="padding:6px 10px;" class="<?= $theme === 'light' ? 'active' : '' ?>"><i class="fas fa-sun"></i></a>
+            <a href="?toggle_theme=1" style="padding:6px 10px;" class="<?= $theme === 'dark' ? 'active' : '' ?>"><i class="fas fa-moon"></i></a>
+        </div>
+    </div>
+    <div class="hf-drawer-row" style="justify-content:space-between;padding:9px 12px;">
+        <span><i class="fas fa-globe"></i> <?= t('language_label') ?></span>
+        <div class="hf-seg" style="padding:2px;">
+            <a href="?toggle_lang=1" style="padding:6px 12px;font-size:12px;" class="<?= $lang === 'da' ? 'active' : '' ?>">DA</a>
+            <a href="?toggle_lang=1" style="padding:6px 12px;font-size:12px;" class="<?= $lang === 'en' ? 'active' : '' ?>">EN</a>
+        </div>
+    </div>
+    <div class="hf-drawer-row" style="justify-content:space-between;padding:9px 12px;">
+        <span><i class="fas fa-font"></i> <?= t('font_label') ?></span>
+        <div class="hf-seg" style="padding:2px;">
+            <a href="?toggle_font=1" style="padding:6px 12px;font-size:12px;" class="<?= $fontStack === 'editorial' ? 'active' : '' ?>"><?= t('ch_font_brand') ?></a>
+            <a href="?toggle_font=1" style="padding:6px 12px;font-size:12px;" class="<?= $fontStack === 'system' ? 'active' : '' ?>"><?= t('ch_font_system') ?></a>
+        </div>
+    </div>
 </nav>
 
 <main>

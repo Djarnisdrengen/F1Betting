@@ -29,10 +29,11 @@ async function login(page, email, pw) {
 test.describe('Profile preferences — layout', { tag: '@preferences-editor' }, () => {
     test.use({ storageState: ADMIN_AUTH });
 
-    // PP1 — bottom nav absent on profile page
-    test('PP1 — bottom nav is hidden on /profile.php', async ({ page }) => {
+    // PP1 — bottom nav present on profile page (NFR-003: Profile left the bar in Phase 2,
+    // so the profile-page exclusion was dropped)
+    test('PP1 — bottom nav is visible on /profile.php', async ({ page }) => {
         await page.goto('/profile.php');
-        await expect(page.locator('.hf-bottom')).not.toBeAttached();
+        await expect(page.locator('.hf-bottom')).toBeVisible();
     });
 
     // PP2 — preferences tab visible with toggles
@@ -228,10 +229,11 @@ test.describe.serial('Profile preferences — defect regression', { tag: '@prefe
 test.describe('Profile preferences — unauthenticated', { tag: '@preferences-editor' }, () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
-    // PP10 — bottom nav visible with login link for anonymous visitors
+    // PP10 — bottom nav visible; drawer carries the login link for anonymous visitors
     test('PP10 — bottom nav visible with login link for anonymous visitor', async ({ page }) => {
         await page.goto('/');
         await expect(page.locator('.hf-bottom')).toBeVisible();
-        await expect(page.locator('.hf-bottom a[href="login.php"]')).toBeVisible();
+        await page.click('.hf-hamburger');
+        await expect(page.locator('.hf-drawer a[href="login.php"]')).toBeVisible();
     });
 });
