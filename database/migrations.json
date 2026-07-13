@@ -20,6 +20,9 @@
     { "migration": "add_challenges.sql", "table": "duel_quickmatch" },
     { "migration": "add_challenges.sql", "table": "duel_predictions" },
     { "migration": "add_challenges.sql", "table": "challenge_trivia_questions" },
-    { "migration": "add_challenges.sql", "table": "challenge_trivia_answers" }
+    { "migration": "add_challenges.sql", "table": "challenge_trivia_answers" },
+    { "migration": "add_challenges.sql (participant-model refinement)", "table": "challenge_participants", "columns": ["password_hash", "promotion_requested_at"] },
+    { "migration": "add_challenges.sql (participant-model refinement)", "table": "challenge_access_tokens" },
+    { "migration": "add_challenges.sql (participant-model refinement)", "table": "challenge_invites" }
   ]
 }

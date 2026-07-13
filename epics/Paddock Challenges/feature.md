@@ -12,7 +12,7 @@ feature blocks previously embedded in the epic file.
 
 1. [Scope](#scope)
 2. [Decisions (signed off)](#decisions-signed-off)
-3. [Requirements](#requirements) — A: Navigation & home · B: Foundation · C: Rumor or Not · D: Duels · E: Trivia · F: Admin
+3. [Requirements](#requirements) — A: Navigation & home · B: Access, invites & foundation · C: Rumor or Not · D: Duels · E: Trivia · F: Admin
 4. [User Stories](#user-stories)
 5. [Architecture](#architecture)
 6. [Security Model](#security-model)
@@ -82,29 +82,121 @@ Non-functional:
 - [NFR-003] The bottom bar remains excluded on admin (`public/includes/footer.php:3`); the profile-page exclusion is dropped since Profile leaves the bar.
 - [NFR-004] Mobile-first: 44px minimum touch targets, 16px minimum input font, no layout shift on hero swap.
 
-### B. Guest access & CP foundation
+### B. Participant access, invite loop & CP foundation
 
-Functional (retained/amended from the epic):
-- [REQ-101] Any visitor can register for Challenges with an email address only — no password for guests.
-- [REQ-102] Guest registration sends a single-use magic link; clicking it verifies the address and starts a **challenge session**.
-- [REQ-103] A guest participant record is distinct from a core `users` record — no display name, theme, font required at signup. Language IS captured (from the visitor's current `getLang()` value) so emails and content render correctly.
-- [REQ-104] A logged-in core member gets a challenge participant record **silently auto-created and linked on first hub visit**, reusing their display name — no prompt (per the epic's core-member flow).
-- [REQ-105] CP lives in a dedicated ledger (`challenge_points`). No arithmetic ever combines CP with betting points.
-- [REQ-106] A public CP leaderboard shows rank, display name (or "Guest ####"), and total CP (sum across all three games). Public to logged-out visitors, reached via the hub only (D5).
-- [REQ-107] Verified guests may optionally set a display name; otherwise they appear as "Guest" + last 4 chars of participant id.
-- [REQ-108] A verified guest can self-serve convert to a full core member (password + display name; email already verified). CP history is preserved — the participant row gains `core_user_id`; no CP reset. Converted users default `in_competition = 0` (D4, confirmed); admin flips it from the converted-guests list on the Challenges admin page (REQ-505).
-- [REQ-109] **Streak** (D6): qualifying action = rumor answer, trivia answer, or duel prediction submission; a Copenhagen calendar day with ≥1 action counts; streak = consecutive days ending today or yesterday (so it doesn't die at midnight before the user has played). Shown in the home hero stat row and the hub scoreboard.
-- [REQ-110] Unverified participants (status `pending`, never clicked a link) are purged after 30 days (GDPR hygiene; piggybacks the existing cron).
-- [REQ-111] Joining with an email that already belongs to a core `users` account creates **no** guest participant. The HTTP response stays identical (NFR-106); the email sent instead says "you already have an account — log in and open Challenges" (core members get their participant via REQ-104). This prevents duplicate identities (guest + core-linked for the same person) and the conversion-time email collision. If a guest's email becomes a core account *after* joining (edge), conversion refuses with a log-in prompt instead of creating a duplicate `users` row.
+Rewritten 2026-07-12 (participant-model refinement, decisions D11–D14): full specs for
+**Feature 1 — Play-First "Challenge a Friend" Invite Loop** and **Feature 2 — Persistent Return:
+Access Link + Optional Password**. Supersedes the email-first / ephemeral-session / self-serve-
+conversion model previously in this section.
 
-Non-functional (retained from the epic):
+**Identity tiers** — all live in `challenge_participants`, never `users`:
+
+| Tier | How reached | Return path | Rights |
+| --- | --- | --- | --- |
+| **Anonymous** | plays without an email; pending row, `email NULL` | current browser session only | play async games; nothing persists past the session |
+| **Verified** | confirmed an email (owner-confirm or friend-invite click) | emailed access link + device cookie | play, CP board, keep history, send/receive challenges, duels |
+| **Permanent** | verified **+ set a password** | unified `/login.php` + access link + cookie | as Verified, plus password login on any device |
+| **Core member** *(separate table)* | an **admin approves** a promotion request | core login | full app; the `users` row is created by an admin only (Feature 4) |
+
+#### B1 — Anonymous-first play (Feature 1, D11)
+
+Functional:
+- [REQ-101] Any visitor can play the async single-player games (Rumor or Not, Trivia) **without providing an email**. On their first answer an **anonymous participant** is created (`status='pending'`, `email NULL`, `core_user_id NULL`) and tracked by `$_SESSION['challenge_participant_id']` — the same session marker verified participants use.
+- [REQ-102] An anonymous participant's answers, CP and streak accrue to their row exactly like a verified participant's; nothing about play is gated behind having an email. Language is captured from the visitor's current `getLang()` so content renders correctly.
+- [REQ-103] Prediction Duels are **not** available anonymously (a duel needs two identifiable participants). The Duels section prompts an anonymous player to save their spot (B3/B4) before challenging or quick-matching.
+- [REQ-112] If the browser session is lost before the anonymous player saves their spot (B2/B3), the anonymous row becomes unreachable and is purged by REQ-110 — no silent data resurrection, no orphaned rows on the CP board (REQ-106).
+
+#### B2 — Challenge a friend: async "beat my score" (Feature 1, D12)
+
+Functional:
+- [REQ-113] After finishing a deck (Rumor or Not) or a trivia set, the player is offered **"Challenge a friend"** — a form with **two email fields, their own and the friend's** (+ optional friend display name).
+- [REQ-114] On submit the system, in one transaction:
+  1. sets the **owner's** email on their (anonymous or existing) participant row and sends them a single-use **owner-confirmation** link (reusing `challenge_magic_links`, 30-min);
+  2. creates a **`challenge_invites`** row capturing the exact `item_ids` the owner played, the owner's `challenger_score`, the `friend_email`, and a long-lived `friend_token`;
+  3. sends the **friend** an invite email — "[owner] challenged you to beat their score on [game]" — with a Play link.
+- [REQ-115] Clicking the **owner-confirmation** link verifies the owner (`status='verified'`, `verified_at=NOW()`), establishes their session, and issues a persistent access token + device cookie (B3). The challenge they already played is already on their row — nothing is re-attached. Until they confirm, the owner stays unverified and off the CP board, but the friend invite is already valid.
+- [REQ-116] Clicking the **friend-invite** link creates (or resolves, if the address already maps to a participant) the friend's participant as **verified** — the click proves ownership of that address — establishes their session, issues an access token + device cookie, marks the invite `accepted`, and drops them into the **same item set** to play.
+- [REQ-117] When the friend finishes, the invite is `completed`: both scores are stored (`challenger_score`, `friend_score`) and a **head-to-head result** (who won / tie) is shown to the friend and surfaced to the owner on their next visit. Each player earns only their **normal per-game CP** for the items they answered — the head-to-head awards **no additional CP in v1** (no CP-economy change; a "challenge win" bonus is explicitly out of v1 scope — open decision if desired later).
+- [REQ-118] A `friend_token` is long-lived (expires at the next race start or 14 days out, whichever is later) and single-accept: after `accepted`, re-clicks return the friend to the challenge rather than creating a second participant.
+- [REQ-119] Invite-send guardrails — per-sender caps, per-IP and per-friend-email rate limiting, one-time transactional friend emails with a clear "why you received this" line, and an opt-out/suppression path — are specified in **Feature 5 (Invite Guardrails & Consent)**. Section B requires that no invite email is sent without passing those checks and that a suppressed/opted-out address is never re-emailed. Because the friend is a third party who gave no prior consent, this is a must-have (EU/Danish compliance), not polish.
+
+#### B3 — Persistent return: access link + device cookie (Feature 2, D13)
+
+Functional:
+- [REQ-120] Every participant email (owner-confirm, friend-invite, later notifications) carries a **persistent access link** that returns the recipient to the hub as themselves **without requesting a new magic link**.
+- [REQ-121] On verification (owner-confirm or friend-invite click, or a permanent-participant login) the system issues a **challenge access token** (`challenge_access_tokens`) and sets a **device cookie** `ch_access` (httponly, secure, `SameSite=Lax`, path `/`, 90-day). `getChallengeParticipant()` resolves in order: core session (`user_id`) → challenge session marker (`challenge_participant_id`) → **valid device cookie (re-establishing the session + rotating the token)** → null.
+- [REQ-122] Access tokens are stored **hashed** (`hash('sha256', …)`); the raw token lives only in the cookie/link, is **rotated** on each cookie-based re-establishment (remember-me best practice), and is revoked on sign-out. This is deliberately different from `challenge_magic_links`, which stay short-lived and single-use for the verification step (NFR-104).
+- [REQ-123] "Sign out" clears the `ch_access` cookie and revokes its token; other devices are unaffected. "Sign out everywhere" revokes all of the participant's access tokens.
+- [REQ-124] Guest session config is unchanged (PHP browser-session cookie); persistence is provided **only** by the access token/cookie above — the shared `session.cookie_lifetime` is **not** extended, so core-member sessions are untouched.
+
+#### B4 — Permanent participant: optional password (Feature 2, D14)
+
+Functional:
+- [REQ-125] A **verified** participant may optionally **set a password** to become a **permanent participant**: `password_hash` is stored on their `challenge_participants` row via `hashPassword()`. They stay in the participant table and gain **no** core-member rights.
+- [REQ-126] Permanent participants log in with **email + password at the existing `/login.php`**, which resolves `users` first, then `challenge_participants`. A successful participant login establishes the **challenge session marker only** (`challenge_participant_id`), **never** `user_id`, and issues an access token + device cookie. (Unified login chosen for non-technical-user simplicity — see open decision.)
+- [REQ-127] An email that exists in `users` is **always** a core login; a participant with that email cannot exist (REQ-111), so participant password login can never collide with a core account.
+- [REQ-128] Setting a password grants **no** competition/pool access, betting, or core page — permanent participants remain bounded exactly like verified participants (Feature 3 profile parity **minus the History tab**).
+
+#### B5 — CP foundation & identity (retained)
+
+Functional:
+- [REQ-104] A logged-in **core member** gets a challenge participant record **silently auto-created and linked** (`core_user_id`) on first hub visit, reusing their display name — no prompt.
+- [REQ-105] CP lives in a dedicated ledger (`challenge_points`); no arithmetic ever combines CP with betting points.
+- [REQ-106] A **public CP leaderboard** shows rank, display name (or "Guest ####"), and total CP across all three games; public to logged-out visitors, reached via the hub only (D5). Anonymous (email-null, unverified) participants are **not** board-listed — they appear only after they verify (B2/B3).
+- [REQ-107] Verified participants may optionally set a display name; otherwise they appear as "Guest" + last 4 chars of participant id.
+- [REQ-109] **Streak** (D6): qualifying action = rumor answer, trivia answer, or duel prediction submission; a Copenhagen calendar day with ≥1 action counts; streak = consecutive days ending today or yesterday. Accrues for anonymous players too. Shown in the home hero stat row and the hub scoreboard.
+- [REQ-110] Participants that never verify (`status='pending'`, includes abandoned anonymous rows) are purged after 30 days along with their answers (GDPR hygiene; existing cron).
+- [REQ-111] An email that already belongs to a core `users` account never becomes a participant: an owner-confirm or friend-invite for such an address sends a "you already have an account — log in and open Challenges" email instead of verifying a participant, and the HTTP response stays byte-identical (NFR-106). Core members reach Challenges via REQ-104. This prevents duplicate identities for one person.
+
+#### B6 — Core-membership promotion (changed: admin-approved, D14)
+
+Functional:
+- [REQ-108] Participants **cannot self-convert to core members.** A verified or permanent participant may **submit a promotion request**, queued for **admin approval**. Only on approval does an admin create the `users` row, link `core_user_id`, and carry over CP history (converted users default `in_competition = 0` and are admitted to the pool separately — D4's pool-safety default is retained; D4's self-serve *mechanism* is superseded by D14). The request queue, admin UI, and approve/reject flow are specified in **Feature 4 (Request to Become a Core Member)**; Section B requires only that **no participant-initiated path writes to `users`**.
+
+Non-functional:
 - [NFR-101] simply.com shared hosting: PHP 8 + PDO/MySQL, Apache + mod_rewrite, no Node runtime in production.
 - [NFR-102] No build step; plain PHP/JS/CSS.
-- [NFR-103] Session-based auth for guests using the core app's session, **but a distinct marker**: `$_SESSION['challenge_participant_id']`, never `user_id` (precedent: `mfa_pending` in `public/mfa_challenge.php`). Only full conversion calls `establishSession()`.
-- [NFR-104] Magic-link tokens: `bin2hex(random_bytes(32))`, single-use (`used` flag), 30-minute expiry. Pattern: `password_resets` (`public/forgot_password.php:39-48`, `public/reset_password.php:24-59`).
+- [NFR-103] Session-based auth for guests uses the core app's session with a **distinct marker** `$_SESSION['challenge_participant_id']`, never `user_id` (precedent: `mfa_pending` in `public/mfa_challenge.php`). Only admin-approved promotion (Feature 4) calls `establishSession()` for a newly created core user.
+- [NFR-104] Verification tokens (`challenge_magic_links`): `bin2hex(random_bytes(32))`, single-use (`used` flag), 30-min expiry (pattern: `password_resets`, `public/forgot_password.php:39-48`, `public/reset_password.php:24-59`). **Access tokens** (`challenge_access_tokens`) and **invite tokens** (`challenge_invites.friend_token`) are separate and long-lived; access tokens are stored hashed and rotated (REQ-122).
 - [NFR-105] 44px touch targets, 16px inputs (as NFR-004).
-- [NFR-106] Magic-link request responses are **byte-identical** whether or not the email exists (stricter than the current password-reset copy, which differs between branches — do not copy that nuance).
-- [NFR-107] Magic-link requests are rate-limited via the existing `login_attempts` mechanism with a new scope `'magic'` (`isRateLimited()/recordLoginAttempt()` at `public/includes/functions.php:491/513`), fail-closed in the caller, `Retry-After: 900` header, **no HTTP 429** (OpenResty proxy limitation, see `public/login.php:42-46`).
+- [NFR-106] Owner-confirm / friend-invite / resend / participant-login responses are **byte-identical** whether or not the email maps to a participant or a core account (stricter than the current password-reset copy — do not copy that nuance).
+- [NFR-107] Owner-confirmation and invite sends are rate-limited via the existing `login_attempts` mechanism — scope `'magic'` for owner-confirm, scope `'invite'` for friend sends (`isRateLimited()/recordLoginAttempt()` at `public/includes/functions.php:491/513`), fail-closed, `Retry-After: 900`, **no HTTP 429** (OpenResty limitation, `public/login.php:42-46`). Per-sender invite caps live in Feature 5.
+
+#### Data-model additions (Feature 1 & 2)
+
+Additive only — to be mirrored into the central [Architecture](#architecture) data-model block,
+`database/add_challenges.sql`, `database/schema.sql`, and registered in `database/migrations.json`
+at implementation:
+
+```sql
+ALTER TABLE challenge_participants
+  ADD COLUMN password_hash VARCHAR(255) NULL;          -- set ⇒ permanent participant (B4)
+ALTER TABLE challenge_participants
+  ADD COLUMN promotion_requested_at DATETIME NULL;     -- set ⇒ pending admin promotion review (B6)
+
+challenge_access_tokens                          -- persistent return (B3)
+  id INT AUTO_INCREMENT PK
+  participant_id FK challenge_participants ON DELETE CASCADE
+  token_hash CHAR(64) UNIQUE                      -- sha256 of the raw token; raw lives only in cookie/link
+  expires_at DATETIME                             -- +90 days, rotated on each use
+  last_used_at DATETIME NULL
+  created_at DATETIME
+  KEY idx_participant (participant_id)
+
+challenge_invites                                -- beat-my-score share (B2)
+  id VARCHAR(36) PK
+  challenger_id FK challenge_participants ON DELETE CASCADE
+  game ENUM('rumor_or_not','trivia')
+  item_ids JSON NOT NULL                          -- exact set the challenger played
+  challenger_score INT NOT NULL
+  friend_email VARCHAR(255) NOT NULL
+  friend_token VARCHAR(64) UNIQUE
+  friend_participant_id FK challenge_participants NULL ON DELETE SET NULL
+  friend_score INT NULL
+  status ENUM('sent','accepted','completed','expired') DEFAULT 'sent'
+  created_at / accepted_at / completed_at / expires_at
+  KEY idx_friend_email (friend_email)
+```
 
 ### C. Rumor or Not
 
@@ -181,11 +273,13 @@ Register every object in `database/migrations.json` and mirror in `database/sche
 ```sql
 challenge_participants
   id VARCHAR(36) PK
-  email VARCHAR(255) NULL UNIQUE          -- NULL for core-linked rows
+  email VARCHAR(255) NULL UNIQUE          -- NULL for anonymous (B1) & core-linked rows
   core_user_id VARCHAR(36) NULL UNIQUE    -- FK users.id (latin1 pin), ON DELETE SET NULL
   display_name VARCHAR(100) NULL
   language CHAR(2) NOT NULL DEFAULT 'da'
   status ENUM('pending','verified') NOT NULL DEFAULT 'pending'
+  password_hash VARCHAR(255) NULL         -- set ⇒ permanent participant (B4/D14)
+  promotion_requested_at DATETIME NULL    -- set ⇒ pending admin promotion review (B6/D14)
   created_at / verified_at
 
 challenge_points                          -- the CP ledger; append-only except duel reversal
@@ -204,6 +298,28 @@ challenge_magic_links                     -- clone of password_resets shape
   expires_at DATETIME                     -- +30 minutes
   used TINYINT(1) DEFAULT 0
   created_at
+
+challenge_access_tokens                   -- persistent return (B3/D13)
+  id INT AUTO_INCREMENT PK
+  participant_id FK CASCADE
+  token_hash CHAR(64) UNIQUE             -- sha256(raw); raw only in cookie/link, rotated on use
+  expires_at DATETIME                    -- +90 days
+  last_used_at DATETIME NULL
+  created_at
+
+challenge_invites                         -- beat-my-score share (B2/D12)
+  id VARCHAR(36) PK
+  challenger_id FK challenge_participants CASCADE
+  game ENUM('rumor_or_not','trivia')
+  item_ids JSON                          -- exact set the challenger played
+  challenger_score INT
+  friend_email VARCHAR(255)
+  friend_token VARCHAR(64) UNIQUE
+  friend_participant_id FK NULL ON DELETE SET NULL
+  friend_score INT NULL
+  status ENUM('sent','accepted','completed','expired') DEFAULT 'sent'
+  created_at / accepted_at / completed_at / expires_at
+  KEY idx_friend_email (friend_email)
 
 challenge_items                           -- Rumor or Not content
   id VARCHAR(36) PK
@@ -367,70 +483,102 @@ Feature: Navigation and context-aware home
     And a visitor without one sees no chip
 ```
 
-### B. Foundation
+### B. Access, invites & foundation
 
 ```gherkin
-Feature: Guest access & Challenge Points foundation
+Feature: Participant access, invite loop & CP foundation
 
-  Scenario: New guest signs up and verifies
-    Given a visitor with no account submits a valid email
-    And they click the magic link within 30 minutes
-    Then their participant status becomes "verified"
-    And a challenge session starts without any core login
+  Scenario: Anonymous play needs no email
+    Given a visitor with no participant record opens Rumor or Not
+    When they answer their first card
+    Then an anonymous participant (status pending, email null) is created
+    And their answer, CP and streak accrue to it with no email prompt
 
-  Scenario: Magic link expires
-    Given a magic link issued 31 minutes ago
-    When it is clicked
-    Then verification is refused with an expiry message and a re-request option
+  Scenario: Challenge a friend sends two emails
+    Given an anonymous player has finished a deck
+    When they submit "Challenge a friend" with their own and a friend's email
+    Then they receive an owner-confirmation email
+    And the friend receives an invite to beat their score
+    And a challenge_invites row stores the played item set and the owner's score
 
-  Scenario: Magic link is single-use
-    Given an already-used magic link
-    When it is clicked again
-    Then it is refused as already used
+  Scenario: Owner confirmation verifies and persists the owner
+    Given an owner submitted a challenge invite
+    When they click the owner-confirmation link within 30 minutes
+    Then their participant status becomes verified
+    And a device cookie and access token are issued so they return without a new link
+    And the challenge they already played is on their record
 
-  Scenario: Enumeration-safe join
-    Given one join request with a registered email and one with an unknown email
-    Then both HTTP responses are identical
+  Scenario: Friend joins by clicking the invite
+    Given a friend received an invite email
+    When the friend clicks the invite link
+    Then a verified participant is created for the friend
+    And they are dropped into the same item set to play
+    And a device cookie and access token are issued
 
-  Scenario: Duplicate email signup
-    Given an email already registered as a verified guest
-    When the same email is submitted again
-    Then no duplicate participant is created and a fresh link goes to the existing record
+  Scenario: Beat-my-score comparison, no bonus CP
+    Given the friend finishes the same item set
+    Then the invite is completed with both scores recorded
+    And a head-to-head result is shown
+    And each player earns only their normal per-game CP with no head-to-head bonus
+
+  Scenario: Persistent return via access link
+    Given a verified participant closed their browser a week ago
+    When they open the access link from any challenge email
+    Then they return to the hub as themselves without requesting a new magic link
+
+  Scenario: Persistent return via device cookie
+    Given a verified participant whose session expired but whose device cookie is present
+    When they open the hub
+    Then their session is re-established and the access token is rotated
+
+  Scenario: Optional password creates a permanent participant
+    Given a verified participant with no password
+    When they set a password
+    Then password_hash is stored on their challenge_participants row
+    And they remain a participant with no core-member rights
+
+  Scenario: Permanent participant logs in
+    Given a permanent participant with an email and password
+    When they log in at /login.php
+    Then the challenge session marker is set and user_id is never set
+    And a device cookie and access token are issued
+
+  Scenario: Sign out clears only this device
+    Given a participant signed in on two devices
+    When they sign out on one
+    Then that device's access token is revoked and its cookie cleared
+    And the other device stays signed in
+
+  Scenario: Enumeration-safe invite and confirm
+    Given one invite to a registered address and one to an unknown address
+    Then both HTTP responses are byte-identical
+
+  Scenario: A core member's email never becomes a participant
+    Given an email that belongs to an existing core account
+    When it is used as an owner or a friend email
+    Then no participant with that email is created
+    And the email sent says to log in and open Challenges
+    And the HTTP response is identical to the normal path
 
   Scenario: Core member auto-links silently
     Given a logged-in core member with no participant record
     When they open the Challenges hub
-    Then a verified participant record linked to their account exists
-    And their display name is reused with no extra prompt
+    Then a verified participant linked to their account exists
+    And their display name is reused with no prompt
 
   Scenario: Guest session grants no core access
-    Given a verified guest session
+    Given a verified participant session with no core login
     When they request a login-protected core page
     Then they are treated as logged out
 
   Scenario: Combined CP board totals are correct
     Given a participant with 30 CP from rumors, 15 from duels and 10 from trivia
     When the CP board renders
-    Then their total shows 55 CP
-    And betting points appear nowhere on it
+    Then their total shows 55 CP and betting points appear nowhere
 
-  Scenario: Guest without display name
-    Given a verified guest with no display name
-    Then the CP board shows "Guest" plus the last 4 characters of their participant id
-
-  Scenario: Conversion preserves CP
-    Given a verified guest with 45 CP
-    When they complete self-serve conversion with the same email
-    Then a core user is created with in_competition = 0
-    And their participant row is linked and still totals 45 CP
-    And they appear on no betting leaderboard and in no pool calculation
-
-  Scenario: Join with a core member's email creates no guest
-    Given an email that belongs to an existing core account
-    When it is submitted to the Challenges join form
-    Then the HTTP response is identical to a normal join
-    And no participant record is created
-    And the email received says to log in instead of containing a magic link
+  Scenario: Unsaved anonymous player is not board-listed
+    Given an anonymous participant who never verified an email
+    Then they do not appear on the public CP board
 
   Scenario: Content follows the participant's language
     Given a rumor item and trivia question stored in Danish and English
@@ -441,6 +589,17 @@ Feature: Guest access & Challenge Points foundation
     Given a participant answered something yesterday and today
     Then their streak is at least 2
     And a participant whose last action was 2 days ago has streak 0
+
+  Scenario: Promotion to core member is admin-gated
+    Given a verified or permanent participant
+    When they request to become a core member
+    Then the request is queued for admin approval
+    And no participant-initiated path writes a users row
+    And they are not converted until an admin approves it (Feature 4)
+
+  Scenario: Abandoned anonymous rows are purged
+    Given an anonymous participant with no verification after 30 days
+    Then the participant and its answers are removed by the cron
 ```
 
 ### C. Rumor or Not scenarios

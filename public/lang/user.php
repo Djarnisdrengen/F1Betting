@@ -360,6 +360,26 @@ return [
         'ch_upgrade_success'     => 'Tillykke! Din konto er oprettet.',
         'ch_upgrade_requires_verified' => 'Du skal først godkende din email.',
 
+        // Challenge a friend (invite loop)
+        'ch_invite_title'        => 'Udfordr en ven',
+        'ch_invite_subtitle'     => 'Send din score til en ven og se, om de kan slå den.',
+        'ch_invite_your_email'   => 'Din email',
+        'ch_invite_friend_email' => 'Din vens email',
+        'ch_invite_send'         => 'Send udfordring',
+        'ch_invite_success'      => 'Sendt! Tjek din indbakke for at bekræfte, og din ven har fået en invitation.',
+        'ch_invite_nothing_played' => 'Spil et spil først, så kan du udfordre en ven.',
+        'ch_a_friend'            => 'En ven',
+
+        // Permanent participant + promotion request
+        'ch_setpw_title'         => 'Gem din plads',
+        'ch_setpw_subtitle'      => 'Vælg en adgangskode, så du kan logge ind på enhver enhed.',
+        'ch_setpw_button'        => 'Vælg adgangskode',
+        'ch_setpw_success'       => 'Adgangskode gemt. Du kan nu logge ind med din email.',
+        'ch_setpw_already'       => 'Du har allerede en adgangskode.',
+        'ch_promote_hint'        => 'Vil du være fuldt medlem og spille om puljen? Send en anmodning — en administrator godkender den.',
+        'ch_promote_button'      => 'Anmod om fuldt medlemskab',
+        'ch_promote_requested'   => 'Din anmodning er sendt og afventer godkendelse.',
+
         // Shared auth messages
         'go_to_login'           => 'Gå til login',
         'back_home'             => 'Tilbage til forsiden',
@@ -728,6 +748,26 @@ return [
         'ch_upgrade_create_account' => 'Create account',
         'ch_upgrade_success'     => 'Congratulations! Your account has been created.',
         'ch_upgrade_requires_verified' => 'You must verify your email first.',
+
+        // Challenge a friend (invite loop)
+        'ch_invite_title'        => 'Challenge a friend',
+        'ch_invite_subtitle'     => 'Send your score to a friend and see if they can beat it.',
+        'ch_invite_your_email'   => 'Your email',
+        'ch_invite_friend_email' => "Your friend's email",
+        'ch_invite_send'         => 'Send challenge',
+        'ch_invite_success'      => 'Sent! Check your inbox to confirm, and your friend has an invite.',
+        'ch_invite_nothing_played' => 'Play a game first, then you can challenge a friend.',
+        'ch_a_friend'            => 'A friend',
+
+        // Permanent participant + promotion request
+        'ch_setpw_title'         => 'Save your spot',
+        'ch_setpw_subtitle'      => 'Choose a password so you can log in on any device.',
+        'ch_setpw_button'        => 'Set password',
+        'ch_setpw_success'       => 'Password saved. You can now log in with your email.',
+        'ch_setpw_already'       => 'You already have a password.',
+        'ch_promote_hint'        => 'Want to be a full member and play for the pool? Send a request — an admin approves it.',
+        'ch_promote_button'      => 'Request full membership',
+        'ch_promote_requested'   => 'Your request has been sent and is awaiting approval.',
 
         // Shared auth messages
         'go_to_login'           => 'Go to login',

@@ -26,7 +26,7 @@ shippable and verified on the test environment (`npm run deploy:test`) before th
 | Phase | Content | User-visible | Shippable |
 | --- | --- | --- | --- |
 | **0** | Migration + settings + translation stubs | no | yes (invisible) |
-| **1** | Participants, magic links, CP ledger, hub shell (Overview), CP board, CP chip | yes (new pages only) | yes |
+| **1** | Participant model (anon-first identity, access-token persistence, permanent password, admin-gated promotion request), invite plumbing, CP ledger, hub shell (Overview), CP board, CP chip | yes (new pages) | yes |
 | **2** | Nav shell swap (bottom bar, drawer preferences) | yes (site-wide) | yes |
 | **3** | Rumor or Not (+ generator + admin-page drafts) | yes | yes |
 | **4** | Trivia (+ weekly cron) | yes | yes |
@@ -34,26 +34,38 @@ shippable and verified on the test environment (`npm run deploy:test`) before th
 | **6** | Context-aware home hero + streak surfacing + polish | yes | yes |
 
 Dependency notes: 1 blocks 3/4/5; 2 and 6 are independent of the games but 6 reads CP/streak so it
-lands last; 3, 4, 5 are mutually independent (ordered by increasing complexity).
+lands last; 3, 4, 5 are mutually independent (ordered by increasing complexity). Phase 1's
+identity/persistence layer is **game-independent and testable on its own**; only the *"Challenge a
+friend" UI entry point* needs a finished deck, so it is wired in with the first game (Phase 3) while
+its plumbing (tables, tokens, emails, owner-confirm, friend-join) is built and integration-tested in
+Phase 1. This is the "refactoring of participants, tested before Section C" slice.
 
 ---
 
 ## Phase 0 — Foundations (no user-visible change)
 
-1. **`database/add_challenges.sql`** — all ten tables from `feature.md` §Architecture, idempotent (`CREATE TABLE IF NOT EXISTS`); FK collation pins for `users.id` references. Register every table in `database/migrations.json`; mirror in `database/schema.sql`. Verify with `npm run schema:check`.
+1. **`database/add_challenges.sql`** — all twelve tables from `feature.md` §Architecture **plus the `password_hash` column on `challenge_participants`** and the two participant-model tables (`challenge_access_tokens`, `challenge_invites`), idempotent (`CREATE TABLE IF NOT EXISTS`; the one `ALTER … ADD COLUMN password_hash` is not idempotent — skip on a DB that already ran it); FK collation pins for `users.id` references. Register every table/column in `database/migrations.json`; mirror in `database/schema.sql`. Verify with `npm run schema:check`. **(Done — the schema mirror is already in the four files.)**
 2. **Settings:** add `challenge_rumor_deck_size INT DEFAULT 3` to `settings` (same migration).
 3. **Translation stubs:** all `ch_*` keys (feature.md §New Translation Keys) into `public/lang/user.php` da+en blocks; `email_magic_*` / `email_duel_result_*` into `public/lang/email.php`.
 4. Deploy to test; existing pages must be pixel-identical.
 
-## Phase 1 — Foundation backend + hub shell
+## Phase 1 — Participant model refactoring + hub shell
 
-1. **`public/includes/challenges.php`**: `getChallengeParticipant()` (core-session → auto-link per REQ-104; guest marker; null), `requireChallengeParticipant()`, `awardChallengePoints($db,$pid,$game,$points,$sourceRef)` (idempotent via the UNIQUE key), `getCpLeaderboard()`, `getChallengeStreak()`, `scoreDuelPrediction()` (pure, used in Phase 5 but defined+unit-tested here).
-2. **Join flow:** `public/challenges-join.php` (email form → pending participant + magic link + `sendEmail()`; byte-identical response either way; rate-limit scope `'magic'`, fail-closed, `Retry-After: 900`). `public/challenges-verify.php` (token consume exactly like `reset_password.php:24-59`; sets `$_SESSION['challenge_participant_id']`; optional display-name form).
-3. **Conversion:** `public/challenges-upgrade.php` (verified guest session required; `validatePasswordStrength()`; create `users` row `in_competition=0`; link `core_user_id`; `establishSession()`). Ships together with its management surface: the **Challenges admin page skeleton** `public/admin-challenges.php` (REQ-501, admin chrome + nav link) carrying the **converted-guests list + `in_competition` toggle** (REQ-505), and the users-tab filter excluding guest-origin conversions (`public/includes/admin/users.php`, REQ-506).
-4. **Hub:** `public/challenges.php` — arena chrome (checkered strip, broadcast band, segment control, `.hf-arena-*` CSS block), Overview section only (CP scoreboard tower, Perfect Week tracker reading trivia answers — renders 0/6 until Phase 4, game tiles in teaser state), public teaser for visitors without a session (games teased + join CTA per the epic's guest flow).
-5. **CP board:** `public/challenges-board.php` — public, arena-skinned, `getCpLeaderboard()` rows via `.hf-row`/`.hf-rank`, "Guest ####" fallback.
-6. **CP chip** in `header.php` when `getChallengeParticipant()` resolves (cheap SUM, per-request).
-7. E2E: `@challenges` suite bootstrap + seed actions (see `test-plan.md`).
+The **participant refactoring** (feature.md §B, D11–D14) is built and verified here, before any game.
+The identity/persistence layer is game-independent and fully testable now; the *"Challenge a friend"
+UI entry point* needs a finished deck so it is wired in with the first game (Phase 3), but the invite
+*plumbing* (tables, tokens, emails, owner-confirm, friend-join) is built and integration-tested here.
+
+1. **`public/includes/challenges.php`** — `getChallengeParticipant()` resolves **core session → challenge session marker → valid `ch_access` device cookie (re-establishing the session + rotating the token) → null** (REQ-121); `requireChallengeParticipant()`; `getOrCreateAnonymousParticipant()` (pending, `email NULL`, sets the session marker — called on first game answer in Phase 3/4); `awardChallengePoints()` (idempotent via UNIQUE); `getCpLeaderboard()`, `getChallengeStreak()`, `scoreDuelPrediction()` (defined + unit-tested here, used Phase 5).
+2. **Access tokens** (REQ-120–124): `issueAccessToken($pid)` (raw token → `ch_access` httponly/secure/`SameSite=Lax`/90-day cookie **and** the emailed access link; store only `hash('sha256', …)` in `challenge_access_tokens`), `rotateAccessToken()` on cookie re-establishment, `revokeAccessToken()` / `revokeAllAccessTokens()` (sign-out). Set/clear the cookie **before any output** — in the resolver / verify / login handler, never from page body after headers (the lang/theme/font cookies are the precedent; `setcookie()` from page code is banned — NFR-001).
+3. **Verify / return** (`public/challenges-verify.php`): consumes an **owner-confirm magic link** *or* a **friend-invite token** → `status='verified'`, `verified_at`, session marker, `issueAccessToken()`. Owner-confirm attaches nothing (their play is already on their row, REQ-115); friend-invite marks the invite `accepted` and drops the friend into the same item set (the play UI lands Phase 3/4, REQ-116). Emailed **access links** (REQ-120) resolve through here too. Token consume mirrors `reset_password.php:24-59`.
+4. **Invite plumbing** (`public/challenges-invite.php`, POST, CSRF): given the current participant's just-played item set + score (Phase 3/4 supplies these live; Phase 1 accepts a **seeded** set so it's testable now), set the owner's email + send the owner-confirm link (reuse `challenge_magic_links`, scope `'magic'`), insert `challenge_invites`, send the friend invite (scope `'invite'`), byte-identical responses (NFR-106). Per-sender caps / suppression are **stubbed with a TODO → Feature 5**.
+5. **Permanent password** (`public/challenges-upgrade.php`, **repurposed** from the old self-serve conversion): a **verified** participant sets a password → `hashPassword()` into `challenge_participants.password_hash` (REQ-125). **No** `users` row, **no** `establishSession()`. Add the participant branch to **`public/login.php`**: resolve `users` first, then a `challenge_participants` password login; on success set **`challenge_participant_id` only** (never `user_id`) + `issueAccessToken()` (REQ-126/127). "Sign out" clears `ch_access` + revokes its token (REQ-123).
+6. **Promotion request** (admin-gated, REQ-108/D14): a "request to become a core member" action stores the request; **no participant-initiated path writes `users`**. The approval queue, the `users`-row creation (`in_competition=0`, link `core_user_id`, carry CP history), the **converted-guests list + `in_competition` toggle** on `admin-challenges.php` (REQ-505) and the users-tab exclusion (REQ-506) are all **Feature 4** — Phase 1 ships only the request store + a placeholder admin surface.
+7. **Hub:** `public/challenges.php` — arena chrome (`.hf-arena-*` CSS block), Overview only (CP scoreboard tower, Perfect Week tracker 0/6 until Phase 4, game tiles teased), public teaser + "play now / save your spot" CTAs for no-session visitors.
+8. **CP board:** `public/challenges-board.php` — public, arena-skinned, `getCpLeaderboard()` rows; **verified participants only** (anonymous email-null rows unlisted, REQ-106); "Guest ####" fallback.
+9. **CP chip** in `header.php` when `getChallengeParticipant()` resolves (cheap SUM, per-request).
+10. E2E/integration: `@challenges` **identity + persistence** specs (game-independent) + seed actions (see `test-plan.md`).
 
 ## Phase 2 — Nav shell swap (site-wide; additive first, delete after verification)
 
@@ -64,13 +76,13 @@ lands last; 3, 4, 5 are mutually independent (ordered by increasing complexity).
 
 ## Phase 3 — Rumor or Not
 
-1. **Play:** rumors section in `challenges.php` — today's deck query (`status='published' AND publish_date <= today`, minus answered, oldest first; rollover for free), card UI per prototype, POST answer (CSRF) → `challenge_answers` insert + `awardChallengePoints(..., "rumor_or_not:<id>")` when correct → reveal state; done state when queue empty; deck counter `answered-today / deck_size`.
+1. **Play:** rumors section in `challenges.php` — first answer calls `getOrCreateAnonymousParticipant()` (Phase 1) so anonymous play works with no email; today's deck query (`status='published' AND publish_date <= today`, minus answered, oldest first; rollover for free), card UI per prototype, POST answer (CSRF) → `challenge_answers` insert + `awardChallengePoints(..., "rumor_or_not:<id>")` when correct → reveal state; done state when queue empty; deck counter `answered-today / deck_size`. **Deck-done state carries the "Challenge a friend" CTA** (B2) — posts the just-played item set + score to `challenges-invite.php` (Phase 1 plumbing); this is where the invite loop's UI entry point lands.
 2. **Admin drafts:** rumor-drafts block on `public/admin-challenges.php` (REQ-502) — draft list with bilingual edit, `is_real` display, publish date, publish/veto. No `$allowedTabs` entry (D10); the page reuses the admin chrome and is linked from the admin nav.
 3. **Generator:** `bin/generate-rumor-items.js` — reads `paddock-rumors/data/knowledge-base.json` (read-only), Claude API (latest Sonnet-class model) drafts real-fact cards (`is_real=1`, `source_ref` = KB id+hash) and plausible-false variants (`is_real=0`), both da+en, writes drafts via SQL file or seed endpoint for admin review. Run locally/CI — never on shared hosting (NFR-101).
 
 ## Phase 4 — Trivia
 
-1. **Play:** trivia section — week's published questions (Mon–Sat `publish_date`), option buttons with answered-state styling per prototype, POST answer → `challenge_trivia_answers` + 5 CP when correct; per-question reveal + explanation; done states (Perfect Week vs summary).
+1. **Play:** trivia section — first answer calls `getOrCreateAnonymousParticipant()` (anonymous play, Phase 1); week's published questions (Mon–Sat `publish_date`), option buttons with answered-state styling per prototype, POST answer → `challenge_trivia_answers` + 5 CP when correct; per-question reveal + explanation; done states (Perfect Week vs summary), each carrying the **"Challenge a friend"** CTA (B2) posting the played set + score to `challenges-invite.php`.
 2. **Perfect Week tracker** on Overview now live: filled = correct answers this ISO week (0–6).
 3. **Cron:** `public/cron/challenge_weekly.php` — Bearer `CRON_SECRET` (`getBearerToken()` + `hash_equals`), evaluates the **previous** ISO week (Europe/Copenhagen): for each participant with 6/6 correct, `awardChallengePoints(..., 'trivia', 20, "trivia_week:<iso-week>")` (idempotent); also purges 30-day-old pending participants (REQ-110). Workflow `.github/workflows/cron-challenges.yml`, Monday 06:00 CET, modeled on `cron-notifications.yml` incl. the `_TEST` secret variant.
 4. **Admin:** trivia authoring block on the Challenges admin page (REQ-503 — bilingual question/options/explanation, correct option, topic, publish date).
@@ -94,7 +106,7 @@ lands last; 3, 4, 5 are mutually independent (ordered by increasing complexity).
 ## Acceptance checklist per phase (validate before moving on)
 
 - **P0:** `npm run schema:check` green · existing pages identical · no console/CSP errors.
-- **P1:** AC-B gherkin (join/verify/expiry/single-use/enumeration/auto-link/no-core-access/conversion) · CP board public and correct · chip visibility rules · admin page reachable by admin only, converted guest in its list and absent from the core users tab (AC-F).
+- **P1 (participant refactoring — the slice to test before Section C):** AC-B gherkin — anonymous play creates a pending/email-null row · owner-confirm + friend-invite verify & issue access token/cookie · persistent return via access link **and** via device cookie (token rotates) · permanent password set + participant login sets `challenge_participant_id` only (never `user_id`) · sign-out revokes this device only · enumeration-safe invite/confirm · silent core auto-link · guest session grants no core access · CP board public, correct, anonymous unlisted · promotion request is admin-gated (no `users` write) · chip visibility rules. (Converted-guest admin list / `in_competition` toggle land with **Feature 4**.)
 - **P2:** AC-A bottom bar + drawer scenarios · toggles work signed-out on every page · admin excluded · no double bottom bar in hub.
 - **P3:** AC-C rumor scenarios incl. UNIQUE re-answer rejection and read-only KB.
 - **P4:** AC-E trivia scenarios incl. idempotent cron re-run and empty week.

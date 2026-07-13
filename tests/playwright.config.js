@@ -44,7 +44,7 @@ if (process.env.E2E_LEG_JSON_OUTPUT) {
 // reachable byte-for-byte regardless of how the tagged projects evolve.
 const PRIMARY_SUITES = [
     "smoke", "auth", "registration", "predictions", "scoring", "race-page",
-    "admin", "profile", "appearance", "preferences-editor", "cron",
+    "admin", "profile", "appearance", "preferences-editor", "cron", "challenges",
 ];
 
 module.exports = defineConfig({

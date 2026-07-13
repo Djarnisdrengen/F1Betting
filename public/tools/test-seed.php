@@ -1201,27 +1201,79 @@ if (($_GET['action'] ?? '') === 'clear_test_emails') {
 if (($_GET['action'] ?? '') === 'seed_challenge_participant') {
     require_once __DIR__ . '/../includes/challenges.php';
 
-    $email = $_GET['email'] ?? 'guest@test.localhost';
-    $coreUserId = $_GET['core_user_id'] ?? null;
+    // Tier control: email='' (or no @) → anonymous; password set → permanent; status pending/verified.
+    $email       = $_GET['email'] ?? 'guest@test.localhost';
+    $coreUserId  = $_GET['core_user_id'] ?? null;
     $displayName = $_GET['display_name'] ?? null;
-    $status = $_GET['status'] ?? 'verified';
-    $lang = $_GET['language'] ?? 'da';
+    $status      = $_GET['status'] ?? 'verified';
+    if (!in_array($status, ['pending', 'verified'], true)) $status = 'verified';
+    $lang        = $_GET['language'] ?? 'da';
+    if (!in_array($lang, ['da', 'en'], true)) $lang = 'da';
+    $password    = $_GET['password'] ?? '';
+
+    $emailVal     = ($email && strpos($email, '@') !== false) ? $email : null;
+    $verifiedAt   = $status === 'verified' ? date('Y-m-d H:i:s') : null;
+    $passwordHash = $password !== '' ? hashPassword($password) : null;
 
     $participantId = seed_uuid();
     $db->prepare("
         INSERT INTO challenge_participants
-        (id, email, core_user_id, display_name, language, status, verified_at, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+        (id, email, core_user_id, display_name, language, status, password_hash, verified_at, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
     ")->execute([
-        $participantId,
-        $email && strpos($email, '@') !== false ? $email : null,
-        $coreUserId,
-        $displayName,
-        $lang,
-        $status
+        $participantId, $emailVal, $coreUserId ?: null, $displayName, $lang, $status, $passwordHash, $verifiedAt
     ]);
 
-    echo json_encode(['ok' => true, 'participant_id' => $participantId]);
+    echo json_encode(['ok' => true, 'participant_id' => $participantId, 'email' => $emailVal]);
+    exit;
+}
+
+// Action: seed_challenge_access_token — device/access token with backdatable expiry.
+// expires_in negative → already expired. Returns the raw token (goes in the ch_access cookie).
+if (($_GET['action'] ?? '') === 'seed_challenge_access_token') {
+    $participantId = $_GET['participant_id'] ?? '';
+    $expiresIn = intval($_GET['expires_in'] ?? 60 * 60 * 24 * 90);
+    if (!$participantId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'participant_id required']);
+        exit;
+    }
+    $raw = bin2hex(random_bytes(32));
+    $db->prepare("
+        INSERT INTO challenge_access_tokens (participant_id, token_hash, expires_at, created_at)
+        VALUES (?, ?, ?, NOW())
+    ")->execute([$participantId, hash('sha256', $raw), date('Y-m-d H:i:s', time() + $expiresIn)]);
+    echo json_encode(['ok' => true, 'token' => $raw]);
+    exit;
+}
+
+// Action: seed_challenge_invite — beat-my-score invite in a chosen state, known friend_token.
+if (($_GET['action'] ?? '') === 'seed_challenge_invite') {
+    $challengerId = $_GET['challenger_id'] ?? '';
+    $game        = $_GET['game'] ?? 'rumor_or_not';
+    if (!in_array($game, ['rumor_or_not', 'trivia'], true)) $game = 'rumor_or_not';
+    $friendEmail = $_GET['friend_email'] ?? 'friend@test.localhost';
+    $score       = intval($_GET['score'] ?? 0);
+    $status      = $_GET['status'] ?? 'sent';
+    if (!in_array($status, ['sent', 'accepted', 'completed', 'expired'], true)) $status = 'sent';
+    $expiresIn   = intval($_GET['expires_in'] ?? 60 * 60 * 24 * 14);
+    $itemIds     = isset($_GET['item_ids']) && $_GET['item_ids'] !== '' ? explode(',', $_GET['item_ids']) : [];
+    if (!$challengerId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'challenger_id required']);
+        exit;
+    }
+    $id = seed_uuid();
+    $friendToken = bin2hex(random_bytes(32));
+    $db->prepare("
+        INSERT INTO challenge_invites
+        (id, challenger_id, game, item_ids, challenger_score, friend_email, friend_token, status, created_at, expires_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+    ")->execute([
+        $id, $challengerId, $game, json_encode($itemIds), $score, $friendEmail, $friendToken, $status,
+        date('Y-m-d H:i:s', time() + $expiresIn),
+    ]);
+    echo json_encode(['ok' => true, 'invite_id' => $id, 'friend_token' => $friendToken]);
     exit;
 }
 
@@ -1283,6 +1335,8 @@ if (($_GET['action'] ?? '') === 'cleanup_challenges') {
     $db->query("DELETE FROM duels WHERE challenger_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost') OR opponent_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
     $db->query("DELETE FROM duel_quickmatch WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
     $db->query("DELETE FROM challenge_magic_links WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    $db->query("DELETE FROM challenge_access_tokens WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
+    $db->query("DELETE FROM challenge_invites WHERE friend_email LIKE '%@test.localhost' OR challenger_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");
     $db->query("DELETE FROM challenge_participants WHERE email LIKE '%@test.localhost'");
     echo json_encode(['ok' => true]);
     exit;

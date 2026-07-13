@@ -99,6 +99,13 @@ return [
         'email_magic_expiry'                => 'Dette link udløber om 30 minutter.',
         'email_magic_ignore'                => 'Hvis du ikke anmodede om dette, kan du ignorere denne email.',
 
+        // Challenge invite email (beat my score)
+        'email_invite_subject'              => 'Du er blevet udfordret i Paddock Challenges',
+        'email_invite_greeting'             => 'Hej,',
+        'email_invite_intro'                => '%s har udfordret dig til at slå deres score i %s. Klik nedenfor for at spille.',
+        'email_invite_button'               => 'Tag udfordringen',
+        'email_invite_ignore'               => 'Kender du ikke afsenderen? Så kan du bare ignorere denne email.',
+
         // Duel result email
         'email_duel_result_subject'         => 'Duellen er afsluttet: %s',
         'email_duel_result_greeting'        => 'Hej %s,',
@@ -205,6 +212,13 @@ return [
         'email_magic_button'                => 'Sign in to Challenges',
         'email_magic_expiry'                => 'This link expires in 30 minutes.',
         'email_magic_ignore'                => 'If you did not request this, you can ignore this email.',
+
+        // Challenge invite email (beat my score)
+        'email_invite_subject'              => 'You have been challenged in Paddock Challenges',
+        'email_invite_greeting'             => 'Hi,',
+        'email_invite_intro'                => '%s has challenged you to beat their score in %s. Click below to play.',
+        'email_invite_button'               => 'Take the challenge',
+        'email_invite_ignore'               => "Don't know the sender? You can safely ignore this email.",
 
         // Duel result email
         'email_duel_result_subject'         => 'Duel complete: %s',

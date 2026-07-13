@@ -234,6 +234,8 @@ CREATE TABLE IF NOT EXISTS challenge_participants (
     display_name VARCHAR(100) NULL,
     language CHAR(2) NOT NULL DEFAULT 'da',
     status ENUM('pending','verified') NOT NULL DEFAULT 'pending',
+    password_hash VARCHAR(255) NULL,
+    promotion_requested_at DATETIME NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     verified_at DATETIME NULL,
     FOREIGN KEY (core_user_id) REFERENCES users(id) ON DELETE SET NULL
@@ -261,6 +263,40 @@ CREATE TABLE IF NOT EXISTS challenge_magic_links (
     used TINYINT(1) DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (participant_id) REFERENCES challenge_participants(id) ON DELETE CASCADE
+);
+
+-- Access tokens — persistent return (D13): hashed, rotating, ~90-day device/link tokens
+CREATE TABLE IF NOT EXISTS challenge_access_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    participant_id VARCHAR(36) NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    last_used_at DATETIME NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_participant (participant_id),
+    FOREIGN KEY (participant_id) REFERENCES challenge_participants(id) ON DELETE CASCADE
+);
+
+-- Beat-my-score invites (D12) — one row per challenge sent to a friend
+CREATE TABLE IF NOT EXISTS challenge_invites (
+    id VARCHAR(36) PRIMARY KEY,
+    challenger_id VARCHAR(36) NOT NULL,
+    game ENUM('rumor_or_not','trivia') NOT NULL,
+    item_ids JSON NOT NULL,
+    challenger_score INT NOT NULL,
+    friend_email VARCHAR(255) NOT NULL,
+    friend_token VARCHAR(64) NOT NULL UNIQUE,
+    friend_participant_id VARCHAR(36) NULL,
+    friend_score INT NULL,
+    status ENUM('sent','accepted','completed','expired') NOT NULL DEFAULT 'sent',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    accepted_at DATETIME NULL,
+    completed_at DATETIME NULL,
+    expires_at DATETIME NOT NULL,
+    KEY idx_friend_email (friend_email),
+    KEY idx_challenger (challenger_id),
+    FOREIGN KEY (challenger_id) REFERENCES challenge_participants(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_participant_id) REFERENCES challenge_participants(id) ON DELETE SET NULL
 );
 
 -- Rumor or Not — items (real facts or synthetic rumors)

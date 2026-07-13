@@ -77,22 +77,24 @@ $currentUser = getCurrentUser();
 $settings = getSettings();
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 
+// Challenge identity + CP chip. Resolving here (still pre-output) also re-establishes a
+// returning participant's session from the ch_access device cookie app-wide (B3/REQ-121).
 $challengeParticipant = null;
 $challengeCP = 0;
-if (false) {
-    // TODO: Re-enable after testing
-    try {
-        require_once __DIR__ . '/challenges.php';
-        $challengeParticipant = getChallengeParticipant();
-        if ($challengeParticipant) {
-            $stmt = getDB()->prepare("SELECT SUM(points) as total FROM challenge_points WHERE participant_id = ?");
-            $stmt->execute([$challengeParticipant['id']]);
-            $row = $stmt->fetch();
-            $challengeCP = intval($row['total'] ?? 0);
-        }
-    } catch (Exception $e) {
-        // Silently fail — challenges not critical to site functionality
+try {
+    require_once __DIR__ . '/challenges.php';
+    $challengeParticipant = getChallengeParticipant();
+    // Chip shows only for an active identity — core-linked or a verified guest (REQ-005) —
+    // never for an anonymous, unverified row.
+    if ($challengeParticipant
+        && (!empty($challengeParticipant['core_user_id']) || ($challengeParticipant['status'] ?? '') === 'verified')) {
+        $challengeCP = getChallengeCpTotal(getDB(), $challengeParticipant['id']);
+    } else {
+        $challengeParticipant = null;
     }
+} catch (Exception $e) {
+    // Challenges must never break the core site.
+    $challengeParticipant = null;
 }
 ?>
 <!DOCTYPE html>
@@ -117,6 +119,12 @@ if (false) {
             <span class="yr"><?= escape($settings['app_year']) ?></span>
         </span>
     </a>
+    <?php if ($challengeParticipant): ?>
+    <a class="hf-cp-chip" href="/challenges.php" data-testid="cp-chip" title="<?= t('ch_challenge_points') ?>"
+       style="display:inline-flex;align-items:center;gap:6px;margin-left:auto;margin-right:12px;padding:4px 10px;border-radius:999px;background:rgba(230,6,0,.14);color:var(--f1-red-light);font-family:var(--mono,monospace);font-size:12px;font-weight:700;text-decoration:none;">
+        <i class="fas fa-bolt" aria-hidden="true"></i><?= intval($challengeCP) ?> CP
+    </a>
+    <?php endif; ?>
     <button class="hf-hamburger" id="hf-hamburger" aria-label="Menu" aria-expanded="false" aria-controls="hf-drawer">
         <span class="bars"><span></span><span></span><span></span></span>
     </button>

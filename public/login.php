@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/mfa.php';
+require_once __DIR__ . '/includes/challenges.php';
 
 if (getCurrentUser()) {
     header("Location: /index.php");
@@ -92,6 +93,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: " . $redirect);
             exit;
         } else {
+            // No core account matched. A permanent challenge participant (B4/REQ-126) may log
+            // in here — but ONLY when the email is not a core account (REQ-127): a core email is
+            // always a core login. Success sets the challenge marker only, never user_id.
+            if (!$user) {
+                $pstmt = $db->prepare("SELECT id, password_hash, language FROM challenge_participants WHERE email = ? AND password_hash IS NOT NULL");
+                $pstmt->execute([$email]);
+                $p = $pstmt->fetch();
+                if ($p && verifyPassword($password, $p['password_hash'])) {
+                    try { clearLoginAttempts($db, 'login', $email); } catch (Exception $e) {}
+                    session_regenerate_id(true);
+                    $_SESSION['challenge_participant_id'] = $p['id'];
+                    issueAccessToken($db, $p['id']);
+                    setLang($p['language'] ?? 'da');
+                    header("Location: /challenges.php");
+                    exit;
+                }
+            }
             try { recordLoginAttempt($db, $ip, 'login', $email); } catch (Exception $e) {}
             $error = t('invalid_credentials');
         }

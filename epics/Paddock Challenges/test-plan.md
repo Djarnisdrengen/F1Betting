@@ -8,7 +8,8 @@ server-side SMTP interception (`tests/helpers/intercepted-mail.js` — Mailsac i
 
 ## 1. Scope & objectives
 
-- **Highest risk — identity separation:** a magic link must only ever grant `$_SESSION['challenge_participant_id']`. Any path that lets a challenge session reach core-auth pages is an account-takeover-shaped bug. Test hardest here.
+- **Highest risk — identity separation:** a magic link, an **access token/cookie**, **or a permanent-participant password login** must only ever grant `$_SESSION['challenge_participant_id']`, never `user_id`. Any path that lets a challenge session reach core-auth pages is an account-takeover-shaped bug. Test hardest here.
+- **Highest risk — persistent-token handling (new, D13):** the `ch_access` device cookie is long-lived, so it must store only the `sha256` server-side, **rotate** on every cookie re-establishment, and **revoke** cleanly on sign-out (one device vs everywhere). A stale/un-rotated or un-revoked token is a session-fixation-shaped bug.
 - **Second — CP ledger correctness:** every award idempotent (`UNIQUE(participant_id, source_ref)`), duel resolution/reversal round-trips exactly, no arithmetic ever mixes CP with betting points.
 - **Third — site-wide regression:** Phase 2 moves the theme/language/font toggles and Profile out of the bottom bar. Existing suites that drive those controls (`appearance`, `preferences-editor`, `profile`, plus any spec tapping `.hf-bottom`) **will break and must be updated in the same phase** — budget for it, don't discover it.
 - **Success criteria:** security negatives green; ledger invariants proven including under double-submit; full existing suite green after each phase; nightly E2E unchanged on live (smoke only).
@@ -35,14 +36,16 @@ New seed actions (token + `APP_ENV==='test'` gated like the existing ~40):
 
 | Action | Purpose |
 | --- | --- |
-| `seed_challenge_participant` | guest (pending/verified) or core-linked participant; optional display name, language |
-| `seed_challenge_magic_link` | link with **arbitrary `expires_at`/`used`** — expiry tested by backdating, never by waiting |
+| `seed_challenge_participant` | participant in any tier — **anonymous** (pending, `email NULL`), verified, **permanent** (`password_hash` set), or core-linked; optional display name, language |
+| `seed_challenge_magic_link` | owner-confirm link with **arbitrary `expires_at`/`used`** — expiry tested by backdating, never by waiting |
+| `seed_challenge_access_token` | `challenge_access_tokens` row with **arbitrary `expires_at`** (backdated = expired) and known raw token, to drive the `ch_access` cookie in return/rotation tests |
+| `seed_challenge_invite` | `challenge_invites` row in a chosen state (sent / accepted / completed) with a known `friend_token` and item set, for owner-confirm + friend-join + beat-my-score assertions |
 | `seed_challenge_points` | arbitrary ledger rows for board/chip/streak assertions |
 | `seed_rumor_deck` | N published items with known `is_real` + a draft item (admin-tab tests) |
 | `seed_trivia_week` | 6 questions publish-dated across a chosen ISO week (current or previous, for cron tests) |
 | `seed_duel` | duel in a chosen state (pending / active / locked-with-picks) against a seeded race |
 | `seed_challenge_actions` | backdated answers for streak fixtures (yesterday / 2-days-ago patterns) |
-| `seed_converted_guest` | guest-origin participant already linked to a fresh core user (`in_competition=0`) for the admin-page cases |
+| `seed_converted_guest` | admin-approved participant linked to a fresh core user (`in_competition=0`) — for **Feature 4** admin-page cases (conversion is now admin-gated, not self-serve) |
 | `cleanup_challenges` | delete all challenge-table rows for e2e fixtures (`@test.localhost` participants) |
 
 - **Fixtures:** participant emails on `@test.localhost` (interception convention); magic-link emails read via `waitForMessages()` / `getEmailBody()` and the link extracted by regex, exactly like the password-reset specs.
@@ -52,11 +55,13 @@ New seed actions (token + `APP_ENV==='test'` gated like the existing ~40):
 
 ## 4. Acceptance criteria
 
-Full gherkin in `feature.md` §Acceptance Criteria (areas A–F). Critical scenarios: guest session
-grants no core access · enumeration-safe join · magic link single-use + 30-min expiry · silent core
-auto-link · conversion preserves CP with `in_competition=0` · 5/2/0 duel arithmetic · void ·
-reset-reversal round-trip · Perfect Week awarded exactly once · tracker = bonus condition · nav swap
-scenarios · CP/betting isolation.
+Full gherkin in `feature.md` §Acceptance Criteria (areas A–F). Critical scenarios: challenge session
+(magic link / access cookie / password login) grants no core access and never sets `user_id` ·
+enumeration-safe invite & confirm · owner-confirm link single-use + 30-min expiry · access
+token/cookie return with rotation + clean revocation · silent core auto-link · promotion request is
+admin-gated (no participant-initiated `users` write) · 5/2/0 duel arithmetic · void · reset-reversal
+round-trip · Perfect Week awarded exactly once · tracker = bonus condition · nav swap scenarios ·
+CP/betting isolation.
 
 ## 5. Test cases
 
@@ -64,16 +69,24 @@ scenarios · CP/betting isolation.
 | --- | --- | --- | --- | --- |
 | CH-01 | Challenge session requests `profile.php`, `bet.php`, `admin.php` | treated as logged out (redirect), zero core access | Critical | Sec |
 | CH-02 | Join with existing vs unknown email | byte-identical HTTP status + body | Critical | Sec |
-| CH-03 | Magic link: valid → verified + session; reused → refused; backdated 31 min → refused | per feature AC | Critical | E2E |
-| CH-04 | 6th magic-link request in window (scope `'magic'`) | throttled, `Retry-After: 900`, not HTTP 429 | High | Sec |
-| CH-05 | POST endpoints without CSRF token | rejected | Critical | Sec |
+| CH-03 | Owner-confirm magic link: valid → verified + session + access token/cookie; reused → refused; backdated 31 min → refused | per feature AC | Critical | E2E |
+| CH-04 | 6th owner-confirm request in window (scope `'magic'`) | throttled, `Retry-After: 900`, not HTTP 429 | High | Sec |
+| CH-05 | POST endpoints without CSRF token (invite, answer, set-password, promotion request) | rejected | Critical | Sec |
 | CH-06 | Core member first hub visit | participant row auto-created, linked, display name reused | High | E2E |
-| CH-07 | Conversion of guest with 45 CP | users row `in_competition=0`, same CP total, `establishSession()` fired, absent from betting leaderboard/pool | High | E2E |
+| CH-07 | Verified participant sets a password → permanent; then logs in at `/login.php` | `password_hash` stored; login sets `challenge_participant_id` **only**, never `user_id`; access token/cookie issued; no `users` row, no core access | Critical | E2E+Sec |
+| CH-07b | Participant submits a "become a core member" request | request recorded; **no `users` row written** by any participant path (admin approval + CP-preserving conversion is a Feature 4 case) | Critical | Sec |
 | CH-08 | Double-submit same rumor answer (rapid re-POST) | one `challenge_answers` row, one ledger row | Critical | Integration |
 | CH-09 | CP board shows guest with hostile display name (`<script>…`) | escaped, renders inert | High | Sec |
 | CH-10 | CP board + chip totals vs seeded ledger | exact sums; betting points absent | High | E2E |
 | CH-11 | Streak fixtures: today+yesterday / gap / none | 2 · 0 · 0 (per D6, incl. yesterday-grace) | Med | Unit+E2E |
-| CH-12 | Join with a core member's email | identical response, no participant row, "log in" email — not a magic link (REQ-111) | Critical | Sec |
+| CH-12 | Owner/friend email that belongs to a core member | identical response, no participant row, "log in" email — not a magic link/invite (REQ-111) | Critical | Sec |
+| CH-13 | First game answer with no prior session | anonymous participant created (pending, `email NULL`); answer/CP/streak accrue; not on CP board | High | Integration |
+| CH-14 | Return via emailed access link, and separately via a valid `ch_access` cookie (session expired) | re-established as the same participant with no new magic link | Critical | E2E |
+| CH-15 | Cookie re-establishment rotates the token | old `token_hash` invalidated, new one stored; backdated (expired) token refused | Critical | Sec |
+| CH-16 | Sign out on one of two seeded devices; then "sign out everywhere" | first revokes only that device's token; second revokes all | High | Sec |
+| CH-17 | Challenge a friend: submit own + friend email after a seeded played set | owner-confirm email + friend invite sent; `challenge_invites` row stores item set + owner score; responses byte-identical for known/unknown addresses | High | E2E |
+| CH-18 | Friend clicks invite, replays the same set, finishes | friend created verified + access token/cookie; invite `completed`; both scores stored; head-to-head shown; **each earns only normal per-game CP, no head-to-head bonus** | High | E2E |
+| CH-19 | Nth friend-invite send in window (scope `'invite'`) | throttled per rate limit; suppressed/opted-out address never re-emailed (guardrail hook — full caps in Feature 5) | High | Sec |
 | I18N-01 | Rumor + trivia content in da and en sessions | stored bilingual text follows the participant's language, switch included | Med | E2E |
 | NAV-01 | Bottom bar on every non-admin page | Home/Races/Board/Challenges, accented cell, active states | High | E2E |
 | NAV-02 | Signed-out drawer preferences | theme/lang/font toggle round-trips work, params preserved | High | E2E |
@@ -158,3 +171,26 @@ guests — CH-07 unchanged), **D9** hero windows (new HERO-01 boundary case), an
 Challenges admin page with converted-guest segregation (new ADM-01/ADM-02 cases,
 `seed_converted_guest` action). ADM-02 is Critical: the users-tab exclusion and the page's
 admin-only gate are both access-control assertions.
+
+### Participant-model refinement addendum (2026-07-12, decisions D11–D14)
+
+Features 1 (invite loop) & 2 (persistent return / permanent password) reshaped the identity model
+(feature.md §B rewritten). Test-plan deltas, all applied above:
+
+- **Scope:** added persistent-token handling (D13) as a top-severity risk alongside identity
+  separation; the `ch_access` cookie must store only `sha256`, rotate on use, and revoke cleanly.
+- **Seeds:** `seed_challenge_participant` now spans anonymous/verified/permanent/core tiers; added
+  `seed_challenge_access_token` and `seed_challenge_invite`; `seed_converted_guest` is now a
+  **Feature 4** (admin-approved) fixture, not self-serve.
+- **Cases:** **CH-07** repurposed to permanent-password set + participant login (marker only, no
+  `users` row); **CH-07b** asserts promotion is admin-gated; new **CH-13** (anonymous play),
+  **CH-14** (access-link + cookie return), **CH-15** (token rotation / expiry), **CH-16**
+  (per-device vs global revocation), **CH-17** (challenge-a-friend two-email send), **CH-18**
+  (friend join + beat-my-score, no bonus CP), **CH-19** (invite rate-limit scope `'invite'`).
+- **Sequencing:** identity/persistence cases (CH-07/07b/13/14/15/16) are **game-independent** and are
+  the slice verified in Phase 1 before Section C; the full invite-loop E2E (CH-17/18) needs the first
+  game's deck-done CTA, so it runs once Rumor or Not (Phase 3) exists, over Phase 1's plumbing.
+- **Deferred to Feature 4:** the CP-preserving admin conversion (`users` row, `in_competition=0`) and
+  ADM-01/02 converted-guest cases move to the admin-approval feature; only the *request* is tested now.
+
+No new 🔴 items; these are additive to the approved plan.

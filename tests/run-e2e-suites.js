@@ -28,6 +28,7 @@ const SUITE_ORDER = [
     ['appearance', 'Theme & Appearance Persistence'],
     ['preferences-editor', 'Preferences Editor'],
     ['cron', 'Notifications & Cron Jobs'],
+    ['challenges', 'Paddock Challenges'],
 ];
 
 const env = process.env.DEPLOY_ENV || 'test';

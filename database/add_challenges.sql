@@ -146,3 +146,49 @@ CREATE TABLE IF NOT EXISTS challenge_trivia_answers (
     FOREIGN KEY (participant_id) REFERENCES challenge_participants(id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES challenge_trivia_questions(id) ON DELETE CASCADE
 );
+
+-- ============================================================
+-- Participant-model refinement (2026-07-12, decisions D11–D14)
+-- Feature 1 (invite loop) + Feature 2 (persistent return / password).
+-- Additive — safe to run after the original add_challenges.sql above.
+-- ============================================================
+
+-- Permanent participant password (D14/B4) + core-promotion request marker (D14/B6).
+-- Not idempotent: on a DB that already ran this block, skip these two ALTERs.
+ALTER TABLE challenge_participants ADD COLUMN password_hash VARCHAR(255) NULL;
+ALTER TABLE challenge_participants ADD COLUMN promotion_requested_at DATETIME NULL;
+
+-- Persistent return (D13/B3) — hashed, rotating device/access tokens, ~90-day expiry.
+-- Raw token lives only in the emailed link / ch_access cookie; only its sha256 is stored.
+CREATE TABLE IF NOT EXISTS challenge_access_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    participant_id VARCHAR(36) NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    last_used_at DATETIME NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_participant (participant_id),
+    FOREIGN KEY (participant_id) REFERENCES challenge_participants(id) ON DELETE CASCADE
+);
+
+-- Beat-my-score invites (D12/B2) — one row per challenge sent to a friend.
+CREATE TABLE IF NOT EXISTS challenge_invites (
+    id VARCHAR(36) PRIMARY KEY,
+    challenger_id VARCHAR(36) NOT NULL,
+    game ENUM('rumor_or_not','trivia') NOT NULL,
+    item_ids JSON NOT NULL,
+    challenger_score INT NOT NULL,
+    friend_email VARCHAR(255) NOT NULL,
+    friend_token VARCHAR(64) NOT NULL UNIQUE,
+    friend_participant_id VARCHAR(36) NULL,
+    friend_score INT NULL,
+    status ENUM('sent','accepted','completed','expired') NOT NULL DEFAULT 'sent',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    accepted_at DATETIME NULL,
+    completed_at DATETIME NULL,
+    expires_at DATETIME NOT NULL,
+    KEY idx_friend_email (friend_email),
+    KEY idx_challenger (challenger_id),
+    FOREIGN KEY (challenger_id) REFERENCES challenge_participants(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_participant_id) REFERENCES challenge_participants(id) ON DELETE SET NULL
+);
