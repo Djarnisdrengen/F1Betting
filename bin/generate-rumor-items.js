@@ -48,7 +48,11 @@ async function claude(prompt, maxTokens = 700) {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(`Claude API: ${JSON.stringify(data).slice(0, 400)}`);
-    return data.content[0].text;
+    // content[0] isn't reliably the text block — a thinking block (or similar) can lead —
+    // so find the text block explicitly rather than assuming position 0.
+    const textBlock = (data.content || []).find((b) => b.type === 'text');
+    if (!textBlock) throw new Error(`No text block in response: ${JSON.stringify(data).slice(0, 400)}`);
+    return textBlock.text;
 }
 
 // Claude is asked for JSON only; defensively unwrap markdown fences if it adds them anyway.
