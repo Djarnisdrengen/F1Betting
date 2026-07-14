@@ -138,16 +138,30 @@ async function main() {
 
     console.log(`🎲 Drafting ${realCount} real-fact + ${rumorCount} rumor cards via ${CLAUDE_MODEL}...`);
 
+    // A single malformed response (e.g. truncated JSON) must not sink an entire large batch —
+    // skip and keep going, since items[] is only imported once at the very end of the loop.
     const items = [];
+    let skipped = 0;
     for (const doc of realDocs) {
         console.log(`  real  ← ${doc.id}`);
-        items.push(await draftRealCard(doc));
-        state.usedKbIds.push(doc.id);
+        try {
+            items.push(await draftRealCard(doc));
+            state.usedKbIds.push(doc.id);
+        } catch (e) {
+            console.warn(`  ⚠️  skipped: ${e.message.slice(0, 160)}`);
+            skipped++;
+        }
     }
     for (const doc of rumorDocs) {
         console.log(`  rumor ← ${doc.id} (grounding only)`);
-        items.push(await draftRumorCard(doc));
+        try {
+            items.push(await draftRumorCard(doc));
+        } catch (e) {
+            console.warn(`  ⚠️  skipped: ${e.message.slice(0, 160)}`);
+            skipped++;
+        }
     }
+    if (skipped > 0) console.log(`⚠️  ${skipped} card(s) skipped due to parse/API errors.`);
 
     // Env vars win when set (CI: GitHub Actions secrets/vars, no config.*.php checked out
     // there); otherwise fall back to the local config file, unchanged from before.
