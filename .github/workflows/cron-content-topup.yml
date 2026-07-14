@@ -14,8 +14,18 @@
 # passed as env vars (repo Variables/Secrets) instead — both scripts already prefer these over
 # reading a local config file when set.
 #
-# The scheduled run always targets live. Use workflow_dispatch to dry-run against test first
-# (recommended before the first scheduled live run, and after changing either generator).
+# The scheduled run always targets test, both generators — matches the deploy:live convention
+# of requiring an explicit directive for anything touching production (this writes drafts
+# unattended, on a timer, with real API spend; nothing here is player-visible until an admin
+# publishes it, but that's not the same as it being fine to run against live with no human in
+# the loop). A live batch is a deliberate workflow_dispatch run with environment=live. Also use
+# workflow_dispatch to re-run just one generator (e.g. after the other already succeeded).
+#
+# Rumors and Trivia run as separate parallel jobs, each committing its own KB-usage state
+# right after its own generator succeeds — a large batch (~95 items) takes ~12-15 minutes of
+# sequential Claude calls each, which doesn't fit both in one job's budget back-to-back, and a
+# single shared "commit at the very end" step meant one generator failing/timing out discarded
+# the other's already-successful state update too (surfaced by the first real full-KB run).
 
 name: Cron — Content Top-up
 
@@ -32,6 +42,12 @@ on:
         description: 'Items to generate per competition'
         required: false
         default: '6'
+      target:
+        description: 'Which generator(s) to run'
+        required: false
+        default: 'both'
+        type: choice
+        options: ['both', 'rumors', 'trivia']
   schedule:
     - cron: '0 6 * * 5' # Friday 06:00 UTC
 
@@ -39,9 +55,29 @@ permissions:
   contents: write
 
 jobs:
-  topup:
+  resolve:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    outputs:
+      env: ${{ steps.target.outputs.env }}
+      count: ${{ steps.target.outputs.count }}
+      target: ${{ steps.target.outputs.target }}
+    steps:
+      - id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "env=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
+            echo "target=${{ github.event.inputs.target || 'both' }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "env=test" >> "$GITHUB_OUTPUT"
+            echo "target=both" >> "$GITHUB_OUTPUT"
+          fi
+          echo "count=${{ github.event.inputs.count || '6' }}" >> "$GITHUB_OUTPUT"
+
+  rumors:
+    needs: resolve
+    if: needs.resolve.outputs.target == 'both' || needs.resolve.outputs.target == 'rumors'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,41 +90,62 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Resolve target environment
-        id: target
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "env=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "env=live" >> "$GITHUB_OUTPUT"
-          fi
-          echo "count=${{ github.event.inputs.count || '6' }}" >> "$GITHUB_OUTPUT"
-
       - name: Generate rumor drafts
         env:
-          SITE_URL: ${{ steps.target.outputs.env == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
-          INTEGRATION_SEED_TOKEN: ${{ steps.target.outputs.env == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          SITE_URL: ${{ needs.resolve.outputs.env == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ needs.resolve.outputs.env == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node bin/generate-rumor-items.js --env=${{ steps.target.outputs.env }} --count=${{ steps.target.outputs.count }}
+        run: node bin/generate-rumor-items.js --env=${{ needs.resolve.outputs.env }} --count=${{ needs.resolve.outputs.count }}
 
-      - name: Generate trivia drafts
-        env:
-          SITE_URL: ${{ steps.target.outputs.env == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
-          INTEGRATION_SEED_TOKEN: ${{ steps.target.outputs.env == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node bin/generate-trivia-questions.js --env=${{ steps.target.outputs.env }} --count=${{ steps.target.outputs.count }}
-
-      # KB usage state (bin/state/*.json) tracks which docs have already been drawn for a
-      # real-fact card/question, shared across scheduled runs — committed back so the next
-      # run (locally or in CI) doesn't reuse the same docs, same convention as paddock-rumors.yml.
-      - name: Commit KB usage state if changed
+      # KB usage state (bin/state/rumor-generator-state.json) tracks which docs have already
+      # been drawn for a real-fact card, shared across scheduled runs — committed here (not in
+      # a later shared step) so this job's progress is saved even if the trivia job fails.
+      - name: Commit rumor KB usage state if changed
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add bin/state/rumor-generator-state.json bin/state/trivia-generator-state.json 2>/dev/null || true
+          git add bin/state/rumor-generator-state.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "no state changes — nothing to commit"
           else
-            git commit -m "content-topup: KB usage state ($(date -u +%Y-%m-%d))"
-            git push
+            git commit -m "content-topup: rumor KB usage state ($(date -u +%Y-%m-%d))"
+            git pull --rebase && git push
+          fi
+
+  trivia:
+    needs: resolve
+    if: needs.resolve.outputs.target == 'both' || needs.resolve.outputs.target == 'trivia'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate trivia drafts
+        env:
+          SITE_URL: ${{ needs.resolve.outputs.env == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ needs.resolve.outputs.env == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node bin/generate-trivia-questions.js --env=${{ needs.resolve.outputs.env }} --count=${{ needs.resolve.outputs.count }}
+
+      # Same reasoning as the rumors job's state-commit step above — kept independent so
+      # this job's progress isn't lost if the rumors job fails/times out, and vice versa.
+      - name: Commit trivia KB usage state if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bin/state/trivia-generator-state.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no state changes — nothing to commit"
+          else
+            git commit -m "content-topup: trivia KB usage state ($(date -u +%Y-%m-%d))"
+            git pull --rebase && git push
           fi

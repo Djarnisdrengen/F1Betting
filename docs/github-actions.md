@@ -87,11 +87,16 @@ partway through) — trigger a real run instead to verify that one by hand.
 ## Content Top-up Workflow
 
 **File:** `.github/workflows/cron-content-topup.yml`
-**Schedule:** Friday 06:00 UTC (always targets live) — a few days ahead of the Monday
-Perfect-Week cron (`cron-challenges.yml`) so drafts are ready to review over the weekend.
+**Schedule:** Friday 06:00 UTC, always targets **test** — a few days ahead of the Monday
+Perfect-Week cron (`cron-challenges.yml`) so drafts are ready to review over the weekend. Matches
+the `deploy:live` convention of requiring an explicit directive for anything touching
+production: this writes drafts unattended, on a timer, with real API spend, so the unattended
+path never targets live, even though nothing it creates is player-visible until an admin
+publishes it.
 **Can also be triggered:** manually via the Actions tab → "Run workflow", with `environment`
-(test/live, default test) and `count` inputs — use this to dry-run against test before trusting
-a scheduled live run, or after changing either generator.
+(test/live, default test), `count`, and `target` (`both`/`rumors`/`trivia`, default `both`)
+inputs — use `environment=live` for a deliberate live batch, or `target` to re-run just one
+generator (e.g. after the other already succeeded but this one hit the job timeout).
 
 Runs `bin/generate-rumor-items.js` and `bin/generate-trivia-questions.js`, which call the
 Anthropic API to draft Rumor or Not items and Trivia questions from
@@ -106,10 +111,19 @@ so `SITE_URL`/`INTEGRATION_SEED_TOKEN` are passed as env vars from repo Variable
 than read from a local `config.*.php` (both scripts prefer the env vars when set, falling back
 to the config file for local manual runs).
 
+Rumors and Trivia run as **separate parallel jobs** (`rumors`, `trivia`, both fed by a shared
+`resolve` job), each with its own 25-minute timeout and its own KB-usage-state commit
+immediately after its generator succeeds. A large batch (~95 items, e.g. a one-off full-KB
+top-up) takes roughly 12-15 minutes of sequential Claude calls — too long for both generators to
+fit sequentially in one job, and a single shared "commit state at the very end" step meant one
+generator timing out discarded the other's already-successful progress too. Each generator is
+also resilient to a single malformed Claude response (skips that item and keeps going, since
+drafts are only POSTed once at the end of the loop) rather than aborting the whole batch.
+
 Each generator tracks which knowledge-base docs it has already drawn from in
 `bin/state/rumor-generator-state.json` / `trivia-generator-state.json`, committed back to the
-repo at the end of the run (same convention as `paddock-rumors.yml`) so a doc isn't reused
-across scheduled runs. The knowledge base currently has under 100 docs shared by both
+repo right after its own job succeeds (same convention as `paddock-rumors.yml`) so a doc isn't
+reused across runs. The knowledge base currently has under 100 docs shared by both
 generators — expect this to need attention (grow the KB, or allow reuse after a cooldown) after
 a few months of sustained weekly runs.
 
