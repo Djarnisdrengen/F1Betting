@@ -6,6 +6,7 @@
   - [What it does](#what-it-does)
 - [Nightly DB Backup Workflow](#nightly-db-backup-workflow)
 - [Cron Trigger Workflows](#cron-trigger-workflows)
+- [Content Top-up Workflow](#content-top-up-workflow)
 - [Monthly Security Review Workflow](#monthly-security-review-workflow)
 - [E2E Orchestrator Workflow (test env)](#e2e-orchestrator-workflow-test-env)
 - [Required Configuration](#required-configuration)
@@ -80,6 +81,43 @@ work for qualifying import's **live** job (that file is excluded from the live d
 partway through) — trigger a real run instead to verify that one by hand.
 
 **Required secrets/variables:** `BASE_URL_LIVE`, `BASE_URL_TEST`, `CRON_SECRET`, `CRON_SECRET_TEST`
+
+---
+
+## Content Top-up Workflow
+
+**File:** `.github/workflows/cron-content-topup.yml`
+**Schedule:** Friday 06:00 UTC (always targets live) — a few days ahead of the Monday
+Perfect-Week cron (`cron-challenges.yml`) so drafts are ready to review over the weekend.
+**Can also be triggered:** manually via the Actions tab → "Run workflow", with `environment`
+(test/live, default test) and `count` inputs — use this to dry-run against test before trusting
+a scheduled live run, or after changing either generator.
+
+Runs `bin/generate-rumor-items.js` and `bin/generate-trivia-questions.js`, which call the
+Anthropic API to draft Rumor or Not items and Trivia questions from
+`paddock-rumors/data/knowledge-base.json`, then POST them as `status='draft'` rows to
+`public/tools/import-rumor-drafts.php` / `import-trivia-drafts.php`. Nothing is ever
+auto-published — an admin still reviews and publishes each batch on `admin-challenges.php`.
+
+These scripts are local/CI-only by design (NFR-101) — they hold the Anthropic API key and must
+never run on shared hosting. Unlike the Cron Trigger Workflows above (which fetch a PHP
+endpoint on the target site), this workflow runs the generators directly in the Actions runner,
+so `SITE_URL`/`INTEGRATION_SEED_TOKEN` are passed as env vars from repo Variables/Secrets rather
+than read from a local `config.*.php` (both scripts prefer the env vars when set, falling back
+to the config file for local manual runs).
+
+Each generator tracks which knowledge-base docs it has already drawn from in
+`bin/state/rumor-generator-state.json` / `trivia-generator-state.json`, committed back to the
+repo at the end of the run (same convention as `paddock-rumors.yml`) so a doc isn't reused
+across scheduled runs. The knowledge base currently has under 100 docs shared by both
+generators — expect this to need attention (grow the KB, or allow reuse after a cooldown) after
+a few months of sustained weekly runs.
+
+**Required secrets/variables:** `BASE_URL_LIVE`, `BASE_URL_TEST`, `INTEGRATION_SEED_TOKEN`,
+`INTEGRATION_SEED_TOKEN_TEST`, `ANTHROPIC_API_KEY` (all already used by other workflows above —
+no new secrets to add).
+
+**Timeout:** 15 minutes per run.
 
 ---
 

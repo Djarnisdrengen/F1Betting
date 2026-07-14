@@ -384,7 +384,7 @@ include __DIR__ . '/includes/header.php';
     border-radius: 8px;
     margin: 16px 0;
 }
-.hf-seg button {
+.hf-seg a {
     flex: 1;
     padding: 8px 12px;
     background: transparent;
@@ -395,8 +395,10 @@ include __DIR__ . '/includes/header.php';
     font-size: 14px;
     font-weight: 500;
     transition: all 0.2s;
+    text-decoration: none;
+    text-align: center;
 }
-.hf-seg button.active {
+.hf-seg a.active {
     background: rgba(35, 35, 40, 0.7);
     color: #ff6b35;
 }
@@ -428,18 +430,18 @@ include __DIR__ . '/includes/header.php';
 
     <div class="hf-container" style="padding:20px;color:#f5f5f7;">
         <div class="hf-seg">
-            <button class="<?= $section === 'overview' ? 'active' : '' ?>" onclick="window.location.href='?section=overview'">
+            <a href="?section=overview" class="<?= $section === 'overview' ? 'active' : '' ?>">
                 <?= t('ch_overview') ?>
-            </button>
-            <button class="<?= $section === 'rumors' ? 'active' : '' ?>" onclick="window.location.href='?section=rumors'">
+            </a>
+            <a href="?section=rumors" class="<?= $section === 'rumors' ? 'active' : '' ?>">
                 <?= t('ch_rumors') ?>
-            </button>
-            <button class="<?= $section === 'duels' ? 'active' : '' ?>" onclick="window.location.href='?section=duels'">
+            </a>
+            <a href="?section=duels" class="<?= $section === 'duels' ? 'active' : '' ?>">
                 <?= t('ch_duels') ?>
-            </button>
-            <button class="<?= $section === 'trivia' ? 'active' : '' ?>" onclick="window.location.href='?section=trivia'">
+            </a>
+            <a href="?section=trivia" class="<?= $section === 'trivia' ? 'active' : '' ?>">
                 <?= t('ch_trivia') ?>
-            </button>
+            </a>
         </div>
 
         <?php if ($section === 'overview'): ?>

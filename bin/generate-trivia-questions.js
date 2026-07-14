@@ -1,13 +1,22 @@
 /**
- * Generates Rumor or Not draft cards (Phase 3, REQ-206/207) from the paddock-rumors knowledge
- * base and imports them as challenge_items drafts for admin review on admin-challenges.php.
+ * Generates Trivia draft questions from the paddock-rumors knowledge base and imports them as
+ * challenge_trivia_questions drafts for admin review on admin-challenges.php. Mirrors
+ * bin/generate-rumor-items.js (Phase 3 generator) — same shape, same review-before-publish
+ * gate — extended to Trivia (Phase 4) as approved content-pipeline scope beyond the original
+ * v1 plan, which had trivia as manual-authoring-only.
  *
- * Reads paddock-rumors/data/knowledge-base.json READ-ONLY — never writes there (REQ-206).
- * Never runs on shared hosting (NFR-101): local/CI only, POSTs drafts to a PHP endpoint like
- * every other Node deploy-tooling script in this repo (no direct DB connection from Node).
+ * Reads paddock-rumors/data/knowledge-base.json READ-ONLY — never writes there (REQ-206, by
+ * analogy with the rumor generator). Never runs on shared hosting (NFR-101): local/CI only,
+ * POSTs drafts to a PHP endpoint like every other Node deploy-tooling script in this repo (no
+ * direct DB connection from Node).
+ *
+ * Tracks used KB docs in its own state file (bin/state/trivia-generator-state.json), separate
+ * from the rumor generator's state — the two pipelines draw from the same 95-doc pool
+ * independently, so an admin reviewing both may occasionally see two cards grounded in the
+ * same underlying fact; acceptable for now, not solved here.
  *
  * Usage:
- *   ANTHROPIC_API_KEY=sk-ant-... node bin/generate-rumor-items.js --env=test --count=6
+ *   ANTHROPIC_API_KEY=sk-ant-... node bin/generate-trivia-questions.js --env=test --count=6
  */
 
 const fs = require('fs');
@@ -19,7 +28,7 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5';
 
 const KB_PATH = path.join(__dirname, '../paddock-rumors/data/knowledge-base.json');
-const STATE_PATH = path.join(__dirname, 'state/rumor-generator-state.json');
+const STATE_PATH = path.join(__dirname, 'state/trivia-generator-state.json');
 
 function parseArgs() {
     const args = { env: 'test', count: 6 };
@@ -52,56 +61,36 @@ async function claude(prompt, maxTokens = 700) {
 }
 
 // Claude is asked for JSON only; defensively unwrap markdown fences if it adds them anyway.
-function parseCardJson(text) {
+function parseQuestionJson(text) {
     const cleaned = text.trim().replace(/^```(?:json)?\n?/, '').replace(/```$/, '').trim();
     return JSON.parse(cleaned);
 }
 
-const CARD_JSON_SHAPE = `Respond with ONLY a single JSON object, no prose, no markdown fences, in exactly this shape:
-{"context_da":"...","context_en":"...","text_da":"...","text_en":"...","explain_da":"...","explain_en":"..."}
-- context_*: a short 2-4 word badge (e.g. "Grid expansion", "Driver news")
-- text_*: the claim shown to the player, one short punchy sentence
-- explain_*: one short sentence revealed after answering
-- da = Danish, en = English, matching tone/meaning across both`;
+const QUESTION_JSON_SHAPE = `Respond with ONLY a single JSON object, no prose, no markdown fences, in exactly this shape:
+{"topic":"...","question_da":"...","question_en":"...","options_da":["...","...","...","..."],"options_en":["...","...","...","..."],"correct_option":0,"explain_da":"...","explain_en":"..."}
+- topic: a short single word/phrase category (e.g. "History", "Rules", "Drivers")
+- question_da/question_en: one clear factual question, matching meaning across both languages
+- options_da/options_en: 3 or 4 plausible answer choices, SAME ORDER in both arrays, exactly one correct
+- correct_option: 0-based index into the options arrays of the correct answer
+- explain_da/explain_en: one short sentence confirming the answer, revealed after answering
+- da = Danish, en = English`;
 
-async function draftRealCard(doc) {
-    const prompt = `You are drafting a "Real or Rumor" trivia card for an F1 prediction game. Below is a
-confirmed, real F1 fact from our knowledge base. Restate ONE specific true detail from it as a
-short, surprising-sounding claim a fan could plausibly doubt — but it must be TRUE and verifiable
-from the source below.
+async function draftQuestion(doc) {
+    const prompt = `You are drafting a trivia question for an F1 prediction game. Below is a confirmed,
+real F1 fact from our knowledge base. Write ONE multiple-choice question that tests a specific,
+verifiable detail from it — the correct answer must be TRUE and checkable from the source below,
+and the wrong options must be plausible-sounding but clearly incorrect to someone who knows the fact.
 
 SOURCE (season 2026 F1 knowledge base, factual):
 """
 ${doc.content.slice(0, 1200)}
 """
 
-${CARD_JSON_SHAPE}
-The explanation should confirm it's real and briefly say why/what the fact was.`;
+${QUESTION_JSON_SHAPE}`;
 
-    const card = parseCardJson(await claude(prompt));
-    card.is_real = true;
-    card.source_ref = `${doc.id}:${doc.content_hash}`;
-    return card;
-}
-
-async function draftRumorCard(doc) {
-    const prompt = `You are drafting a "Real or Rumor" trivia card for an F1 prediction game. Below is
-real F1 context for flavor/grounding only. Invent a plausible-SOUNDING but ENTIRELY FALSE rumor
-about F1 (a rule, a driver move, a technical detail) that did NOT happen — it must be fictional,
-not a restatement of the real context below.
-
-CONTEXT (season 2026 F1 knowledge base, for tone/grounding only — do not restate facts from it):
-"""
-${doc.content.slice(0, 600)}
-"""
-
-${CARD_JSON_SHAPE}
-The explanation should say it's a synthetic rumor and briefly note what's actually true instead.`;
-
-    const card = parseCardJson(await claude(prompt));
-    card.is_real = false;
-    card.source_ref = null;
-    return card;
+    const q = parseQuestionJson(await claude(prompt));
+    q.source_ref = `${doc.id}:${doc.content_hash}`;
+    return q;
 }
 
 async function main() {
@@ -119,34 +108,26 @@ async function main() {
     }
 
     const unused = kb.filter((doc) => !state.usedKbIds.includes(doc.id));
-    const realCount = Math.ceil(count / 2);
-    const rumorCount = count - realCount;
-
-    if (unused.length < realCount) {
-        console.error(`❌ Only ${unused.length} unused KB docs left, need ${realCount} for real-fact cards.`);
+    if (unused.length < count) {
+        console.error(`❌ Only ${unused.length} unused KB docs left, need ${count}.`);
         process.exit(1);
     }
 
     // Shuffle so repeated runs draw from different docs, not always the same prefix.
     const shuffled = [...unused].sort(() => Math.random() - 0.5);
-    const realDocs = shuffled.slice(0, realCount);
-    const rumorDocs = shuffled.slice(realCount, realCount + rumorCount);
+    const docs = shuffled.slice(0, count);
 
-    console.log(`🎲 Drafting ${realCount} real-fact + ${rumorCount} rumor cards via ${CLAUDE_MODEL}...`);
+    console.log(`🎲 Drafting ${count} trivia questions via ${CLAUDE_MODEL}...`);
 
     const items = [];
-    for (const doc of realDocs) {
-        console.log(`  real  ← ${doc.id}`);
-        items.push(await draftRealCard(doc));
+    for (const doc of docs) {
+        console.log(`  question ← ${doc.id}`);
+        items.push(await draftQuestion(doc));
         state.usedKbIds.push(doc.id);
-    }
-    for (const doc of rumorDocs) {
-        console.log(`  rumor ← ${doc.id} (grounding only)`);
-        items.push(await draftRumorCard(doc));
     }
 
     // Env vars win when set (CI: GitHub Actions secrets/vars, no config.*.php checked out
-    // there); otherwise fall back to the local config file, unchanged from before.
+    // there); otherwise fall back to the local config file, same as generate-rumor-items.js.
     let baseUrl = process.env.SITE_URL;
     let token = process.env.INTEGRATION_SEED_TOKEN;
     if (!baseUrl || !token) {
@@ -165,7 +146,7 @@ async function main() {
     }
 
     console.log(`📤 Importing ${items.length} drafts to ${baseUrl} (${env})...`);
-    const res = await fetch(`${baseUrl}/tools/import-rumor-drafts.php`, {
+    const res = await fetch(`${baseUrl}/tools/import-trivia-drafts.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ items }),

@@ -454,7 +454,7 @@ admin.describe('Duels — admin oversight', { tag: '@challenges' }, () => {
             challenger_pick: `${drivers[0].id},${drivers[1].id},${drivers[2].id}`,
         });
 
-        await page.goto('/admin-challenges.php');
+        await page.goto('/admin-challenges.php?tab=duels');
         const row = page.locator('[data-testid="admin-duel-row"][data-duel-id="' + duel_id + '"]');
         await expect(row).toBeVisible();
         await expect(row).toHaveAttribute('data-status', 'open');
@@ -473,7 +473,7 @@ admin.describe('Duels — admin oversight', { tag: '@challenges' }, () => {
             challenger_pick: `${drivers[0].id},${drivers[1].id},${drivers[2].id}`,
         });
 
-        await page.goto('/admin-challenges.php');
+        await page.goto('/admin-challenges.php?tab=duels');
         const row = page.locator('[data-testid="admin-duel-row"][data-duel-id="' + duel_id + '"]');
         await expect(row).toHaveAttribute('data-status', 'locked');
         await expect(row).toContainText(drivers[0].name.split(' ').pop());

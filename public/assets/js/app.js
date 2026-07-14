@@ -98,8 +98,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Delete confirmation modal
     let deleteModal = null;
     let deleteTarget = null; // HTMLFormElement (POST) or URL string (GET)
+    let deleteButton = null; // the actual submit button clicked, when deleteTarget is a form —
+                              // forms with several submit buttons (save/publish/delete) need the
+                              // one that was clicked, not just the first submit button in the form.
 
-    function showDeleteModal(target, itemName, options) {
+    function showDeleteModal(target, itemName, options, button) {
         const da = document.documentElement.lang === 'da';
         const title       = (options && options.title)       || (da ? 'Bekræft sletning'  : 'Confirm deletion');
         const confirmText = (options && options.confirmText) || (da ? 'Slet'               : 'Delete');
@@ -107,6 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
             || (da ? 'Er du sikker på at du vil slette ' : 'Are you sure you want to delete ') + itemName + '?';
 
         deleteTarget = target;
+        deleteButton = button || null;
 
         if (!deleteModal) {
             deleteModal = document.createElement('div');
@@ -177,12 +181,13 @@ document.addEventListener('DOMContentLoaded', function() {
     window.closeDeleteModal = function() {
         if (deleteModal) deleteModal.style.display = 'none';
         deleteTarget = null;
+        deleteButton = null;
     };
 
     window.confirmDelete = function() {
         if (!deleteTarget) return;
         if (deleteTarget instanceof HTMLFormElement) {
-            const btn = deleteTarget.querySelector('button[type="submit"]');
+            const btn = deleteButton || deleteTarget.querySelector('button[type="submit"]');
             if (btn && btn.name) {
                 const hidden = document.createElement('input');
                 hidden.type = 'hidden';
@@ -195,6 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = deleteTarget;
         }
         deleteTarget = null;
+        deleteButton = null;
     };
 
     // Attach to delete buttons
@@ -203,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const form = this.closest('form');
             const name = this.dataset.name || 'dette element';
-            showDeleteModal(form || this.href || this.dataset.url, name);
+            showDeleteModal(form || this.href || this.dataset.url, name, null, this);
         });
     });
 

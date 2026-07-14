@@ -18,6 +18,7 @@
 - [Security Model](#security-model)
 - [Localisation & Theme](#localisation--theme)
 - [Home Page Hero (Paddock Challenges)](#home-page-hero-paddock-challenges)
+- [Admin — Paddock Challenges Control Room](#admin--paddock-challenges-control-room)
 
 ---
 
@@ -326,3 +327,16 @@ Strings are loaded from `public/lang/user.php`, `admin.php`, and `email.php` via
 `isRaceHeroWindow(array $race, ?array $settings, ?DateTime $now): bool` (`public/includes/challenges.php`) is the pure boundary function: the race hero's window runs from `windowOpen − 24h` through `raceStart + 3h`, where `windowOpen = raceStart − betting_window_hours`. Exhaustively unit-tested in `tests/unit/hero-window-harness.php`; `tests/e2e/challenges/49-home-hero.spec.js` spot-checks the wiring end-to-end.
 
 The hero's CP/rank/streak stats and the CP top-3 section reuse `getChallengeCpTotal()`, `getChallengeStreak()`, and `getCpLeaderboard()` from `public/includes/challenges.php` — the same helpers the Challenges hub's own Overview scoreboard uses (REQ-109 requires the streak in both places).
+
+## Admin — Paddock Challenges Control Room
+
+`public/admin-challenges.php` is a `?tab=` shell — `$currentTab`, `$tabIcons`, cheap `COUNT(*)` `$tabCounts` badges computed for every tab on every load, and a `switch ($currentTab)` for the one active tab's detail query — the exact same convention `public/admin.php` uses for its own races/drivers/users/etc. tabs. Five tabs: `members` (default) / `rumors` / `trivia` / `duels` / `suppressions`, each backed by its own partial in `public/includes/admin-challenges/` (`members.php`, `rumors.php`, `trivia.php`, `duels.php`, `suppressions.php` — renamed from `participants.php` for 1:1 parity with the include convention). Only the active tab's query and partial run per request; POST handlers redirect back to `?tab=<name>` (plus `&edit=<id>` where an edit should stay open, or `&rumor_status=<filter>` for Rumors).
+
+- **Rumors** (`challenge_items`) and **Trivia** (`challenge_trivia_questions`) render as a compact list — one row per item (`.hf-racefull`, the same pattern `includes/admin/races.php` uses), showing a truncated label, status badge, and quick actions. The full bilingual edit form only appears for the one row being edited, via `?edit=<id>` (`$isEditing`, `.edit-form-active` — again mirroring `races.php`), with Save/Cancel there; Cancel returns to the plain list. The "Add new" form is a collapsed-by-default section, same `.collapsible-header.toggleForm` / `.collapsible-form` pattern and `toggleForm()` script as `races.php`'s "Add Race" — `admin-challenges.php` carries its own copy of that script (a no-op on tabs with no `.toggleForm` element). Rumors additionally support **unpublish** (back to draft) and a status filter (`?rumor_status=all|draft|published`); Trivia groups its list by ISO week (`isoWeekKey()`) with a `N/6 questions` header so gaps in the weekly schedule are visible at a glance.
+  - The compact row's Publish button posts a separate, minimal `quick_publish_rumor_item` / `quick_publish_trivia_question` action (`UPDATE ... SET status = 'published'`, no other columns) rather than the full-field `publish_rumor_draft` / `publish_trivia_question` used inside the expanded edit form — posting only an id through the full-field UPDATE would blank out the item's text. Saving (either action) never touches `status` on its own (only Publish does), so editing a published item can't silently revert it to draft.
+- **Duels** stay read-only oversight (REQ-504 by design — they're player-generated, not authored content).
+- **Suppressions** (`challenge_email_suppressions`) is a full searchable list with per-row removal, not just an add-form-plus-count.
+
+### Content generators
+
+`bin/generate-rumor-items.js` (Phase 3) and `bin/generate-trivia-questions.js` (added alongside this admin work, extending trivia beyond the original v1 manual-only scope) both draw from `paddock-rumors/data/knowledge-base.json` via the Anthropic API and POST results as `status='draft'` rows to `public/tools/import-rumor-drafts.php` / `import-trivia-drafts.php` — inert until an admin reviews and publishes them above. Both are local/CI-only (NFR-101) and track which KB docs they've already used in `bin/state/*-generator-state.json`, so repeated runs don't reuse the same source fact. See `docs/github-actions.md`'s Content Top-up Workflow section for the weekly automation.

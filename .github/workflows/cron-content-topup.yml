@@ -1,0 +1,94 @@
+# Cron — Paddock Challenges Content Top-up
+#
+# Weekly generator run for both content-driven Challenges competitions (Rumor or Not, Trivia).
+# Draws from the same paddock-rumors knowledge base as paddock-rumors.yml, via Claude, and
+# imports results as drafts (status='draft') on the target environment — never auto-published;
+# an admin still reviews and publishes them on admin-challenges.php. Scheduled a few days ahead
+# of the existing Monday Perfect-Week cron (cron-challenges.yml) so there's a fresh batch ready
+# to review over the weekend before the new week's content is needed.
+#
+# bin/generate-rumor-items.js and bin/generate-trivia-questions.js are local/CI-only (NFR-101 on
+# the rumor generator; same reasoning applies to trivia) — they call the Anthropic API directly
+# and must never run on shared hosting, unlike the PHP cron endpoints the other cron-*.yml
+# workflows hit. No config.*.php is checked out here, so SITE_URL/INTEGRATION_SEED_TOKEN are
+# passed as env vars (repo Variables/Secrets) instead — both scripts already prefer these over
+# reading a local config file when set.
+#
+# The scheduled run always targets live. Use workflow_dispatch to dry-run against test first
+# (recommended before the first scheduled live run, and after changing either generator).
+
+name: Cron — Content Top-up
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: false
+        default: 'test'
+        type: choice
+        options: ['test', 'live']
+      count:
+        description: 'Items to generate per competition'
+        required: false
+        default: '6'
+  schedule:
+    - cron: '0 6 * * 5' # Friday 06:00 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  topup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Resolve target environment
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "env=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "env=live" >> "$GITHUB_OUTPUT"
+          fi
+          echo "count=${{ github.event.inputs.count || '6' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate rumor drafts
+        env:
+          SITE_URL: ${{ steps.target.outputs.env == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ steps.target.outputs.env == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node bin/generate-rumor-items.js --env=${{ steps.target.outputs.env }} --count=${{ steps.target.outputs.count }}
+
+      - name: Generate trivia drafts
+        env:
+          SITE_URL: ${{ steps.target.outputs.env == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ steps.target.outputs.env == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node bin/generate-trivia-questions.js --env=${{ steps.target.outputs.env }} --count=${{ steps.target.outputs.count }}
+
+      # KB usage state (bin/state/*.json) tracks which docs have already been drawn for a
+      # real-fact card/question, shared across scheduled runs — committed back so the next
+      # run (locally or in CI) doesn't reuse the same docs, same convention as paddock-rumors.yml.
+      - name: Commit KB usage state if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bin/state/rumor-generator-state.json bin/state/trivia-generator-state.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no state changes — nothing to commit"
+          else
+            git commit -m "content-topup: KB usage state ($(date -u +%Y-%m-%d))"
+            git push
+          fi
