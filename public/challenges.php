@@ -419,6 +419,9 @@ include __DIR__ . '/includes/header.php';
                 <i class="fas fa-gamepad" style="margin-right:8px;color:#ff6b35;"></i>
                 <?= t('ch_nav_challenges') ?>
             </h1>
+            <a href="challenges-rules.php" style="color:#f5f5f7;opacity:.75;font-size:13px;text-decoration:none;white-space:nowrap;">
+                <i class="fas fa-circle-question" style="margin-right:6px;"></i><?= t('ch_rules_link') ?>
+            </a>
         </div>
     </div>
 
