@@ -1653,5 +1653,20 @@
     "source_url": "https://en.wikipedia.org/wiki/2026_British_Grand_Prix",
     "updated_at": "2026-07-05T19:24:07.705Z",
     "content_hash": "477fe7b50afe58a3"
+  },
+  {
+    "id": "quali-2026-r10-de-spa-francorchamps",
+    "title": "Belgian Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 10 Qualifying: Belgian Grand Prix. Andrea Kimi Antonelli claimed pole position for the Belgian Grand Prix at Circuit de Spa-Francorchamps, giving Mercedes the top qualifying spot. Max Verstappen qualified second for Red Bull, with Lando Norris third for McLaren. George Russell secured fourth for Mercedes, and Charles Leclerc took fifth for Ferrari. Lap time data is unavailable, so precise gaps between these positions cannot be determined.\n\nNotable performances include Arvid Lindblad qualifying eighth for RB F1 Team and Gabriel Bortoleto ninth for Audi, both representing strong results for their respective teams against more established midfield rivals. Isack Hadjar rounded out the top ten for Red Bull. Oscar Piastri qualified seventh, placing him behind teammate Norris but also behind Lindblad, which stands out as a modest underperformance for McLaren at this circuit. Both Aston Martin drivers, Fernando Alonso and Lance Stroll, failed to progress beyond Q1, qualifying twenty-first and twenty-second respectively, representing a significant shortfall for that team.\n\nThe front-row lockout for Mercedes and Red Bull, combined with McLaren's split across positions three and seven, suggests Mercedes and Red Bull hold the strongest race pace credentials at Spa, with Ferrari and McLaren likely forming a secondary competitive group.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 10,
+      "circuit": "circuit-de-spa-francorchamps",
+      "pole_driver": "andrea-kimi-antonelli"
+    },
+    "source_url": null,
+    "updated_at": "2026-07-18T15:49:00.730Z",
+    "content_hash": "50d56c9290452714"
   }
 ]
