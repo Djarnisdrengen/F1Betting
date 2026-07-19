@@ -1,8 +1,12 @@
 <?php
 // Import endpoint for bin/generate-rumor-items.js (Phase 3 generator). Writes challenge_items
-// rows with status='draft' only — inert until an admin publishes them on admin-challenges.php,
-// so this is safe to call against any environment (test or live), unlike the test-seed.php
-// actions which are gated to APP_ENV==='test'. Auth mirrors schema-check.php's Bearer pattern.
+// rows. Defaults to status='draft' (inert until an admin publishes on admin-challenges.php), but
+// the caller may pass {"status":"published"} to insert them already live — the automated
+// cron-content-topup.yml pipeline uses this to publish unattended. publish_date is written
+// explicitly (the column is DATE NULL with no default): a published rumor is only visible once
+// publish_date <= today, so leaving it NULL would make it silently unplayable. A published import
+// IS immediately player-visible, so the Bearer token is a publish-to-live capability.
+// Auth mirrors schema-check.php's Bearer pattern.
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../includes/functions.php';
 
@@ -23,14 +27,17 @@ if (!is_array($items) || empty($items)) {
     exit;
 }
 
+// Default to draft; only an explicit "published" flips it live. Anything else is treated as draft.
+$status = (($payload['status'] ?? 'draft') === 'published') ? 'published' : 'draft';
+
 $db = getDB();
 $inserted = 0;
 $errors = [];
 
 $stmt = $db->prepare("
     INSERT INTO challenge_items
-    (id, text_da, text_en, context_da, context_en, explain_da, explain_en, is_real, status, source_ref, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, NOW())
+    (id, text_da, text_en, context_da, context_en, explain_da, explain_en, is_real, status, source_ref, publish_date, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
 ");
 
 foreach ($items as $i => $item) {
@@ -50,7 +57,9 @@ foreach ($items as $i => $item) {
         trim($item['explain_da'] ?? ''),
         trim($item['explain_en'] ?? ''),
         $item['is_real'] ? 1 : 0,
+        $status,
         $item['source_ref'] ?? null,
+        $item['publish_date'] ?? date('Y-m-d'),
     ]);
     $inserted++;
 }

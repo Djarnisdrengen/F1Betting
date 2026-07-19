@@ -19,13 +19,32 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5';
 
 const KB_PATH = path.join(__dirname, '../paddock-rumors/data/knowledge-base.json');
-const STATE_PATH = path.join(__dirname, 'state/rumor-generator-state.json');
+const STATE_DIR = path.join(__dirname, 'state');
+
+// Per-environment KB-usage state — test and live each track which docs they've drawn
+// independently. A single shared file would burn the ~95-doc KB twice as fast and let a doc
+// consumed on test never reach live (and vice versa).
+function statePath(env) {
+    return path.join(STATE_DIR, `rumor-generator-state.${env}.json`);
+}
+
+// The upcoming Monday (strictly after today) in Europe/Copenhagen, as YYYY-MM-DD. Stamped as
+// publish_date so the whole weekly batch goes live together on Monday. Rumors have no ISO-week
+// scoping (they roll forward), but a published rumor is only visible once publish_date <= today,
+// so the Monday stamp is what makes the batch appear Monday alongside the trivia.
+function upcomingMonday(now = new Date()) {
+    const cph = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' }));
+    const daysUntilMon = ((8 - cph.getDay()) % 7) || 7; // Sun→1 … Fri→3 … always strictly-next Monday
+    cph.setDate(cph.getDate() + daysUntilMon);
+    return `${cph.getFullYear()}-${String(cph.getMonth() + 1).padStart(2, '0')}-${String(cph.getDate()).padStart(2, '0')}`;
+}
 
 function parseArgs() {
-    const args = { env: 'test', count: 6 };
+    const args = { env: 'test', count: 6, publish: false };
     for (const arg of process.argv.slice(2)) {
         const m = arg.match(/^--(\w+)=(.*)$/);
-        if (m) args[m[1]] = m[2];
+        if (m) { args[m[1]] = m[2]; continue; }
+        if (arg === '--publish') args.publish = true; // bare flag: auto-publish instead of draft
     }
     args.count = parseInt(args.count, 10) || 6;
     return args;
@@ -109,7 +128,9 @@ The explanation should say it's a synthetic rumor and briefly note what's actual
 }
 
 async function main() {
-    const { env, count } = parseArgs();
+    const { env, count, publish } = parseArgs();
+    const stateFile = statePath(env);
+    const publishDate = upcomingMonday();
 
     if (!fs.existsSync(KB_PATH)) {
         console.error(`❌ Knowledge base not found at ${KB_PATH}`);
@@ -118,8 +139,8 @@ async function main() {
     const kb = JSON.parse(fs.readFileSync(KB_PATH, 'utf8'));
 
     let state = { usedKbIds: [] };
-    if (fs.existsSync(STATE_PATH)) {
-        state = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'));
+    if (fs.existsSync(stateFile)) {
+        state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
     }
 
     const unused = kb.filter((doc) => !state.usedKbIds.includes(doc.id));
@@ -163,6 +184,9 @@ async function main() {
     }
     if (skipped > 0) console.log(`⚠️  ${skipped} card(s) skipped due to parse/API errors.`);
 
+    // Stamp every card with the upcoming Monday so the whole weekly batch appears together.
+    for (const it of items) it.publish_date = publishDate;
+
     // Env vars win when set (CI: GitHub Actions secrets/vars, no config.*.php checked out
     // there); otherwise fall back to the local config file, unchanged from before.
     let baseUrl = process.env.SITE_URL;
@@ -182,11 +206,12 @@ async function main() {
         process.exit(1);
     }
 
-    console.log(`📤 Importing ${items.length} drafts to ${baseUrl} (${env})...`);
+    const status = publish ? 'published' : 'draft';
+    console.log(`📤 Importing ${items.length} ${status} card(s) to ${baseUrl} (${env}), publish_date ${publishDate}...`);
     const res = await fetch(`${baseUrl}/tools/import-rumor-drafts.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ items, status }),
     });
     const body = await res.json();
     if (!res.ok || !body.ok) {
@@ -194,10 +219,11 @@ async function main() {
         process.exit(1);
     }
 
-    fs.mkdirSync(path.dirname(STATE_PATH), { recursive: true });
-    fs.writeFileSync(STATE_PATH, JSON.stringify(state, null, 2));
+    fs.mkdirSync(STATE_DIR, { recursive: true });
+    fs.writeFileSync(stateFile, JSON.stringify(state, null, 2));
 
-    console.log(`✅ Imported ${body.inserted} drafts. Review them on admin-challenges.php.`);
+    console.log(`✅ Imported ${body.inserted} ${status} card(s) (live from ${publishDate}).`);
+    if (!publish) console.log('   Review them on admin-challenges.php.');
     if (body.errors?.length) console.warn('⚠️  Some items were skipped:', body.errors);
 }
 
