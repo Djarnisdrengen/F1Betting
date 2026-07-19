@@ -121,6 +121,15 @@ test.describe('Duels — create flow', { tag: '@challenges' }, () => {
         await a.page.goto('/challenges.php?section=duels&mode=challenge&q=findme');
         const result = a.page.locator('[data-testid="duel-search-result"]');
         await expect(result).toHaveCount(1);
+
+        // A masked email hint disambiguates same-named opponents without exposing the address:
+        // a couple of leading local-part chars + domain, the middle redacted (never the raw email).
+        const hintText = await result.getByTestId('duel-search-email-hint').textContent();
+        expect(hintText).toContain('•••');
+        expect(hintText).toContain('@test.localhost');
+        expect(hintText).not.toContain('findme'); // middle of the local part is redacted
+        expect(hintText.trim()).not.toBe(b.email);
+
         await result.locator('[data-testid="duel-challenge-btn"]').click();
 
         await expect(a.page).toHaveURL(/section=duels&duel=/);
@@ -128,6 +137,20 @@ test.describe('Duels — create flow', { tag: '@challenges' }, () => {
 
         await a.context.close();
         await b.context.close();
+    });
+
+    // REQ-301: you can't duel yourself — the search filters out your own row, so a query that
+    // matches only your own display name yields nothing (belt-and-suspenders with the handler
+    // and createDirectDuel() self-guards).
+    test('Challenge a friend: you never appear in your own opponent search', async ({ browser }) => {
+        await seed.duelRace({ state: 'open' });
+        const a = await newVerifiedParticipant(browser, 'selfx_only');
+
+        await a.page.goto('/challenges.php?section=duels&mode=challenge&q=selfx_only');
+        await expect(a.page.getByTestId('duel-search-result')).toHaveCount(0);
+        await expect(a.page.getByTestId('duel-no-results')).toBeVisible();
+
+        await a.context.close();
     });
 });
 
@@ -151,12 +174,36 @@ test.describe('Duels — picks', { tag: '@challenges' }, () => {
         await a.page.selectOption('[data-testid="duel-pick-p3"]', drivers[2].id);
         await a.page.locator('[data-testid="duel-pick-submit"]').click();
         await expect(a.page.getByTestId('duel-locked-in')).toBeVisible();
+        // B still owes a pick, so A is waiting on the opponent (not yet on the race).
+        await expect(a.page.getByTestId('duel-waiting-opponent')).toBeVisible();
+        await expect(a.page.getByTestId('duel-waiting-race')).toHaveCount(0);
 
         // B hasn't picked and the race isn't locked — B sees the pick form, and nothing on
         // the page reveals A's already-submitted pick.
         await b.page.goto(`/challenges.php?section=duels&duel=${duel_id}`);
         await expect(b.page.getByTestId('duel-pick-form')).toBeVisible();
         await expect(b.page.getByTestId('duel-picks-comparison')).toHaveCount(0);
+
+        await a.context.close();
+        await b.context.close();
+    });
+
+    // Once BOTH sides have locked in but the race hasn't started, there's no one left to wait
+    // for — the copy switches from "waiting for <opponent>" to "waiting for the race to finish".
+    test('both locked in (race open) → waits on the race, not the opponent', async ({ browser }) => {
+        const { race_id, drivers } = await seed.duelRace({ state: 'open' });
+        const a = await newVerifiedParticipant(browser, 'bothlocked_a');
+        const b = await newVerifiedParticipant(browser, 'bothlocked_b');
+        const podium = `${drivers[0].id},${drivers[1].id},${drivers[2].id}`;
+        const { duel_id } = await seed.duel({
+            race_id, challenger_id: a.participant_id, opponent_id: b.participant_id,
+            challenger_pick: podium, opponent_pick: podium,
+        });
+
+        await a.page.goto(`/challenges.php?section=duels&duel=${duel_id}`);
+        await expect(a.page.getByTestId('duel-locked-in')).toBeVisible();
+        await expect(a.page.getByTestId('duel-waiting-race')).toBeVisible();
+        await expect(a.page.getByTestId('duel-waiting-opponent')).toHaveCount(0);
 
         await a.context.close();
         await b.context.close();
@@ -480,5 +527,101 @@ admin.describe('Duels — admin oversight', { tag: '@challenges' }, () => {
 
         await a.context.close();
         await b.context.close();
+    });
+
+    // Per-row Delete removes the duel (site-wide confirm modal). Participants seeded directly —
+    // no browser context needed, the oversight tab only needs the duel to exist.
+    admin('deletes a single duel', async ({ page }) => {
+        const { race_id } = await seed.duelRace({ state: 'open' });
+        const a = await seed.challengeParticipant({ email: tstEmail('dd_a'), status: 'verified', display_name: 'DD A' });
+        const b = await seed.challengeParticipant({ email: tstEmail('dd_b'), status: 'verified', display_name: 'DD B' });
+        const { duel_id } = await seed.duel({ race_id, challenger_id: a.participant_id, opponent_id: b.participant_id });
+
+        await page.goto('/admin-challenges.php?tab=duels');
+        const row = page.locator('[data-testid="admin-duel-row"][data-duel-id="' + duel_id + '"]');
+        await expect(row).toBeVisible();
+
+        await row.locator('button.btn-delete[value="delete_duel"]').click();
+        await page.locator('.btn-user-delete-confirm').click();
+        await page.waitForURL(/admin-challenges\.php/);
+
+        await expect(row).toHaveCount(0);
+    });
+
+    // Bulk delete removes only the checked duels (native confirm — accept the dialog).
+    admin('bulk delete removes only the selected duels', async ({ page }) => {
+        const { race_id } = await seed.duelRace({ state: 'open' });
+        const mk = async (p) => (await seed.challengeParticipant({ email: tstEmail(p), status: 'verified', display_name: p })).participant_id;
+        const [p1, p2, p3, p4, p5, p6] = await Promise.all(['bd1', 'bd2', 'bd3', 'bd4', 'bd5', 'bd6'].map(mk));
+        const d1 = (await seed.duel({ race_id, challenger_id: p1, opponent_id: p2 })).duel_id;
+        const d2 = (await seed.duel({ race_id, challenger_id: p3, opponent_id: p4 })).duel_id;
+        const d3 = (await seed.duel({ race_id, challenger_id: p5, opponent_id: p6 })).duel_id;
+
+        await page.goto('/admin-challenges.php?tab=duels');
+        const row = (id) => page.locator('[data-testid="admin-duel-row"][data-duel-id="' + id + '"]');
+        const bulkBtn = page.locator('#bulk-duel button[value="bulk_delete_duels"]');
+        await expect(bulkBtn).toBeDisabled();
+
+        await row(d1).locator('input[name="ids[]"]').check();
+        await row(d2).locator('input[name="ids[]"]').check();
+        await expect(bulkBtn).toBeEnabled();
+
+        page.once('dialog', d => d.accept());
+        await bulkBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+
+        await expect(row(d1)).toHaveCount(0);
+        await expect(row(d2)).toHaveCount(0);
+        await expect(row(d3)).toHaveCount(1);
+    });
+
+    // Deleting a resolved duel also clears its awarded CP (source_ref "duel:<id>") — the ledger
+    // has no FK to duels, so the handler removes it explicitly. Observed via the public board:
+    // the winner's only CP was the duel, so they drop off once it's deleted (board inner-joins CP).
+    admin('deleting a resolved duel also removes its awarded CP', async ({ page }) => {
+        const { race_id } = await seed.duelRace({ state: 'started' });
+        const name = 'CpDuelDel' + Date.now();
+        const a = await seed.challengeParticipant({ email: tstEmail('cpdel_a'), status: 'verified', display_name: name });
+        const b = await seed.challengeParticipant({ email: tstEmail('cpdel_b'), status: 'verified', display_name: 'CpDelOpp' });
+        const { duel_id } = await seed.duel({ race_id, challenger_id: a.participant_id, opponent_id: b.participant_id, status: 'resolved' });
+        await seed.challengePoints({ participant_id: a.participant_id, points: 137, source_ref: `duel:${duel_id}` });
+
+        await page.goto('/challenges-board.php');
+        await expect(page.getByText(name, { exact: true })).toBeVisible();
+
+        await page.goto('/admin-challenges.php?tab=duels');
+        const row = page.locator('[data-testid="admin-duel-row"][data-duel-id="' + duel_id + '"]');
+        await row.locator('button.btn-delete[value="delete_duel"]').click();
+        await page.locator('.btn-user-delete-confirm').click();
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(row).toHaveCount(0);
+
+        await page.goto('/challenges-board.php');
+        await expect(page.getByText(name, { exact: true })).toHaveCount(0);
+    });
+
+    // Created-date sort toggle: newest-first is the default active sort; oldest-first activates
+    // on ?duel_sort=oldest and still lists every duel. (Order itself isn't asserted — seeded
+    // rows share a same-second created_at, so their relative order is a tie, not a guarantee.)
+    admin('duels can be sorted by created date (newest / oldest toggle)', async ({ page }) => {
+        const { race_id } = await seed.duelRace({ state: 'open' });
+        const mk = async (p) => (await seed.challengeParticipant({ email: tstEmail(p), status: 'verified', display_name: p })).participant_id;
+        const [p1, p2, p3, p4] = await Promise.all(['so1', 'so2', 'so3', 'so4'].map(mk));
+        const d1 = (await seed.duel({ race_id, challenger_id: p1, opponent_id: p2 })).duel_id;
+        const d2 = (await seed.duel({ race_id, challenger_id: p3, opponent_id: p4 })).duel_id;
+
+        const row = (id) => page.locator('[data-testid="admin-duel-row"][data-duel-id="' + id + '"]');
+        const newestLink = page.locator('a[href="?tab=duels&duel_sort=newest"]');
+        const oldestLink = page.locator('a[href="?tab=duels&duel_sort=oldest"]');
+
+        await page.goto('/admin-challenges.php?tab=duels');
+        await expect(newestLink).toHaveClass(/btn-primary/);
+        await expect(oldestLink).not.toHaveClass(/btn-primary/);
+
+        await page.goto('/admin-challenges.php?tab=duels&duel_sort=oldest');
+        await expect(oldestLink).toHaveClass(/btn-primary/);
+        await expect(newestLink).not.toHaveClass(/btn-primary/);
+        await expect(row(d1)).toHaveCount(1);
+        await expect(row(d2)).toHaveCount(1);
     });
 });

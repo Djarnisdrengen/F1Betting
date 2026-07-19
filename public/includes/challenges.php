@@ -450,8 +450,12 @@ function isDuelRaceLocked(array $race): bool {
  * reachable only via Quick Match, not by direct search.
  */
 function searchChallengeParticipants(PDO $db, string $query, string $excludeParticipantId, int $limit = 10): array {
+    // `id != ?` keeps you out of your own results — you can't duel yourself (also enforced in
+    // the challenge_friend handler and in createDirectDuel()). display_name alone is often just
+    // a first name and rarely unique, so we also return a masked email hint to tell two
+    // same-named people apart without exposing anyone's full address (REQ-301 privacy).
     $stmt = $db->prepare("
-        SELECT id, display_name FROM challenge_participants
+        SELECT id, display_name, email FROM challenge_participants
         WHERE display_name IS NOT NULL AND display_name LIKE ? AND id != ?
         ORDER BY display_name ASC LIMIT ?
     ");
@@ -459,11 +463,50 @@ function searchChallengeParticipants(PDO $db, string $query, string $excludePart
     $stmt->bindValue(2, $excludeParticipantId, PDO::PARAM_STR);
     $stmt->bindValue(3, $limit, PDO::PARAM_INT);
     $stmt->execute();
-    return $stmt->fetchAll();
+    $rows = $stmt->fetchAll();
+
+    foreach ($rows as &$row) {
+        $row['email_hint'] = maskEmailForSearch($row['email']);
+        unset($row['email']); // never hand the raw address back to the caller/UI
+    }
+    unset($row);
+    return $rows;
+}
+
+/**
+ * Partially masks an email for the opponent-search list: reveals a couple of leading local-part
+ * characters plus the domain, hides the middle. Enough to disambiguate two same-named people,
+ * not enough to harvest the address. Returns '' for a null/malformed email so callers can just
+ * skip the hint.
+ */
+function maskEmailForSearch(?string $email): string {
+    if ($email === null || $email === '') {
+        return '';
+    }
+    $at = strrpos($email, '@');
+    if ($at === false || $at === 0) {
+        return '';
+    }
+    $local  = substr($email, 0, $at);
+    $domain = substr($email, $at); // includes the leading '@'
+    $len    = mb_strlen($local);
+
+    if ($len <= 2) {
+        $masked = mb_substr($local, 0, 1) . '•••';
+    } else {
+        $masked = mb_substr($local, 0, 2) . '•••' . mb_substr($local, -1);
+    }
+    return $masked . $domain;
 }
 
 /** Direct "challenge a friend" duel creation — live immediately, no separate accept step. */
 function createDirectDuel(PDO $db, string $raceId, string $challengerId, string $opponentId): string {
+    // Structural block on duelling yourself — callers (challenge_friend handler, quick match)
+    // already filter self out, but a duel with challenger == opponent is meaningless and must
+    // never be creatable, so enforce it at the one place every duel is born.
+    if ($challengerId === $opponentId) {
+        throw new InvalidArgumentException('A duel cannot pit a participant against themselves.');
+    }
     $duelId = generateUUID();
     $db->prepare("
         INSERT INTO duels (id, race_id, challenger_id, opponent_id, is_quick_match, status, created_at)

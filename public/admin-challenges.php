@@ -18,6 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $rumorStatusFilter = in_array($_POST['rumor_status'] ?? '', ['all', 'draft', 'published'], true)
         ? $_POST['rumor_status'] : 'all';
+    // Carried through trivia / duel redirects so a POST returns to the same filtered/sorted view.
+    $triviaStatusFilter = in_array($_POST['trivia_status'] ?? '', ['all', 'draft', 'published'], true)
+        ? $_POST['trivia_status'] : 'all';
+    $duelSort = in_array($_POST['duel_sort'] ?? '', ['newest', 'oldest'], true)
+        ? $_POST['duel_sort'] : 'newest';
 
     if ($action === 'approve_promotion') {
         $participantId = sanitizeString($_POST['participant_id'] ?? '');
@@ -116,6 +121,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                ->execute([$u['in_competition'] ? 0 : 1, $userId]);
         }
         header('Location: admin-challenges.php?tab=members');
+        exit;
+
+    } elseif ($action === 'delete_participant') {
+        // Delete a single participant row. All challenge child rows (CP ledger, answers, duels,
+        // predictions, quickmatch, magic links, access tokens, invites) cascade via their FKs.
+        // A promoted participant's core users account is untouched (users-side FK is SET NULL).
+        $participantId = sanitizeString($_POST['participant_id'] ?? '');
+        $stmt = $db->prepare("DELETE FROM challenge_participants WHERE id = ?");
+        $stmt->execute([$participantId]);
+        $_SESSION['flash_success'] = $stmt->rowCount() > 0
+            ? t('admin_ch_participant_deleted') : t('admin_ch_bulk_none');
+        header('Location: admin-challenges.php?tab=members');
+        exit;
+
+    } elseif ($action === 'bulk_delete_participants') {
+        // Multiselect bulk delete — row checkboxes post ids[] via the HTML5 form= attribute,
+        // same wiring as the rumor/trivia bulk handlers. Only ids are user-supplied and always
+        // go through placeholders. Cascade + core-account safety are identical to the single delete.
+        $ids = array_values(array_filter(
+            array_map('sanitizeString', (array) ($_POST['ids'] ?? [])),
+            fn($v) => $v !== ''
+        ));
+        $count = 0;
+        if ($ids) {
+            $ph   = implode(',', array_fill(0, count($ids), '?'));
+            $stmt = $db->prepare("DELETE FROM challenge_participants WHERE id IN ($ph)");
+            $stmt->execute($ids);
+            $count = $stmt->rowCount();
+        }
+        $_SESSION['flash_success'] = $count > 0
+            ? sprintf(t('admin_ch_bulk_updated'), $count)
+            : t('admin_ch_bulk_none');
+        header('Location: admin-challenges.php?tab=members');
+        exit;
+
+    } elseif ($action === 'delete_duel') {
+        // Delete a duel. duel_predictions cascade via their FK; the CP ledger has no FK to duels,
+        // so the duel's awarded CP (source_ref "duel:<id>", shared by both sides) is removed
+        // explicitly first — the same cleanup resetDuelsForRace() does on a race-result reset.
+        $duelId = sanitizeString($_POST['duel_id'] ?? '');
+        $db->prepare("DELETE FROM challenge_points WHERE source_ref = ?")->execute(["duel:$duelId"]);
+        $stmt = $db->prepare("DELETE FROM duels WHERE id = ?");
+        $stmt->execute([$duelId]);
+        $_SESSION['flash_success'] = $stmt->rowCount() > 0
+            ? t('admin_ch_duel_deleted') : t('admin_ch_bulk_none');
+        header('Location: admin-challenges.php?tab=duels&duel_sort=' . $duelSort);
+        exit;
+
+    } elseif ($action === 'bulk_delete_duels') {
+        // Multiselect bulk delete — ids[] via the HTML5 form= attribute, placeholder-bound. Each
+        // duel's CP rows (source_ref "duel:<id>") are cleared alongside the duel rows themselves.
+        $ids = array_values(array_filter(
+            array_map('sanitizeString', (array) ($_POST['ids'] ?? [])),
+            fn($v) => $v !== ''
+        ));
+        $count = 0;
+        if ($ids) {
+            $ph   = implode(',', array_fill(0, count($ids), '?'));
+            $refs = array_map(fn($id) => "duel:$id", $ids);
+            $db->prepare("DELETE FROM challenge_points WHERE source_ref IN ($ph)")->execute($refs);
+            $stmt = $db->prepare("DELETE FROM duels WHERE id IN ($ph)");
+            $stmt->execute($ids);
+            $count = $stmt->rowCount();
+        }
+        $_SESSION['flash_success'] = $count > 0
+            ? sprintf(t('admin_ch_bulk_updated'), $count)
+            : t('admin_ch_bulk_none');
+        header('Location: admin-challenges.php?tab=duels&duel_sort=' . $duelSort);
         exit;
 
     } elseif ($action === 'admin_suppress_email') {
@@ -276,7 +349,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $_SESSION['flash_success'] = $action === 'publish_trivia_question' ? t('admin_ch_trivia_published') : t('admin_ch_trivia_saved');
-        header('Location: admin-challenges.php?tab=trivia' . ($wasExisting ? '&edit=' . urlencode($questionId) : ''));
+        header('Location: admin-challenges.php?tab=trivia&trivia_status=' . $triviaStatusFilter
+            . ($wasExisting ? '&edit=' . urlencode($questionId) : ''));
         exit;
 
     } elseif ($action === 'quick_publish_trivia_question') {
@@ -284,7 +358,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $questionId = sanitizeString($_POST['question_id'] ?? '');
         $db->prepare("UPDATE challenge_trivia_questions SET status = 'published' WHERE id = ?")->execute([$questionId]);
         $_SESSION['flash_success'] = t('admin_ch_trivia_published');
-        header('Location: admin-challenges.php?tab=trivia');
+        header('Location: admin-challenges.php?tab=trivia&trivia_status=' . $triviaStatusFilter);
         exit;
 
     } elseif ($action === 'delete_trivia_question') {
@@ -292,7 +366,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $questionId = sanitizeString($_POST['question_id'] ?? '');
         $db->prepare("DELETE FROM challenge_trivia_questions WHERE id = ?")->execute([$questionId]);
         $_SESSION['flash_success'] = t('admin_ch_trivia_deleted');
-        header('Location: admin-challenges.php?tab=trivia');
+        header('Location: admin-challenges.php?tab=trivia&trivia_status=' . $triviaStatusFilter);
+        exit;
+
+    } elseif (in_array($action, [
+        'bulk_publish_trivia', 'bulk_unpublish_trivia', 'bulk_delete_trivia',
+        'bulk_publish_rumor',  'bulk_unpublish_rumor',  'bulk_delete_rumor',
+    ], true)) {
+        // Multiselect bulk update — row checkboxes post ids[] (associated to the per-tab bulk
+        // form via the HTML5 form= attribute). Table name is a hardcoded literal per branch;
+        // only the ids are user-supplied and always go through placeholders. cascade deletes
+        // (challenge_answers / challenge_trivia_answers) handle child rows, same as the
+        // single-row delete handlers above.
+        $ids = array_values(array_filter(
+            array_map('sanitizeString', (array) ($_POST['ids'] ?? [])),
+            fn($v) => $v !== ''
+        ));
+        $isTrivia = str_ends_with($action, '_trivia');
+        $table    = $isTrivia ? 'challenge_trivia_questions' : 'challenge_items';
+        $count    = 0;
+        if ($ids) {
+            $ph = implode(',', array_fill(0, count($ids), '?'));
+            if (str_starts_with($action, 'bulk_delete_')) {
+                $stmt = $db->prepare("DELETE FROM $table WHERE id IN ($ph)");
+                $stmt->execute($ids);
+            } else {
+                $status = str_starts_with($action, 'bulk_publish_') ? 'published' : 'draft';
+                $stmt = $db->prepare("UPDATE $table SET status = ? WHERE id IN ($ph)");
+                $stmt->execute(array_merge([$status], $ids));
+            }
+            $count = $stmt->rowCount();
+        }
+        $_SESSION['flash_success'] = $count > 0
+            ? sprintf(t('admin_ch_bulk_updated'), $count)
+            : t('admin_ch_bulk_none');
+        header('Location: admin-challenges.php?tab=' . ($isTrivia ? 'trivia' : 'rumors')
+            . ($isTrivia ? '&trivia_status=' . $triviaStatusFilter : '&rumor_status=' . $rumorStatusFilter));
         exit;
     }
 }
@@ -345,6 +454,17 @@ switch ($currentTab) {
             WHERE cp.email IS NOT NULL
             ORDER BY cp.verified_at DESC
         ")->fetchAll();
+
+        // Full participant roster (all rows: guests, native-core, promoted) with a delete surface.
+        // core_user_id is carried only to badge promoted/native rows — deleting a participant here
+        // never removes a linked users account (the FK is ON DELETE SET NULL on the users side; we
+        // delete the participant, not the user). Child challenge rows cascade via their own FKs.
+        $allParticipants = $db->query("
+            SELECT id, email, display_name, language, status,
+                   created_at, promotion_requested_at, core_user_id
+            FROM challenge_participants
+            ORDER BY created_at DESC
+        ")->fetchAll();
         break;
 
     case 'rumors':
@@ -365,15 +485,29 @@ switch ($currentTab) {
 
     case 'trivia':
         // Trivia questions (REQ-503) — most recent publish date first, so this week's authoring
-        // session (both drafts and already-published) sits at the top.
-        $triviaQuestions = $db->query("
-            SELECT * FROM challenge_trivia_questions ORDER BY publish_date DESC, created_at DESC
-        ")->fetchAll();
+        // session (both drafts and already-published) sits at the top. ?trivia_status= narrows to
+        // just drafts or published, mirroring the Rumors tab's filter.
+        $triviaFilter = in_array($_GET['trivia_status'] ?? '', ['all', 'draft', 'published'], true)
+            ? $_GET['trivia_status'] : 'all';
+        $triviaTotalCount = $tabCounts['trivia'];
+        $triviaDraftCount = (int) $db->query("SELECT COUNT(*) FROM challenge_trivia_questions WHERE status = 'draft'")->fetchColumn();
+        if ($triviaFilter === 'all') {
+            $triviaQuestions = $db->query("
+                SELECT * FROM challenge_trivia_questions ORDER BY publish_date DESC, created_at DESC
+            ")->fetchAll();
+        } else {
+            $stmt = $db->prepare("SELECT * FROM challenge_trivia_questions WHERE status = ? ORDER BY publish_date DESC, created_at DESC");
+            $stmt->execute([$triviaFilter]);
+            $triviaQuestions = $stmt->fetchAll();
+        }
         break;
 
     case 'duels':
-        // Duel oversight (REQ-504) — read-only, newest first. No pick contents before lock
-        // (REQ-303); after lock, both sides' picks are shown for debugging/support.
+        // Duel oversight (REQ-504) — resolution is automatic (off race results), the tab only adds
+        // delete for cleanup. ?duel_sort= toggles created-date order (newest default / oldest). No
+        // pick contents before lock (REQ-303); after lock, both sides' picks are shown for support.
+        $duelSort  = in_array($_GET['duel_sort'] ?? '', ['newest', 'oldest'], true) ? $_GET['duel_sort'] : 'newest';
+        $duelOrder = $duelSort === 'oldest' ? 'ASC' : 'DESC'; // hardcoded literal — never user text
         $duelsOversight = $db->query("
             SELECT d.*, r.name AS race_name, r.race_date, r.race_time,
                    cp_c.display_name AS challenger_name, cp_c.email AS challenger_email,
@@ -382,7 +516,7 @@ switch ($currentTab) {
             JOIN races r ON r.id = d.race_id
             JOIN challenge_participants cp_c ON cp_c.id = d.challenger_id
             JOIN challenge_participants cp_o ON cp_o.id = d.opponent_id
-            ORDER BY d.created_at DESC
+            ORDER BY d.created_at $duelOrder
         ")->fetchAll();
 
         $duelPicksByDuel = [];

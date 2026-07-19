@@ -11,7 +11,10 @@ const { assertDelivered } = require('../../helpers/email');
 const tstEmail = (p) => `${p}_${Date.now()}_${Math.floor(Math.random() * 1e4)}@test.localhost`;
 
 // .card.mb-1 is the per-item card; the section wrappers around it are .card.mb-3 (or plain
-// .card) and would also match hasText: email since the item card is their descendant.
+// .card) and would also match hasText: email since the item card is their descendant. The
+// "All participants" roster below uses .hf-racefull rows (not .card.mb-1), so an emailed
+// participant listed there too never collides with this locator — those rows are targeted by
+// the row() helper in the roster describe block instead.
 function cardFor(page, email) {
     return page.locator('.card.mb-1').filter({ hasText: email });
 }
@@ -210,6 +213,83 @@ test.describe('Admin promotion queue & converted guests', { tag: '@challenges' }
     });
 });
 
+// ─── All-participants roster + delete (single & bulk) ───────────────────────────
+
+test.describe('Admin participant roster & delete', { tag: '@challenges' }, () => {
+    test.beforeEach(async () => { await seed.cleanup.challenges(); });
+    test.afterAll(async () => { await seed.cleanup.challenges(); });
+
+    const row = (page, id) => page.locator(`[data-testid="participant-row"][data-participant-id="${id}"]`);
+
+    // The roster lists every participant with its columns (email + language render
+    // locale-independently), and the per-row Delete removes exactly that participant
+    // (site-wide confirm modal, same as suppressions/rumors deletes).
+    test('lists a participant and single-delete removes it', async ({ page }) => {
+        const email = tstEmail('rost01');
+        const { participant_id } = await seed.challengeParticipant({
+            email, status: 'verified', language: 'en',
+            display_name: 'Roster One', promotion_requested_at: 1,
+        });
+
+        await page.goto('/admin-challenges.php?tab=members');
+        const r = row(page, participant_id);
+        await expect(r).toBeVisible();
+        await expect(r).toContainText(email);        // email column
+        await expect(r).toContainText('EN');         // language column (raw code, not localized)
+        await expect(r).toHaveAttribute('data-kind', 'guest');
+
+        // Delete opens the site-wide confirm modal, then submits.
+        await r.locator('button.btn-delete[value="delete_participant"]').click();
+        await confirmDeleteModal(page);
+        await page.waitForURL(/admin-challenges\.php/);
+
+        await expect(row(page, participant_id)).toHaveCount(0);
+    });
+
+    // Bulk delete removes only the checked participants (native confirm — accept the dialog),
+    // reusing the generic data-bulk-group multiselect wiring shared with rumors/trivia.
+    test('bulk delete removes only the selected participants', async ({ page }) => {
+        const a = await seed.challengeParticipant({ email: tstEmail('rost02a'), status: 'verified', display_name: 'Bulk A' });
+        const b = await seed.challengeParticipant({ email: tstEmail('rost02b'), status: 'verified', display_name: 'Bulk B' });
+        const c = await seed.challengeParticipant({ email: tstEmail('rost02c'), status: 'verified', display_name: 'Bulk C' });
+
+        await page.goto('/admin-challenges.php?tab=members');
+        const bulkBtn = page.locator('#bulk-participant button[value="bulk_delete_participants"]');
+        await expect(bulkBtn).toBeDisabled();
+
+        await row(page, a.participant_id).locator('input[name="ids[]"]').check();
+        await row(page, b.participant_id).locator('input[name="ids[]"]').check();
+        await expect(bulkBtn).toBeEnabled();
+
+        page.once('dialog', d => d.accept());
+        await bulkBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+
+        await expect(row(page, a.participant_id)).toHaveCount(0);
+        await expect(row(page, b.participant_id)).toHaveCount(0);
+        await expect(row(page, c.participant_id)).toHaveCount(1);
+    });
+
+    // A promoted full member (linked core_user_id) is badged distinctly and is deletable here;
+    // deleting the participant row leaves the core users account intact by FK design (SET NULL),
+    // so this only removes their challenge-side record.
+    test('a promoted participant is badged and deletable', async ({ page }) => {
+        const email = tstEmail('rost03');
+        const { participant_id } = await seed.convertedGuest({ email, display_name: 'Promoted One' });
+
+        await page.goto('/admin-challenges.php?tab=members');
+        const r = row(page, participant_id);
+        await expect(r).toBeVisible();
+        await expect(r).toHaveAttribute('data-kind', 'promoted');
+
+        await r.locator('button.btn-delete[value="delete_participant"]').click();
+        await confirmDeleteModal(page);
+        await page.waitForURL(/admin-challenges\.php/);
+
+        await expect(row(page, participant_id)).toHaveCount(0);
+    });
+});
+
 // ─── Rumor drafts (Phase 3, REQ-502) ────────────────────────────────────────────
 
 test.describe('Admin rumor drafts', { tag: '@challenges' }, () => {
@@ -328,6 +408,63 @@ test.describe('Admin rumor drafts', { tag: '@challenges' }, () => {
     });
 });
 
+// ─── Rumor bulk multiselect (multi-update) ──────────────────────────────────────
+
+test.describe('Admin rumor bulk actions', { tag: '@challenges' }, () => {
+    test.beforeEach(async () => { await seed.cleanup.challenges(); });
+    test.afterAll(async () => { await seed.cleanup.challenges(); });
+
+    const card = (page, id) => page.locator(`[data-testid="rumor-item"][data-item-id="${id}"]`);
+
+    // Unpublish selected reverts each checked item to draft in one POST; Publish flips them
+    // back. Buttons stay disabled until at least one row is checked. Select-all is exercised
+    // as a pure UI toggle, then cleared — the bulk submit only touches this test's own seeded
+    // rows, since the shared test DB holds unrelated rumor rows a real publish must not disturb.
+    test('bulk unpublish then bulk publish flips every selected item', async ({ page }) => {
+        const { items } = await seed.rumorDeck({ real: [1, 0, 1] }); // 3 published (+ 1 draft)
+        await page.goto('/admin-challenges.php?tab=rumors&rumor_status=all');
+
+        const unpublishBtn = page.locator('#bulk-rumor button[value="bulk_unpublish_rumor"]');
+        const publishBtn   = page.locator('#bulk-rumor button[value="bulk_publish_rumor"]');
+        const boxFor = (id) => card(page, id).locator('input[name="ids[]"]');
+        await expect(unpublishBtn).toBeDisabled();
+
+        // Select-all checks every row and enables the actions; clear it before the real submit.
+        const selectAll = page.locator('[data-bulk-toggle="rumor"]');
+        await selectAll.check();
+        await expect(boxFor(items[0].id)).toBeChecked();
+        await expect(unpublishBtn).toBeEnabled();
+        await selectAll.uncheck();
+
+        for (const it of items) await boxFor(it.id).check();
+        await unpublishBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+        for (const it of items) await expect(card(page, it.id)).toHaveAttribute('data-status', 'draft');
+
+        for (const it of items) await boxFor(it.id).check();
+        await publishBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+        for (const it of items) await expect(card(page, it.id)).toHaveAttribute('data-status', 'published');
+    });
+
+    // Bulk delete removes only the checked rows (native confirm — accept the dialog).
+    test('bulk delete removes only the selected items', async ({ page }) => {
+        const { items } = await seed.rumorDeck({ real: [1, 1, 1] });
+        await page.goto('/admin-challenges.php?tab=rumors&rumor_status=all');
+
+        await card(page, items[0].id).locator('input[name="ids[]"]').check();
+        await card(page, items[1].id).locator('input[name="ids[]"]').check();
+
+        page.once('dialog', d => d.accept());
+        await page.locator('#bulk-rumor button[value="bulk_delete_rumor"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+
+        await expect(card(page, items[0].id)).toHaveCount(0);
+        await expect(card(page, items[1].id)).toHaveCount(0);
+        await expect(card(page, items[2].id)).toHaveCount(1);
+    });
+});
+
 // ─── Trivia authoring (Phase 4, REQ-503) ────────────────────────────────────────
 
 test.describe('Admin trivia authoring', { tag: '@challenges' }, () => {
@@ -376,6 +513,33 @@ test.describe('Admin trivia authoring', { tag: '@challenges' }, () => {
         const card = questionCard(page, text);
         await expect(card).toHaveCount(1);
         await expect(card).toHaveAttribute('data-status', 'draft');
+    });
+
+    // Status filter (like the Rumors tab): draft / published / all narrow the list.
+    test('status filter narrows the list to drafts or published', async ({ page }) => {
+        const { question_ids } = await seed.triviaWeek(); // 6 published, topic e2e-seed
+        const publishedRow = page.locator('[data-testid="trivia-question"][data-question-id="' + question_ids[0] + '"]');
+
+        const draftText = `E2E draft trivia ${Date.now()}`;
+        await page.goto('/admin-challenges.php?tab=trivia');
+        const form = await fillNewQuestion(page, draftText);
+        await form.locator('button[name="action"][value="save_trivia_question"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+
+        // Drafts only: the authored draft shows, a published question does not.
+        await page.goto('/admin-challenges.php?tab=trivia&trivia_status=draft');
+        await expect(questionCard(page, draftText)).toHaveCount(1);
+        await expect(publishedRow).toHaveCount(0);
+
+        // Published only: the reverse.
+        await page.goto('/admin-challenges.php?tab=trivia&trivia_status=published');
+        await expect(publishedRow).toHaveCount(1);
+        await expect(questionCard(page, draftText)).toHaveCount(0);
+
+        // All: both present.
+        await page.goto('/admin-challenges.php?tab=trivia&trivia_status=all');
+        await expect(publishedRow).toHaveCount(1);
+        await expect(questionCard(page, draftText)).toHaveCount(1);
     });
 
     // Publish makes the question immediately playable on the public page — the admin→player
@@ -427,6 +591,62 @@ test.describe('Admin trivia authoring', { tag: '@challenges' }, () => {
 
         await page.waitForURL(/admin-challenges\.php/);
         await expect(questionCard(page, text)).toHaveCount(0);
+    });
+});
+
+// ─── Trivia bulk multiselect (multi-update) ─────────────────────────────────────
+
+test.describe('Admin trivia bulk actions', { tag: '@challenges' }, () => {
+    test.beforeEach(async () => { await seed.cleanup.challenges(); });
+    test.afterAll(async () => { await seed.cleanup.challenges(); });
+
+    const card = (page, id) => page.locator(`[data-testid="trivia-question"][data-question-id="${id}"]`);
+
+    // Bulk unpublish is net-new for trivia — before this there was no way to revert a published
+    // question to draft at all (only publish or delete). Unpublish flips each checked question;
+    // Publish flips them back. Select-all is exercised as a UI toggle then cleared — the submit
+    // only touches this test's own seeded rows, not unrelated trivia in the shared test DB.
+    test('bulk unpublish then bulk publish flips every question', async ({ page }) => {
+        const { question_ids } = await seed.triviaWeek(); // 6 published, topic e2e-seed
+        await page.goto('/admin-challenges.php?tab=trivia');
+
+        const unpublishBtn = page.locator('#bulk-trivia button[value="bulk_unpublish_trivia"]');
+        const publishBtn   = page.locator('#bulk-trivia button[value="bulk_publish_trivia"]');
+        const boxFor = (id) => card(page, id).locator('input[name="ids[]"]');
+        await expect(unpublishBtn).toBeDisabled();
+
+        const selectAll = page.locator('[data-bulk-toggle="trivia"]');
+        await selectAll.check();
+        await expect(boxFor(question_ids[0])).toBeChecked();
+        await expect(unpublishBtn).toBeEnabled();
+        await selectAll.uncheck();
+
+        for (const id of question_ids) await boxFor(id).check();
+        await unpublishBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+        for (const id of question_ids) await expect(card(page, id)).toHaveAttribute('data-status', 'draft');
+
+        for (const id of question_ids) await boxFor(id).check();
+        await publishBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+        for (const id of question_ids) await expect(card(page, id)).toHaveAttribute('data-status', 'published');
+    });
+
+    // Bulk delete removes only the checked questions (native confirm — accept the dialog).
+    test('bulk delete removes only the selected questions', async ({ page }) => {
+        const { question_ids } = await seed.triviaWeek();
+        await page.goto('/admin-challenges.php?tab=trivia');
+
+        await card(page, question_ids[0]).locator('input[name="ids[]"]').check();
+        await card(page, question_ids[1]).locator('input[name="ids[]"]').check();
+
+        page.once('dialog', d => d.accept());
+        await page.locator('#bulk-trivia button[value="bulk_delete_trivia"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+
+        await expect(card(page, question_ids[0])).toHaveCount(0);
+        await expect(card(page, question_ids[1])).toHaveCount(0);
+        await expect(card(page, question_ids[2])).toHaveCount(1);
     });
 });
 

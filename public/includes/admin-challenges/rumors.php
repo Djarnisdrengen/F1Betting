@@ -86,6 +86,22 @@
     </div>
 </div>
 
+<?php if (!empty($rumorItems)): ?>
+<!-- Bulk action bar — checkboxes on each row below post ids[] here via the HTML5 form= attribute. -->
+<form method="POST" id="bulk-rumor" class="flex gap-1 items-center mb-2" style="flex-wrap:wrap;" data-bulk-group="rumor">
+    <?= csrfField() ?>
+    <input type="hidden" name="rumor_status" value="<?= escape($rumorFilter) ?>">
+    <label class="flex items-center gap-1" style="margin:0;cursor:pointer;">
+        <input type="checkbox" data-bulk-toggle="rumor"> <?= t('admin_ch_bulk_select_all') ?>
+    </label>
+    <span class="text-muted" data-bulk-count="rumor" data-tpl="<?= escape(str_replace('%d', '{n}', t('admin_ch_bulk_selected'))) ?>" style="font-size:13px;"></span>
+    <span style="flex:1;"></span>
+    <button type="submit" name="action" value="bulk_publish_rumor" class="btn btn-primary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_publish') ?></button>
+    <button type="submit" name="action" value="bulk_unpublish_rumor" class="btn btn-secondary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_unpublish') ?></button>
+    <button type="submit" name="action" value="bulk_delete_rumor" class="btn btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_bulk_delete_confirm')) ?>" style="background:var(--f1-red);color:#fff;border:none;" disabled><?= t('admin_ch_bulk_delete') ?></button>
+</form>
+<?php endif; ?>
+
 <?php if (empty($rumorItems)): ?>
     <p class="text-muted"><?= t('admin_ch_rumor_list_empty') ?></p>
 <?php endif; ?>
@@ -98,6 +114,9 @@
      id="rumor-<?= escape($item['id']) ?>"
      data-testid="rumor-item" data-item-id="<?= escape($item['id']) ?>" data-status="<?= escape($item['status']) ?>">
     <div class="hf-racefull-hd">
+        <label class="hf-bulk-check" style="margin:0;padding-top:2px;cursor:pointer;" title="<?= t('admin_ch_bulk_select_all') ?>">
+            <input type="checkbox" name="ids[]" value="<?= escape($item['id']) ?>" form="bulk-rumor" data-bulk-item="rumor">
+        </label>
         <div class="hf-racefull-info">
             <div class="hf-racename"><?= escape($label) ?></div>
             <div class="hf-racemeta">

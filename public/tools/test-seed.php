@@ -1325,10 +1325,16 @@ if (($_GET['action'] ?? '') === 'seed_challenge_answer') {
         exit;
     }
     $itemId = 'e2e00000-0000-4000-8000-000000000001';
+    // publish_date is deliberately NULL: playedSet() only needs the challenge_answers row below,
+    // not a playable item, and a NULL date keeps this fixture out of nextRumorItem() (which
+    // requires publish_date <= CURDATE()) so it can't hijack the "Publish makes item playable"
+    // e2e test. ON DUPLICATE KEY UPDATE self-heals any pre-existing row that still carries an old
+    // real date (this fixture id is reused idempotently across runs, so INSERT IGNORE never did).
     $db->prepare("
-        INSERT IGNORE INTO challenge_items
-        (id, text_da, text_en, context_da, context_en, explain_da, explain_en, is_real, status, source_ref)
-        VALUES (?, 'E2E fixture item', 'E2E fixture item', 'test', 'test', 'test', 'test', 1, 'published', 'e2e-fixture')
+        INSERT INTO challenge_items
+        (id, text_da, text_en, context_da, context_en, explain_da, explain_en, is_real, status, source_ref, publish_date)
+        VALUES (?, 'E2E fixture item', 'E2E fixture item', 'test', 'test', 'test', 'test', 1, 'published', 'e2e-fixture', NULL)
+        ON DUPLICATE KEY UPDATE publish_date = NULL
     ")->execute([$itemId]);
     $answerId = seed_uuid();
     $db->prepare("
