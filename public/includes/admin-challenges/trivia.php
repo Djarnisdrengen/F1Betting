@@ -1,5 +1,17 @@
 <h2 style="margin-bottom:16px;"><?= t('admin_ch_trivia_questions') ?></h2>
 
+<div class="flex gap-1 mb-2">
+    <a href="?tab=trivia&trivia_status=all" class="btn btn-sm <?= $triviaFilter === 'all' ? 'btn-primary' : 'btn-secondary' ?>">
+        <?= t('admin_ch_trivia_filter_all') ?> (<?= (int) $triviaTotalCount ?>)
+    </a>
+    <a href="?tab=trivia&trivia_status=draft" class="btn btn-sm <?= $triviaFilter === 'draft' ? 'btn-primary' : 'btn-secondary' ?>">
+        <?= t('admin_ch_trivia_filter_draft') ?> (<?= (int) $triviaDraftCount ?>)
+    </a>
+    <a href="?tab=trivia&trivia_status=published" class="btn btn-sm <?= $triviaFilter === 'published' ? 'btn-primary' : 'btn-secondary' ?>">
+        <?= t('admin_ch_trivia_filter_published') ?> (<?= (int) ($triviaTotalCount - $triviaDraftCount) ?>)
+    </a>
+</div>
+
 <?php
     // Shared bilingual field markup for both the always-open "add new" card and an expanded
     // edit row — only the surrounding chrome (plain card vs. compact-row body) differs.
@@ -78,6 +90,7 @@
             <form method="POST">
                 <?= csrfField() ?>
                 <input type="hidden" name="question_id" value="">
+                <input type="hidden" name="trivia_status" value="<?= escape($triviaFilter) ?>">
                 <?php renderTriviaFields($blankQuestion); ?>
                 <div class="flex gap-1">
                     <button type="submit" name="action" value="save_trivia_question" class="btn btn-secondary btn-sm"><?= t('admin_ch_trivia_save') ?></button>
@@ -87,6 +100,22 @@
         </div>
     </div>
 </div>
+
+<?php if (!empty($triviaQuestions)): ?>
+<!-- Bulk action bar — checkboxes on each row below post ids[] here via the HTML5 form= attribute. -->
+<form method="POST" id="bulk-trivia" class="flex gap-1 items-center mb-2" style="flex-wrap:wrap;" data-bulk-group="trivia">
+    <?= csrfField() ?>
+    <input type="hidden" name="trivia_status" value="<?= escape($triviaFilter) ?>">
+    <label class="flex items-center gap-1" style="margin:0;cursor:pointer;">
+        <input type="checkbox" data-bulk-toggle="trivia"> <?= t('admin_ch_bulk_select_all') ?>
+    </label>
+    <span class="text-muted" data-bulk-count="trivia" data-tpl="<?= escape(str_replace('%d', '{n}', t('admin_ch_bulk_selected'))) ?>" style="font-size:13px;"></span>
+    <span style="flex:1;"></span>
+    <button type="submit" name="action" value="bulk_publish_trivia" class="btn btn-primary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_publish') ?></button>
+    <button type="submit" name="action" value="bulk_unpublish_trivia" class="btn btn-secondary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_unpublish') ?></button>
+    <button type="submit" name="action" value="bulk_delete_trivia" class="btn btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_bulk_delete_confirm')) ?>" style="background:var(--f1-red);color:#fff;border:none;" disabled><?= t('admin_ch_bulk_delete') ?></button>
+</form>
+<?php endif; ?>
 
 <?php
     if (empty($triviaQuestions)) {
@@ -115,6 +144,9 @@
          id="trivia-<?= escape($q['id']) ?>"
          data-testid="trivia-question" data-question-id="<?= escape($q['id']) ?>" data-status="<?= escape($q['status']) ?>">
         <div class="hf-racefull-hd">
+            <label class="hf-bulk-check" style="margin:0;padding-top:2px;cursor:pointer;" title="<?= t('admin_ch_bulk_select_all') ?>">
+                <input type="checkbox" name="ids[]" value="<?= escape($q['id']) ?>" form="bulk-trivia" data-bulk-item="trivia">
+            </label>
             <div class="hf-racefull-info">
                 <div class="hf-racename"><?= escape($label) ?></div>
                 <div class="hf-racemeta">
@@ -126,13 +158,14 @@
                 </div>
             </div>
             <div class="flex gap-1" style="flex-shrink:0;flex-wrap:wrap;">
-                <a href="?tab=trivia&edit=<?= escape($q['id']) ?>#trivia-<?= escape($q['id']) ?>"
+                <a href="?tab=trivia&trivia_status=<?= escape($triviaFilter) ?>&edit=<?= escape($q['id']) ?>#trivia-<?= escape($q['id']) ?>"
                    class="btn btn-secondary btn-sm" title="<?= t('edit') ?>"><i class="fas fa-edit"></i></a>
 
                 <?php if ($q['status'] !== 'published'): ?>
                 <form method="POST" style="display:inline">
                     <?= csrfField() ?>
                     <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
+                    <input type="hidden" name="trivia_status" value="<?= escape($triviaFilter) ?>">
                     <button type="submit" name="action" value="quick_publish_trivia_question" class="btn btn-primary btn-sm"><?= t('admin_ch_trivia_publish') ?></button>
                 </form>
                 <?php endif; ?>
@@ -140,6 +173,7 @@
                 <form method="POST" style="display:inline">
                     <?= csrfField() ?>
                     <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
+                    <input type="hidden" name="trivia_status" value="<?= escape($triviaFilter) ?>">
                     <button type="submit" name="action" value="delete_trivia_question" class="btn btn-sm btn-delete" data-name="<?= escape($label) ?>" style="background:var(--f1-red);color:#fff;border:none;"><?= t('admin_ch_trivia_delete') ?></button>
                 </form>
             </div>
@@ -150,13 +184,14 @@
             <form method="POST">
                 <?= csrfField() ?>
                 <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
+                <input type="hidden" name="trivia_status" value="<?= escape($triviaFilter) ?>">
                 <?php renderTriviaFields($q); ?>
                 <div class="flex gap-1 items-center">
                     <button type="submit" name="action" value="save_trivia_question" class="btn btn-secondary btn-sm"><?= t('admin_ch_trivia_save') ?></button>
                     <?php if ($q['status'] !== 'published'): ?>
                         <button type="submit" name="action" value="publish_trivia_question" class="btn btn-primary btn-sm"><?= t('admin_ch_trivia_publish') ?></button>
                     <?php endif; ?>
-                    <a href="?tab=trivia" class="btn btn-secondary btn-sm"><?= t('cancel') ?></a>
+                    <a href="?tab=trivia&trivia_status=<?= escape($triviaFilter) ?>" class="btn btn-secondary btn-sm"><?= t('cancel') ?></a>
                 </div>
             </form>
         </div>

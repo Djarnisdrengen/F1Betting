@@ -102,6 +102,7 @@ Read these when you need detail:
 | `docs/github-actions.md` | CI workflows |
 | `docs/f1-intelligence-reference.md` | RAG system (Phase 1, live on Vercel) — do not modify without user OK |
 | `docs/paddock-rumors-reference.md` | Content-gen pipeline (coexists, isolated by default) |
+| `docs/paddock-challenges-reference.md` | Paddock Challenges (Rumor or Not, Trivia, Duels) — scoring, content pipeline, admin runbook |
 
 ---
 

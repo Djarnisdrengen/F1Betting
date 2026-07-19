@@ -253,6 +253,50 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // ── Admin Challenges bulk multiselect (rumors / trivia tabs) ─────────────────
+    // Row checkboxes are wired to their per-tab bulk form via the HTML5 form= attribute,
+    // so they submit together even though they live in separate row markup. Per group
+    // (data-bulk-group="rumor"|"trivia"): the select-all toggle mirrors every row box,
+    // the "N selected" label + action buttons react to the current selection, and the
+    // Delete button confirms first (native submit, so its action value is preserved).
+    document.querySelectorAll('[data-bulk-group]').forEach(function (form) {
+        const group    = form.dataset.bulkGroup;
+        const toggle   = document.querySelector('[data-bulk-toggle="' + group + '"]');
+        const countEl  = document.querySelector('[data-bulk-count="' + group + '"]');
+        const buttons  = form.querySelectorAll('[data-bulk-action]');
+        const boxes    = () => document.querySelectorAll('[data-bulk-item="' + group + '"]');
+        const selectedTpl = countEl ? (countEl.dataset.tpl || '{n}') : '{n}';
+
+        function refresh() {
+            const all = boxes();
+            const checked = Array.from(all).filter(b => b.checked).length;
+            buttons.forEach(b => { b.disabled = checked === 0; });
+            if (countEl) countEl.textContent = checked ? selectedTpl.replace('{n}', checked) : '';
+            if (toggle) {
+                toggle.checked = checked > 0 && checked === all.length;
+                toggle.indeterminate = checked > 0 && checked < all.length;
+            }
+        }
+
+        if (toggle) {
+            toggle.addEventListener('change', function () {
+                boxes().forEach(b => { b.checked = toggle.checked; });
+                refresh();
+            });
+        }
+        boxes().forEach(b => b.addEventListener('change', refresh));
+
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                if (btn.dataset.confirm && !window.confirm(btn.dataset.confirm)) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        refresh();
+    });
 });
 
 // ── Paddock Challenges toast (CP gains, duel lock) ───────────────────────────

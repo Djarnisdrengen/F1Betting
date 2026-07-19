@@ -87,22 +87,27 @@ partway through) — trigger a real run instead to verify that one by hand.
 ## Content Top-up Workflow
 
 **File:** `.github/workflows/cron-content-topup.yml`
-**Schedule:** Friday 06:00 UTC, always targets **test** — a few days ahead of the Monday
-Perfect-Week cron (`cron-challenges.yml`) so drafts are ready to review over the weekend. Matches
-the `deploy:live` convention of requiring an explicit directive for anything touching
-production: this writes drafts unattended, on a timer, with real API spend, so the unattended
-path never targets live, even though nothing it creates is player-visible until an admin
-publishes it.
+**Schedule:** Friday 06:00 UTC, targets **both test and live** — a few days ahead of the Monday
+Perfect-Week cron (`cron-challenges.yml`). The batch is **auto-published** (not left as drafts):
+each item is stamped with the *upcoming Monday* as its `publish_date`, so the fresh content goes
+live Monday 00:00, trivia is playable that whole ISO week, and the Monday-after Perfect-Week cron
+scores it. **This is a fully unattended pipeline — no admin review or publish step.** It
+deliberately reverses the older "drafts on test only, human publishes" posture; the tradeoff is
+that content quality goes out ungated (a single malformed Claude response is still skipped, but a
+wrong trivia answer or an off rumor reaches players with no human check).
 **Can also be triggered:** manually via the Actions tab → "Run workflow", with `environment`
-(test/live, default test), `count`, and `target` (`both`/`rumors`/`trivia`, default `both`)
-inputs — use `environment=live` for a deliberate live batch, or `target` to re-run just one
-generator (e.g. after the other already succeeded but this one hit the job timeout).
+(test/live, default test — the *schedule* always does both), `count`, `target`
+(`both`/`rumors`/`trivia`, default `both`), and `publish` (`true`/`false`, default `true`) inputs.
+Set `publish=false` for a drafts-only preview run you review on `admin-challenges.php`; use
+`target` to re-run just one generator (e.g. after the other already succeeded but this one hit
+the job timeout).
 
 Runs `bin/generate-rumor-items.js` and `bin/generate-trivia-questions.js`, which call the
 Anthropic API to draft Rumor or Not items and Trivia questions from
-`paddock-rumors/data/knowledge-base.json`, then POST them as `status='draft'` rows to
-`public/tools/import-rumor-drafts.php` / `import-trivia-drafts.php`. Nothing is ever
-auto-published — an admin still reviews and publishes each batch on `admin-challenges.php`.
+`paddock-rumors/data/knowledge-base.json`, then POST them to
+`public/tools/import-rumor-drafts.php` / `import-trivia-drafts.php`. With `--publish` the import
+inserts `status='published'` (the request body carries `"status":"published"`); without it the
+endpoints default to `status='draft'`, preserving the old reviewable behavior.
 
 These scripts are local/CI-only by design (NFR-101) — they hold the Anthropic API key and must
 never run on shared hosting. Unlike the Cron Trigger Workflows above (which fetch a PHP
@@ -112,26 +117,41 @@ than read from a local `config.*.php` (both scripts prefer the env vars when set
 to the config file for local manual runs).
 
 Rumors and Trivia run as **separate parallel jobs** (`rumors`, `trivia`, both fed by a shared
-`resolve` job), each with its own 25-minute timeout and its own KB-usage-state commit
-immediately after its generator succeeds. A large batch (~95 items, e.g. a one-off full-KB
-top-up) takes roughly 12-15 minutes of sequential Claude calls — too long for both generators to
-fit sequentially in one job, and a single shared "commit state at the very end" step meant one
-generator timing out discarded the other's already-successful progress too. Each generator is
-also resilient to a single malformed Claude response (skips that item and keeps going, since
-drafts are only POSTed once at the end of the loop) rather than aborting the whole batch.
+`resolve` job), and each **fans out over an environment matrix** (`fail-fast: false`), so a
+scheduled run is up to four jobs — test/live × rumors/trivia. Each has its own 25-minute timeout
+and commits its own KB-usage state immediately after its generator succeeds. A large batch (~95
+items, e.g. a one-off full-KB top-up) takes roughly 12-15 minutes of sequential Claude calls —
+too long for both generators to fit sequentially in one job, and a single shared "commit state at
+the very end" step meant one generator timing out discarded the other's already-successful
+progress too.
 
-Each generator tracks which knowledge-base docs it has already drawn from in
-`bin/state/rumor-generator-state.json` / `trivia-generator-state.json`, committed back to the
-repo right after its own job succeeds (same convention as `paddock-rumors.yml`) so a doc isn't
-reused across runs. The knowledge base currently has under 100 docs shared by both
-generators — expect this to need attention (grow the KB, or allow reuse after a cooldown) after
-a few months of sustained weekly runs.
+Each generator tracks which knowledge-base docs it has already drawn from in a
+**per-environment** state file — `bin/state/{rumor,trivia}-generator-state.<env>.json` — committed
+back to the repo right after its own job succeeds (same convention as `paddock-rumors.yml`) so a
+doc isn't reused across runs *on that environment*. Per-env (not shared) so test and live stay
+independent: a shared file would burn the shared KB twice as fast and let a doc consumed on one
+env never reach the other. The knowledge base currently has under 100 docs — expect this to need
+attention (grow the KB, or allow reuse after a cooldown) after a few months of sustained weekly
+runs, per environment.
+
+That state commit is the **only** guard against a doc being redrawn — the import endpoints do a
+plain `INSERT` with no `source_ref` dedup — so the jobs' pushes must not clobber each other. They
+push the same branch in parallel, and every pusher but the first gets a non-fast-forward
+rejection. Each commit step therefore **rebase-and-retries** (`git pull --rebase --autostash &&
+git push`, up to 8 attempts with a short random backoff): the state files never conflict
+(different paths), so the rebase is always clean, and every job's progress lands regardless of
+ordering. Because the content is now published, a *dropped* push is sharper than before — the
+next run would redraw the same docs and produce **duplicate player-visible content**, not just
+duplicate drafts. **Job-level** `concurrency` groups (`content-topup-<env>-<generator>`,
+`cancel-in-progress: false`) keep a manual `workflow_dispatch` from overlapping the Friday
+schedule on the same env+generator — that would double the Claude spend, widen the push race, and
+risk two runs drawing the same unused docs into near-duplicate live content.
 
 **Required secrets/variables:** `BASE_URL_LIVE`, `BASE_URL_TEST`, `INTEGRATION_SEED_TOKEN`,
 `INTEGRATION_SEED_TOKEN_TEST`, `ANTHROPIC_API_KEY` (all already used by other workflows above —
 no new secrets to add).
 
-**Timeout:** 15 minutes per run.
+**Timeout:** 25 minutes per job.
 
 ---
 

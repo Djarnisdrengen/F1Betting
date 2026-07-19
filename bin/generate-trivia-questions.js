@@ -28,13 +28,32 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5';
 
 const KB_PATH = path.join(__dirname, '../paddock-rumors/data/knowledge-base.json');
-const STATE_PATH = path.join(__dirname, 'state/trivia-generator-state.json');
+const STATE_DIR = path.join(__dirname, 'state');
+
+// Per-environment KB-usage state — test and live each track which docs they've drawn
+// independently. A single shared file would burn the ~95-doc KB twice as fast and let a doc
+// consumed on test never reach live (and vice versa).
+function statePath(env) {
+    return path.join(STATE_DIR, `trivia-generator-state.${env}.json`);
+}
+
+// The upcoming Monday (strictly after today) in Europe/Copenhagen, as YYYY-MM-DD. Trivia
+// visibility (YEARWEEK(publish_date,3) = YEARWEEK(CURDATE(),3)) and the Perfect-Week cron both
+// key off publish_date's ISO week, so stamping the batch with next Monday makes it playable that
+// whole Mon–Sun week and scored the Monday after. Copenhagen to match the cron's week boundaries.
+function upcomingMonday(now = new Date()) {
+    const cph = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' }));
+    const daysUntilMon = ((8 - cph.getDay()) % 7) || 7; // Sun→1 … Fri→3 … always strictly-next Monday
+    cph.setDate(cph.getDate() + daysUntilMon);
+    return `${cph.getFullYear()}-${String(cph.getMonth() + 1).padStart(2, '0')}-${String(cph.getDate()).padStart(2, '0')}`;
+}
 
 function parseArgs() {
-    const args = { env: 'test', count: 6 };
+    const args = { env: 'test', count: 6, publish: false };
     for (const arg of process.argv.slice(2)) {
         const m = arg.match(/^--(\w+)=(.*)$/);
-        if (m) args[m[1]] = m[2];
+        if (m) { args[m[1]] = m[2]; continue; }
+        if (arg === '--publish') args.publish = true; // bare flag: auto-publish instead of draft
     }
     args.count = parseInt(args.count, 10) || 6;
     return args;
@@ -98,7 +117,9 @@ ${QUESTION_JSON_SHAPE}`;
 }
 
 async function main() {
-    const { env, count } = parseArgs();
+    const { env, count, publish } = parseArgs();
+    const stateFile = statePath(env);
+    const publishDate = upcomingMonday();
 
     if (!fs.existsSync(KB_PATH)) {
         console.error(`❌ Knowledge base not found at ${KB_PATH}`);
@@ -107,8 +128,8 @@ async function main() {
     const kb = JSON.parse(fs.readFileSync(KB_PATH, 'utf8'));
 
     let state = { usedKbIds: [] };
-    if (fs.existsSync(STATE_PATH)) {
-        state = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'));
+    if (fs.existsSync(stateFile)) {
+        state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
     }
 
     const unused = kb.filter((doc) => !state.usedKbIds.includes(doc.id));
@@ -139,6 +160,9 @@ async function main() {
     }
     if (skipped > 0) console.log(`⚠️  ${skipped} question(s) skipped due to parse/API errors.`);
 
+    // Stamp every item with the upcoming Monday so the batch is playable that whole ISO week.
+    for (const it of items) it.publish_date = publishDate;
+
     // Env vars win when set (CI: GitHub Actions secrets/vars, no config.*.php checked out
     // there); otherwise fall back to the local config file, same as generate-rumor-items.js.
     let baseUrl = process.env.SITE_URL;
@@ -158,11 +182,12 @@ async function main() {
         process.exit(1);
     }
 
-    console.log(`📤 Importing ${items.length} drafts to ${baseUrl} (${env})...`);
+    const status = publish ? 'published' : 'draft';
+    console.log(`📤 Importing ${items.length} ${status} question(s) to ${baseUrl} (${env}), publish_date ${publishDate}...`);
     const res = await fetch(`${baseUrl}/tools/import-trivia-drafts.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ items, status }),
     });
     const body = await res.json();
     if (!res.ok || !body.ok) {
@@ -170,10 +195,11 @@ async function main() {
         process.exit(1);
     }
 
-    fs.mkdirSync(path.dirname(STATE_PATH), { recursive: true });
-    fs.writeFileSync(STATE_PATH, JSON.stringify(state, null, 2));
+    fs.mkdirSync(STATE_DIR, { recursive: true });
+    fs.writeFileSync(stateFile, JSON.stringify(state, null, 2));
 
-    console.log(`✅ Imported ${body.inserted} drafts. Review them on admin-challenges.php.`);
+    console.log(`✅ Imported ${body.inserted} ${status} question(s) (playable week of ${publishDate}).`);
+    if (!publish) console.log('   Review them on admin-challenges.php.');
     if (body.errors?.length) console.warn('⚠️  Some items were skipped:', body.errors);
 }
 

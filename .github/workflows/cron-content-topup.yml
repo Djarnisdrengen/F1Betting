@@ -2,30 +2,44 @@
 #
 # Weekly generator run for both content-driven Challenges competitions (Rumor or Not, Trivia).
 # Draws from the same paddock-rumors knowledge base as paddock-rumors.yml, via Claude, and
-# imports results as drafts (status='draft') on the target environment — never auto-published;
-# an admin still reviews and publishes them on admin-challenges.php. Scheduled a few days ahead
-# of the existing Monday Perfect-Week cron (cron-challenges.yml) so there's a fresh batch ready
-# to review over the weekend before the new week's content is needed.
+# imports results directly as PUBLISHED content — the pipeline is fully unattended: no admin
+# review/publish step. Each item is stamped with the upcoming Monday as its publish_date, so the
+# whole batch goes live the following Monday 00:00 and (for trivia) is playable that entire ISO
+# week, scored by the Monday-after Perfect-Week cron (cron-challenges.yml).
 #
 # bin/generate-rumor-items.js and bin/generate-trivia-questions.js are local/CI-only (NFR-101 on
 # the rumor generator; same reasoning applies to trivia) — they call the Anthropic API directly
 # and must never run on shared hosting, unlike the PHP cron endpoints the other cron-*.yml
 # workflows hit. No config.*.php is checked out here, so SITE_URL/INTEGRATION_SEED_TOKEN are
 # passed as env vars (repo Variables/Secrets) instead — both scripts already prefer these over
-# reading a local config file when set.
+# reading a local config file when set. The --publish flag makes the import endpoints insert
+# status='published' instead of the default 'draft'.
 #
-# The scheduled run always targets test, both generators — matches the deploy:live convention
-# of requiring an explicit directive for anything touching production (this writes drafts
-# unattended, on a timer, with real API spend; nothing here is player-visible until an admin
-# publishes it, but that's not the same as it being fine to run against live with no human in
-# the loop). A live batch is a deliberate workflow_dispatch run with environment=live. Also use
-# workflow_dispatch to re-run just one generator (e.g. after the other already succeeded).
+# The scheduled run targets BOTH test and live (a matrix), each with --publish. This deliberately
+# reverses the old "drafts on test only, human publishes" model — the product decision is a fully
+# automated weekly content drop on live, with test kept in sync for development. Content quality
+# goes out unreviewed (malformed Claude JSON is still skipped per-item, but a wrong trivia answer
+# or an off rumor reaches players with no gate). A manual workflow_dispatch can still target a
+# single environment, choose count/target, and set publish=false for a drafts-only preview run.
 #
-# Rumors and Trivia run as separate parallel jobs, each committing its own KB-usage state
-# right after its own generator succeeds — a large batch (~95 items) takes ~12-15 minutes of
-# sequential Claude calls each, which doesn't fit both in one job's budget back-to-back, and a
-# single shared "commit at the very end" step meant one generator failing/timing out discarded
-# the other's already-successful state update too (surfaced by the first real full-KB run).
+# Rumors and Trivia run as separate parallel jobs, and each fans out over the environment matrix,
+# so a scheduled run is up to four jobs (test/live × rumors/trivia). Each job commits its OWN
+# per-environment KB-usage state right after its generator succeeds — test and live track usage
+# in separate files (bin/state/{rumor,trivia}-generator-state.{env}.json) so they stay
+# independent (sharing one file would burn the ~95-doc KB twice as fast and let a doc used on one
+# env never reach the other), and committing per-job means one generator failing/timing out never
+# discards another's already-successful state update (fail-fast is off for the same reason).
+#
+# Because those jobs push the SAME branch in parallel, every pusher but the first hits a
+# non-fast-forward rejection. The state push is therefore idempotent-under-concurrency: each job
+# rebase-and-retries until its commit lands (the four state files never conflict — different
+# paths — so the rebase is always clean). This matters: the KB-usage state is the ONLY thing that
+# stops a doc being redrawn (the import does a plain INSERT, no source_ref dedup), so a dropped
+# push would silently reproduce the same cards/questions on the next run — and now those are
+# PUBLISHED, i.e. duplicate content visible to players, not just duplicate drafts. Job-level
+# concurrency groups (keyed on env + generator) additionally keep a manual dispatch from
+# overlapping the Friday schedule on the same env+generator (double Claude spend + a wider push
+# race + near-duplicate live content from two runs drawing the same unused docs).
 
 name: Cron — Content Top-up
 
@@ -33,7 +47,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Target environment'
+        description: 'Target environment (manual run — the schedule always does both)'
         required: false
         default: 'test'
         type: choice
@@ -48,6 +62,12 @@ on:
         default: 'both'
         type: choice
         options: ['both', 'rumors', 'trivia']
+      publish:
+        description: 'Publish immediately (false = import as drafts for review)'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
   schedule:
     - cron: '0 6 * * 5' # Friday 06:00 UTC
 
@@ -58,58 +78,95 @@ jobs:
   resolve:
     runs-on: ubuntu-latest
     outputs:
-      env: ${{ steps.target.outputs.env }}
+      environments: ${{ steps.target.outputs.environments }}
       count: ${{ steps.target.outputs.count }}
       target: ${{ steps.target.outputs.target }}
+      publish: ${{ steps.target.outputs.publish }}
     steps:
       - id: target
+        env:
+          EVENT: ${{ github.event_name }}
+          IN_ENV: ${{ github.event.inputs.environment }}
+          IN_TARGET: ${{ github.event.inputs.target }}
+          IN_PUBLISH: ${{ github.event.inputs.publish }}
+          IN_COUNT: ${{ github.event.inputs.count }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "env=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
-            echo "target=${{ github.event.inputs.target || 'both' }}" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            # IN_ENV is a constrained choice input (test|live) — safe to interpolate into JSON.
+            echo "environments=[\"$IN_ENV\"]" >> "$GITHUB_OUTPUT"
+            echo "target=${IN_TARGET:-both}" >> "$GITHUB_OUTPUT"
+            echo "publish=${IN_PUBLISH:-true}" >> "$GITHUB_OUTPUT"
           else
-            echo "env=test" >> "$GITHUB_OUTPUT"
+            echo 'environments=["test","live"]' >> "$GITHUB_OUTPUT"
             echo "target=both" >> "$GITHUB_OUTPUT"
+            echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
-          echo "count=${{ github.event.inputs.count || '6' }}" >> "$GITHUB_OUTPUT"
+          echo "count=${IN_COUNT:-6}" >> "$GITHUB_OUTPUT"
 
   rumors:
     needs: resolve
     if: needs.resolve.outputs.target == 'both' || needs.resolve.outputs.target == 'rumors'
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false # a live failure must not cancel the test job, and vice versa
+      matrix:
+        environment: ${{ fromJSON(needs.resolve.outputs.environments) }}
+    # Serialize same-env+generator runs across workflows (schedule vs manual dispatch) so they
+    # can't overlap and draw the same unused docs; test-rumors and live-rumors stay independent.
+    concurrency:
+      group: content-topup-${{ matrix.environment }}-rumors
+      cancel-in-progress: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Generate rumor drafts
+      - name: Generate rumor cards
         env:
-          SITE_URL: ${{ needs.resolve.outputs.env == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
-          INTEGRATION_SEED_TOKEN: ${{ needs.resolve.outputs.env == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node bin/generate-rumor-items.js --env=${{ needs.resolve.outputs.env }} --count=${{ needs.resolve.outputs.count }}
+        run: node bin/generate-rumor-items.js --env=${{ matrix.environment }} --count=${{ needs.resolve.outputs.count }} ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
 
-      # KB usage state (bin/state/rumor-generator-state.json) tracks which docs have already
-      # been drawn for a real-fact card, shared across scheduled runs — committed here (not in
-      # a later shared step) so this job's progress is saved even if the trivia job fails.
+      # KB usage state (bin/state/rumor-generator-state.<env>.json) tracks which docs have already
+      # been drawn for a real-fact card on this environment — committed here (not in a later shared
+      # step) so this job's progress is saved even if another matrix/trivia job fails.
       - name: Commit rumor KB usage state if changed
+        env:
+          STATE_FILE: bin/state/rumor-generator-state.${{ matrix.environment }}.json
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add bin/state/rumor-generator-state.json 2>/dev/null || true
+          git add "$STATE_FILE" 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "no state changes — nothing to commit"
-          else
-            git commit -m "content-topup: rumor KB usage state ($(date -u +%Y-%m-%d))"
-            git pull --rebase && git push
+            exit 0
+          fi
+          git commit -m "content-topup: rumor KB usage state (${{ matrix.environment }}, $(date -u +%Y-%m-%d))"
+          # Up to four jobs push this branch in parallel; all but the first hit a non-fast-forward
+          # rejection. Rebase-and-retry so this job's state always lands — the state files never
+          # conflict (different paths), so the rebase is clean.
+          pushed=""
+          for attempt in $(seq 1 8); do
+            if git pull --rebase --autostash && git push; then
+              echo "state pushed (attempt $attempt)"
+              pushed=1
+              break
+            fi
+            echo "push attempt $attempt failed (concurrent push?) — retrying shortly"
+            sleep $((RANDOM % 5 + 2))
+          done
+          if [ -z "$pushed" ]; then
+            echo "::error::could not push rumor KB usage state after 8 attempts"
+            exit 1
           fi
 
   trivia:
@@ -117,35 +174,59 @@ jobs:
     if: needs.resolve.outputs.target == 'both' || needs.resolve.outputs.target == 'trivia'
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ fromJSON(needs.resolve.outputs.environments) }}
+    concurrency:
+      group: content-topup-${{ matrix.environment }}-trivia
+      cancel-in-progress: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Generate trivia drafts
+      - name: Generate trivia questions
         env:
-          SITE_URL: ${{ needs.resolve.outputs.env == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
-          INTEGRATION_SEED_TOKEN: ${{ needs.resolve.outputs.env == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node bin/generate-trivia-questions.js --env=${{ needs.resolve.outputs.env }} --count=${{ needs.resolve.outputs.count }}
+        run: node bin/generate-trivia-questions.js --env=${{ matrix.environment }} --count=${{ needs.resolve.outputs.count }} ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
 
-      # Same reasoning as the rumors job's state-commit step above — kept independent so
-      # this job's progress isn't lost if the rumors job fails/times out, and vice versa.
+      # Same reasoning as the rumors job's state-commit step above — kept independent so this
+      # job's progress isn't lost if another job fails/times out.
       - name: Commit trivia KB usage state if changed
+        env:
+          STATE_FILE: bin/state/trivia-generator-state.${{ matrix.environment }}.json
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add bin/state/trivia-generator-state.json 2>/dev/null || true
+          git add "$STATE_FILE" 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "no state changes — nothing to commit"
-          else
-            git commit -m "content-topup: trivia KB usage state ($(date -u +%Y-%m-%d))"
-            git pull --rebase && git push
+            exit 0
+          fi
+          git commit -m "content-topup: trivia KB usage state (${{ matrix.environment }}, $(date -u +%Y-%m-%d))"
+          # Same rebase-and-retry as the rumors job — whichever of the parallel jobs pushes later
+          # would otherwise fail on a non-fast-forward and lose its state.
+          pushed=""
+          for attempt in $(seq 1 8); do
+            if git pull --rebase --autostash && git push; then
+              echo "state pushed (attempt $attempt)"
+              pushed=1
+              break
+            fi
+            echo "push attempt $attempt failed (concurrent push?) — retrying shortly"
+            sleep $((RANDOM % 5 + 2))
+          done
+          if [ -z "$pushed" ]; then
+            echo "::error::could not push trivia KB usage state after 8 attempts"
+            exit 1
           fi

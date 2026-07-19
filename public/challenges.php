@@ -419,6 +419,9 @@ include __DIR__ . '/includes/header.php';
                 <i class="fas fa-gamepad" style="margin-right:8px;color:#ff6b35;"></i>
                 <?= t('ch_nav_challenges') ?>
             </h1>
+            <a href="challenges-rules.php" style="color:#f5f5f7;opacity:.75;font-size:13px;text-decoration:none;white-space:nowrap;">
+                <i class="fas fa-circle-question" style="margin-right:6px;"></i><?= t('ch_rules_link') ?>
+            </a>
         </div>
     </div>
 
@@ -443,6 +446,12 @@ include __DIR__ . '/includes/header.php';
                 <?= t('ch_trivia') ?>
             </a>
         </div>
+
+        <?php if (in_array($section, ['rumors', 'duels', 'trivia'], true)): ?>
+            <p style="font-size:13px;color:#a1a1aa;margin:-8px 0 16px;text-align:center;">
+                <?= t('ch_' . $section . '_desc') ?>
+            </p>
+        <?php endif; ?>
 
         <?php if ($section === 'overview'): ?>
             <?php if ($isPublic): ?>
@@ -707,8 +716,13 @@ include __DIR__ . '/includes/header.php';
                     <?php endif; ?>
 
                     <?php foreach ($friendResults as $fr): ?>
-                        <div data-testid="duel-search-result" data-participant-id="<?= escape($fr['id']) ?>" style="display:flex;align-items:center;justify-content:space-between;background:rgba(35,35,40,.7);border-radius:12px;padding:12px 16px;margin-bottom:8px;">
-                            <span style="font-weight:700;color:#f5f5f7;"><?= escape($fr['display_name']) ?></span>
+                        <div data-testid="duel-search-result" data-participant-id="<?= escape($fr['id']) ?>" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(35,35,40,.7);border-radius:12px;padding:12px 16px;margin-bottom:8px;">
+                            <span style="min-width:0;">
+                                <span style="display:block;font-weight:700;color:#f5f5f7;"><?= escape($fr['display_name']) ?></span>
+                                <?php if (!empty($fr['email_hint'])): ?>
+                                    <span data-testid="duel-search-email-hint" style="display:block;font-size:12px;color:#a1a1aa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= escape($fr['email_hint']) ?></span>
+                                <?php endif; ?>
+                            </span>
                             <form method="POST">
                                 <?= csrfField() ?>
                                 <input type="hidden" name="action" value="challenge_friend">
@@ -825,7 +839,11 @@ include __DIR__ . '/includes/header.php';
                             <div data-testid="duel-locked-in" style="margin-top:14px;text-align:center;">
                                 <span class="hf-badge open"><?= t('ch_locked_in') ?></span>
                                 <?php if (!$viewDuel['locked']): ?>
-                                    <div style="font-size:12px;color:#a1a1aa;margin-top:8px;"><?= sprintf(t('ch_duel_waiting_for'), $viewDuel['other_name']) ?></div>
+                                    <?php if ($viewDuel['other_pick']): ?>
+                                        <div data-testid="duel-waiting-race" style="font-size:12px;color:#a1a1aa;margin-top:8px;"><?= t('ch_duel_waiting_race') ?></div>
+                                    <?php else: ?>
+                                        <div data-testid="duel-waiting-opponent" style="font-size:12px;color:#a1a1aa;margin-top:8px;"><?= sprintf(t('ch_duel_waiting_for'), $viewDuel['other_name']) ?></div>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>

@@ -1,8 +1,10 @@
 <?php
-// Import endpoint for bin/generate-trivia-questions.js. Writes challenge_trivia_questions
-// rows with status='draft' only — inert until an admin publishes them on admin-challenges.php,
-// so this is safe to call against any environment (test or live). Mirrors
-// import-rumor-drafts.php's Bearer auth pattern.
+// Import endpoint for bin/generate-trivia-questions.js. Writes challenge_trivia_questions rows.
+// Defaults to status='draft' (inert until an admin publishes on admin-challenges.php), but the
+// caller may pass {"status":"published"} to insert them already live — the automated
+// cron-content-topup.yml pipeline uses this to publish unattended. A published import IS
+// immediately player-visible, so the Bearer token is a publish-to-live capability, not just a
+// staging one. Mirrors import-rumor-drafts.php's Bearer auth pattern.
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../includes/functions.php';
 
@@ -23,6 +25,9 @@ if (!is_array($items) || empty($items)) {
     exit;
 }
 
+// Default to draft; only an explicit "published" flips it live. Anything else is treated as draft.
+$status = (($payload['status'] ?? 'draft') === 'published') ? 'published' : 'draft';
+
 $db = getDB();
 $inserted = 0;
 $errors = [];
@@ -30,7 +35,7 @@ $errors = [];
 $stmt = $db->prepare("
     INSERT INTO challenge_trivia_questions
     (id, question_da, question_en, options_da, options_en, correct_option, topic, explain_da, explain_en, status, publish_date, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, NOW())
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
 ");
 
 foreach ($items as $i => $item) {
@@ -67,6 +72,7 @@ foreach ($items as $i => $item) {
         trim($item['topic'] ?? ''),
         trim($item['explain_da'] ?? ''),
         trim($item['explain_en'] ?? ''),
+        $status,
         $item['publish_date'] ?? date('Y-m-d'),
     ]);
     $inserted++;
