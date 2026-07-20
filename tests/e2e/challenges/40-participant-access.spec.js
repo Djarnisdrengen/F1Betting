@@ -8,6 +8,7 @@
 // must never inherit a core session; several cases assert exactly that.
 const { test, expect } = require('@playwright/test');
 const seed = require('../../helpers/seed');
+const { assertDelivered } = require('../../helpers/email');
 
 const BASE = () => process.env.BASE_URL;
 const PW = 'E2ETestPassword2026!';
@@ -92,5 +93,39 @@ test.describe('Participant access & persistence', { tag: '@challenges' }, () => 
         await page.goto(`/challenges-verify.php?invite=${friend_token}`);
         await page.waitForURL(/challenges\.php/);
         await expect(page.getByTestId('cp-chip')).toBeVisible();
+    });
+
+    // A returning guest with no password set (so the ch_access cookie is their only way
+    // back in) loses that cookie on a new device. challenges-join.php re-enters them as
+    // the SAME participant — not a fresh one — via a freshly emailed magic link, and the
+    // page now carries a hint clarifying it also serves this "get back in" purpose.
+    test('returning guest without a password re-enters via challenges-join.php on a new device', async ({ browser }) => {
+        const email = tstEmail('rejoin');
+        const { participant_id } = await seed.challengeParticipant({ email, status: 'verified' });
+        await seed.challengePoints({ participant_id, points: 7, source_ref: 'test:rejoin' });
+
+        // A fresh context with no cookies at all — simulates a device with no ch_access cookie.
+        const freshCtx = await browser.newContext();
+        const freshPage = await freshCtx.newPage();
+
+        await freshPage.goto('/challenges-join.php');
+        await expect(freshPage.getByTestId('ch-join-returning-hint')).toBeVisible();
+        await freshPage.fill('input[name="email"]', email);
+        await freshPage.click('button[type="submit"]');
+        await expect(freshPage.locator('.alert-success')).toBeVisible();
+
+        const msgs = await assertDelivered(email);
+        const match = msgs[0].html.match(/challenges-verify\.php\?token=[a-f0-9]+/);
+        expect(match, 'join email missing a magic link').toBeTruthy();
+
+        await freshPage.goto('/' + match[0]);
+        await freshPage.waitForURL(/challenges-profile\.php\?tab=tab-account/);
+        await expect(freshPage.getByTestId('tab-account-panel')).toBeVisible();
+
+        // Same participant, not a fresh one — CP earned before this device existed carries over.
+        await freshPage.goto('/challenges.php');
+        await expect(freshPage.getByTestId('cp-chip')).toContainText('7');
+
+        await freshCtx.close();
     });
 });

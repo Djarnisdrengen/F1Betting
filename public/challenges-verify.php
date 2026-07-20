@@ -93,7 +93,9 @@ if (!$error && $magicToken) {
         session_regenerate_id(true);
         issueAccessToken($db, $participantId);
 
-        header("Location: /challenges.php");
+        // Straight to the Account tab: this is the moment they became a verified guest,
+        // and that's where set-password + request-membership live.
+        header("Location: /challenges-profile.php?tab=tab-account");
         exit;
     }
 
@@ -112,14 +114,14 @@ include __DIR__ . '/includes/header.php';
         <div class="card">
             <div class="card-body">
                 <div style="text-align:center;margin-bottom:20px;">
-                    <div style="width:64px;height:64px;background:var(--f1-red);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+                    <div style="width:64px;height:64px;background:var(--f1-accent-challenges);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-triangle-exclamation" style="font-size:2rem;color:white;"></i>
                     </div>
                     <h2 style="margin:0 0 6px;"><?= t('ch_verify_title') ?></h2>
                 </div>
 
                 <div class="alert alert-error"><?= escape($error) ?></div>
-                <a href="/challenges-join.php" class="btn btn-primary" style="width:100%;">
+                <a href="/challenges-join.php" class="btn btn-primary btn-accent-challenges" style="width:100%;">
                     <?= t('ch_verify_request_new_link') ?>
                 </a>
 

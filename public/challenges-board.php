@@ -78,7 +78,7 @@ include __DIR__ . '/includes/header.php';
     <div class="hf-arena-header">
         <div style="display:flex;align-items:center;justify-content:space-between;">
             <h1 style="margin:0;font-size:24px;font-weight:700;color:#f5f5f7;">
-                <i class="fas fa-trophy" style="margin-right:8px;color:#ff6b35;"></i>
+                <i class="fas fa-bolt" style="margin-right:8px;color:var(--f1-accent-challenges);"></i>
                 <?= t('ch_public_board') ?>
             </h1>
         </div>

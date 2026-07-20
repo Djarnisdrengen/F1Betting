@@ -39,7 +39,7 @@ test.describe('Context-aware home hero', { tag: ['@challenges', '@mobile'] }, ()
             email: tstEmail('hero'), status: 'verified', display_name: 'Hero Tester',
         });
         await seed.challengePoints({ participant_id, points: 42, source_ref: 'test:hero-cp' });
-        await seed.challengeAnswer({ participant_id, correct: 1 }); // today's action → streak 1
+        await seed.challengeAnswer({ participant_id, correct: 1 }); // this week's action → streak 1 (streak is weekly, not daily)
         const { token } = await seed.challengeAccessToken({ participant_id });
         await page.context().addCookies([{ name: 'ch_access', value: token, url: process.env.BASE_URL }]);
 

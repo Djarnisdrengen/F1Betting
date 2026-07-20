@@ -120,8 +120,7 @@ try {
         </span>
     </a>
     <?php if ($challengeParticipant): ?>
-    <a class="hf-cp-chip" href="/challenges.php" data-testid="cp-chip" title="<?= t('ch_challenge_points') ?>"
-       style="display:inline-flex;align-items:center;gap:6px;margin-left:auto;margin-right:12px;padding:4px 10px;border-radius:999px;background:rgba(230,6,0,.14);color:var(--f1-red-light);font-family:var(--mono,monospace);font-size:12px;font-weight:700;text-decoration:none;">
+    <a class="hf-cp-chip" href="/challenges.php" data-testid="cp-chip" aria-hidden="true" tabindex="-1">
         <i class="fas fa-bolt" aria-hidden="true"></i><?= intval($challengeCP) ?> CP
     </a>
     <?php endif; ?>
@@ -156,11 +155,11 @@ try {
     </a>
     <?php endif; ?>
     <a href="challenges.php" class="hf-drawer-row <?= $currentPage === 'challenges' ? 'active' : '' ?>" style="position:relative;">
-        <i class="fas fa-gamepad" style="color:var(--f1-red);"></i><span><?= t('ch_nav_challenges') ?></span>
+        <i class="fas fa-gamepad" style="color:var(--f1-accent-challenges);"></i><span><?= t('ch_nav_challenges') ?></span>
         <span class="hf-badge open" style="margin-left:auto;padding:2px 8px;font-size:9px;"><?= t('ch_new_badge') ?></span>
     </a>
-    <a href="challenges-board.php" class="hf-drawer-row">
-        <i class="fas fa-arrow-up-right-from-square"></i><span><?= t('ch_public_board') ?></span>
+    <a href="challenges-board.php" class="hf-drawer-row <?= $currentPage === 'challenges-board' ? 'active' : '' ?>">
+        <i class="fas fa-bolt" style="color:var(--f1-accent-challenges);"></i><span><?= t('ch_public_board') ?></span>
     </a>
     <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
     <a href="admin.php" class="hf-drawer-row <?= $currentPage === 'admin' ? 'active' : '' ?>">
@@ -174,6 +173,9 @@ try {
     <?php elseif ($challengeParticipant): ?>
     <a href="challenges-profile.php" class="hf-drawer-row <?= $currentPage === 'challenges-profile' ? 'active' : '' ?>">
         <i class="fas fa-user"></i><span><?= t('profile') ?></span>
+        <?php if (empty($challengeParticipant['core_user_id']) && empty($challengeParticipant['promotion_requested_at'])): ?>
+            <span class="hf-badge-dot" style="margin-left:auto;" aria-hidden="true" data-testid="nav-profile-promo-dot"></span>
+        <?php endif; ?>
     </a>
     <?php endif; ?>
     <?php if ($currentUser): ?>

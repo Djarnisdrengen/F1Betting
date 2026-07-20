@@ -115,6 +115,10 @@ return [
         'security_no_attempts'      => 'Ingen forsøg inden for de sidste 15 minutter',
         'login_attempts_cleared'    => 'Loginforsøg nulstillet!',
 
+        // Admin area switcher (admin.php <-> admin-challenges.php)
+        'admin_area_core'            => 'Core',
+        'admin_area_challenges'      => 'Challenges',
+
         // Paddock Challenges — promotion queue (Feature 4) + suppressions (Feature 5)
         'admin_ch_title'             => 'Challenges — medlemskab',
         'admin_ch_promotion_queue'   => 'Anmodninger om fuldt medlemskab',
@@ -208,8 +212,8 @@ return [
         'admin_ch_rumor_list_empty'  => 'Ingen rygter matcher filteret.',
         'admin_ch_trivia_week'       => 'Uge %s · %d/6 spørgsmål',
         'admin_ch_bulk_select_all'   => 'Vælg alle',
-        'admin_ch_bulk_publish'      => 'Udgiv valgte',
-        'admin_ch_bulk_unpublish'    => 'Fjern valgte',
+        'admin_ch_bulk_publish'      => 'Publicér valgte',
+        'admin_ch_bulk_unpublish'    => 'Afpublicér valgte',
         'admin_ch_bulk_delete'       => 'Slet valgte',
         'admin_ch_bulk_delete_confirm' => 'Slet de valgte elementer? Dette kan ikke fortrydes.',
         'admin_ch_bulk_selected'     => '%d valgt',
@@ -354,6 +358,10 @@ return [
         'security_clear'            => 'Clear',
         'security_no_attempts'      => 'No attempts in the last 15 minutes',
         'login_attempts_cleared'    => 'Login attempts cleared!',
+
+        // Admin area switcher (admin.php <-> admin-challenges.php)
+        'admin_area_core'            => 'Core',
+        'admin_area_challenges'      => 'Challenges',
 
         // Paddock Challenges — promotion queue (Feature 4) + suppressions (Feature 5)
         'admin_ch_title'             => 'Challenges — membership',

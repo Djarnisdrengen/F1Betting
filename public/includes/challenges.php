@@ -323,10 +323,17 @@ function getCpLeaderboard(PDO $db, int $limit = null): array {
     return $db->query($sql)->fetchAll();
 }
 
+// Consecutive ISO weeks (Mon-Sun, Europe/Copenhagen) with any CP-earning action — weekly, not
+// daily, because Rumor/Trivia content now arrives as one atomic batch a week (Friday-generated,
+// Monday-live; see docs/paddock-challenges-reference.md "Content pipeline"), so an engaged
+// player naturally clears a week's content in one sitting and has nothing new until the next
+// Monday. A day-granularity streak broke on that gap every week regardless of loyalty; this
+// metric only breaks when a full ISO week passes with no action at all.
 function getChallengeStreak(PDO $db, string $participantId): int {
     $tz = new DateTimeZone('Europe/Copenhagen');
     $today = new DateTime('today', $tz);
-    $yesterday = (clone $today)->modify('-1 day');
+    $thisWeekMonday = (clone $today)->modify('-' . ((int)$today->format('N') - 1) . ' days');
+    $lastWeekMonday = (clone $thisWeekMonday)->modify('-7 days');
 
     // No CONVERT_TZ: the DB server's NOW()/CURRENT_TIMESTAMP already returns Europe/Copenhagen
     // local time (config.shared.php sets the same PHP-side default), so answered_at/submitted_at
@@ -352,24 +359,32 @@ function getChallengeStreak(PDO $db, string $participantId): int {
         return 0;
     }
 
-    $streak = 0;
-    $currentDate = null;
-
+    // Collapse action dates to their distinct week-start (Monday) date, preserving order —
+    // several actions in the same ISO week must only count once.
+    $weekStarts = [];
     foreach ($dates as $dateStr) {
-        $actionDate = new DateTime($dateStr, $tz);
+        $d = new DateTime($dateStr, $tz);
+        $monday = (clone $d)->modify('-' . ((int)$d->format('N') - 1) . ' days')->format('Y-m-d');
+        if (empty($weekStarts) || end($weekStarts) !== $monday) {
+            $weekStarts[] = $monday;
+        }
+    }
 
-        if ($currentDate === null) {
-            $currentDate = $actionDate;
-            if ($actionDate->format('Y-m-d') === $today->format('Y-m-d') ||
-                $actionDate->format('Y-m-d') === $yesterday->format('Y-m-d')) {
+    $streak = 0;
+    $currentWeek = null;
+
+    foreach ($weekStarts as $weekStr) {
+        if ($currentWeek === null) {
+            if ($weekStr === $thisWeekMonday->format('Y-m-d') || $weekStr === $lastWeekMonday->format('Y-m-d')) {
+                $currentWeek = new DateTime($weekStr, $tz);
                 $streak = 1;
             } else {
                 return 0;
             }
         } else {
-            $expected = (clone $currentDate)->modify('-1 day');
-            if ($actionDate->format('Y-m-d') === $expected->format('Y-m-d')) {
-                $currentDate = $actionDate;
+            $expected = (clone $currentWeek)->modify('-7 days');
+            if ($weekStr === $expected->format('Y-m-d')) {
+                $currentWeek = $expected;
                 $streak++;
             } else {
                 break;

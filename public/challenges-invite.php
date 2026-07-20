@@ -94,10 +94,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 MINUTE), NOW())
                         ")->execute([$participant['id'], $mt]);
 
-                        $confirmUrl = SITE_URL . "/challenges-verify.php?token=" . $mt;
-                        $confirmHtml = "<p>" . t('email_magic_greeting') . "</p><p>" . t('email_magic_intro') . "</p>"
-                            . "<p><a href=\"$confirmUrl\" style=\"display:inline-block;padding:10px 20px;background:#e60600;color:#fff;text-decoration:none;border-radius:6px;\">"
-                            . t('email_magic_button') . "</a></p><p><small>" . t('email_magic_expiry') . "</small></p>";
+                        $confirmUrl  = SITE_URL . "/challenges-verify.php?token=" . $mt;
+                        $appName     = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+                        $confirmHtml = getEmailTemplate(
+                            t('email_magic_greeting'),
+                            t('email_magic_intro'),
+                            t('email_magic_button'),
+                            $confirmUrl,
+                            t('email_magic_expiry'),
+                            t('email_magic_ignore'),
+                            sprintf(t('email_footer'), $appName),
+                            $appName
+                        );
                         sendEmail($ownEmail, t('email_magic_subject'), $confirmHtml);
                         try { recordLoginAttempt($db, $ip, 'magic', $ownEmail); } catch (Exception $e) {}
                     }
@@ -113,16 +121,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $displayName = $participant['display_name'] ?: t('ch_a_friend');
                 [$inviteId, $friendToken] = createChallengeInvite($db, $participant['id'], $game, $itemIds, $score, $friendEmail);
 
-                $inviteUrl   = SITE_URL . "/challenges-verify.php?invite=" . $friendToken;
-                $gameName    = $game === 'trivia' ? t('ch_trivia') : t('ch_rumors');
-                $optoutToken = hash_hmac('sha256', strtolower(trim($friendEmail)), CHALLENGE_INVITE_SECRET);
-                $optoutUrl   = SITE_URL . "/challenges-optout.php?e=" . urlencode($friendEmail) . "&t=" . $optoutToken;
-                $inviteHtml  = "<p>" . t('ch_email_invite_greeting') . "</p>"
-                    . "<p>" . sprintf(t('ch_email_invite_intro'), escape($displayName), escape($gameName)) . "</p>"
-                    . "<p><a href=\"$inviteUrl\" style=\"display:inline-block;padding:10px 20px;background:#e60600;color:#fff;text-decoration:none;border-radius:6px;\">"
-                    . t('ch_email_invite_button') . "</a></p><p><small>" . t('ch_email_invite_ignore') . "</small></p>"
-                    . "<p style=\"color:#888;font-size:12px;\">" . sprintf(t('ch_email_invite_whyline'), escape($displayName))
-                    . " <a href=\"$optoutUrl\">" . t('ch_email_invite_optout') . "</a></p>";
+                $inviteUrl    = SITE_URL . "/challenges-verify.php?invite=" . $friendToken;
+                $gameName     = $game === 'trivia' ? t('ch_trivia') : t('ch_rumors');
+                $optoutToken  = hash_hmac('sha256', strtolower(trim($friendEmail)), CHALLENGE_INVITE_SECRET);
+                $optoutUrl    = SITE_URL . "/challenges-optout.php?e=" . urlencode($friendEmail) . "&t=" . $optoutToken;
+                $appName      = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+                $inviteFooter = sprintf(t('ch_email_invite_whyline'), escape($displayName))
+                    . ' <a href="' . $optoutUrl . '">' . t('ch_email_invite_optout') . '</a>';
+                $inviteHtml   = getEmailTemplate(
+                    t('ch_email_invite_greeting'),
+                    sprintf(t('ch_email_invite_intro'), escape($displayName), escape($gameName)),
+                    t('ch_email_invite_button'),
+                    $inviteUrl,
+                    '',
+                    t('ch_email_invite_ignore'),
+                    $inviteFooter,
+                    $appName
+                );
                 sendEmail($friendEmail, t('ch_email_invite_subject'), $inviteHtml);
                 try { recordLoginAttempt($db, $ip, 'invite', $friendEmail); } catch (Exception $e) {}
             }
@@ -141,7 +156,7 @@ include __DIR__ . '/includes/header.php';
         <div class="card">
             <div class="card-body">
                 <div style="text-align:center;margin-bottom:20px;">
-                    <div style="width:64px;height:64px;background:var(--f1-red);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+                    <div style="width:64px;height:64px;background:var(--f1-accent-challenges);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-paper-plane" style="font-size:2rem;color:white;"></i>
                     </div>
                     <h2 style="margin:0 0 6px;"><?= t('ch_invite_title') ?></h2>
@@ -154,7 +169,7 @@ include __DIR__ . '/includes/header.php';
 
                 <?php if ($done): ?>
                     <div class="alert alert-success"><?= t('ch_invite_success') ?></div>
-                    <a href="/challenges.php" class="btn btn-primary" style="width:100%;">
+                    <a href="/challenges.php" class="btn btn-primary btn-accent-challenges" style="width:100%;">
                         <?= t('ch_verify_go_to_challenges') ?>
                     </a>
                 <?php else: ?>
@@ -174,7 +189,7 @@ include __DIR__ . '/includes/header.php';
                             <input type="email" name="friend_email" class="form-input" required placeholder="ven@email.dk">
                         </div>
 
-                        <button type="submit" class="btn btn-primary" style="width:100%;">
+                        <button type="submit" class="btn btn-primary btn-accent-challenges" style="width:100%;">
                             <?= t('ch_invite_send') ?>
                         </button>
                     </form>

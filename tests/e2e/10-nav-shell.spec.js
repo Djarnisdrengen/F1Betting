@@ -21,11 +21,11 @@ test.describe('Bottom bar — four destinations', { tag: '@appearance' }, () => 
         await expect(page.locator('.hf-bottom a[href="login.php"]')).toHaveCount(0);
     });
 
-    test('Challenges cell carries the accented red-square icon styling', async ({ page }) => {
+    test('Challenges cell carries the accented blue-square icon styling', async ({ page }) => {
         await page.goto('/');
         const icon = page.locator('.hf-bottom a[href="challenges.php"] .hf-bb-icon');
         await expect(icon).toHaveAttribute('style', /border-radius:\s*9px/);
-        await expect(icon).toHaveAttribute('style', /var\(--f1-red\)/);
+        await expect(icon).toHaveAttribute('style', /var\(--f1-accent-challenges\)/);
     });
 
     test('Board label reads "Board" (D5), distinct from the drawer\'s "Leaderboard" wording', async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('Bottom bar — four destinations', { tag: '@appearance' }, () => 
     });
 });
 
-test.describe('Drawer — Challenges + Public CP board rows', { tag: '@appearance' }, () => {
+test.describe('Drawer — Challenges + Challenge Leaderboard rows', { tag: '@appearance' }, () => {
     test('Challenges row carries a New badge and links to the hub', async ({ page }) => {
         await page.goto('/');
         await page.click('.hf-hamburger');
@@ -47,7 +47,7 @@ test.describe('Drawer — Challenges + Public CP board rows', { tag: '@appearanc
         await expect(row.locator('.hf-badge.open')).toBeVisible();
     });
 
-    test('Public CP leaderboard row links to challenges-board.php', async ({ page }) => {
+    test('Challenge Leaderboard row links to challenges-board.php', async ({ page }) => {
         await page.goto('/');
         await page.click('.hf-hamburger');
         await expect(page.locator('.hf-drawer a[href="challenges-board.php"]')).toBeVisible();

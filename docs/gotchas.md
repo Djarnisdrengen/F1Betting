@@ -22,6 +22,7 @@
 - [18. Migrations are manual per environment — the deploy schema check catches forgotten ones](#18-migrations-are-manual-per-environment--the-deploy-schema-check-catches-forgotten-ones)
 - [19. The test-environment banner is gated by APP_ENV — never loosen the guard](#19-the-test-environment-banner-is-gated-by-app_env--never-loosen-the-guard)
 - [20. Passkeys are bound to PASSKEY_RPID — a one-way door per environment](#20-passkeys-are-bound-to-passkey_rpid--a-one-way-door-per-environment)
+- [21. Every `.hf-drawer-row` needs its own active-state check — there's no shared mechanism](#21-every-hf-drawer-row-needs-its-own-active-state-check--theres-no-shared-mechanism)
 
 ---
 
@@ -217,3 +218,13 @@ Consequences to keep in mind:
 - **Registration and challenge verification must always ship together.** A member's *first* `user_passkeys` row immediately gates their password login, so a deploy that carries registration without the `mfa_challenge.php` passkey block + `webauthn.php` verify actions locks that member down to recovery codes.
 - **Sign counts are advisory.** Most platform authenticators always report 0; the clone check in `passkeyAssertVerify()` only rejects when both stored and new counters are non-zero. Don't "harden" it into a lockout — you'd lock out every iCloud/Google-synced passkey.
 - The vendored library is pinned in `public/includes/webauthn/VERSION`; bump it only via the documented update procedure (re-copy, diff, rerun `tests/unit/passkey-harness.php` + the auth E2E suite).
+
+---
+
+## 21. Every `.hf-drawer-row` needs its own active-state check — there's no shared mechanism
+
+The burger drawer (`public/includes/header.php`) highlights the current page with `.hf-drawer-row.active` (background tint, coloured icon, red trailing bar via `.hf-drawer-row.active::after`). There's no central logic that derives this from the URL — **each row does it itself**, inline: `class="hf-drawer-row <?= $currentPage === 'races' ? 'active' : '' ?>"`.
+
+Copy-pasting a row without updating that string is silent: the link still works, the icon renders, nothing errors — it just never highlights, on any page, ever. This exact bug shipped on the `challenges-board.php` row (added without the check) and went unnoticed until someone visited that page and asked where the marker was.
+
+When adding a new drawer row, always include `$currentPage === '<page-basename-without-.php>' ? 'active' : ''` — match it against the other rows in the same file, don't assume it's inherited from anywhere.

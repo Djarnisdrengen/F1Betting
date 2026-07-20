@@ -56,7 +56,7 @@ include __DIR__ . '/includes/header.php';
 .hf-rules-num {
     font-weight: 900;
     font-size: 26px;
-    color: #ff6b35;
+    color: var(--f1-accent-challenges);
     line-height: 1;
 }
 </style>
@@ -67,7 +67,7 @@ include __DIR__ . '/includes/header.php';
             <i class="fas fa-arrow-left" style="margin-right:6px;"></i><?= t('ch_back_to_overview') ?>
         </a>
         <h1 style="margin:0;font-size:22px;font-weight:700;color:#f5f5f7;">
-            <i class="fas fa-book" style="margin-right:8px;color:#ff6b35;"></i>
+            <i class="fas fa-book" style="margin-right:8px;color:var(--f1-accent-challenges);"></i>
             <?= t('ch_rules_heading') ?>
         </h1>
     </div>
@@ -101,9 +101,9 @@ include __DIR__ . '/includes/header.php';
 
         <div style="text-align:center;margin-top:8px;">
             <?php if ($participant): ?>
-            <a href="challenges.php" class="btn btn-primary"><?= t('ch_verify_go_to_challenges') ?></a>
+            <a href="challenges.php" class="btn btn-primary btn-accent-challenges"><?= t('ch_verify_go_to_challenges') ?></a>
             <?php else: ?>
-            <a href="challenges-join.php" class="btn btn-primary"><?= t('ch_play_now') ?></a>
+            <a href="challenges-join.php" class="btn btn-primary btn-accent-challenges"><?= t('ch_play_now') ?></a>
             <?php endif; ?>
         </div>
     </div>

@@ -200,11 +200,61 @@ test.describe('Participant profile (Feature 3)', { tag: '@challenges' }, () => {
         await page.goto('/challenges-profile.php?tab=tab-account');
         const requestForm = page.locator('form:has(input[name="action"][value="request_core"])');
         await expect(requestForm).toBeVisible();
+        await expect(page.getByTestId('account-tab-promo-dot')).toBeVisible();
         await requestForm.locator('button[type="submit"]').click();
 
         await page.waitForURL(/tab=tab-account/);
         await expect(page.locator('.alert-success')).toBeVisible();
         await expect(page.locator('.alert-info')).toBeVisible();
         await expect(page.locator('form:has(input[name="action"][value="request_core"])')).toHaveCount(0);
+        await expect(page.getByTestId('account-tab-promo-dot')).toHaveCount(0);
+    });
+
+    // Owner-confirm magic link (challenges-verify.php ?token=) now lands directly on the
+    // Account tab instead of the general hub — that's where set-password and
+    // request-membership live, so a freshly-verified guest sees them immediately.
+    test('owner-confirm magic link lands on the Account tab', async ({ page }) => {
+        const email = tstEmail('prof06verify');
+        const { participant_id } = await seed.challengeParticipant({ email, status: 'pending' });
+        const { token } = await seed.challengeMagicLink({ participant_id });
+
+        await page.goto(`/challenges-verify.php?token=${token}`);
+        await page.waitForURL(/challenges-profile\.php\?tab=tab-account/);
+        await expect(page.getByTestId('tab-account-panel')).toBeVisible();
+        await expect(page.locator('form:has(input[name="action"][value="set_password"])')).toBeVisible();
+        await expect(page.getByTestId('account-tab-promo-dot')).toBeVisible();
+    });
+
+    // Nav-drawer "Profile" row carries a promo dot while the guest is verified, not
+    // core-linked, and hasn't already requested membership — and loses it as soon as
+    // a request is filed.
+    test('nav Profile row shows a promo dot only while eligible to request membership', async ({ page }) => {
+        const email = tstEmail('prof07nav');
+        const { participant_id } = await seed.challengeParticipant({ email, status: 'verified' });
+        await establishSession(page, participant_id);
+
+        await page.goto('/challenges.php');
+        await page.click('.hf-hamburger');
+        await expect(page.getByTestId('nav-profile-promo-dot')).toBeVisible();
+
+        await page.goto('/challenges-profile.php?tab=tab-account');
+        await page.locator('form:has(input[name="action"][value="request_core"]) button[type="submit"]').click();
+        await page.waitForURL(/tab=tab-account/);
+
+        await page.goto('/challenges.php');
+        await page.click('.hf-hamburger');
+        await expect(page.getByTestId('nav-profile-promo-dot')).toHaveCount(0);
+    });
+
+    // An already-promoted guest (core_user_id set) never sees the dot, even browsing under
+    // their old ch_access session before they've logged into the new core account.
+    test('nav Profile row hides the promo dot for an already-promoted guest', async ({ page }) => {
+        const email = tstEmail('prof08promoted');
+        const { participant_id } = await seed.convertedGuest({ email });
+        await establishSession(page, participant_id);
+
+        await page.goto('/challenges.php');
+        await page.click('.hf-hamburger');
+        await expect(page.getByTestId('nav-profile-promo-dot')).toHaveCount(0);
     });
 });

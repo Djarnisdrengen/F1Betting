@@ -351,6 +351,18 @@ if ($section === 'duels') {
     [$duelDrivers, $duelDriversById] = fetchDrivers($db);
 }
 
+if ($section === 'overview' && $participant) {
+    // Perfect Week tracker sizes to however many trivia questions actually published this
+    // ISO week — content-gen doesn't guarantee a fixed count (a malformed Claude response
+    // is skipped per-item, not fatal to the batch), so a hardcoded box count drifts from
+    // the real target the weekly cron (challenge_weekly.php) awards the +20 CP bonus against.
+    $pwWeekTotal = (int)$db->query("
+        SELECT COUNT(*) FROM challenge_trivia_questions
+        WHERE status='published' AND YEARWEEK(publish_date, 3) = YEARWEEK(CURDATE(), 3)
+    ")->fetchColumn();
+    $pwIsoWeek = (int)(new DateTime('today', new DateTimeZone('Europe/Copenhagen')))->format('W');
+}
+
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -376,7 +388,7 @@ include __DIR__ . '/includes/header.php';
     background: repeating-conic-gradient(#f5f5f7 0 25%, #0b0b0d 0 50%) 0 0/14px 14px;
     height: 8px;
 }
-.hf-seg {
+.hf-ch-tabs {
     display: flex;
     gap: 8px;
     background: rgba(35, 35, 40, 0.62);
@@ -384,7 +396,7 @@ include __DIR__ . '/includes/header.php';
     border-radius: 8px;
     margin: 16px 0;
 }
-.hf-seg a {
+.hf-ch-tabs a {
     flex: 1;
     padding: 8px 12px;
     background: transparent;
@@ -398,9 +410,9 @@ include __DIR__ . '/includes/header.php';
     text-decoration: none;
     text-align: center;
 }
-.hf-seg a.active {
+.hf-ch-tabs a.active {
     background: rgba(35, 35, 40, 0.7);
-    color: #ff6b35;
+    color: var(--f1-accent-challenges);
 }
 .hf-scoreboard {
     background: rgba(35, 35, 40, 0.62);
@@ -416,7 +428,7 @@ include __DIR__ . '/includes/header.php';
     <div class="hf-arena-header">
         <div style="display:flex;align-items:center;justify-content:space-between;">
             <h1 style="margin:0;font-size:24px;font-weight:700;color:#f5f5f7;">
-                <i class="fas fa-gamepad" style="margin-right:8px;color:#ff6b35;"></i>
+                <i class="fas fa-gamepad" style="margin-right:8px;color:var(--f1-accent-challenges);"></i>
                 <?= t('ch_nav_challenges') ?>
             </h1>
             <a href="challenges-rules.php" style="color:#f5f5f7;opacity:.75;font-size:13px;text-decoration:none;white-space:nowrap;">
@@ -432,7 +444,7 @@ include __DIR__ . '/includes/header.php';
     </div>
 
     <div class="hf-container" style="padding:20px;color:#f5f5f7;">
-        <div class="hf-seg">
+        <div class="hf-ch-tabs">
             <a href="?section=overview" class="<?= $section === 'overview' ? 'active' : '' ?>">
                 <?= t('ch_overview') ?>
             </a>
@@ -446,6 +458,12 @@ include __DIR__ . '/includes/header.php';
                 <?= t('ch_trivia') ?>
             </a>
         </div>
+
+        <?php if ($isPublic): ?>
+            <p style="font-size:12px;color:#a1a1aa;margin:-8px 0 16px;text-align:center;" data-testid="ch-public-guest-banner">
+                <?= t('ch_public_guest_banner') ?>
+            </p>
+        <?php endif; ?>
 
         <?php if (in_array($section, ['rumors', 'duels', 'trivia'], true)): ?>
             <p style="font-size:13px;color:#a1a1aa;margin:-8px 0 16px;text-align:center;">
@@ -462,7 +480,7 @@ include __DIR__ . '/includes/header.php';
                     <p style="font-size:14px;color:#f5f5f7;margin-bottom:30px;">
                         <?= t('ch_hero_sub') ?>
                     </p>
-                    <a href="challenges-join.php" class="btn btn-primary">
+                    <a href="challenges-join.php" class="btn btn-primary btn-accent-challenges">
                         <?= t('ch_play_now') ?>
                     </a>
                 </div>
@@ -489,6 +507,9 @@ include __DIR__ . '/includes/header.php';
                             <div style="font-size:28px;font-weight:700;color:#34d399;">
                                 <?= getChallengeStreak($db, $participant['id']) ?>
                             </div>
+                            <div style="font-size:11px;color:#a1a1aa;margin-top:6px;line-height:1.4;">
+                                <?= t('ch_streak_explainer') ?>
+                            </div>
                         </div>
                     </div>
 
@@ -499,15 +520,18 @@ include __DIR__ . '/includes/header.php';
 
                 <div class="hf-scoreboard">
                     <h2 style="margin:0 0 16px;font-size:16px;font-weight:700;">
-                        <?= t('ch_perfect_week') ?>
+                        <?= sprintf(t('ch_perfect_week_heading'), $pwIsoWeek) ?>
                     </h2>
                     <?php $pwCount = getTriviaCorrectThisWeek($db, $participant['id']); ?>
-                    <div data-testid="perfect-week-tracker" data-filled="<?= $pwCount ?>" style="display:flex;gap:8px;">
-                        <?php for ($i = 0; $i < 6; $i++): ?>
+                    <div data-testid="perfect-week-tracker" data-filled="<?= $pwCount ?>" data-total="<?= $pwWeekTotal ?>" style="display:flex;gap:8px;">
+                        <?php for ($i = 0; $i < $pwWeekTotal; $i++): ?>
                             <div style="width:40px;height:40px;background:<?= $i < $pwCount ? 'var(--gold, #fbbf24)' : 'rgba(35,35,40,.7)' ?>;border-radius:8px;display:flex;align-items:center;justify-content:center;color:<?= $i < $pwCount ? '#1a1a1a' : '#f5f5f7' ?>;font-weight:700;font-size:12px;">
                                 <?php if ($i < $pwCount): ?><i class="fa-solid fa-check"></i><?php else: ?><?= ($i + 1) ?><?php endif; ?>
                             </div>
                         <?php endfor; ?>
+                    </div>
+                    <div style="font-size:11px;color:#a1a1aa;margin-top:10px;line-height:1.4;">
+                        <?= t('ch_perfect_week_explainer') ?>
                     </div>
                 </div>
             <?php endif; ?>
@@ -523,7 +547,7 @@ include __DIR__ . '/includes/header.php';
                     <div style="font-size:13px;margin-top:6px;color:#a1a1aa;">
                         <?= t('ch_deck_cleared_sub') ?>
                     </div>
-                    <a href="challenges-invite.php?game=rumor_or_not" class="btn btn-primary" style="margin-top:16px;display:inline-block;">
+                    <a href="challenges-invite.php?game=rumor_or_not" class="btn btn-primary btn-accent-challenges" style="margin-top:16px;display:inline-block;">
                         <?= t('ch_challenge_a_friend') ?>
                     </a>
                     <div style="margin-top:12px;">
@@ -582,7 +606,7 @@ include __DIR__ . '/includes/header.php';
                         </div>
                     </form>
                 <?php else: ?>
-                    <a href="?section=rumors" data-testid="rumor-next" class="btn btn-primary" style="width:100%;margin-top:16px;display:block;text-align:center;">
+                    <a href="?section=rumors" data-testid="rumor-next" class="btn btn-primary btn-accent-challenges" style="width:100%;margin-top:16px;display:block;text-align:center;">
                         <?= $rumorCurrent ? t('ch_next_card') : t('ch_finish_deck') ?> <span aria-hidden="true">&rarr;</span>
                     </a>
                 <?php endif; ?>
@@ -617,7 +641,7 @@ include __DIR__ . '/includes/header.php';
                             <?= t('ch_all_caught_up_sub') ?>
                         <?php endif; ?>
                     </div>
-                    <a href="challenges-invite.php?game=trivia" class="btn btn-primary" style="margin-top:16px;display:inline-block;">
+                    <a href="challenges-invite.php?game=trivia" class="btn btn-primary btn-accent-challenges" style="margin-top:16px;display:inline-block;">
                         <?= t('ch_challenge_a_friend') ?>
                     </a>
                     <div style="margin-top:12px;">
@@ -683,7 +707,7 @@ include __DIR__ . '/includes/header.php';
                                 <?= escape($q['explain_' . $lang] ?: $q['explain_da']) ?>
                             </div>
                         </div>
-                        <a href="?section=trivia" data-testid="trivia-next" class="btn btn-primary" style="width:100%;margin-top:13px;display:block;text-align:center;">
+                        <a href="?section=trivia" data-testid="trivia-next" class="btn btn-primary btn-accent-challenges" style="width:100%;margin-top:13px;display:block;text-align:center;">
                             <?= $triviaCurrent ? t('ch_next_question') : t('ch_finish_quiz') ?> <span aria-hidden="true">&rarr;</span>
                         </a>
                         <script nonce="<?= $nonce ?>">hfToast(<?= json_encode($q['correct'] ? sprintf(t('ch_toast_cp'), 5) : t('ch_toast_miss')) ?>);</script>
@@ -699,7 +723,7 @@ include __DIR__ . '/includes/header.php';
             <?php if (!$isVerifiedParticipant): ?>
                 <div data-testid="duel-verify-prompt" style="text-align:center;padding:40px 20px;">
                     <p style="font-size:14px;color:#a1a1aa;margin-bottom:20px;"><?= t('ch_duel_verify_prompt') ?></p>
-                    <a href="challenges-join.php" class="btn btn-primary"><?= t('ch_play_now') ?></a>
+                    <a href="challenges-join.php" class="btn btn-primary btn-accent-challenges"><?= t('ch_play_now') ?></a>
                 </div>
 
             <?php elseif ($duelMode === 'challenge'): ?>
@@ -708,7 +732,7 @@ include __DIR__ . '/includes/header.php';
                         <input type="hidden" name="section" value="duels">
                         <input type="hidden" name="mode" value="challenge">
                         <input type="text" name="q" value="<?= escape($friendQuery) ?>" placeholder="<?= t('ch_duel_search_placeholder') ?>" data-testid="duel-search-input" style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid rgba(245,245,247,.15);background:rgba(35,35,40,.7);color:#f5f5f7;">
-                        <button type="submit" class="btn btn-primary"><?= t('ch_duel_search') ?></button>
+                        <button type="submit" class="btn btn-primary btn-accent-challenges"><?= t('ch_duel_search') ?></button>
                     </form>
 
                     <?php if ($friendQuery !== '' && empty($friendResults)): ?>
@@ -727,7 +751,7 @@ include __DIR__ . '/includes/header.php';
                                 <?= csrfField() ?>
                                 <input type="hidden" name="action" value="challenge_friend">
                                 <input type="hidden" name="opponent_id" value="<?= escape($fr['id']) ?>">
-                                <button type="submit" data-testid="duel-challenge-btn" class="btn btn-primary btn-sm"><?= t('ch_duel_challenge_button') ?></button>
+                                <button type="submit" data-testid="duel-challenge-btn" class="btn btn-primary btn-accent-challenges btn-sm"><?= t('ch_duel_challenge_button') ?></button>
                             </form>
                         </div>
                     <?php endforeach; ?>
@@ -829,7 +853,7 @@ include __DIR__ . '/includes/header.php';
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
-                                    <button type="submit" data-testid="duel-pick-submit" class="btn btn-primary" style="width:100%;margin-top:14px;"><?= t('ch_accept_lock') ?></button>
+                                    <button type="submit" data-testid="duel-pick-submit" class="btn btn-primary btn-accent-challenges" style="width:100%;margin-top:14px;"><?= t('ch_accept_lock') ?></button>
                                 </form>
                                 <?php if (!empty($_GET['pickerror'])): ?>
                                     <div class="alert alert-error" style="margin-top:10px;"><?= t('ch_duel_pick_error') ?></div>
@@ -865,7 +889,7 @@ include __DIR__ . '/includes/header.php';
                             <form method="POST" style="flex:1;">
                                 <?= csrfField() ?>
                                 <input type="hidden" name="action" value="quick_match">
-                                <button type="submit" data-testid="duel-quick-match-btn" class="btn btn-primary" style="width:100%;"><?= t('ch_quick_match') ?></button>
+                                <button type="submit" data-testid="duel-quick-match-btn" class="btn btn-primary btn-accent-challenges" style="width:100%;"><?= t('ch_quick_match') ?></button>
                             </form>
                             <a href="?section=duels&mode=challenge" data-testid="duel-challenge-friend-link" class="btn btn-secondary" style="flex:1;text-align:center;"><?= t('ch_challenge_a_friend') ?></a>
                         </div>

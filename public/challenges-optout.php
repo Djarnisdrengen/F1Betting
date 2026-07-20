@@ -30,13 +30,13 @@ include __DIR__ . '/includes/header.php';
         <div class="card">
             <div class="card-body" style="text-align:center;">
                 <?php if ($valid): ?>
-                    <div style="width:64px;height:64px;background:var(--f1-red);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+                    <div style="width:64px;height:64px;background:var(--f1-accent-challenges);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-check" style="font-size:2rem;color:white;"></i>
                     </div>
                     <h2 style="margin:0 0 6px;"><?= t('ch_optout_confirmed_title') ?></h2>
                     <p class="text-muted" style="margin:0;"><?= t('ch_optout_confirmed_body') ?></p>
                 <?php else: ?>
-                    <div style="width:64px;height:64px;background:var(--f1-red);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+                    <div style="width:64px;height:64px;background:var(--f1-accent-challenges);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-triangle-exclamation" style="font-size:2rem;color:white;"></i>
                     </div>
                     <h2 style="margin:0 0 6px;"><?= t('ch_optout_invalid_title') ?></h2>

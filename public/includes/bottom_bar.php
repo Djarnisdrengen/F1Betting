@@ -15,7 +15,7 @@ $arenaTint = $currentPage === 'challenges' ? 'background: rgba(13,13,16,.95);' :
         <span><?= t('ch_nav_board') ?></span>
     </a>
     <a href="challenges.php" class="hf-bb-item <?= $currentPage === 'challenges' ? 'active' : '' ?>">
-        <div class="hf-bb-icon" style="background:var(--f1-red);color:#fff;border-radius:9px;width:30px;height:30px;box-shadow:0 3px 10px rgba(225,6,0,.5);">
+        <div class="hf-bb-icon" style="background:var(--f1-accent-challenges);color:#fff;border-radius:9px;width:30px;height:30px;box-shadow:0 3px 10px rgba(36,114,232,.5);">
             <i class="fas fa-gamepad"></i>
         </div>
         <span><?= t('ch_nav_challenges') ?></span>

@@ -189,7 +189,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
 <!-- Challenges slim strip (REQ-007) -->
 <div class="hf-container">
     <a href="challenges.php" class="clickable-card" data-testid="challenges-strip" style="margin-top:18px;border-radius:12px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border-color);display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
-        <div style="width:36px;height:36px;border-radius:10px;background:rgba(225,6,0,.14);color:var(--f1-red-light);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(36,114,232,.14);color:var(--f1-accent-challenges-light);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">
             <i class="fas fa-gamepad"></i>
         </div>
         <div style="flex:1;min-width:0;">
@@ -204,7 +204,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
 
 <?php else: ?>
 <!-- Challenges hero (REQ-006, between races) -->
-<section class="hf-hero" data-testid="challenges-hero" style="background:radial-gradient(circle at 84% -15%, rgba(225,6,0,.4), transparent 55%), radial-gradient(circle at 5% 125%, rgba(251,191,36,.14), transparent 50%), var(--bg-secondary);">
+<section class="hf-hero" data-testid="challenges-hero" style="background:radial-gradient(circle at 84% -15%, rgba(36,114,232,.4), transparent 55%), radial-gradient(circle at 5% 125%, rgba(251,191,36,.14), transparent 50%), var(--bg-secondary);">
     <div class="hf-container">
         <div class="hf-hero-inner">
             <div class="hf-hero-left">
@@ -229,7 +229,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
                 </div>
                 <?php endif; ?>
 
-                <a href="challenges.php" class="hf-cta-primary" style="margin-top:20px;"><?= t('ch_play_now') ?> <span class="arrow">→</span></a>
+                <a href="challenges.php" class="hf-cta-primary hf-cta-primary--challenges" style="margin-top:20px;"><?= t('ch_play_now') ?> <span class="arrow">→</span></a>
             </div>
         </div>
     </div>

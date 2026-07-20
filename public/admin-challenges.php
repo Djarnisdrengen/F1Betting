@@ -264,8 +264,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // publish_rumor_draft above, which is reachable only from inside the expanded edit
         // form and always carries the full field set). Posting just item_id through the
         // full-field UPDATE would blank out the item's text; this exists to avoid that.
+        // A NULL publish_date (e.g. a row imported before the generator/import endpoint set
+        // one) would leave the item published-but-invisible forever, since nextRumorItem()
+        // requires publish_date <= CURDATE() — backfill to today so Publish always means visible now.
         $itemId = sanitizeString($_POST['item_id'] ?? '');
-        $db->prepare("UPDATE challenge_items SET status = 'published' WHERE id = ?")->execute([$itemId]);
+        $db->prepare("
+            UPDATE challenge_items
+            SET status = 'published', publish_date = COALESCE(publish_date, CURDATE())
+            WHERE id = ?
+        ")->execute([$itemId]);
         $_SESSION['flash_success'] = t('admin_ch_rumor_published');
         header('Location: admin-challenges.php?tab=rumors&rumor_status=' . $rumorStatusFilter);
         exit;
@@ -354,9 +361,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
 
     } elseif ($action === 'quick_publish_trivia_question') {
-        // Compact-row Publish — status only, mirrors quick_publish_rumor_item above.
+        // Compact-row Publish — mirrors quick_publish_rumor_item above, but trivia never rolls
+        // over past its ISO week (nextTriviaQuestion() requires the current YEARWEEK), so a NULL
+        // or stale (e.g. last week's) publish_date would leave it published-but-invisible until
+        // manually re-dated — backfill to today whenever the existing date can't show it this week.
         $questionId = sanitizeString($_POST['question_id'] ?? '');
-        $db->prepare("UPDATE challenge_trivia_questions SET status = 'published' WHERE id = ?")->execute([$questionId]);
+        $db->prepare("
+            UPDATE challenge_trivia_questions
+            SET status = 'published',
+                publish_date = IF(publish_date IS NULL OR YEARWEEK(publish_date, 3) != YEARWEEK(CURDATE(), 3), CURDATE(), publish_date)
+            WHERE id = ?
+        ")->execute([$questionId]);
         $_SESSION['flash_success'] = t('admin_ch_trivia_published');
         header('Location: admin-challenges.php?tab=trivia&trivia_status=' . $triviaStatusFilter);
         exit;
@@ -392,7 +407,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute($ids);
             } else {
                 $status = str_starts_with($action, 'bulk_publish_') ? 'published' : 'draft';
-                $stmt = $db->prepare("UPDATE $table SET status = ? WHERE id IN ($ph)");
+                if ($status === 'published') {
+                    // Same backfill as the quick-publish handlers above — a NULL (rumor) or
+                    // stale-week (trivia) publish_date would leave the bulk-published rows
+                    // invisible despite status='published'.
+                    $dateFix = $isTrivia
+                        ? "publish_date = IF(publish_date IS NULL OR YEARWEEK(publish_date, 3) != YEARWEEK(CURDATE(), 3), CURDATE(), publish_date)"
+                        : "publish_date = COALESCE(publish_date, CURDATE())";
+                    $stmt = $db->prepare("UPDATE $table SET status = ?, $dateFix WHERE id IN ($ph)");
+                } else {
+                    $stmt = $db->prepare("UPDATE $table SET status = ? WHERE id IN ($ph)");
+                }
                 $stmt->execute(array_merge([$status], $ids));
             }
             $count = $stmt->rowCount();
@@ -541,7 +566,24 @@ switch ($currentTab) {
 include __DIR__ . '/includes/header.php';
 ?>
 
+<div class="hf-container">
 <h1 class="mb-3"><i class="fas fa-user-check text-accent"></i> <?= t('admin_ch_title') ?></h1>
+
+<!-- Admin area switcher — mirrors the one on admin.php; this page is a separate top-level
+     area (not a tab of admin.php), so it gets a way back up there too. -->
+<nav class="admin-area-nav" aria-label="<?= t('admin') ?>">
+    <a href="admin.php" class="admin-area-tab">
+        <i class="fas fa-cog"></i>
+        <span><?= t('admin_area_core') ?></span>
+    </a>
+    <a href="admin-challenges.php" class="admin-area-tab active">
+        <i class="fas fa-user-check"></i>
+        <span><?= t('admin_area_challenges') ?></span>
+        <?php if ($tabCounts['members'] > 0): ?>
+            <span class="admin-area-badge"><?= $tabCounts['members'] ?></span>
+        <?php endif; ?>
+    </a>
+</nav>
 
 <?php if ($success): ?>
     <div class="alert alert-success"><?= escape($success) ?></div>
@@ -566,6 +608,7 @@ if (in_array($currentTab, $allowedTabs)) {
     include __DIR__ . "/includes/admin-challenges/{$currentTab}.php";
 }
 ?>
+</div>
 
 <!-- Collapsible "Add new" headers (Rumors/Trivia) — same mechanism as admin.php's own
      toggleForm script for "Add Race"/"Add Driver"; a no-op on tabs with no .toggleForm. -->

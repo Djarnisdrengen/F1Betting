@@ -76,13 +76,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $magicLink = SITE_URL . "/challenges-verify.php?token=" . $token;
 
-            $emailHtml = "
-                <p>" . t('ch_email_greeting') . "</p>
-                <p><a href=\"$magicLink\" style=\"display:inline-block;padding:10px 20px;background:#e60600;color:white;text-decoration:none;border-radius:6px;\">
-                    " . t('ch_email_magic_button') . "
-                </a></p>
-                <p><small>" . t('ch_email_link_expires') . "</small></p>
-            ";
+            $appName   = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'F1 Betting';
+            $emailHtml = getEmailTemplate(
+                t('ch_email_greeting'),
+                '',
+                t('ch_email_magic_button'),
+                $magicLink,
+                t('ch_email_link_expires'),
+                '',
+                sprintf(t('email_footer'), $appName),
+                $appName
+            );
 
             sendEmail($email, t('ch_email_magic_subject'), $emailHtml);
             try { recordLoginAttempt($db, $ip, 'magic', $email); } catch (Exception $e) {}
@@ -98,15 +102,18 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <div class="hf-container">
-    <div class="hf-auth-wrap">
+    <div class="hf-auth-wrap mt-3 mb-3">
         <div class="card">
             <div class="card-body">
                 <div style="text-align:center;margin-bottom:20px;">
-                    <div style="width:64px;height:64px;background:var(--f1-red);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+                    <div style="width:64px;height:64px;background:var(--f1-accent-challenges);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-gamepad" style="font-size:2rem;color:white;"></i>
                     </div>
                     <h2 style="margin:0 0 6px;"><?= t('ch_join_title') ?></h2>
                     <p class="text-muted" style="margin:0;"><?= t('ch_join_subtitle') ?></p>
+                    <?php if (!$success): ?>
+                        <p class="text-muted" style="margin:8px 0 0;font-size:13px;" data-testid="ch-join-returning-hint"><?= t('ch_join_returning_hint') ?></p>
+                    <?php endif; ?>
                 </div>
 
                 <?php if ($error): ?>
@@ -116,7 +123,7 @@ include __DIR__ . '/includes/header.php';
                 <?php if ($success): ?>
                     <div class="alert alert-success"><?= escape($success) ?></div>
                     <?php if ($coreUser ?? false): ?>
-                        <a href="/login.php" class="btn btn-primary" style="width:100%;">
+                        <a href="/login.php" class="btn btn-primary btn-accent-challenges" style="width:100%;">
                             <?= t('go_to_login') ?>
                         </a>
                     <?php else: ?>
@@ -131,7 +138,7 @@ include __DIR__ . '/includes/header.php';
                             <label class="form-label"><?= t('email') ?></label>
                             <input type="email" name="email" class="form-input" required placeholder="din@email.dk">
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width:100%;">
+                        <button type="submit" class="btn btn-primary btn-accent-challenges" style="width:100%;">
                             <?= t('ch_join_send_magic_link') ?>
                         </button>
                     </form>

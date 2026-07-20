@@ -693,7 +693,24 @@ switch ($currentTab) {
 include __DIR__ . '/includes/header.php';
 ?>
 
+<div class="hf-container">
 <h1 class="mb-3"><i class="fas fa-cog text-accent"></i> <?= t('admin') ?></h1>
+
+<!-- Admin area switcher — admin.php and admin-challenges.php are separate pages, not
+     tabs of one page, so this sits a level above the per-page tab row below. -->
+<nav class="admin-area-nav" aria-label="<?= t('admin') ?>">
+    <a href="admin.php" class="admin-area-tab active">
+        <i class="fas fa-cog"></i>
+        <span><?= t('admin_area_core') ?></span>
+    </a>
+    <a href="admin-challenges.php" class="admin-area-tab">
+        <i class="fas fa-user-check"></i>
+        <span><?= t('admin_area_challenges') ?></span>
+        <?php if ($challengesPromoCount > 0): ?>
+            <span class="admin-area-badge"><?= $challengesPromoCount ?></span>
+        <?php endif; ?>
+    </a>
+</nav>
 
 <?php if ($message): ?>
     <div class="alert alert-success"><?= escape($message) ?></div>
@@ -720,13 +737,6 @@ include __DIR__ . '/includes/header.php';
                 <?php endif; ?>
             </a>
         <?php endforeach; ?>
-        <a href="admin-challenges.php" class="admin-nav-tab">
-            <i class="fas fa-user-check"></i>
-            <span><?= t('admin_ch_title') ?></span>
-            <?php if ($challengesPromoCount > 0): ?>
-                <span class="admin-nav-count"><?= $challengesPromoCount ?></span>
-            <?php endif; ?>
-        </a>
     </nav>
 
 
@@ -736,6 +746,7 @@ include __DIR__ . '/includes/header.php';
         include __DIR__ . "/includes/admin/{$currentTab}.php";
     }
     ?>
+</div>
 </div>
 
 <script nonce="<?= $nonce ?>">
