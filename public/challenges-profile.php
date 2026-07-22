@@ -139,18 +139,9 @@ $displayName = $participant['display_name'] ?: ('Guest ' . substr($participant['
 include __DIR__ . '/includes/header.php';
 ?>
 
-<style>
-.hf-arena-base { background-color: #0b0b0d; }
-.hf-arena-header {
-    background: linear-gradient(90deg, #17171b, #0d0d10);
-    padding: 16px;
-    border-bottom: 1px solid rgba(245, 245, 247, 0.1);
-}
-</style>
-
 <div class="hf-arena-base" style="min-height:100vh;padding-bottom:80px;">
     <div class="hf-arena-header">
-        <h1 style="margin:0;font-size:24px;font-weight:700;color:#f5f5f7;">
+        <h1 style="margin:0;font-size:24px;font-weight:700;color:var(--text-primary);">
             <i class="fas fa-user text-accent" style="margin-right:8px;"></i>
             <?= t('ch_profile_title') ?>
         </h1>

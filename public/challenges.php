@@ -407,296 +407,20 @@ if ($section === 'overview' && $participant) {
 include __DIR__ . '/includes/header.php';
 ?>
 
-<style>
-@keyframes pp-fade { from { opacity:0; } to { opacity:1; } }
-@keyframes pp-pop  { from { opacity:0; transform:translateY(12px) scale(.98); } to { opacity:1; transform:none; } }
-@keyframes pp-drop { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
-.hf-arena-base { background-color: #0b0b0d; animation: pp-fade .25s ease; }
-.hf-arena-header {
-    background: linear-gradient(90deg, #17171b, #0d0d10);
-    padding: 16px;
-    border-bottom: 1px solid rgba(245, 245, 247, 0.1);
-}
-.hf-ch-tabs {
-    display: flex;
-    gap: 8px;
-    background: rgba(35, 35, 40, 0.62);
-    padding: 6px;
-    border-radius: 8px;
-    margin: 16px 0;
-}
-.hf-ch-tabs a {
-    flex: 1;
-    padding: 8px 12px;
-    background: transparent;
-    border: none;
-    color: #f5f5f7;
-    cursor: pointer;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
-    text-decoration: none;
-    text-align: center;
-}
-.hf-ch-tabs a.active {
-    background: rgba(35, 35, 40, 0.7);
-    color: var(--f1-accent-challenges);
-}
-.hf-scoreboard {
-    background: rgba(35, 35, 40, 0.62);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 16px 0;
-    box-shadow: 0 0 34px rgba(225, 6, 0, .16);
-    animation: pp-pop .28s ease;
-}
-
-/* ---- Hero, modeled on .hf-hero / the Challenges-hero variant on index.php ---- */
-.hf-ch-hero {
-    position: relative;
-    border-radius: 12px;
-    padding: 22px 20px;
-    margin: 16px 0;
-    overflow: hidden;
-    background:
-        radial-gradient(circle at 88% -10%, rgba(36, 114, 232, .35), transparent 55%),
-        radial-gradient(circle at 4% 120%, rgba(251, 191, 36, .12), transparent 50%),
-        rgba(35, 35, 40, .7);
-    border: 1px solid rgba(245, 245, 247, .08);
-    animation: pp-pop .28s ease;
-}
-.hf-ch-hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 10px 4px 8px;
-    border-radius: 999px;
-    background: rgba(36, 114, 232, .14);
-    border: 1px solid rgba(36, 114, 232, .4);
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    color: var(--f1-accent-challenges-light, #5b9bff);
-}
-.hf-ch-hero-eyebrow::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-    box-shadow: 0 0 8px currentColor;
-    animation: hf-ch-pulse 1.6s ease-in-out infinite;
-}
-@keyframes hf-ch-pulse { 50% { opacity: .45; transform: scale(.8); } }
-@media (prefers-reduced-motion: reduce) { .hf-ch-hero-eyebrow::before { animation: none; } }
-.hf-ch-hero-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 12px;
-}
-.hf-ch-hero-num {
-    font-family: var(--display);
-    font-weight: 900;
-    font-size: 34px;
-    line-height: 1;
-    color: #f5f5f7;
-    text-shadow: 0 0 24px rgba(251, 191, 36, .35);
-}
-.hf-ch-hero-title {
-    font-family: var(--display);
-    font-weight: 900;
-    font-size: 28px;
-    line-height: 1.05;
-    color: #f5f5f7;
-}
-.hf-ch-hero-sub {
-    font-size: 13px;
-    color: #a1a1aa;
-    margin-top: 8px;
-    line-height: 1.4;
-    max-width: 42ch;
-}
-.hf-ch-rank-pill {
-    flex-shrink: 0;
-    font-size: 12px;
-    font-weight: 700;
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(245, 245, 247, .12);
-    padding: 5px 10px;
-    border-radius: 999px;
-    color: #f5f5f7;
-    white-space: nowrap;
-    margin-top: 2px;
-}
-.hf-ch-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    margin: 0 0 14px;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(245, 245, 247, .14);
-    color: #f5f5f7;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    transition: background .15s, border-color .15s;
-}
-.hf-ch-back:hover { background: rgba(255, 255, 255, .14); border-color: rgba(245, 245, 247, .22); }
-.hf-ch-back i { font-size: 11px; }
-.hf-ch-hero-stats {
-    display: flex;
-    gap: 22px;
-    margin-top: 18px;
-    flex-wrap: wrap;
-}
-
-/* ---- Games Live Now (Overview) ---- */
-.hf-ch-games-kicker {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-    color: #a1a1aa;
-    margin: 22px 2px 10px;
-}
-.hf-ch-game-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(35, 35, 40, .5);
-    border: 1px solid rgba(245, 245, 247, .06);
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 10px;
-    text-decoration: none;
-    color: inherit;
-}
-.hf-ch-game-row.pending {
-    border-color: rgba(251, 191, 36, .5);
-    box-shadow: 0 0 0 1px rgba(251, 191, 36, .15) inset;
-}
-.hf-ch-game-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-}
-.hf-ch-game-icon.rumors { background: rgba(225, 6, 0, .16); color: #ff6b66; }
-.hf-ch-game-icon.trivia { background: rgba(36, 114, 232, .18); color: #5b9bff; }
-.hf-ch-game-icon.duels  { background: rgba(251, 191, 36, .18); color: #fbbf24; }
-.hf-ch-game-body { flex: 1; min-width: 0; }
-.hf-ch-game-name { font-weight: 700; font-size: 14.5px; color: #f5f5f7; }
-.hf-ch-game-meta { font-size: 11.5px; color: #a1a1aa; margin-top: 2px; }
-.hf-ch-game-progress {
-    height: 4px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, .08);
-    margin-top: 9px;
-    overflow: hidden;
-}
-.hf-ch-game-progress > span {
-    display: block;
-    height: 100%;
-    border-radius: 2px;
-    background: var(--f1-accent-challenges);
-}
-.hf-ch-game-right {
-    font-size: 12.5px;
-    color: #a1a1aa;
-    flex-shrink: 0;
-    font-variant-numeric: tabular-nums;
-}
-.hf-ch-game-right.cta {
-    background: var(--gold, #fbbf24);
-    color: #1a1206;
-    font-weight: 700;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    white-space: nowrap;
-}
-
-/* ---- Board (Challenge Leaderboard) ---- */
-.hf-ch-board-kicker {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-    color: #a1a1aa;
-    margin: 22px 2px 10px;
-}
-.hf-ch-board-row {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 14px;
-    align-items: center;
-    padding: 12px 14px;
-    background: rgba(35, 35, 40, .5);
-    border: 1px solid rgba(245, 245, 247, .06);
-    border-radius: 12px;
-    margin-bottom: 8px;
-    color: #f5f5f7;
-}
-.hf-ch-board-row.self {
-    border-color: rgba(36, 114, 232, .5);
-    box-shadow: 0 0 0 1px rgba(36, 114, 232, .15) inset;
-}
-.hf-ch-board-rank {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9px;
-    font-weight: 700;
-    font-size: 15px;
-    font-variant-numeric: tabular-nums;
-}
-.hf-ch-board-rank.r1 { background: #ffd700; color: #1a1a1a; }
-.hf-ch-board-rank.r2 { background: #c8c8d0; color: #1a1a1a; }
-.hf-ch-board-rank.r3 { background: #cd7f32; color: #1a1a1a; }
-.hf-ch-board-rank.other { background: rgba(255, 255, 255, .06); color: #f5f5f7; }
-.hf-ch-board-name { font-weight: 600; font-size: 14.5px; }
-.hf-ch-board-you {
-    font-family: monospace;
-    font-size: 10.5px;
-    color: var(--f1-accent-challenges-light, #5b9bff);
-    margin-left: 6px;
-    font-weight: 700;
-}
-.hf-ch-board-cp {
-    text-align: right;
-    font-weight: 700;
-    font-size: 17px;
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 0 20px rgba(251, 191, 36, .35);
-}
-</style>
-
 <div class="hf-arena-base" style="min-height:100vh;padding-bottom:80px;">
     <div class="hf-arena-header">
         <div style="display:flex;align-items:center;justify-content:space-between;">
-            <h1 style="margin:0;font-size:24px;font-weight:700;color:#f5f5f7;">
+            <h1 style="margin:0;font-size:24px;font-weight:700;color:var(--text-primary);">
                 <i class="fas fa-gamepad" style="margin-right:8px;color:var(--f1-accent-challenges);"></i>
                 <?= t('ch_nav_challenges') ?>
             </h1>
-            <a href="challenges-rules.php" style="color:#f5f5f7;opacity:.75;font-size:13px;text-decoration:none;white-space:nowrap;">
+            <a href="challenges-rules.php" style="color:var(--text-primary);opacity:.75;font-size:13px;text-decoration:none;white-space:nowrap;">
                 <i class="fas fa-circle-question" style="margin-right:6px;"></i><?= t('ch_rules_link') ?>
             </a>
         </div>
     </div>
 
-    <div class="hf-container" style="padding:20px;color:#f5f5f7;">
+    <div class="hf-container" style="padding:20px;color:var(--text-primary);">
         <div class="hf-ch-tabs">
             <a href="?section=rumors" class="<?= $section === 'rumors' ? 'active' : '' ?>">
                 <?= t('ch_rumors') ?>
@@ -719,7 +443,7 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <?php if ($isPublic): ?>
-            <p style="font-size:12px;color:#a1a1aa;margin:-8px 0 16px;text-align:center;" data-testid="ch-public-guest-banner">
+            <p style="font-size:12px;color:var(--text-secondary);margin:-8px 0 16px;text-align:center;" data-testid="ch-public-guest-banner">
                 <?= t('ch_public_guest_banner') ?>
             </p>
         <?php endif; ?>
@@ -806,7 +530,7 @@ include __DIR__ . '/includes/header.php';
 
                     <div class="hf-ch-hero-stats">
                         <div>
-                            <div class="hf-stat-n" style="font-size:22px;color:#34d399;">+<?= getChallengeCpThisWeek($db, $participant['id']) ?></div>
+                            <div class="hf-stat-n" style="font-size:22px;color:var(--status-success, #10b981);">+<?= getChallengeCpThisWeek($db, $participant['id']) ?></div>
                             <div class="hf-stat-l"><?= t('ch_this_week') ?></div>
                         </div>
                         <div>
@@ -826,12 +550,12 @@ include __DIR__ . '/includes/header.php';
                     </h2>
                     <div data-testid="perfect-week-tracker" data-filled="<?= $pwCount ?>" data-total="<?= $pwWeekTotal ?>" style="display:flex;gap:8px;">
                         <?php for ($i = 0; $i < $pwWeekTotal; $i++): ?>
-                            <div style="width:40px;height:40px;background:<?= $i < $pwCount ? 'var(--gold, #fbbf24)' : 'rgba(35,35,40,.7)' ?>;border-radius:8px;display:flex;align-items:center;justify-content:center;color:<?= $i < $pwCount ? '#1a1a1a' : '#f5f5f7' ?>;font-weight:700;font-size:12px;">
+                            <div style="width:40px;height:40px;background:<?= $i < $pwCount ? 'var(--gold, #fbbf24)' : 'var(--bg-card)' ?>;border-radius:8px;display:flex;align-items:center;justify-content:center;color:<?= $i < $pwCount ? '#1a1a1a' : 'var(--text-primary)' ?>;font-weight:700;font-size:12px;">
                                 <?php if ($i < $pwCount): ?><i class="fa-solid fa-check"></i><?php else: ?><?= ($i + 1) ?><?php endif; ?>
                             </div>
                         <?php endfor; ?>
                     </div>
-                    <div style="font-size:11px;color:#a1a1aa;margin-top:10px;line-height:1.4;">
+                    <div style="font-size:11px;color:var(--text-secondary);margin-top:10px;line-height:1.4;">
                         <?= t('ch_perfect_week_explainer') ?>
                     </div>
                 </div>
@@ -877,10 +601,10 @@ include __DIR__ . '/includes/header.php';
             <?php if ($rumorDone): ?>
                 <div data-testid="rumor-done" style="text-align:center;padding:44px 12px;">
                     <div style="font-size:38px;color:var(--gold, #fbbf24);"><i class="fa-solid fa-champagne-glasses"></i></div>
-                    <div style="font-family:var(--display, inherit);font-weight:800;font-size:19px;margin-top:12px;color:#f5f5f7;">
+                    <div style="font-family:var(--display, inherit);font-weight:800;font-size:19px;margin-top:12px;color:var(--text-primary);">
                         <?= t('ch_deck_cleared') ?>
                     </div>
-                    <div style="font-size:13px;margin-top:6px;color:#a1a1aa;">
+                    <div style="font-size:13px;margin-top:6px;color:var(--text-secondary);">
                         <?= t('ch_deck_cleared_sub') ?>
                     </div>
                     <a href="challenges-invite.php?game=rumor_or_not" class="btn btn-primary btn-accent-challenges" style="margin-top:16px;display:inline-block;">
@@ -890,12 +614,12 @@ include __DIR__ . '/includes/header.php';
             <?php else: ?>
                 <?php $card = $revealedItem ?: $rumorCurrent; $answered = (bool)$revealedItem; ?>
                 <div style="display:flex;align-items:center;justify-content:space-between;">
-                    <span style="font-size:13px;color:#a1a1aa;font-weight:600;"><?= t('ch_todays_deck') ?></span>
-                    <span style="font-size:12px;color:#a1a1aa;font-family:monospace;"><?= $answeredToday ?> / <?= $deckSize ?></span>
+                    <span style="font-size:13px;color:var(--text-secondary);font-weight:600;"><?= t('ch_todays_deck') ?></span>
+                    <span style="font-size:12px;color:var(--text-secondary);font-family:monospace;"><?= $answeredToday ?> / <?= $deckSize ?></span>
                 </div>
-                <div data-testid="rumor-card" style="border-radius:16px;background:rgba(35,35,40,.7);border:1.5px solid <?= $answered ? ($card['correct'] ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)') : 'rgba(245,245,247,.15)' ?>;padding:20px 18px;margin-top:12px;animation:pp-pop .28s ease;">
+                <div data-testid="rumor-card" style="border-radius:16px;background:var(--bg-card);border:1.5px solid <?= $answered ? ($card['correct'] ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)') : 'var(--border-color)' ?>;padding:20px 18px;margin-top:12px;animation:pp-pop .28s ease;">
                     <div style="display:flex;align-items:center;justify-content:space-between;">
-                        <span class="hf-badge" style="background:rgba(225,6,0,.14);color:#ff8a80;border:1px solid rgba(225,6,0,.4);padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;">
+                        <span class="hf-badge" style="background:rgba(225,6,0,.14);color:var(--f1-red-light, #ff8a80);border:1px solid rgba(225,6,0,.4);padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;">
                             <?= escape($card['context_' . $lang] ?: $card['context_da']) ?>
                         </span>
                         <?php if ($answered): ?>
@@ -904,17 +628,17 @@ include __DIR__ . '/includes/header.php';
                             </span>
                         <?php endif; ?>
                     </div>
-                    <div style="font-weight:800;font-size:18px;line-height:1.32;margin-top:15px;color:#f5f5f7;">
+                    <div style="font-weight:800;font-size:18px;line-height:1.32;margin-top:15px;color:var(--text-primary);">
                         <?= escape($card['text_' . $lang] ?: $card['text_da']) ?>
                     </div>
                     <?php if ($answered): ?>
-                        <div style="margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.08);">
+                        <div style="margin-top:14px;padding-top:13px;border-top:1px solid var(--border-color);">
                             <div data-testid="rumor-result" data-correct="<?= $card['correct'] ? '1' : '0' ?>" style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:<?= $card['correct'] ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)' ?>;">
                                 <i class="fa-solid <?= $card['correct'] ? 'fa-check' : 'fa-xmark' ?>"></i>
                                 <?= $card['correct'] ? t('ch_reveal_correct') : t('ch_reveal_missed') ?>
                                 <?php if ($card['correct']): ?> · <?= sprintf(t('ch_reveal_cp'), 10) ?><?php endif; ?>
                             </div>
-                            <div style="font-size:12.5px;line-height:1.5;margin-top:7px;color:#a1a1aa;">
+                            <div style="font-size:12.5px;line-height:1.5;margin-top:7px;color:var(--text-secondary);">
                                 <?= escape($card['explain_' . $lang] ?: $card['explain_da']) ?>
                             </div>
                         </div>
@@ -930,10 +654,10 @@ include __DIR__ . '/includes/header.php';
                         <?= csrfField() ?>
                         <input type="hidden" name="item_id" value="<?= escape($card['id']) ?>">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                            <button type="submit" name="guess_real" value="0" data-testid="rumor-guess-rumor" style="height:56px;border-radius:14px;border:1.5px solid var(--f1-red, #e10600);background:rgba(225,6,0,.12);color:#ff8a80;font-weight:800;font-size:15px;cursor:pointer;">
+                            <button type="submit" name="guess_real" value="0" data-testid="rumor-guess-rumor" style="height:56px;border-radius:14px;border:1.5px solid var(--f1-red, #e10600);background:rgba(225,6,0,.12);color:var(--f1-red-light, #ff8a80);font-weight:800;font-size:15px;cursor:pointer;">
                                 <?= t('ch_guess_rumor') ?>
                             </button>
-                            <button type="submit" name="guess_real" value="1" data-testid="rumor-guess-real" style="height:56px;border-radius:14px;border:1.5px solid var(--status-success, #10b981);background:rgba(16,185,129,.12);color:#34d399;font-weight:800;font-size:15px;cursor:pointer;">
+                            <button type="submit" name="guess_real" value="1" data-testid="rumor-guess-real" style="height:56px;border-radius:14px;border:1.5px solid var(--status-success, #10b981);background:rgba(16,185,129,.12);color:var(--status-success, #10b981);font-weight:800;font-size:15px;cursor:pointer;">
                                 <?= t('ch_guess_real') ?>
                             </button>
                         </div>
@@ -956,7 +680,7 @@ include __DIR__ . '/includes/header.php';
                     <div style="font-size:38px;color:var(--gold, #fbbf24);">
                         <i class="fa-solid <?= $weekPerfect ? 'fa-star' : 'fa-clipboard-check' ?>"></i>
                     </div>
-                    <div style="font-family:var(--display, inherit);font-weight:800;font-size:19px;margin-top:12px;color:#f5f5f7;">
+                    <div style="font-family:var(--display, inherit);font-weight:800;font-size:19px;margin-top:12px;color:var(--text-primary);">
                         <?php if ($weekPerfect): ?>
                             <?= t('ch_perfect_week') ?>
                         <?php elseif ($weekFinished): ?>
@@ -965,7 +689,7 @@ include __DIR__ . '/includes/header.php';
                             <?= t('ch_all_caught_up') ?>
                         <?php endif; ?>
                     </div>
-                    <div style="font-size:13px;margin-top:6px;color:#a1a1aa;">
+                    <div style="font-size:13px;margin-top:6px;color:var(--text-secondary);">
                         <?php if ($weekPerfect): ?>
                             <?= t('ch_perfect_week_sub') ?>
                         <?php elseif ($weekFinished): ?>
@@ -985,14 +709,14 @@ include __DIR__ . '/includes/header.php';
                     $options = json_decode($q['options_' . $lang] ?: $q['options_da'], true) ?: [];
                 ?>
                 <div style="display:flex;align-items:center;justify-content:space-between;">
-                    <span style="font-size:13px;color:#a1a1aa;font-weight:600;"><?= t('ch_weekly_quiz') ?></span>
-                    <span style="font-size:12px;color:#a1a1aa;font-family:monospace;"><?= $weekAnswered ?> / <?= $weekTotal ?></span>
+                    <span style="font-size:13px;color:var(--text-secondary);font-weight:600;"><?= t('ch_weekly_quiz') ?></span>
+                    <span style="font-size:12px;color:var(--text-secondary);font-family:monospace;"><?= $weekAnswered ?> / <?= $weekTotal ?></span>
                 </div>
-                <div data-testid="trivia-card" style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid rgba(245,245,247,.15);padding:20px 18px;margin-top:12px;animation:pp-pop .28s ease;">
-                    <span class="hf-badge" style="background:rgba(59,130,246,.14);color:#7fb2ff;border:1px solid rgba(59,130,246,.35);padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;">
+                <div data-testid="trivia-card" style="border-radius:16px;background:var(--bg-card);border:1px solid var(--border-color);padding:20px 18px;margin-top:12px;animation:pp-pop .28s ease;">
+                    <span class="hf-badge" style="background:rgba(59,130,246,.14);color:var(--f1-accent-challenges-light, #5b9bff);border:1px solid rgba(59,130,246,.35);padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;">
                         <?= escape(strtoupper($q['topic'])) ?>
                     </span>
-                    <div style="font-weight:800;font-size:18px;line-height:1.3;margin-top:14px;color:#f5f5f7;">
+                    <div style="font-weight:800;font-size:18px;line-height:1.3;margin-top:14px;color:var(--text-primary);">
                         <?= escape($q['question_' . $lang] ?: $q['question_da']) ?>
                     </div>
                     <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
@@ -1000,14 +724,14 @@ include __DIR__ . '/includes/header.php';
                             <?php
                                 $isCorrectOpt  = $answered && $idx === (int)$q['correct_option'];
                                 $isChosenWrong = $answered && !$isCorrectOpt && $idx === (int)$q['chosen_option'];
-                                $bg = 'rgba(255,255,255,.03)'; $border = 'rgba(245,245,247,.15)'; $color = '#f5f5f7';
-                                if ($isCorrectOpt) { $bg = 'rgba(16,185,129,.14)'; $border = 'var(--status-success, #10b981)'; $color = '#34d399'; }
-                                elseif ($isChosenWrong) { $bg = 'rgba(225,6,0,.14)'; $border = 'var(--f1-red, #e10600)'; $color = '#ff8a80'; }
-                                elseif ($answered) { $color = '#71717a'; }
+                                $bg = 'var(--bg-hover)'; $border = 'var(--border-color)'; $color = 'var(--text-primary)';
+                                if ($isCorrectOpt) { $bg = 'rgba(16,185,129,.14)'; $border = 'var(--status-success, #10b981)'; $color = 'var(--status-success, #10b981)'; }
+                                elseif ($isChosenWrong) { $bg = 'rgba(225,6,0,.14)'; $border = 'var(--f1-red, #e10600)'; $color = 'var(--f1-red-light, #ff8a80)'; }
+                                elseif ($answered) { $color = 'var(--text-muted)'; }
                             ?>
                             <?php if ($answered): ?>
                                 <div data-testid="trivia-option" data-idx="<?= $idx ?>" style="display:flex;align-items:center;gap:11px;text-align:left;padding:13px 14px;border-radius:12px;background:<?= $bg ?>;border:1.5px solid <?= $border ?>;color:<?= $color ?>;font-weight:600;font-size:14px;">
-                                    <span style="width:22px;height:22px;flex-shrink:0;border-radius:6px;background:rgba(255,255,255,.06);color:#a1a1aa;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;"><?= chr(65 + $idx) ?></span>
+                                    <span style="width:22px;height:22px;flex-shrink:0;border-radius:6px;background:var(--bg-hover);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;"><?= chr(65 + $idx) ?></span>
                                     <span style="flex:1;"><?= escape($optionText) ?></span>
                                     <?php if ($isCorrectOpt): ?><i class="fa-solid fa-circle-check" style="color:var(--status-success, #10b981);"></i><?php endif; ?>
                                     <?php if ($isChosenWrong): ?><i class="fa-solid fa-circle-xmark" style="color:var(--f1-red, #e10600);"></i><?php endif; ?>
@@ -1018,7 +742,7 @@ include __DIR__ . '/includes/header.php';
                                     <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
                                     <input type="hidden" name="chosen_option" value="<?= $idx ?>">
                                     <button type="submit" data-testid="trivia-option" data-idx="<?= $idx ?>" style="width:100%;display:flex;align-items:center;gap:11px;text-align:left;padding:13px 14px;border-radius:12px;background:<?= $bg ?>;border:1.5px solid <?= $border ?>;color:<?= $color ?>;font-weight:600;font-size:14px;cursor:pointer;">
-                                        <span style="width:22px;height:22px;flex-shrink:0;border-radius:6px;background:rgba(255,255,255,.06);color:#a1a1aa;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;"><?= chr(65 + $idx) ?></span>
+                                        <span style="width:22px;height:22px;flex-shrink:0;border-radius:6px;background:var(--bg-hover);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;"><?= chr(65 + $idx) ?></span>
                                         <span style="flex:1;"><?= escape($optionText) ?></span>
                                     </button>
                                 </form>
@@ -1033,7 +757,7 @@ include __DIR__ . '/includes/header.php';
                                 <?= $q['correct'] ? t('ch_reveal_correct') : t('ch_trivia_wrong') ?>
                                 <?php if ($q['correct']): ?> · <?= sprintf(t('ch_reveal_cp'), 5) ?><?php endif; ?>
                             </div>
-                            <div style="font-size:12.5px;line-height:1.5;margin-top:7px;color:#a1a1aa;">
+                            <div style="font-size:12.5px;line-height:1.5;margin-top:7px;color:var(--text-secondary);">
                                 <?= escape($q['explain_' . $lang] ?: $q['explain_da']) ?>
                             </div>
                         </div>
@@ -1063,20 +787,20 @@ include __DIR__ . '/includes/header.php';
                     <form method="GET" style="display:flex;gap:8px;margin-bottom:16px;">
                         <input type="hidden" name="section" value="duels">
                         <input type="hidden" name="mode" value="challenge">
-                        <input type="text" name="q" value="<?= escape($friendQuery) ?>" placeholder="<?= t('ch_duel_search_placeholder') ?>" data-testid="duel-search-input" style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid rgba(245,245,247,.15);background:rgba(35,35,40,.7);color:#f5f5f7;">
+                        <input type="text" name="q" value="<?= escape($friendQuery) ?>" placeholder="<?= t('ch_duel_search_placeholder') ?>" data-testid="duel-search-input" style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);">
                         <button type="submit" class="btn btn-primary btn-accent-challenges"><?= t('ch_duel_search') ?></button>
                     </form>
 
                     <?php if ($friendQuery !== '' && empty($friendResults)): ?>
-                        <p data-testid="duel-no-results" style="color:#a1a1aa;font-size:13px;"><?= t('ch_duel_no_results') ?></p>
+                        <p data-testid="duel-no-results" style="color:var(--text-secondary);font-size:13px;"><?= t('ch_duel_no_results') ?></p>
                     <?php endif; ?>
 
                     <?php foreach ($friendResults as $fr): ?>
-                        <div data-testid="duel-search-result" data-participant-id="<?= escape($fr['id']) ?>" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(35,35,40,.7);border-radius:12px;padding:12px 16px;margin-bottom:8px;">
+                        <div data-testid="duel-search-result" data-participant-id="<?= escape($fr['id']) ?>" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg-card);border-radius:12px;padding:12px 16px;margin-bottom:8px;">
                             <span style="min-width:0;">
-                                <span style="display:block;font-weight:700;color:#f5f5f7;"><?= escape($fr['display_name']) ?></span>
+                                <span style="display:block;font-weight:700;color:var(--text-primary);"><?= escape($fr['display_name']) ?></span>
                                 <?php if (!empty($fr['email_hint'])): ?>
-                                    <span data-testid="duel-search-email-hint" style="display:block;font-size:12px;color:#a1a1aa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= escape($fr['email_hint']) ?></span>
+                                    <span data-testid="duel-search-email-hint" style="display:block;font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= escape($fr['email_hint']) ?></span>
                                 <?php endif; ?>
                             </span>
                             <form method="POST">
@@ -1089,7 +813,7 @@ include __DIR__ . '/includes/header.php';
                     <?php endforeach; ?>
 
                     <div style="margin-top:16px;">
-                        <a href="?section=duels" style="color:#a1a1aa;font-size:13px;"><?= t('ch_back') ?></a>
+                        <a href="?section=duels" style="color:var(--text-secondary);font-size:13px;"><?= t('ch_back') ?></a>
                     </div>
                 </div>
 
@@ -1100,11 +824,11 @@ include __DIR__ . '/includes/header.php';
                     $otherInitials = strtoupper(substr($viewDuel['other_name'] ?: '?', 0, 2));
                 ?>
                 <div data-testid="duel-detail" data-duel-id="<?= escape($viewDuel['id']) ?>" data-status="<?= escape($viewDuel['status']) ?>" style="padding-top:8px;">
-                    <div style="border-radius:16px;background:rgba(35,35,40,.7);border:1px solid rgba(245,158,11,.4);padding:20px 18px;animation:pp-pop .28s ease;">
+                    <div style="border-radius:16px;background:var(--bg-card);border:1px solid rgba(245,158,11,.4);padding:20px 18px;animation:pp-pop .28s ease;">
                         <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <span class="label-mono" style="font-size:11px;color:#a1a1aa;"><?= escape($viewDuel['race_name']) ?></span>
+                            <span class="label-mono" style="font-size:11px;color:var(--text-secondary);"><?= escape($viewDuel['race_name']) ?></span>
                             <?php if ($viewDuel['status'] === 'void'): ?>
-                                <span class="hf-badge" style="background:rgba(161,161,170,.15);color:#a1a1aa;border:1px solid rgba(161,161,170,.3);"><?= t('ch_duel_void') ?></span>
+                                <span class="hf-badge done"><?= t('ch_duel_void') ?></span>
                             <?php elseif ($viewDuel['status'] === 'resolved'): ?>
                                 <span class="hf-badge open"><?= t('ch_settled') ?></span>
                             <?php elseif ($viewDuel['locked']): ?>
@@ -1117,29 +841,29 @@ include __DIR__ . '/includes/header.php';
                         <div style="display:flex;align-items:center;gap:12px;margin-top:14px;">
                             <div style="flex:1;text-align:center;">
                                 <div style="width:44px;height:44px;border-radius:50%;margin:0 auto;background:var(--f1-red,#e10600);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;"><?= escape($meInitials) ?></div>
-                                <div style="font-weight:700;font-size:13px;margin-top:6px;color:#f5f5f7;"><?= t('ch_you') ?></div>
+                                <div style="font-weight:700;font-size:13px;margin-top:6px;color:var(--text-primary);"><?= t('ch_you') ?></div>
                             </div>
                             <div style="font-weight:900;font-size:15px;color:var(--gold,#fbbf24);">VS</div>
                             <div style="flex:1;text-align:center;">
-                                <div style="width:44px;height:44px;border-radius:50%;margin:0 auto;background:rgba(255,255,255,.1);color:#f5f5f7;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;"><?= escape($otherInitials) ?></div>
-                                <div style="font-weight:700;font-size:13px;margin-top:6px;color:#f5f5f7;"><?= escape($viewDuel['other_name'] ?: '?') ?></div>
+                                <div style="width:44px;height:44px;border-radius:50%;margin:0 auto;background:var(--bg-hover);color:var(--text-primary);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;"><?= escape($otherInitials) ?></div>
+                                <div style="font-weight:700;font-size:13px;margin-top:6px;color:var(--text-primary);"><?= escape($viewDuel['other_name'] ?: '?') ?></div>
                             </div>
                         </div>
 
                         <?php if ($showBothPicks): ?>
-                            <div data-testid="duel-picks-comparison" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px;">
+                            <div data-testid="duel-picks-comparison" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid var(--border-color);padding-top:14px;">
                                 <div>
                                     <?php foreach (['p1', 'p2', 'p3'] as $key): ?>
-                                        <div data-testid="duel-my-<?= $key ?>" style="font-size:13px;color:#f5f5f7;padding:4px 0;"><?= driverLastName($duelDriversById[$viewDuel['my_pick'][$key]] ?? ['name' => '?']) ?></div>
+                                        <div data-testid="duel-my-<?= $key ?>" style="font-size:13px;color:var(--text-primary);padding:4px 0;"><?= driverLastName($duelDriversById[$viewDuel['my_pick'][$key]] ?? ['name' => '?']) ?></div>
                                     <?php endforeach; ?>
                                 </div>
                                 <div>
                                     <?php if ($viewDuel['other_pick']): ?>
                                         <?php foreach (['p1', 'p2', 'p3'] as $key): ?>
-                                            <div data-testid="duel-other-<?= $key ?>" style="font-size:13px;color:#f5f5f7;padding:4px 0;"><?= driverLastName($duelDriversById[$viewDuel['other_pick'][$key]] ?? ['name' => '?']) ?></div>
+                                            <div data-testid="duel-other-<?= $key ?>" style="font-size:13px;color:var(--text-primary);padding:4px 0;"><?= driverLastName($duelDriversById[$viewDuel['other_pick'][$key]] ?? ['name' => '?']) ?></div>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <div style="font-size:13px;color:#a1a1aa;"><?= t('ch_duel_void') ?></div>
+                                        <div style="font-size:13px;color:var(--text-secondary);"><?= t('ch_duel_void') ?></div>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -1158,15 +882,15 @@ include __DIR__ . '/includes/header.php';
                                 <div style="font-weight:800;font-size:16px;color:<?= $tied ? 'var(--gold, #fbbf24)' : ($iWon ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)') ?>;">
                                     <?= $tied ? t('ch_duel_tied') : ($iWon ? t('ch_duel_won') : t('ch_duel_lost')) ?> · <?= sprintf(t('ch_reveal_cp'), $cp) ?>
                                 </div>
-                                <div style="font-size:13px;color:#a1a1aa;margin-top:4px;"><?= (int)$myScore ?> – <?= (int)$otherScore ?></div>
+                                <div style="font-size:13px;color:var(--text-secondary);margin-top:4px;"><?= (int)$myScore ?> – <?= (int)$otherScore ?></div>
                             </div>
                         <?php elseif ($viewDuel['status'] === 'void'): ?>
-                            <div data-testid="duel-result" data-outcome="void" style="margin-top:14px;text-align:center;color:#a1a1aa;font-size:13px;">
+                            <div data-testid="duel-result" data-outcome="void" style="margin-top:14px;text-align:center;color:var(--text-secondary);font-size:13px;">
                                 <?= t('ch_duel_void') ?>
                             </div>
                         <?php elseif (!$viewDuel['my_pick']): ?>
                             <?php if ($viewDuel['locked']): ?>
-                                <div style="margin-top:14px;text-align:center;color:#a1a1aa;font-size:13px;"><?= t('ch_race_started') ?></div>
+                                <div style="margin-top:14px;text-align:center;color:var(--text-secondary);font-size:13px;"><?= t('ch_race_started') ?></div>
                             <?php else: ?>
                                 <form method="POST" data-testid="duel-pick-form" style="margin-top:16px;">
                                     <?= csrfField() ?>
@@ -1175,8 +899,8 @@ include __DIR__ . '/includes/header.php';
                                     <div style="display:flex;flex-direction:column;gap:10px;">
                                         <?php foreach ([1 => 'p1', 2 => 'p2', 3 => 'p3'] as $pos => $key): ?>
                                             <div style="display:flex;align-items:center;gap:10px;">
-                                                <span class="hf-badge" style="background:rgba(225,6,0,.14);color:#ff8a80;border:1px solid rgba(225,6,0,.4);padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;">P<?= $pos ?></span>
-                                                <select name="<?= $key ?>" required data-testid="duel-pick-<?= $key ?>" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(245,245,247,.15);background:rgba(35,35,40,.7);color:#f5f5f7;">
+                                                <span class="hf-badge" style="background:rgba(225,6,0,.14);color:var(--f1-red-light, #ff8a80);border:1px solid rgba(225,6,0,.4);padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;">P<?= $pos ?></span>
+                                                <select name="<?= $key ?>" required data-testid="duel-pick-<?= $key ?>" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);">
                                                     <option value=""><?= t('select_driver') ?></option>
                                                     <?php foreach ($duelDrivers as $drv): ?>
                                                         <option value="<?= escape($drv['id']) ?>"><?= driverLastName($drv) ?></option>
@@ -1196,9 +920,9 @@ include __DIR__ . '/includes/header.php';
                                 <span class="hf-badge open"><?= t('ch_locked_in') ?></span>
                                 <?php if (!$viewDuel['locked']): ?>
                                     <?php if ($viewDuel['other_pick']): ?>
-                                        <div data-testid="duel-waiting-race" style="font-size:12px;color:#a1a1aa;margin-top:8px;"><?= t('ch_duel_waiting_race') ?></div>
+                                        <div data-testid="duel-waiting-race" style="font-size:12px;color:var(--text-secondary);margin-top:8px;"><?= t('ch_duel_waiting_race') ?></div>
                                     <?php else: ?>
-                                        <div data-testid="duel-waiting-opponent" style="font-size:12px;color:#a1a1aa;margin-top:8px;"><?= sprintf(t('ch_duel_waiting_for'), $viewDuel['other_name']) ?></div>
+                                        <div data-testid="duel-waiting-opponent" style="font-size:12px;color:var(--text-secondary);margin-top:8px;"><?= sprintf(t('ch_duel_waiting_for'), $viewDuel['other_name']) ?></div>
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>
@@ -1206,7 +930,7 @@ include __DIR__ . '/includes/header.php';
                     </div>
 
                     <div style="margin-top:16px;">
-                        <a href="?section=duels" style="color:#a1a1aa;font-size:13px;"><?= t('ch_back') ?></a>
+                        <a href="?section=duels" style="color:var(--text-secondary);font-size:13px;"><?= t('ch_back') ?></a>
                     </div>
                 </div>
 
@@ -1226,18 +950,18 @@ include __DIR__ . '/includes/header.php';
                             <a href="?section=duels&mode=challenge" data-testid="duel-challenge-friend-link" class="btn btn-secondary" style="flex:1;text-align:center;"><?= t('ch_challenge_a_friend') ?></a>
                         </div>
                     <?php elseif (!$duelRace): ?>
-                        <p style="color:#a1a1aa;font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_duel_no_race') ?></p>
+                        <p style="color:var(--text-secondary);font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_duel_no_race') ?></p>
                     <?php endif; ?>
 
                     <?php if ($needsPickDuels): ?>
                         <div class="hf-stat-l" style="margin:16px 0 10px;"><?= t('ch_your_move') ?></div>
                         <?php foreach ($needsPickDuels as $d): ?>
-                            <a href="?section=duels&duel=<?= urlencode($d['id']) ?>" data-testid="duel-card" data-duel-id="<?= escape($d['id']) ?>" data-bucket="needs-pick" style="display:block;text-decoration:none;border-radius:14px;background:rgba(35,35,40,.62);border:1px solid rgba(245,158,11,.4);padding:14px;margin-bottom:10px;">
+                            <a href="?section=duels&duel=<?= urlencode($d['id']) ?>" data-testid="duel-card" data-duel-id="<?= escape($d['id']) ?>" data-bucket="needs-pick" style="display:block;text-decoration:none;border-radius:14px;background:var(--bg-card);border:1px solid rgba(245,158,11,.4);padding:14px;margin-bottom:10px;">
                                 <div style="display:flex;align-items:center;justify-content:space-between;">
-                                    <span style="font-weight:700;font-size:13px;color:#f5f5f7;">vs <?= escape($d['other_name'] ?: '?') ?></span>
+                                    <span style="font-weight:700;font-size:13px;color:var(--text-primary);">vs <?= escape($d['other_name'] ?: '?') ?></span>
                                     <span class="hf-badge soon" style="font-size:9px;"><?= t('ch_your_move') ?></span>
                                 </div>
-                                <div style="font-size:11px;color:#a1a1aa;margin-top:4px;"><?= escape($d['race_name']) ?></div>
+                                <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;"><?= escape($d['race_name']) ?></div>
                             </a>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -1245,12 +969,12 @@ include __DIR__ . '/includes/header.php';
                     <?php if ($waitingDuels): ?>
                         <div class="hf-stat-l" style="margin:16px 0 10px;"><?= t('ch_duel_waiting') ?></div>
                         <?php foreach ($waitingDuels as $d): ?>
-                            <a href="?section=duels&duel=<?= urlencode($d['id']) ?>" data-testid="duel-card" data-duel-id="<?= escape($d['id']) ?>" data-bucket="waiting" style="display:block;text-decoration:none;border-radius:14px;background:rgba(35,35,40,.62);border:1px solid var(--border-color, rgba(245,245,247,.15));padding:14px;margin-bottom:10px;">
+                            <a href="?section=duels&duel=<?= urlencode($d['id']) ?>" data-testid="duel-card" data-duel-id="<?= escape($d['id']) ?>" data-bucket="waiting" style="display:block;text-decoration:none;border-radius:14px;background:var(--bg-card);border:1px solid var(--border-color);padding:14px;margin-bottom:10px;">
                                 <div style="display:flex;align-items:center;justify-content:space-between;">
-                                    <span style="font-weight:700;font-size:13px;color:#f5f5f7;">vs <?= escape($d['other_name'] ?: '?') ?></span>
-                                    <span class="hf-badge" style="font-size:9px;background:rgba(255,255,255,.06);color:#a1a1aa;"><?= $d['locked'] ? t('ch_race_started') : t('ch_locked_in') ?></span>
+                                    <span style="font-weight:700;font-size:13px;color:var(--text-primary);">vs <?= escape($d['other_name'] ?: '?') ?></span>
+                                    <span class="hf-badge" style="font-size:9px;background:var(--bg-hover);color:var(--text-secondary);"><?= $d['locked'] ? t('ch_race_started') : t('ch_locked_in') ?></span>
                                 </div>
-                                <div style="font-size:11px;color:#a1a1aa;margin-top:4px;"><?= escape($d['race_name']) ?></div>
+                                <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;"><?= escape($d['race_name']) ?></div>
                             </a>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -1263,12 +987,12 @@ include __DIR__ . '/includes/header.php';
                                 $dWon  = $d['status'] === 'resolved' && $d['winner_id'] === $participant['id'];
                                 $dCp   = $d['status'] === 'void' ? 0 : ($dTied ? 10 : ($dWon ? 15 : 5));
                             ?>
-                            <a href="?section=duels&duel=<?= urlencode($d['id']) ?>" data-testid="duel-card" data-duel-id="<?= escape($d['id']) ?>" data-bucket="settled" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-radius:14px;background:rgba(35,35,40,.62);border:1px solid var(--border-color, rgba(245,245,247,.15));padding:14px;margin-bottom:10px;">
+                            <a href="?section=duels&duel=<?= urlencode($d['id']) ?>" data-testid="duel-card" data-duel-id="<?= escape($d['id']) ?>" data-bucket="settled" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-radius:14px;background:var(--bg-card);border:1px solid var(--border-color);padding:14px;margin-bottom:10px;">
                                 <div>
-                                    <span style="font-weight:700;font-size:13px;color:#f5f5f7;">vs <?= escape($d['other_name'] ?: '?') ?></span>
-                                    <div style="font-size:11px;color:#a1a1aa;margin-top:4px;"><?= escape($d['race_name']) ?></div>
+                                    <span style="font-weight:700;font-size:13px;color:var(--text-primary);">vs <?= escape($d['other_name'] ?: '?') ?></span>
+                                    <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;"><?= escape($d['race_name']) ?></div>
                                 </div>
-                                <span style="font-weight:800;font-size:13px;color:<?= $d['status'] === 'void' ? '#a1a1aa' : ($dTied ? 'var(--gold, #fbbf24)' : ($dWon ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)')) ?>;">
+                                <span style="font-weight:800;font-size:13px;color:<?= $d['status'] === 'void' ? 'var(--text-secondary)' : ($dTied ? 'var(--gold, #fbbf24)' : ($dWon ? 'var(--status-success, #10b981)' : 'var(--f1-red, #e10600)')) ?>;">
                                     <?= $d['status'] === 'void' ? t('ch_duel_void') : ($dTied ? t('ch_duel_tied') : ($dWon ? t('ch_duel_won') : t('ch_duel_lost'))) ?>
                                     <?php if ($d['status'] !== 'void'): ?> +<?= $dCp ?><?php endif; ?>
                                 </span>
@@ -1277,7 +1001,7 @@ include __DIR__ . '/includes/header.php';
                     <?php endif; ?>
 
                     <?php if (!$needsPickDuels && !$waitingDuels && !$settledDuels): ?>
-                        <p data-testid="duel-empty" style="color:#a1a1aa;font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_all_caught_up') ?></p>
+                        <p data-testid="duel-empty" style="color:var(--text-secondary);font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_all_caught_up') ?></p>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
@@ -1308,7 +1032,7 @@ include __DIR__ . '/includes/header.php';
             <div class="hf-ch-board-kicker"><?= t('ch_full_board') ?></div>
 
             <?php if (empty($boardLeaderboard)): ?>
-                <p style="color:#a1a1aa;font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_all_caught_up') ?></p>
+                <p style="color:var(--text-secondary);font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_all_caught_up') ?></p>
             <?php else: ?>
                 <?php foreach ($boardLeaderboard as $index => $row): ?>
                     <?php $isSelf = $participant && $row['participant_id'] === $participant['id']; ?>
