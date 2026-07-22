@@ -322,7 +322,7 @@ Strings are loaded from `public/lang/user.php`, `admin.php`, and `email.php` via
 `public/index.php`'s hero is context-aware (Paddock Challenges epic, Phase 6, feature.md REQ-006/007, decision D9): it shows one of two mutually exclusive branches, chosen by `$showRaceHero = $heroRace ? isRaceHeroWindow($heroRace, $settings, $now) : false;`.
 
 - **Race hero** (`$showRaceHero === true`): the existing countdown/CTA hero, unchanged. A slim "Challenges" strip (`data-testid="challenges-strip"`) is added directly below it, linking to `challenges.php`.
-- **Challenges hero** (`$showRaceHero === false`, including whenever there's no upcoming race at all): "Paddock Challenges" title, a CP/Rank/Streak stat row for an active challenge identity, a "Play now" CTA, a next-race card, and a top-3 CP section linking to `challenges-board.php`.
+- **Challenges hero** (`$showRaceHero === false`, including whenever there's no upcoming race at all): "Paddock Challenges" title, a CP/Rank/Streak stat row for an active challenge identity, a "Play now" CTA, a next-race card, and a top-3 CP section linking to `challenges.php?section=board` (the leaderboard's home — `challenges-board.php` is now just a redirect stub for old links).
 
 `isRaceHeroWindow(array $race, ?array $settings, ?DateTime $now): bool` (`public/includes/challenges.php`) is the pure boundary function: the race hero's window runs from `windowOpen − 24h` through `raceStart + 3h`, where `windowOpen = raceStart − betting_window_hours`. Exhaustively unit-tested in `tests/unit/hero-window-harness.php`; `tests/e2e/challenges/49-home-hero.spec.js` spot-checks the wiring end-to-end.
 

@@ -38,7 +38,7 @@ test.describe('Bottom bar — four destinations', { tag: '@appearance' }, () => 
     });
 });
 
-test.describe('Drawer — Challenges + Challenge Leaderboard rows', { tag: '@appearance' }, () => {
+test.describe('Drawer — Challenges row', { tag: '@appearance' }, () => {
     test('Challenges row carries a New badge and links to the hub', async ({ page }) => {
         await page.goto('/');
         await page.click('.hf-hamburger');
@@ -47,10 +47,12 @@ test.describe('Drawer — Challenges + Challenge Leaderboard rows', { tag: '@app
         await expect(row.locator('.hf-badge.open')).toBeVisible();
     });
 
-    test('Challenge Leaderboard row links to challenges-board.php', async ({ page }) => {
+    // The Challenge Leaderboard is now the "board" tab on challenges.php, not its own drawer
+    // row (challenges-board.php redirects there for old bookmarks/links).
+    test('no separate Challenge Leaderboard row in the drawer', async ({ page }) => {
         await page.goto('/');
         await page.click('.hf-hamburger');
-        await expect(page.locator('.hf-drawer a[href="challenges-board.php"]')).toBeVisible();
+        await expect(page.locator('.hf-drawer a[href="challenges-board.php"]')).toHaveCount(0);
     });
 });
 

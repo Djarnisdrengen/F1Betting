@@ -156,10 +156,7 @@ try {
     <?php endif; ?>
     <a href="challenges.php" class="hf-drawer-row <?= $currentPage === 'challenges' ? 'active' : '' ?>" style="position:relative;">
         <i class="fas fa-gamepad" style="color:var(--f1-accent-challenges);"></i><span><?= t('ch_nav_challenges') ?></span>
-        <span class="hf-badge open" style="margin-left:auto;padding:2px 8px;font-size:9px;"><?= t('ch_new_badge') ?></span>
-    </a>
-    <a href="challenges-board.php" class="hf-drawer-row <?= $currentPage === 'challenges-board' ? 'active' : '' ?>">
-        <i class="fas fa-bolt" style="color:var(--f1-accent-challenges);"></i><span><?= t('ch_public_board') ?></span>
+        <span class="hf-badge open" style="padding:2px 8px;font-size:9px;"><?= t('ch_new_badge') ?></span>
     </a>
     <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
     <a href="admin.php" class="hf-drawer-row <?= $currentPage === 'admin' ? 'active' : '' ?>">

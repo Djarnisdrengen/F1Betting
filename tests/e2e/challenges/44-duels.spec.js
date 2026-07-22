@@ -586,7 +586,7 @@ admin.describe('Duels — admin oversight', { tag: '@challenges' }, () => {
         const { duel_id } = await seed.duel({ race_id, challenger_id: a.participant_id, opponent_id: b.participant_id, status: 'resolved' });
         await seed.challengePoints({ participant_id: a.participant_id, points: 137, source_ref: `duel:${duel_id}` });
 
-        await page.goto('/challenges-board.php');
+        await page.goto('/challenges.php?section=board');
         await expect(page.getByText(name, { exact: true })).toBeVisible();
 
         await page.goto('/admin-challenges.php?tab=duels');
@@ -596,7 +596,7 @@ admin.describe('Duels — admin oversight', { tag: '@challenges' }, () => {
         await page.waitForURL(/admin-challenges\.php/);
         await expect(row).toHaveCount(0);
 
-        await page.goto('/challenges-board.php');
+        await page.goto('/challenges.php?section=board');
         await expect(page.getByText(name, { exact: true })).toHaveCount(0);
     });
 

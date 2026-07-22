@@ -28,12 +28,12 @@ Easy to conflate — these are three different systems that share one knowledge 
 
 ```
 public/
-├── challenges.php              hub — ?section=overview|rumors|duels|trivia
+├── challenges.php              hub — ?section=overview|rumors|duels|trivia|board (board = public CP leaderboard, no auth)
 ├── challenges-rules.php        player-facing "how it works" page
 ├── challenges-join.php         guest onboarding (magic-link email)
 ├── challenges-verify.php       consumes magic-link / invite token
 ├── challenges-profile.php      guest/verified participant account page
-├── challenges-board.php        public CP leaderboard, no auth
+├── challenges-board.php        redirect stub → challenges.php?section=board (for old bookmarks/links)
 ├── challenges-invite.php       "beat my score" friend-invite (email)
 ├── challenges-optout.php       HMAC-verified email unsubscribe
 ├── admin-challenges.php        admin control room (?tab=members|rumors|trivia|duels|suppressions)
@@ -74,7 +74,7 @@ A duel starts either from **Quick Match** (queued and paired with the oldest oth
 
 `public/admin.php`'s `update_race` handler calls `calculateRacePoints()` (core scoring) then immediately `resolveDuelsForRace()` (`includes/challenges.php`) — explicitly additive/isolated from core scoring. Per duel: `+5 CP` per driver in the exact right position, `+2 CP` for a driver placed in the top 3 but the wrong slot. Winner gets `15 CP`, loser `5 CP`, a tie pays `10/10`. If either side never locked in a pick before the race started, the duel is voided — no CP either way. `reset_race_result` calls the mirror function `resetDuelsForRace()`, which deletes the matching `challenge_points` rows and reverts non-void duels to `active` so re-entering results resolves cleanly.
 
-**Streaks & leaderboard** (`includes/challenges.php`): `getChallengeStreak()` counts consecutive **ISO weeks** (Mon–Sun) with *any* CP-earning action across all three games (recomputed live, not stored — miss a full week and it resets going forward). Weekly rather than daily on purpose: since content auto-publishes as one atomic batch a week (see "Content pipeline" above), an engaged player naturally clears a week's Rumor/Trivia supply in one sitting and has nothing new until the next Monday — a daily-granularity streak broke on that gap every week regardless of loyalty. `getChallengeCpTotal()` is an all-time sum of the `challenge_points` ledger, no time window. `getCpLeaderboard()` ranks all `status='verified'` participants (guests and full members together) by total CP, ties broken by earliest `created_at`.
+**Streaks & leaderboard** (`includes/challenges.php`): `getChallengeStreak()` counts consecutive **ISO weeks** (Mon–Sun) with *any* CP-earning action across all three games (recomputed live, not stored — miss a full week and it resets going forward). Weekly rather than daily on purpose: since content auto-publishes as one atomic batch a week (see "Content pipeline" above), an engaged player naturally clears a week's Rumor/Trivia supply in one sitting and has nothing new until the next Monday — a daily-granularity streak broke on that gap every week regardless of loyalty. `getChallengeCpTotal()` is an all-time sum of the `challenge_points` ledger, no time window. `getChallengeCpThisWeek()` sums the same ledger but scoped to the current ISO week (same `YEARWEEK(...,3)` window as trivia), backing the Overview hero's "+N this week" stat. `getCpLeaderboard()` ranks all `status='verified'` participants (guests and full members together) by total CP, ties broken by earliest `created_at`; `getChallengeRank()` re-walks that same board to find one participant's 1-based position (`null` if they haven't scored yet), used by both the Overview hero's rank pill and the `board` tab's own pill. `getPendingDuelForOverview()` is a trimmed duel lookup (most recent unresolved, unlocked duel this participant hasn't picked yet) so the Overview's "Games Live Now" duels row can flag "your move" without running the full `?section=duels` setup.
 
 ### Challenges vs. the core podium-betting game
 

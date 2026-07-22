@@ -251,9 +251,9 @@ body.clubhouse .bet-item.my-bet {
     box-shadow: 0 4px 12px rgba(36, 114, 232, 0.3);
 }
 
-.hf-arena-base .hf-tab-btn:hover { border-color: var(--f1-accent-challenges); }
-.hf-arena-base .hf-tab-btn.active { background: var(--f1-accent-challenges); border-color: var(--f1-accent-challenges); }
-.hf-arena-base .hf-pref-btn.active { background: var(--f1-accent-challenges); }
+.hf-arena-base .hf-tab-btn:hover { border-color: var(--f1-red); }
+.hf-arena-base .hf-tab-btn.active { background: var(--f1-red); border-color: var(--f1-red); }
+.hf-arena-base .hf-pref-btn.active { background: var(--f1-red); }
 
 .btn-secondary {
     background: var(--bg-card);
@@ -2290,6 +2290,9 @@ body.light .hf-toc a.active::before { background: var(--f1-red); }
 .hf-seg a.active {
     color: var(--f1-red);
     font-weight: 700;
+}
+.hf-seg a.active i {
+    color: var(--f1-red);
 }
 
 /* ============================================================

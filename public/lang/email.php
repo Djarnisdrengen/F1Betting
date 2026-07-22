@@ -60,7 +60,7 @@ return [
         'email_duel_result_won'      => 'Du besejrede %1$s! Du scorede %2$d point mod deres %3$d.',
         'email_duel_result_lost'     => '%1$s besejrede dig denne gang. Du scorede %2$d point mod deres %3$d.',
         'email_duel_result_tie'      => 'Du spillede uafgjort med %1$s — %2$d point hver!',
-        'email_duel_result_button'   => 'Se Challenges',
+        'email_duel_result_button'   => 'Se Paddock Challenges',
 
         // Invite email
         'email_invite_subject'      => 'Du er inviteret til %s!',
@@ -100,10 +100,10 @@ return [
         'email_bet_confirm_meta'            => 'Registreret på %s: %s',
 
         // Magic link email (Challenges)
-        'email_magic_subject'               => 'Din Challenges login-link',
+        'email_magic_subject'               => 'Din Paddock Challenges login-link',
         'email_magic_greeting'              => 'Hej,',
-        'email_magic_intro'                 => 'Klik på linket nedenfor for at logge ind på Challenges.',
-        'email_magic_button'                => 'Log ind på Challenges',
+        'email_magic_intro'                 => 'Klik på linket nedenfor for at logge ind på Paddock Challenges.',
+        'email_magic_button'                => 'Log ind på Paddock Challenges',
         'email_magic_expiry'                => 'Dette link udløber om 30 minutter.',
         'email_magic_ignore'                => 'Hvis du ikke anmodede om dette, kan du ignorere denne email.',
 
@@ -197,7 +197,7 @@ return [
         'email_duel_result_won'      => 'You beat %1$s! You scored %2$d points to their %3$d.',
         'email_duel_result_lost'     => '%1$s beat you this time. You scored %2$d points to their %3$d.',
         'email_duel_result_tie'      => 'You tied with %1$s — %2$d points each!',
-        'email_duel_result_button'   => 'View Challenges',
+        'email_duel_result_button'   => 'View Paddock Challenges',
 
         // Invite email
         'email_invite_subject'      => "You're invited to %s!",
@@ -237,10 +237,10 @@ return [
         'email_bet_confirm_meta'            => 'Recorded on %s: %s',
 
         // Magic link email (Challenges)
-        'email_magic_subject'               => 'Your Challenges login link',
+        'email_magic_subject'               => 'Your Paddock Challenges login link',
         'email_magic_greeting'              => 'Hi,',
-        'email_magic_intro'                 => 'Click the link below to sign in to Challenges.',
-        'email_magic_button'                => 'Sign in to Challenges',
+        'email_magic_intro'                 => 'Click the link below to sign in to Paddock Challenges.',
+        'email_magic_button'                => 'Sign in to Paddock Challenges',
         'email_magic_expiry'                => 'This link expires in 30 minutes.',
         'email_magic_ignore'                => 'If you did not request this, you can ignore this email.',
 

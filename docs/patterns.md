@@ -326,13 +326,14 @@ The three bottom-nav preference toggles (theme, language, font) display an icon 
 
 ## Challenges Accent Colour
 
-Everything that marks a surface as "Challenges" (Rumor or Not / Trivia / Duels — not the core podium-betting game) uses **Telemetry Blue** — `var(--f1-accent-challenges)` (`#2472e8`, with `-light`/`-dark` variants) — instead of the site's core brand red (`var(--f1-red)`). This covers Challenges page-title icons, the burger-drawer and bottom-bar Challenges nav items, and Challenges' primary buttons.
+The Challenges **game hub** (`challenges.php` — Rumor or Not / Trivia / Duels / the CP board — not the core podium-betting game) uses **Telemetry Blue** — `var(--f1-accent-challenges)` (`#2472e8`, with `-light`/`-dark` variants) — instead of the site's core brand red (`var(--f1-red)`). This covers the hub's own page-title icon, its tab pills, game-row icons, and primary buttons, plus the burger-drawer and bottom-bar Challenges nav entry points.
 
-Because `.btn-primary`, `.hf-tab-btn`, `.hf-pref-btn`, `.text-accent`, and the admin `.admin-*` tab classes are **shared with non-Challenges pages** (core `profile.php`, `bet.php`, `admin.php`, etc.), the blue is applied via additive, Challenges-only selectors rather than by editing those shared rules — so a shared class's definition always stays red/neutral, and only an explicitly-opted-in element goes blue:
+Because `.btn-primary`, `.hf-tab-btn`, `.hf-pref-btn`, `.text-accent`, and the admin `.admin-*` tab classes are **shared with non-Challenges pages** (core `profile.php`, `bet.php`, `admin.php`, etc.), the blue is applied via additive, hub-only selectors rather than by editing those shared rules — so a shared class's definition always stays red/neutral, and only an explicitly-opted-in element goes blue:
 
 - Buttons: add the `btn-accent-challenges` modifier class alongside `btn btn-primary` (`.btn-primary.btn-accent-challenges` in `style.css`) — never repoint `.btn-primary` itself.
-- Tab/preference toggles on `challenges-profile.php`: scoped via the `.hf-arena-base` ancestor (`.hf-arena-base .hf-tab-btn.active`, etc.) — `.hf-arena-base` only exists on Challenges pages, so the override can't reach core `profile.php`'s identical-looking tabs.
 - Icons: inline `color:var(--f1-accent-challenges)`, same pattern the icon already used for `var(--f1-red)`.
+
+**`challenges-profile.php` is deliberately *not* blue-accented**, unlike the game hub. Its title icon (`.text-accent`), tab toggles, and preference buttons (`.hf-arena-base .hf-tab-btn`/`.hf-pref-btn`) use the shared red/neutral styling verbatim, and its form buttons are plain `btn btn-primary` with no `btn-accent-challenges` modifier — account/settings surfaces read as core-site chrome, only the actual games carry the Telemetry Blue identity. `.hf-arena-base` still scopes those tab/pref rules to Challenges pages only (so the override can't reach core `profile.php`'s identical-looking tabs) — it's just that the scoped rule now points at `var(--f1-red)`, not blue.
 
 **Deliberately excluded** (kept as their existing colour, not part of this accent): semantic right/wrong-answer feedback (Rumor-or-Not's red/green guess buttons, Trivia's correct/incorrect icons, duel win/loss colouring), gold CP/streak/points indicators, and the entire `admin-challenges.php` control room (its tab/badge classes are shared verbatim with core `admin.php`; recolouring them would bleed into non-Challenges admin screens).
 

@@ -117,10 +117,10 @@ return [
 
         // Admin area switcher (admin.php <-> admin-challenges.php)
         'admin_area_core'            => 'Core',
-        'admin_area_challenges'      => 'Challenges',
+        'admin_area_challenges'      => 'Paddock Challenges',
 
         // Paddock Challenges — promotion queue (Feature 4) + suppressions (Feature 5)
-        'admin_ch_title'             => 'Challenges — medlemskab',
+        'admin_ch_title'             => 'Paddock Challenges — medlemskab',
         'admin_ch_promotion_queue'   => 'Anmodninger om fuldt medlemskab',
         'admin_ch_queue_empty'       => 'Ingen afventende anmodninger.',
         'admin_ch_permanent'         => 'Permanent',
@@ -361,10 +361,10 @@ return [
 
         // Admin area switcher (admin.php <-> admin-challenges.php)
         'admin_area_core'            => 'Core',
-        'admin_area_challenges'      => 'Challenges',
+        'admin_area_challenges'      => 'Paddock Challenges',
 
         // Paddock Challenges — promotion queue (Feature 4) + suppressions (Feature 5)
-        'admin_ch_title'             => 'Challenges — membership',
+        'admin_ch_title'             => 'Paddock Challenges — membership',
         'admin_ch_promotion_queue'   => 'Full-membership requests',
         'admin_ch_queue_empty'       => 'No pending requests.',
         'admin_ch_permanent'         => 'Permanent',

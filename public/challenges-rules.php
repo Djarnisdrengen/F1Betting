@@ -25,18 +25,6 @@ include __DIR__ . '/includes/header.php';
     padding: 16px;
     border-bottom: 1px solid rgba(245, 245, 247, 0.1);
 }
-.hf-arena-strip {
-    background: repeating-conic-gradient(#f5f5f7 0 25%, #0b0b0d 0 50%) 0 0/14px 14px;
-    height: 8px;
-}
-.hf-arena-band {
-    background: rgba(13, 13, 16, 0.95);
-    padding: 12px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    color: #f5f5f7;
-}
 .hf-rules-chip {
     padding: 6px 12px;
     border-radius: 999px;
@@ -70,12 +58,6 @@ include __DIR__ . '/includes/header.php';
             <i class="fas fa-book" style="margin-right:8px;color:var(--f1-accent-challenges);"></i>
             <?= t('ch_rules_heading') ?>
         </h1>
-    </div>
-
-    <div class="hf-arena-strip"></div>
-
-    <div class="hf-arena-band">
-        <?= t('ch_games_zone') ?>
     </div>
 
     <div class="hf-container" style="padding:20px;color:#f5f5f7;">

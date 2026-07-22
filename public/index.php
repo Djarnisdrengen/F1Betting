@@ -249,7 +249,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
     <?php endif; ?>
 
     <?php if (!empty($cpTop3)): ?>
-        <div class="hf-section-h" style="margin-top:22px;"><h2><?= t('ch_challenge_points') ?></h2><a href="challenges-board.php"><?= t('ch_full_board') ?></a></div>
+        <div class="hf-section-h" style="margin-top:22px;"><h2><?= t('ch_challenge_points') ?></h2><a href="challenges.php?section=board"><?= t('ch_full_board') ?></a></div>
         <?php foreach ($cpTop3 as $i => $row): ?>
             <?php $isSelfCp = $challengeParticipant && $row['participant_id'] === $challengeParticipant['id']; ?>
             <div class="hf-row<?= $isSelfCp ? ' self' : '' ?>" style="grid-template-columns:32px 32px 1fr auto;">

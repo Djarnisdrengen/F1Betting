@@ -18,6 +18,6 @@ $arenaTint = $currentPage === 'challenges' ? 'background: rgba(13,13,16,.95);' :
         <div class="hf-bb-icon" style="background:var(--f1-accent-challenges);color:#fff;border-radius:9px;width:30px;height:30px;box-shadow:0 3px 10px rgba(36,114,232,.5);">
             <i class="fas fa-gamepad"></i>
         </div>
-        <span><?= t('ch_nav_challenges') ?></span>
+        <span><?= t('ch_nav_short') ?></span>
     </a>
 </nav>

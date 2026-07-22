@@ -196,6 +196,32 @@ function getChallengeCpTotal(PDO $db, string $participantId): int {
     return (int)$stmt->fetchColumn();
 }
 
+/** CP earned in the current ISO week (Overview hero's "+N this week") — same YEARWEEK(...,3) window as getTriviaCorrectThisWeek(). */
+function getChallengeCpThisWeek(PDO $db, string $participantId): int {
+    $stmt = $db->prepare("
+        SELECT COALESCE(SUM(points), 0)
+        FROM challenge_points
+        WHERE participant_id = ? AND YEARWEEK(awarded_at, 3) = YEARWEEK(CURDATE(), 3)
+    ");
+    $stmt->execute([$participantId]);
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * A participant's position on the CP leaderboard ('rank' 1-based, 'total' verified+scored
+ * participants) — extracted from the loop index.php and challenges-profile.php already ran
+ * inline over getCpLeaderboard(); 'rank' is null if the participant hasn't scored yet.
+ */
+function getChallengeRank(PDO $db, string $participantId): array {
+    $board = getCpLeaderboard($db);
+    foreach ($board as $i => $row) {
+        if ($row['participant_id'] === $participantId) {
+            return ['rank' => $i + 1, 'total' => count($board)];
+        }
+    }
+    return ['rank' => null, 'total' => count($board)];
+}
+
 /**
  * Creates a beat-my-score invite (B2/D12). $itemIds is the exact set the challenger played;
  * $challengerScore their score on it. Returns [inviteId, rawFriendToken]. Long-lived token
@@ -457,6 +483,37 @@ function getNextDuelRace(PDO $db): ?array {
 function isDuelRaceLocked(array $race): bool {
     $status = getBettingStatus($race);
     return in_array($status['status'], ['closed', 'completed'], true);
+}
+
+/**
+ * The Overview tab's "Games Live Now" duels row needs to know if it's this participant's move,
+ * without running the full duels-tab setup (friend search, driver fetch, all buckets) which is
+ * gated to $section === 'duels'. Trimmed to just: the most recent unresolved duel this
+ * participant hasn't picked yet, on a race that hasn't locked — or null if none.
+ */
+function getPendingDuelForOverview(PDO $db, string $participantId): ?array {
+    $stmt = $db->prepare("
+        SELECT d.*, r.race_date, r.race_time,
+               cp_o.display_name AS opponent_name
+        FROM duels d
+        JOIN races r ON r.id = d.race_id
+        JOIN challenge_participants cp_o
+            ON cp_o.id = IF(d.challenger_id = ?, d.opponent_id, d.challenger_id)
+        WHERE (d.challenger_id = ? OR d.opponent_id = ?)
+              AND d.status NOT IN ('resolved', 'void')
+              AND NOT EXISTS (
+                  SELECT 1 FROM duel_predictions dp
+                  WHERE dp.duel_id = d.id AND dp.participant_id = ?
+              )
+        ORDER BY d.created_at DESC
+    ");
+    $stmt->execute([$participantId, $participantId, $participantId, $participantId]);
+    foreach ($stmt->fetchAll() as $d) {
+        if (!isDuelRaceLocked($d)) {
+            return $d;
+        }
+    }
+    return null;
 }
 
 /**

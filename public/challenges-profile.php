@@ -146,21 +146,15 @@ include __DIR__ . '/includes/header.php';
     padding: 16px;
     border-bottom: 1px solid rgba(245, 245, 247, 0.1);
 }
-.hf-arena-strip {
-    background: repeating-conic-gradient(#f5f5f7 0 25%, #0b0b0d 0 50%) 0 0/14px 14px;
-    height: 8px;
-}
 </style>
 
 <div class="hf-arena-base" style="min-height:100vh;padding-bottom:80px;">
     <div class="hf-arena-header">
         <h1 style="margin:0;font-size:24px;font-weight:700;color:#f5f5f7;">
-            <i class="fas fa-user" style="margin-right:8px;color:var(--f1-accent-challenges);"></i>
+            <i class="fas fa-user text-accent" style="margin-right:8px;"></i>
             <?= t('ch_profile_title') ?>
         </h1>
     </div>
-
-    <div class="hf-arena-strip"></div>
 
     <div class="hf-container" style="padding:20px;">
 
@@ -169,7 +163,7 @@ include __DIR__ . '/includes/header.php';
             <div class="card">
                 <div class="card-body" style="text-align:center;">
                     <p><?= t('ch_save_spot_prompt') ?></p>
-                    <a href="/challenges-invite.php" class="btn btn-primary btn-accent-challenges"><?= t('ch_save_spot_cta') ?></a>
+                    <a href="/challenges-invite.php" class="btn btn-primary"><?= t('ch_save_spot_cta') ?></a>
                 </div>
             </div>
 
@@ -236,7 +230,7 @@ include __DIR__ . '/includes/header.php';
                                     <input type="text" name="display_name" class="form-input" value="<?= escape($participant['display_name']) ?>" maxlength="100" data-testid="display-name-input">
                                     <span class="hf-char-counter" data-testid="char-counter">0/100</span>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-accent-challenges" style="width:100%;">
+                                <button type="submit" class="btn btn-primary" style="width:100%;">
                                     <i class="fas fa-save"></i> <?= t('save') ?>
                                 </button>
                             </form>
@@ -275,7 +269,7 @@ include __DIR__ . '/includes/header.php';
                                     </div>
                                     <input type="hidden" name="language" id="language" value="<?= escape($participant['language']) ?>">
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-accent-challenges" style="width:100%;">
+                                <button type="submit" class="btn btn-primary" style="width:100%;">
                                     <i class="fas fa-save"></i> <?= t('save') ?>
                                 </button>
                             </form>
@@ -307,7 +301,7 @@ include __DIR__ . '/includes/header.php';
                                         <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password" minlength="10" data-testid="confirm-password-input">
                                         <span class="hf-pw-match" aria-live="polite" data-testid="pw-match-indicator"></span>
                                     </div>
-                                    <button type="submit" class="btn btn-primary btn-accent-challenges" style="width:100%;">
+                                    <button type="submit" class="btn btn-primary" style="width:100%;">
                                         <?= t('change_password_title') ?>
                                     </button>
                                 </form>
@@ -327,7 +321,7 @@ include __DIR__ . '/includes/header.php';
                                         <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password" minlength="10" data-testid="confirm-password-input">
                                         <span class="hf-pw-match" aria-live="polite" data-testid="pw-match-indicator"></span>
                                     </div>
-                                    <button type="submit" class="btn btn-primary btn-accent-challenges" style="width:100%;">
+                                    <button type="submit" class="btn btn-primary" style="width:100%;">
                                         <?= t('ch_setpw_button') ?>
                                     </button>
                                 </form>

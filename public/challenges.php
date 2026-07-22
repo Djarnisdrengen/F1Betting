@@ -4,7 +4,7 @@ require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/challenges.php';
 
 $section = $_GET['section'] ?? 'overview';
-$validSections = ['overview', 'rumors', 'duels', 'trivia'];
+$validSections = ['overview', 'rumors', 'duels', 'trivia', 'board'];
 
 if (!in_array($section, $validSections)) {
     $section = 'overview';
@@ -280,6 +280,8 @@ if ($section === 'trivia') {
         $weekAnswered = (int)$weekAnswered;
         $weekCorrect  = (int)$weekCorrect;
     }
+    // Same guard as the overview's Perfect Week total — never show fewer published than already answered.
+    $weekTotal = max($weekTotal, $weekAnswered);
 }
 
 if ($section === 'duels') {
@@ -351,6 +353,15 @@ if ($section === 'duels') {
     [$duelDrivers, $duelDriversById] = fetchDrivers($db);
 }
 
+if ($section === 'board') {
+    // Public leaderboard — no participant gate (REQ-106: guests and full members alike can
+    // view it), same query the old standalone challenges-board.php used.
+    $boardLeaderboard = getCpLeaderboard($db, 50);
+    $boardRank = $participant
+        ? getChallengeRank($db, $participant['id'])
+        : ['rank' => null, 'total' => count(getCpLeaderboard($db))];
+}
+
 if ($section === 'overview' && $participant) {
     // Perfect Week tracker sizes to however many trivia questions actually published this
     // ISO week — content-gen doesn't guarantee a fixed count (a malformed Claude response
@@ -361,6 +372,36 @@ if ($section === 'overview' && $participant) {
         WHERE status='published' AND YEARWEEK(publish_date, 3) = YEARWEEK(CURDATE(), 3)
     ")->fetchColumn();
     $pwIsoWeek = (int)(new DateTime('today', new DateTimeZone('Europe/Copenhagen')))->format('W');
+    $pwCount = getTriviaCorrectThisWeek($db, $participant['id']);
+    // A question can be unpublished after already being answered (admin correction, or content
+    // pulled mid-week) — the "published now" count must never drop below what was already
+    // answered, or the tracker shows a nonsensical N/0.
+    $pwWeekTotal = max($pwWeekTotal, $pwCount);
+
+    // Games Live Now — same small per-game numbers the rumors/trivia tabs compute themselves
+    // (challenges.php:236-242, 264-282), recomputed here since those setup blocks are gated to
+    // their own $section and Overview only needs the counts, not the full deck/question fetch.
+    $ovDeckSize = (int)(getSettings()['challenge_rumor_deck_size'] ?? 3);
+    $ovRumorsToday = 0;
+    $rumorsCountStmt = $db->prepare("SELECT COUNT(*) FROM challenge_answers WHERE participant_id = ? AND DATE(answered_at) = CURDATE()");
+    $rumorsCountStmt->execute([$participant['id']]);
+    $ovRumorsToday = (int)$rumorsCountStmt->fetchColumn();
+
+    $ovTriviaWeekTotal = $pwWeekTotal;
+    $ovTriviaWeekAnswered = 0;
+    $triviaProgressStmt = $db->prepare("
+        SELECT COUNT(*)
+        FROM challenge_trivia_answers ta
+        JOIN challenge_trivia_questions tq ON tq.id = ta.question_id
+        WHERE ta.participant_id = ? AND YEARWEEK(tq.publish_date, 3) = YEARWEEK(CURDATE(), 3)
+    ");
+    $triviaProgressStmt->execute([$participant['id']]);
+    $ovTriviaWeekAnswered = (int)$triviaProgressStmt->fetchColumn();
+    // $pwWeekTotal is already clamped to correct-answer count above, but a wrong answer still
+    // counts toward "answered" without counting toward "correct" — guard against that too.
+    $ovTriviaWeekTotal = max($ovTriviaWeekTotal, $ovTriviaWeekAnswered);
+
+    $ovPendingDuel = getPendingDuelForOverview($db, $participant['id']);
 }
 
 include __DIR__ . '/includes/header.php';
@@ -375,18 +416,6 @@ include __DIR__ . '/includes/header.php';
     background: linear-gradient(90deg, #17171b, #0d0d10);
     padding: 16px;
     border-bottom: 1px solid rgba(245, 245, 247, 0.1);
-}
-.hf-arena-band {
-    background: rgba(13, 13, 16, 0.95);
-    padding: 12px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    color: #f5f5f7;
-}
-.hf-arena-strip {
-    background: repeating-conic-gradient(#f5f5f7 0 25%, #0b0b0d 0 50%) 0 0/14px 14px;
-    height: 8px;
 }
 .hf-ch-tabs {
     display: flex;
@@ -422,6 +451,236 @@ include __DIR__ . '/includes/header.php';
     box-shadow: 0 0 34px rgba(225, 6, 0, .16);
     animation: pp-pop .28s ease;
 }
+
+/* ---- Hero, modeled on .hf-hero / the Challenges-hero variant on index.php ---- */
+.hf-ch-hero {
+    position: relative;
+    border-radius: 12px;
+    padding: 22px 20px;
+    margin: 16px 0;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 88% -10%, rgba(36, 114, 232, .35), transparent 55%),
+        radial-gradient(circle at 4% 120%, rgba(251, 191, 36, .12), transparent 50%),
+        rgba(35, 35, 40, .7);
+    border: 1px solid rgba(245, 245, 247, .08);
+    animation: pp-pop .28s ease;
+}
+.hf-ch-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    background: rgba(36, 114, 232, .14);
+    border: 1px solid rgba(36, 114, 232, .4);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--f1-accent-challenges-light, #5b9bff);
+}
+.hf-ch-hero-eyebrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+    animation: hf-ch-pulse 1.6s ease-in-out infinite;
+}
+@keyframes hf-ch-pulse { 50% { opacity: .45; transform: scale(.8); } }
+@media (prefers-reduced-motion: reduce) { .hf-ch-hero-eyebrow::before { animation: none; } }
+.hf-ch-hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+}
+.hf-ch-hero-num {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 34px;
+    line-height: 1;
+    color: #f5f5f7;
+    text-shadow: 0 0 24px rgba(251, 191, 36, .35);
+}
+.hf-ch-hero-title {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 28px;
+    line-height: 1.05;
+    color: #f5f5f7;
+}
+.hf-ch-hero-sub {
+    font-size: 13px;
+    color: #a1a1aa;
+    margin-top: 8px;
+    line-height: 1.4;
+    max-width: 42ch;
+}
+.hf-ch-rank-pill {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(245, 245, 247, .12);
+    padding: 5px 10px;
+    border-radius: 999px;
+    color: #f5f5f7;
+    white-space: nowrap;
+    margin-top: 2px;
+}
+.hf-ch-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 14px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(245, 245, 247, .14);
+    color: #f5f5f7;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .15s, border-color .15s;
+}
+.hf-ch-back:hover { background: rgba(255, 255, 255, .14); border-color: rgba(245, 245, 247, .22); }
+.hf-ch-back i { font-size: 11px; }
+.hf-ch-hero-stats {
+    display: flex;
+    gap: 22px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+/* ---- Games Live Now (Overview) ---- */
+.hf-ch-games-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: #a1a1aa;
+    margin: 22px 2px 10px;
+}
+.hf-ch-game-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(35, 35, 40, .5);
+    border: 1px solid rgba(245, 245, 247, .06);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+.hf-ch-game-row.pending {
+    border-color: rgba(251, 191, 36, .5);
+    box-shadow: 0 0 0 1px rgba(251, 191, 36, .15) inset;
+}
+.hf-ch-game-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+.hf-ch-game-icon.rumors { background: rgba(225, 6, 0, .16); color: #ff6b66; }
+.hf-ch-game-icon.trivia { background: rgba(36, 114, 232, .18); color: #5b9bff; }
+.hf-ch-game-icon.duels  { background: rgba(251, 191, 36, .18); color: #fbbf24; }
+.hf-ch-game-body { flex: 1; min-width: 0; }
+.hf-ch-game-name { font-weight: 700; font-size: 14.5px; color: #f5f5f7; }
+.hf-ch-game-meta { font-size: 11.5px; color: #a1a1aa; margin-top: 2px; }
+.hf-ch-game-progress {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, .08);
+    margin-top: 9px;
+    overflow: hidden;
+}
+.hf-ch-game-progress > span {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    background: var(--f1-accent-challenges);
+}
+.hf-ch-game-right {
+    font-size: 12.5px;
+    color: #a1a1aa;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+.hf-ch-game-right.cta {
+    background: var(--gold, #fbbf24);
+    color: #1a1206;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* ---- Board (Challenge Leaderboard) ---- */
+.hf-ch-board-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: #a1a1aa;
+    margin: 22px 2px 10px;
+}
+.hf-ch-board-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    background: rgba(35, 35, 40, .5);
+    border: 1px solid rgba(245, 245, 247, .06);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    color: #f5f5f7;
+}
+.hf-ch-board-row.self {
+    border-color: rgba(36, 114, 232, .5);
+    box-shadow: 0 0 0 1px rgba(36, 114, 232, .15) inset;
+}
+.hf-ch-board-rank {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+}
+.hf-ch-board-rank.r1 { background: #ffd700; color: #1a1a1a; }
+.hf-ch-board-rank.r2 { background: #c8c8d0; color: #1a1a1a; }
+.hf-ch-board-rank.r3 { background: #cd7f32; color: #1a1a1a; }
+.hf-ch-board-rank.other { background: rgba(255, 255, 255, .06); color: #f5f5f7; }
+.hf-ch-board-name { font-weight: 600; font-size: 14.5px; }
+.hf-ch-board-you {
+    font-family: monospace;
+    font-size: 10.5px;
+    color: var(--f1-accent-challenges-light, #5b9bff);
+    margin-left: 6px;
+    font-weight: 700;
+}
+.hf-ch-board-cp {
+    text-align: right;
+    font-weight: 700;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 20px rgba(251, 191, 36, .35);
+}
 </style>
 
 <div class="hf-arena-base" style="min-height:100vh;padding-bottom:80px;">
@@ -437,17 +696,8 @@ include __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <div class="hf-arena-strip"></div>
-
-    <div class="hf-arena-band">
-        <?= t('ch_games_zone') ?>
-    </div>
-
     <div class="hf-container" style="padding:20px;color:#f5f5f7;">
         <div class="hf-ch-tabs">
-            <a href="?section=overview" class="<?= $section === 'overview' ? 'active' : '' ?>">
-                <?= t('ch_overview') ?>
-            </a>
             <a href="?section=rumors" class="<?= $section === 'rumors' ? 'active' : '' ?>">
                 <?= t('ch_rumors') ?>
             </a>
@@ -457,7 +707,16 @@ include __DIR__ . '/includes/header.php';
             <a href="?section=trivia" class="<?= $section === 'trivia' ? 'active' : '' ?>">
                 <?= t('ch_trivia') ?>
             </a>
+            <a href="?section=board" class="<?= $section === 'board' ? 'active' : '' ?>">
+                <?= t('ch_board') ?>
+            </a>
         </div>
+
+        <?php if ($section !== 'overview'): ?>
+            <a href="?section=overview" class="hf-ch-back" data-testid="ch-back-to-overview">
+                <i class="fas fa-chevron-left"></i> <?= t('ch_back_to_overview') ?>
+            </a>
+        <?php endif; ?>
 
         <?php if ($isPublic): ?>
             <p style="font-size:12px;color:#a1a1aa;margin:-8px 0 16px;text-align:center;" data-testid="ch-public-guest-banner">
@@ -465,56 +724,99 @@ include __DIR__ . '/includes/header.php';
             </p>
         <?php endif; ?>
 
-        <?php if (in_array($section, ['rumors', 'duels', 'trivia'], true)): ?>
-            <p style="font-size:13px;color:#a1a1aa;margin:-8px 0 16px;text-align:center;">
-                <?= t('ch_' . $section . '_desc') ?>
-            </p>
+        <?php if ($section === 'rumors'): ?>
+            <!-- Guest-playable (REQ-101) — hero shows regardless of $isPublic; $answeredToday
+                 defaults to 0 with no participant, so the stat is accurate for a first-time guest. -->
+            <div class="hf-ch-hero">
+                <span class="hf-ch-hero-eyebrow"><?= t('ch_todays_deck') ?></span>
+                <div class="hf-ch-hero-title" style="margin-top:12px;"><?= t('ch_rumors') ?></div>
+                <div class="hf-ch-hero-sub"><?= t('ch_rumors_desc') ?></div>
+                <div class="hf-ch-hero-stats">
+                    <div>
+                        <div class="hf-stat-n" style="font-size:22px;"><?= $answeredToday ?> / <?= $deckSize ?></div>
+                        <div class="hf-stat-l"><?= t('ch_todays_deck') ?></div>
+                    </div>
+                </div>
+            </div>
+        <?php elseif ($section === 'trivia'): ?>
+            <!-- Guest-playable (REQ-101) — same reasoning as rumors above. -->
+            <div class="hf-ch-hero">
+                <span class="hf-ch-hero-eyebrow"><?= t('ch_weekly_quiz') ?></span>
+                <div class="hf-ch-hero-title" style="margin-top:12px;"><?= t('ch_trivia') ?></div>
+                <div class="hf-ch-hero-sub"><?= t('ch_trivia_desc') ?></div>
+                <div class="hf-ch-hero-stats">
+                    <div>
+                        <div class="hf-stat-n" style="font-size:22px;"><?= $weekAnswered ?> / <?= $weekTotal ?></div>
+                        <div class="hf-stat-l"><?= t('ch_weekly_quiz') ?></div>
+                    </div>
+                </div>
+            </div>
+        <?php elseif ($section === 'duels'): ?>
+            <?php if ($isVerifiedParticipant): ?>
+                <!-- Unverified (whether a totally anonymous guest or an existing-but-unverified
+                     participant) gets its own unified hero+CTA further down, on the actual
+                     duel-verify-prompt block (data-testid="duel-verify-prompt") instead. -->
+                <div class="hf-ch-hero">
+                    <span class="hf-ch-hero-eyebrow"><?= t('ch_duels') ?></span>
+                    <div class="hf-ch-hero-title" style="margin-top:12px;"><?= t('ch_duels') ?></div>
+                    <div class="hf-ch-hero-sub"><?= t('ch_duels_desc') ?></div>
+                    <div class="hf-ch-hero-stats">
+                        <div>
+                            <div class="hf-stat-n" style="font-size:22px;"><?= count($needsPickDuels) ?></div>
+                            <div class="hf-stat-l"><?= t('ch_your_move') ?></div>
+                        </div>
+                        <div>
+                            <div class="hf-stat-n" style="font-size:22px;"><?= count($waitingDuels) ?></div>
+                            <div class="hf-stat-l"><?= t('ch_duel_waiting') ?></div>
+                        </div>
+                        <div>
+                            <div class="hf-stat-n" style="font-size:22px;"><?= count($settledDuels) ?></div>
+                            <div class="hf-stat-l"><?= t('ch_settled') ?></div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($section === 'overview'): ?>
             <?php if ($isPublic): ?>
-                <div style="text-align:center;padding:40px 20px;">
-                    <p style="font-size:18px;margin-bottom:20px;">
-                        <?= t('ch_hero_eyebrow') ?>
-                    </p>
-                    <p style="font-size:14px;color:#f5f5f7;margin-bottom:30px;">
-                        <?= t('ch_hero_sub') ?>
-                    </p>
-                    <a href="challenges-join.php" class="btn btn-primary btn-accent-challenges">
+                <div class="hf-ch-hero">
+                    <span class="hf-ch-hero-eyebrow"><?= t('ch_hero_eyebrow') ?></span>
+                    <div class="hf-ch-hero-title" style="margin-top:12px;"><?= t('ch_nav_challenges') ?></div>
+                    <div class="hf-ch-hero-sub"><?= t('ch_hero_sub') ?></div>
+                    <a href="challenges-join.php" class="btn btn-primary btn-accent-challenges" style="margin-top:20px;display:inline-block;">
                         <?= t('ch_play_now') ?>
                     </a>
                 </div>
             <?php else: ?>
-                <div class="hf-scoreboard">
-                    <h2 style="margin:0 0 20px;font-size:18px;font-weight:700;">
-                        <?= t('ch_your_standing') ?>
-                    </h2>
-
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-                        <div style="background:rgba(35,35,40,.7);padding:16px;border-radius:8px;">
-                            <div style="font-size:12px;color:#f5f5f7;opacity:0.7;margin-bottom:4px;">
-                                <?= t('ch_your_cp') ?>
-                            </div>
-                            <div style="font-size:28px;font-weight:700;color:#f5f5f7;text-shadow:0 0 24px rgba(251,191,36,.4);">
-                                <?= getChallengeCpTotal($db, $participant['id']) ?>
-                            </div>
-                        </div>
-
-                        <div style="background:rgba(35,35,40,.7);padding:16px;border-radius:8px;">
-                            <div style="font-size:12px;color:#f5f5f7;opacity:0.7;margin-bottom:4px;">
-                                <?= t('ch_streak') ?>
-                            </div>
-                            <div style="font-size:28px;font-weight:700;color:#34d399;">
-                                <?= getChallengeStreak($db, $participant['id']) ?>
-                            </div>
-                            <div style="font-size:11px;color:#a1a1aa;margin-top:6px;line-height:1.4;">
-                                <?= t('ch_streak_explainer') ?>
-                            </div>
-                        </div>
+                <?php
+                    $ovCpTotal = getChallengeCpTotal($db, $participant['id']);
+                    $ovStreak  = getChallengeStreak($db, $participant['id']);
+                    $ovRank    = getChallengeRank($db, $participant['id']);
+                ?>
+                <div class="hf-ch-hero">
+                    <div class="hf-ch-hero-top" style="margin-top:0;">
+                        <span class="hf-ch-hero-eyebrow"><?= t('ch_your_standing') ?></span>
+                        <?php if ($ovRank['rank']): ?>
+                            <span class="hf-ch-rank-pill" data-testid="ch-rank-pill">P<?= $ovRank['rank'] ?> / <?= $ovRank['total'] ?></span>
+                        <?php endif; ?>
                     </div>
+                    <div class="hf-ch-hero-num" data-testid="ch-cp-total" style="margin-top:12px;"><?= $ovCpTotal ?></div>
+                    <div class="hf-ch-hero-sub"><?= t('ch_your_cp') ?><?php if ($ovStreak > 0): ?> &middot; <?= sprintf(t('ch_streak_line'), $ovStreak) ?><?php endif; ?></div>
 
-                    <div style="font-size:13px;color:#f5f5f7;opacity:0.8;padding:12px;background:rgba(35,35,40,.4);border-radius:6px;">
-                        <?= t('ch_games_live') ?>
+                    <div class="hf-ch-hero-stats">
+                        <div>
+                            <div class="hf-stat-n" style="font-size:22px;color:#34d399;">+<?= getChallengeCpThisWeek($db, $participant['id']) ?></div>
+                            <div class="hf-stat-l"><?= t('ch_this_week') ?></div>
+                        </div>
+                        <div>
+                            <div class="hf-stat-n" style="font-size:22px;color:var(--f1-red-light);"><i class="fa-solid fa-fire" style="font-size:16px;"></i> <?= $ovStreak ?></div>
+                            <div class="hf-stat-l"><?= t('ch_streak') ?></div>
+                        </div>
+                        <div>
+                            <div class="hf-stat-n" style="font-size:22px;"><?= $pwCount ?> / <?= $pwWeekTotal ?></div>
+                            <div class="hf-stat-l"><?= t('ch_perfect_week') ?></div>
+                        </div>
                     </div>
                 </div>
 
@@ -522,7 +824,6 @@ include __DIR__ . '/includes/header.php';
                     <h2 style="margin:0 0 16px;font-size:16px;font-weight:700;">
                         <?= sprintf(t('ch_perfect_week_heading'), $pwIsoWeek) ?>
                     </h2>
-                    <?php $pwCount = getTriviaCorrectThisWeek($db, $participant['id']); ?>
                     <div data-testid="perfect-week-tracker" data-filled="<?= $pwCount ?>" data-total="<?= $pwWeekTotal ?>" style="display:flex;gap:8px;">
                         <?php for ($i = 0; $i < $pwWeekTotal; $i++): ?>
                             <div style="width:40px;height:40px;background:<?= $i < $pwCount ? 'var(--gold, #fbbf24)' : 'rgba(35,35,40,.7)' ?>;border-radius:8px;display:flex;align-items:center;justify-content:center;color:<?= $i < $pwCount ? '#1a1a1a' : '#f5f5f7' ?>;font-weight:700;font-size:12px;">
@@ -534,6 +835,41 @@ include __DIR__ . '/includes/header.php';
                         <?= t('ch_perfect_week_explainer') ?>
                     </div>
                 </div>
+
+                <div class="hf-ch-games-kicker"><?= t('ch_games_live') ?></div>
+
+                <a href="?section=rumors" class="hf-ch-game-row" data-testid="ch-game-row-rumors">
+                    <span class="hf-ch-game-icon rumors"><i class="fas fa-circle-question"></i></span>
+                    <span class="hf-ch-game-body">
+                        <span class="hf-ch-game-name"><?= t('ch_rumors') ?></span>
+                        <span class="hf-ch-game-meta"><?= t('ch_todays_deck') ?></span>
+                        <span class="hf-ch-game-progress"><span style="width:<?= $ovDeckSize > 0 ? min(100, round($ovRumorsToday / $ovDeckSize * 100)) : 0 ?>%"></span></span>
+                    </span>
+                    <span class="hf-ch-game-right"><?= $ovRumorsToday ?> / <?= $ovDeckSize ?></span>
+                </a>
+
+                <a href="?section=trivia" class="hf-ch-game-row" data-testid="ch-game-row-trivia">
+                    <span class="hf-ch-game-icon trivia"><i class="fa-solid fa-brain"></i></span>
+                    <span class="hf-ch-game-body">
+                        <span class="hf-ch-game-name"><?= t('ch_trivia') ?></span>
+                        <span class="hf-ch-game-meta"><?= t('ch_weekly_quiz') ?></span>
+                        <span class="hf-ch-game-progress"><span style="width:<?= $ovTriviaWeekTotal > 0 ? min(100, round($ovTriviaWeekAnswered / $ovTriviaWeekTotal * 100)) : 0 ?>%"></span></span>
+                    </span>
+                    <span class="hf-ch-game-right"><?= $ovTriviaWeekAnswered ?> / <?= $ovTriviaWeekTotal ?></span>
+                </a>
+
+                <a href="?section=duels<?= $ovPendingDuel ? '&duel=' . urlencode($ovPendingDuel['id']) : '' ?>" class="hf-ch-game-row<?= $ovPendingDuel ? ' pending' : '' ?>" data-testid="ch-game-row-duels">
+                    <span class="hf-ch-game-icon duels"><i class="fa-solid fa-bolt"></i></span>
+                    <span class="hf-ch-game-body">
+                        <span class="hf-ch-game-name"><?= t('ch_duels') ?></span>
+                        <span class="hf-ch-game-meta"><?= $ovPendingDuel ? htmlspecialchars($ovPendingDuel['opponent_name']) : t('ch_duels_desc') ?></span>
+                    </span>
+                    <?php if ($ovPendingDuel): ?>
+                        <span class="hf-ch-game-right cta"><?= t('ch_your_move') ?></span>
+                    <?php else: ?>
+                        <span class="hf-ch-game-right">&rarr;</span>
+                    <?php endif; ?>
+                </a>
             <?php endif; ?>
         <?php endif; ?>
 
@@ -550,9 +886,6 @@ include __DIR__ . '/includes/header.php';
                     <a href="challenges-invite.php?game=rumor_or_not" class="btn btn-primary btn-accent-challenges" style="margin-top:16px;display:inline-block;">
                         <?= t('ch_challenge_a_friend') ?>
                     </a>
-                    <div style="margin-top:12px;">
-                        <a href="?section=overview" style="color:#a1a1aa;font-size:13px;"><?= t('ch_back_to_overview') ?></a>
-                    </div>
                 </div>
             <?php else: ?>
                 <?php $card = $revealedItem ?: $rumorCurrent; $answered = (bool)$revealedItem; ?>
@@ -644,9 +977,6 @@ include __DIR__ . '/includes/header.php';
                     <a href="challenges-invite.php?game=trivia" class="btn btn-primary btn-accent-challenges" style="margin-top:16px;display:inline-block;">
                         <?= t('ch_challenge_a_friend') ?>
                     </a>
-                    <div style="margin-top:12px;">
-                        <a href="?section=overview" style="color:#a1a1aa;font-size:13px;"><?= t('ch_back_to_overview') ?></a>
-                    </div>
                 </div>
             <?php else: ?>
                 <?php
@@ -721,9 +1051,11 @@ include __DIR__ . '/includes/header.php';
                 <script nonce="<?= $nonce ?>">hfToast(<?= json_encode(t('ch_toast_duel_locked')) ?>);</script>
             <?php endif; ?>
             <?php if (!$isVerifiedParticipant): ?>
-                <div data-testid="duel-verify-prompt" style="text-align:center;padding:40px 20px;">
-                    <p style="font-size:14px;color:#a1a1aa;margin-bottom:20px;"><?= t('ch_duel_verify_prompt') ?></p>
-                    <a href="challenges-join.php" class="btn btn-primary btn-accent-challenges"><?= t('ch_play_now') ?></a>
+                <div class="hf-ch-hero" data-testid="duel-verify-prompt">
+                    <span class="hf-ch-hero-eyebrow"><?= t('ch_duels') ?></span>
+                    <div class="hf-ch-hero-title" style="margin-top:12px;"><?= t('ch_duels') ?></div>
+                    <div class="hf-ch-hero-sub"><?= t('ch_duel_verify_prompt') ?></div>
+                    <a href="challenges-join.php" class="btn btn-primary btn-accent-challenges" style="margin-top:20px;display:inline-block;"><?= t('ch_play_now') ?></a>
                 </div>
 
             <?php elseif ($duelMode === 'challenge'): ?>
@@ -948,6 +1280,53 @@ include __DIR__ . '/includes/header.php';
                         <p data-testid="duel-empty" style="color:#a1a1aa;font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_all_caught_up') ?></p>
                     <?php endif; ?>
                 </div>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($section === 'board'): ?>
+            <div class="hf-ch-hero">
+                <div class="hf-ch-hero-top" style="margin-top:0;">
+                    <span class="hf-ch-hero-eyebrow"><?= t('ch_board_eyebrow') ?></span>
+                    <?php if ($boardRank['rank']): ?>
+                        <span class="hf-ch-rank-pill" data-testid="ch-board-rank-pill">P<?= $boardRank['rank'] ?> / <?= $boardRank['total'] ?></span>
+                    <?php endif; ?>
+                </div>
+                <div class="hf-ch-hero-title" style="margin-top:12px;"><?= t('ch_public_board') ?></div>
+                <div class="hf-ch-hero-sub"><?= t('ch_board_lede') ?></div>
+                <div class="hf-ch-hero-stats">
+                    <div>
+                        <div class="hf-stat-n" style="font-size:22px;"><?= $boardRank['total'] ?></div>
+                        <div class="hf-stat-l"><?= t('ch_board_players') ?></div>
+                    </div>
+                    <div>
+                        <div class="hf-stat-n" style="font-size:22px;"><?= intval($boardLeaderboard[0]['total_cp'] ?? 0) ?></div>
+                        <div class="hf-stat-l"><?= t('ch_board_leader') ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hf-ch-board-kicker"><?= t('ch_full_board') ?></div>
+
+            <?php if (empty($boardLeaderboard)): ?>
+                <p style="color:#a1a1aa;font-size:13px;text-align:center;padding:20px 0;"><?= t('ch_all_caught_up') ?></p>
+            <?php else: ?>
+                <?php foreach ($boardLeaderboard as $index => $row): ?>
+                    <?php $isSelf = $participant && $row['participant_id'] === $participant['id']; ?>
+                    <div class="hf-ch-board-row<?= $isSelf ? ' self' : '' ?>" data-testid="board-row">
+                        <div class="hf-ch-board-rank <?= $index === 0 ? 'r1' : ($index === 1 ? 'r2' : ($index === 2 ? 'r3' : 'other')) ?>">
+                            <?= intval($index + 1) ?>
+                        </div>
+                        <div class="hf-ch-board-name">
+                            <?php if ($row['display_name']): ?>
+                                <?= escape($row['display_name']) ?>
+                            <?php else: ?>
+                                Guest <?= substr($row['id'], -4) ?>
+                            <?php endif; ?>
+                            <?php if ($isSelf): ?><span class="hf-ch-board-you"><?= mb_strtoupper(t('ch_you')) ?></span><?php endif; ?>
+                        </div>
+                        <div class="hf-ch-board-cp"><?= intval($row['total_cp']) ?></div>
+                    </div>
+                <?php endforeach; ?>
             <?php endif; ?>
         <?php endif; ?>
     </div>

@@ -43,7 +43,7 @@ test.describe('Participant profile (Feature 3)', { tag: '@challenges' }, () => {
         await expect(page.locator('.alert-success')).toBeVisible();
         await expect(page.locator('[data-testid="display-name-input"]')).toHaveValue(newName);
 
-        await page.goto('/challenges-board.php');
+        await page.goto('/challenges.php?section=board');
         await expect(page.locator('body')).toContainText(newName);
     });
 
