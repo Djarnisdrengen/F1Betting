@@ -171,7 +171,7 @@ try {
     <a href="challenges-profile.php" class="hf-drawer-row <?= $currentPage === 'challenges-profile' ? 'active' : '' ?>">
         <i class="fas fa-user"></i><span><?= t('profile') ?></span>
         <?php if (empty($challengeParticipant['core_user_id']) && empty($challengeParticipant['promotion_requested_at'])): ?>
-            <span class="hf-badge-dot" style="margin-left:auto;" aria-hidden="true" data-testid="nav-profile-promo-dot"></span>
+            <span class="hf-badge-dot" aria-hidden="true" data-testid="nav-profile-promo-dot"></span>
         <?php endif; ?>
     </a>
     <?php endif; ?>
