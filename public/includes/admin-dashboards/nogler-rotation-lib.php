@@ -28,6 +28,13 @@ function nrSecretConfig(): array {
             'name' => 'SMTP_PASSWORD', 'configConst' => 'SMTP_PASS', 'icon' => 'fas fa-envelope',
             'policyDays' => 90, 'mode' => 'record',
         ],
+        // Record-only like SMTP_PASS above: external credential for the Resend fallback
+        // provider (see public/includes/smtp.php sendViaResend()); rotating it here wouldn't
+        // change anything at resend.com, so it just tracks when it was last rotated there.
+        'resend_api_key' => [
+            'name' => 'RESEND_API_KEY', 'configConst' => 'RESEND_API_KEY', 'icon' => 'fas fa-paper-plane',
+            'policyDays' => 90, 'mode' => 'record',
+        ],
         // Record-only, deliberately not auto (confirmed 2026-07-23): rotating PASSWORD_PEPPER
         // invalidates every stored password hash (mass forced reset); rotating MFA_KEY makes
         // every stored TOTP secret undecryptable (mass forced 2FA re-enrollment). Real rotation
