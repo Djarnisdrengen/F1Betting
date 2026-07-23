@@ -9,6 +9,7 @@
 - [Content Top-up Workflow](#content-top-up-workflow)
 - [Monthly Security Review Workflow](#monthly-security-review-workflow)
 - [E2E Orchestrator Workflow (test env)](#e2e-orchestrator-workflow-test-env)
+- [Actions Dashboard (Dashboards → GitHub Actions)](#actions-dashboard-dashboards--github-actions)
 - [Required Configuration](#required-configuration)
   - [Variables tab](#variables-tab)
   - [Secrets tab](#secrets-tab)
@@ -191,6 +192,67 @@ that creates them automatically.
 Uploads `build-deploy/screenshots/` as an artifact on failure, same as the nightly workflow.
 
 **Timeout:** 15 minutes per run.
+
+---
+
+## Actions Dashboard (Dashboards → GitHub Actions)
+
+**File:** `public/admin-dashboards.php?tab=actions` (page controller) +
+`public/includes/admin-dashboards/actions.php` (rendering) + `public/includes/actions-dashboard.php`
+(GitHub API client, cron evaluator, schedule/collision math). **Moved** from the standalone
+`public/admin-actions.php` as part of the "Admin settings and dashboards" epic's two-tier nav
+restructure (see `epics/Admin settings and dashboards/`, and `docs/admin-dashboards.md` for the
+other four Dashboards tabs) — `admin-actions.php` is now a thin 302 redirect to
+`admin-dashboards.php?tab=actions` that preserves the query string, so old bookmarks and the
+`?ajax=run_jobs` endpoint both keep working.
+
+An admin-only, read-only ops dashboard summarizing every workflow above: what it's for, its
+last 10 runs (with per-step status pulled from the Jobs API), what ran across all workflows in
+the last 12 hours, and a month-at-a-glance run-schedule heat matrix with same-UTC-minute
+collision detection. Reached via the Dashboards area's five-tab section nav (`Oversigt · Nøgler &
+Rotation · PaddockKB · Challenges · GitHub Actions`).
+
+Its per-workflow run summary (success rate, failing-now count) is computed by
+`ghGetHealthSnapshot()`/`ghSummarizeRuns()`, the same functions Dashboards → Oversigt's tile for
+this dashboard calls — the two views can never disagree on the arithmetic. PaddockKB's own
+"Sidste opdatering" card reuses this file's `ghListWorkflowRuns()` for the `kb-update` workflow
+(`paddock-rumors.yml`) rather than a second run-history mechanism, and its "Kør opdatering nu"
+button uses this file's `ghTriggerWorkflowDispatch()` — which needs `GITHUB_TOKEN` to also have
+`actions:write`, not just the `actions:read` this dashboard itself needs (see
+`config.example.php`).
+
+**Data source:** the GitHub REST API (`GET .../actions/workflows/{file}/runs`, `GET
+.../actions/runs/{run_id}/jobs`), called server-side only — the browser never talks to
+`api.github.com` directly. Workflow purpose/expected-result copy and each workflow's cron
+string(s) are a static config in `ghWorkflowConfig()`, **not** read from the API — kept in sync
+by hand against the actual `.github/workflows/*.yml` files (see
+`epics/github_actions_dashboard/plan.md` decision #5 for why the schedule/collision math is a
+generic cron evaluator over the real cron strings rather than a hand-summarized schedule table:
+an earlier illustrative draft of that table didn't match what's actually configured for several
+of these workflows).
+
+**Caching:** a 60-second file cache at `public/cache/github-actions/*.json` for the per-workflow
+run lists (`GET .../runs`), keeping page-load API usage to 9 calls/60s (one per known workflow
+file — no separate "list workflows" call is needed). Per-run job/step data is fetched lazily
+(only when a run row is expanded in the UI) and cached far longer once a run has completed
+(immutable), 15s while still in progress.
+
+**`GITHUB_TOKEN` (optional but recommended):** see `config.example.php`. Without it the
+dashboard falls back to unauthenticated GitHub API calls — 60 requests/hour, shared with
+whatever else is on the same Simply.com hosting IP. A fine-grained PAT with read-only
+`Actions` permission (or a classic PAT with `repo` scope) on `Djarnisdrengen/F1Betting` removes
+that ceiling (5000/hr, authenticated).
+
+**E2E test fixture mode:** gated the same way `admin.php`'s own E2E test-mode is
+(`INTEGRATION_SEED_TOKEN`-matched `e2e_token`) plus an `e2e_gh_fixture` flag — when both are
+present, `ghApiGet()`'s callers read `public/includes/actions-dashboard-mock.json` instead of
+calling `curl`, so `tests/e2e/admin/14-actions-dashboard.spec.js` gets deterministic run
+data without hitting the live GitHub API or its rate limit. `e2e_gh_fixture=error` simulates a
+failed fetch (tests the error banner). The lazy run-expand AJAX call
+(`?ajax=run_jobs&run_id=…`) forwards the same `e2e_token`/`e2e_gh_fixture` params from the
+page's own URL, since the fixture gate is checked per-request, not just on the initial page
+load. The pure cron/schedule/collision math has its own fast CLI harness independent of any of
+this — `php tests/unit/actions-schedule-harness.php` (wired into `npm run test:unit`).
 
 ---
 

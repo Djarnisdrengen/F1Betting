@@ -99,7 +99,8 @@ Read these when you need detail:
 | `docs/patterns.md` | PHP conventions, helpers, naming, structure |
 | `docs/gotchas.md` | Full gotcha list (deployment, edge cases, common mistakes) |
 | `docs/testing.md` | Email interception (SMTP capture), E2E test architecture, test seeding |
-| `docs/github-actions.md` | CI workflows |
+| `docs/github-actions.md` | CI workflows + the GitHub Actions dashboard tab (`admin-dashboards.php?tab=actions`) |
+| `docs/admin-dashboards.md` | Admin two-tier nav + the Dashboards area (Oversigt, Nøgler & Rotation, PaddockKB, Challenges usage) |
 | `docs/f1-intelligence-reference.md` | RAG system (Phase 1, live on Vercel) — do not modify without user OK |
 | `docs/paddock-rumors-reference.md` | Content-gen pipeline (coexists, isolated by default) |
 | `docs/paddock-challenges-reference.md` | Paddock Challenges (Rumor or Not, Trivia, Duels) — scoring, content pipeline, admin runbook |

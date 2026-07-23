@@ -8,6 +8,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/challenges.php';
 require_once __DIR__ . '/includes/smtp.php';
+require_once __DIR__ . '/includes/admin-area-nav.php';
 requireAdmin();
 
 $db          = getDB();
@@ -569,21 +570,7 @@ include __DIR__ . '/includes/header.php';
 <div class="hf-container">
 <h1 class="mb-3"><i class="fas fa-user-check text-accent"></i> <?= t('admin_ch_title') ?></h1>
 
-<!-- Admin area switcher — mirrors the one on admin.php; this page is a separate top-level
-     area (not a tab of admin.php), so it gets a way back up there too. -->
-<nav class="admin-area-nav" aria-label="<?= t('admin') ?>">
-    <a href="admin.php" class="admin-area-tab">
-        <i class="fas fa-cog"></i>
-        <span><?= t('admin_area_core') ?></span>
-    </a>
-    <a href="admin-challenges.php" class="admin-area-tab active">
-        <i class="fas fa-user-check"></i>
-        <span><?= t('admin_area_challenges') ?></span>
-        <?php if ($tabCounts['members'] > 0): ?>
-            <span class="admin-area-badge"><?= $tabCounts['members'] ?></span>
-        <?php endif; ?>
-    </a>
-</nav>
+<?php renderAdminAreaNav('challenges', $tabCounts['members']); ?>
 
 <?php if ($success): ?>
     <div class="alert alert-success"><?= escape($success) ?></div>

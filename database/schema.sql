@@ -416,3 +416,23 @@ CREATE TABLE IF NOT EXISTS challenge_trivia_answers (
     FOREIGN KEY (participant_id) REFERENCES challenge_participants(id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES challenge_trivia_questions(id) ON DELETE CASCADE
 );
+
+-- Admin Settings & Operations Dashboards — Nøgler & Rotation (see add_admin_dashboards.sql)
+CREATE TABLE IF NOT EXISTS admin_secret_state (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    item_key     VARCHAR(64) NOT NULL UNIQUE,
+    item_type    ENUM('secret','token') NOT NULL,
+    rotated_at   DATETIME NULL,
+    rotated_by   VARCHAR(100) NULL,
+    expires_at   DATETIME NULL
+);
+
+CREATE TABLE IF NOT EXISTS admin_audit_log (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    actor       VARCHAR(100) NOT NULL,
+    action      VARCHAR(40) NOT NULL,
+    item_key    VARCHAR(64) NOT NULL,
+    detail      TEXT NULL,
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_created (created_at)
+);

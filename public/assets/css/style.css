@@ -1808,8 +1808,16 @@ body.light .logo-light { display: block; }
     --status-success: #10b981;
     --status-warning: #f59e0b;
     --status-danger: #ef4444;
+    /* "-light" aliases — the readable-on-dark-card shade already IS --status-success/warning/
+       danger above; several call sites already assumed this via a hardcoded fallback
+       (var(--status-success-light, #10b981)) before these existed as real tokens. */
+    --status-success-light: var(--status-success);
+    --status-warning-light: var(--status-warning);
+    --status-danger-light:  var(--status-danger);
+    --status-neutral: #6b7280;
 
     --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px;
+    --radius-sm: var(--r-sm); --radius-md: var(--r-md); --radius-lg: var(--r-lg); --radius-pill: 9999px;
     --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
     --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
 }
@@ -3668,4 +3676,257 @@ body.font-system {
 
 @media print {
     .test-banner { display: none; }
+}
+
+/* ============================================================
+   GitHub Actions Dashboard (public/admin-actions.php)
+   ============================================================ */
+/* Width/padding come from the site's shared .hf-container (max 1280px) — the schedule
+   matrix's own horizontal scroll (min-width: 720px, see .gha-matrix-inner) absorbs the
+   narrower-than-the-original-1360px-design width instead of a page-specific wide container. */
+.gha-page { margin-top: 4px; }
+
+.gha-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+.gha-stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 16px 18px; }
+.gha-stat-label { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 12.5px; font-weight: 600; margin-bottom: 8px; }
+.gha-stat-value { font-family: var(--font-display); font-weight: 800; font-size: 30px; }
+.gha-stat-value.success { color: var(--status-success-light); }
+.gha-stat-value.danger  { color: var(--status-danger-light); }
+
+.gha-error-banner {
+    display: flex; align-items: center; gap: 10px; background: rgba(239,68,68,0.08);
+    border: 1px solid var(--status-danger); border-radius: var(--radius-md);
+    padding: 11px 16px; margin-bottom: 16px; font-size: 13px; color: var(--text-secondary);
+}
+.gha-error-banner i { color: var(--status-danger-light); }
+.gha-token-hint {
+    display: flex; align-items: center; gap: 9px; background: var(--bg-card);
+    border: 1px solid var(--border-color); border-radius: var(--radius-md);
+    padding: 9px 14px; margin-bottom: 16px; font-size: 12px; color: var(--text-muted);
+}
+
+.gha-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 18px; }
+.gha-panel-toggle {
+    display: flex; align-items: center; justify-content: space-between; padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s;
+}
+.gha-panel-toggle.collapsed { border-bottom-color: transparent; }
+.gha-panel-toggle:hover { background: var(--bg-hover); }
+.gha-panel-toggle-title { display: flex; align-items: center; gap: 9px; }
+.gha-panel-toggle-title h3 { font-family: var(--font-display); font-weight: 800; font-size: 15px; }
+.gha-panel-toggle-right { display: flex; align-items: center; gap: 12px; }
+
+.gha-pill { font-family: var(--font-mono); font-weight: 700; font-size: 12px; color: var(--text-muted); background: var(--bg-secondary); border-radius: var(--radius-pill); padding: 2px 9px; }
+
+.gha-colheader {
+    display: grid; gap: 0; padding: 9px 20px; border-bottom: 1px solid var(--border-color);
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);
+}
+.gha-colheader.gha-cols-12h  { grid-template-columns: 1fr 140px 210px 190px 90px; }
+.gha-colheader.gha-cols-runs { grid-template-columns: 150px 78px 1fr 130px 92px 30px; padding-right: 20px; }
+.gha-col-right { text-align: right; }
+
+.gha-scroll { overflow-y: auto; }
+.gha-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.gha-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 8px; }
+.gha-scroll::-webkit-scrollbar-track { background: transparent; }
+
+.gha-run-row-12h {
+    display: grid; grid-template-columns: 1fr 140px 210px 190px 90px; gap: 0; align-items: center;
+    padding: 11px 20px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s;
+}
+.gha-run-row-12h:hover { background: var(--bg-hover); }
+.gha-run-wf { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; min-width: 0; }
+.gha-run-wf i { color: var(--f1-red); font-size: 13px; width: 15px; text-align: center; }
+.gha-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gha-status-cell { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; }
+.gha-trigger-cell { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); min-width: 0; }
+.gha-trigger-cell i { color: var(--text-muted); font-size: 12px; width: 14px; }
+.gha-started-cell { display: flex; flex-direction: column; line-height: 1.25; }
+.gha-started-full { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
+.gha-started-ago { font-size: 10.5px; color: var(--text-muted); }
+.gha-duration-cell { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-secondary); text-align: right; }
+
+.gha-master-detail { display: grid; grid-template-columns: 326px 1fr; gap: 18px; align-items: start; }
+
+.gha-rail { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; position: sticky; top: 82px; }
+.gha-rail-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 12px; border-bottom: 1px solid var(--border-color); }
+.gha-rail-header span:first-child { font-family: var(--font-display); font-weight: 800; font-size: 15px; }
+.gha-filter-wrap { position: relative; padding: 12px 12px 6px; }
+.gha-filter-icon { position: absolute; left: 24px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; pointer-events: none; }
+.gha-input {
+    width: 100%; box-sizing: border-box; padding: 9px 12px 9px 32px; background: var(--bg-secondary);
+    border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary);
+    font-family: var(--font-body); font-size: 13.5px;
+}
+.gha-input:focus { outline: none; border-color: var(--f1-red); box-shadow: 0 0 0 3px rgba(225,6,0,0.20); }
+.gha-wf-list { max-height: calc(100vh - 240px); overflow-y: auto; padding: 6px 8px 10px; }
+.gha-wf-row {
+    display: flex; align-items: center; gap: 11px; padding: 10px 11px; border-radius: var(--radius-md);
+    cursor: pointer; background: transparent; border-left: 3px solid transparent; transition: background 0.15s;
+}
+.gha-wf-row:hover { background: var(--bg-hover); }
+.gha-wf-row.active { background: var(--bg-hover); border-left-color: var(--f1-red); }
+.gha-wf-row-icon { font-size: 15px; width: 16px; text-align: center; flex-shrink: 0; }
+.gha-wf-row-name { font-weight: 600; font-size: 13.5px; color: var(--text-secondary); }
+.gha-wf-row.active .gha-wf-row-name { color: var(--text-primary); }
+.gha-wf-row-last { display: flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 1px; }
+.gha-wf-row-last i { font-size: 10px; }
+.gha-wf-row-ago { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+
+.gha-detail-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 16px; }
+.gha-detail-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+.gha-detail-icon {
+    width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--bg-secondary);
+    border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 20px; color: var(--f1-red);
+}
+.gha-detail-title { flex: 1; min-width: 0; }
+.gha-detail-title h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 1.2; }
+.gha-detail-status-line { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 13px; color: var(--text-secondary); }
+.gha-detail-file-chip {
+    font-family: var(--font-mono); font-weight: 700; font-size: 11.5px; color: var(--text-secondary);
+    background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md);
+    padding: 6px 11px; white-space: nowrap;
+}
+.gha-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.gha-info-panel { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px; }
+.gha-info-label {
+    display: flex; align-items: center; gap: 7px; color: var(--f1-red); font-size: 11.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 7px;
+}
+.gha-info-panel p { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
+.gha-meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.gha-meta-chip { display: flex; align-items: center; gap: 9px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 9px 13px; }
+.gha-meta-chip i { color: var(--text-muted); font-size: 13px; }
+.gha-meta-chip.next { border-color: var(--f1-red); }
+.gha-meta-chip.next i { color: var(--f1-red); }
+.gha-meta-chip.next .gha-meta-label { color: var(--f1-red); }
+.gha-meta-label { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 700; }
+.gha-meta-value { font-size: 13px; font-weight: 600; }
+.gha-meta-value.label-mono { font-family: var(--font-mono); }
+.gha-meta-value .gha-meta-sub { color: var(--text-muted); font-weight: 400; }
+
+.gha-runs-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; }
+.gha-runs-head { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--border-color); }
+.gha-runs-head h3 { font-family: var(--font-display); font-weight: 800; font-size: 15px; }
+.gha-runs-hint { font-size: 12px; color: var(--text-muted); }
+.gha-run-row {
+    display: grid; grid-template-columns: 150px 78px 1fr 130px 92px 30px; gap: 0; align-items: center;
+    padding: 12px 20px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s;
+}
+.gha-run-row:hover, .gha-run-row.open { background: var(--bg-hover); }
+.gha-run-status { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+.gha-run-no { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-secondary); }
+.gha-run-ago { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+.gha-run-duration { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-secondary); text-align: right; }
+.gha-run-chevron { text-align: right; color: var(--text-muted); }
+
+.gha-run-log { padding: 14px 20px 18px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); display: none; }
+.gha-run-log.open { display: block; }
+.gha-run-log-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 11px; font-size: 12px; color: var(--text-muted); }
+.gha-run-log-meta i { margin-right: 6px; }
+.gha-run-log-meta .label-mono { font-family: var(--font-mono); }
+.gha-console {
+    background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md);
+    padding: 12px 14px; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; overflow-x: auto;
+}
+.gha-console-line { white-space: pre; }
+.gha-console-ts { color: var(--text-muted); user-select: none; }
+.gha-console-loading { color: var(--text-muted); font-size: 12px; padding: 4px 0; }
+
+.gha-matrix-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 15px 20px; border-bottom: 1px solid var(--border-color); }
+.gha-matrix-title { display: flex; align-items: center; gap: 9px; }
+.gha-matrix-title h3 { font-family: var(--font-display); font-weight: 800; font-size: 15px; }
+.gha-heat-legend { display: flex; align-items: center; gap: 14px; font-size: 10.5px; color: var(--text-muted); flex-wrap: wrap; }
+.gha-heat-swatch { display: flex; align-items: center; gap: 5px; }
+.gha-heat-swatch span.gha-swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.gha-heat-divider { width: 1px; height: 14px; background: var(--border-color); }
+.gha-collide-key { display: flex; align-items: center; gap: 5px; }
+.gha-collide-key i { color: var(--f1-red); font-size: 10px; }
+
+.gha-matrix-scroll { padding: 12px 20px 18px; overflow-x: auto; }
+.gha-matrix-inner { min-width: 720px; }
+.gha-matrix-head-row { display: grid; grid-template-columns: 196px 84px 1fr; gap: 10px; align-items: end; margin-bottom: 6px; }
+.gha-matrix-head-time { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
+.gha-matrix-daygrid { display: grid; gap: 2px; }
+.gha-matrix-daycell { text-align: center; font-family: var(--font-mono); font-weight: 700; line-height: 1.25; border-radius: 4px; padding: 2px 0; }
+.gha-matrix-daycell .wd { font-size: 10px; font-weight: 800; }
+.gha-matrix-daycell .dn { font-size: 10px; }
+.gha-collision-row { display: grid; grid-template-columns: 196px 84px 1fr; gap: 10px; align-items: center; margin-bottom: 5px; }
+.gha-collision-label { display: flex; align-items: center; gap: 7px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
+.gha-collision-label i { color: var(--f1-red); font-size: 11px; }
+.gha-collision-cellgrid { display: grid; gap: 2px; }
+.gha-collision-cell { height: 16px; border-radius: 3px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; }
+.gha-collision-cell:hover { outline: 1px solid var(--f1-red); }
+.gha-matrix-row { display: grid; grid-template-columns: 196px 84px 1fr; gap: 10px; align-items: center; padding: 4px 6px; margin: 0 -6px; border-top: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: background 0.15s; }
+.gha-matrix-row:hover, .gha-matrix-row.active { background: var(--bg-hover); }
+.gha-matrix-row-name { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.gha-matrix-row-name i { font-size: 12px; color: var(--f1-red); width: 15px; text-align: center; }
+.gha-matrix-row-label { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-secondary); }
+.gha-matrix-row.active .gha-matrix-row-label { color: var(--text-primary); }
+.gha-matrix-row-cadence { font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; color: var(--text-muted); }
+.gha-matrix-row-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+.gha-matrix-cellgrid { display: grid; gap: 2px; }
+.gha-matrix-cell { height: 19px; border-radius: 3px; border: 1px solid var(--border-color); }
+.gha-matrix-cell:hover { outline: 1px solid var(--f1-red); }
+.gha-matrix-note { font-size: 11px; color: var(--text-muted); margin-top: 12px; }
+.gha-matrix-note i { margin-right: 6px; }
+
+.gha-empty { padding: 22px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+/* ============================================================
+   Dashboards area — shared primitives for the newer tabs
+   (PaddockKB, Nøgler & Rotation, Challenges usage, Oversigt).
+   Reuses .gha-summary/.gha-stat-card/.gha-panel/.gha-empty/.gha-pill
+   etc. directly (see epics/Admin settings and dashboards/plan.md) —
+   only genuinely new primitives (progress bars, KPI tiles) live here.
+   ============================================================ */
+.dash-progress-track { height: 8px; border-radius: 4px; background: var(--bg-hover); overflow: hidden; }
+.dash-progress-fill  { height: 100%; border-radius: 4px; }
+.dash-cat-row { display: grid; grid-template-columns: 130px 1fr 90px; gap: 12px; align-items: center; margin-bottom: 11px; }
+.dash-cat-row:last-child { margin-bottom: 0; }
+.dash-cat-name { font-size: 13px; font-weight: 700; }
+.dash-cat-meta { display: flex; align-items: center; gap: 7px; justify-self: end; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
+.dash-fresh-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+.dash-status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.dash-status-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 14px 16px; }
+.dash-status-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.dash-status-value { font-family: var(--font-mono); font-size: 20px; color: var(--text-primary); margin-top: 6px; }
+.dash-status-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+.dash-health-ring { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.dash-health-ring-inner { width: 76px; height: 76px; border-radius: 50%; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.dash-health-score { font-family: var(--font-mono); font-size: 23px; color: var(--text-primary); }
+.dash-health-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.06em; }
+.dash-action-queue { border-radius: 11px; padding: 14px 16px; margin-bottom: 18px; }
+.dash-action-row { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 5px 0; }
+.dash-details summary { cursor: pointer; list-style: none; }
+.dash-details summary::-webkit-details-marker { display: none; }
+
+.dash-tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.dash-tile { cursor: pointer; border: 1px solid var(--border-color); border-radius: 13px; background: var(--bg-card); padding: 18px; display: flex; flex-direction: column; gap: 13px; transition: all 0.2s; }
+.dash-tile:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(225,6,0,0.15); border-color: var(--f1-red); }
+.dash-tile-head { display: flex; align-items: center; justify-content: space-between; }
+.dash-tile-icon { width: 36px; height: 36px; border-radius: 9px; background: var(--bg-hover); display: inline-flex; align-items: center; justify-content: center; }
+.dash-tile-flag { font-family: var(--font-mono); font-size: 11px; background: var(--f1-red); color: #fff; padding: 1px 9px; border-radius: 999px; }
+.dash-tile-stat { font-family: var(--font-mono); font-size: 26px; color: var(--text-primary); }
+.dash-tile-foot { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+
+@media (max-width: 768px) {
+    .dash-status-grid, .dash-tile-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    .gha-summary { grid-template-columns: repeat(2, 1fr); }
+    .gha-master-detail { grid-template-columns: 1fr; }
+    .gha-rail { position: static; }
+    .gha-colheader.gha-cols-12h, .gha-run-row-12h { grid-template-columns: 1fr 90px 90px; }
+    .gha-colheader.gha-cols-12h span:nth-child(3), .gha-run-row-12h .gha-trigger-cell { display: none; }
+    .gha-colheader.gha-cols-runs, .gha-run-row { grid-template-columns: 90px 1fr 70px 24px; }
+    .gha-colheader.gha-cols-runs span:nth-child(2), .gha-run-row .gha-run-no,
+    .gha-colheader.gha-cols-runs span:nth-child(4), .gha-run-row .gha-run-ago { display: none; }
+    .gha-detail-head { flex-wrap: wrap; }
+    .gha-detail-file-chip { white-space: normal; word-break: break-all; }
 }
