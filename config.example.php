@@ -26,9 +26,9 @@ define('SITE_DOMAIN', parse_url(SITE_URL, PHP_URL_HOST));
 
 // ── SECURITY ──────────────────────────────────────────────────────────
 // Generate with: php -r "echo bin2hex(random_bytes(32));"
-define('PASSWORD_PEPPER',        'change-me-32-random-hex-chars');
+define('PASSWORD_PEPPER',        'change-me-32-random-hex-chars');//changing these will invalidate all existing passwords and MFA keys, so don't change them unless you know what you're doing
 // MFA_KEY seals TOTP secrets at rest (sodium secretbox). MUST be exactly 64 hex chars (32 bytes).
-define('MFA_KEY',                'change-me-64-random-hex-chars');
+define('MFA_KEY',                'change-me-64-random-hex-chars');//changing these will invalidate all existing passwords and MFA keys, so don't change them unless you know what you're doing
 // PASSKEY_RPID: the WebAuthn relying-party id — the registrable domain (SITE_DOMAIN
 // without www). ONE-WAY DOOR: changing it orphans every registered passkey.
 // passkey.php fails loud if this doesn't match the domain derived from SITE_URL.
@@ -41,7 +41,7 @@ define('CHALLENGE_INVITE_SECRET', 'change-me-64-random-hex-chars');
 define('SMTP_HOST',       'smtp.example.dk');
 define('SMTP_PORT',       587);                     // 587=TLS, 465=SSL
 define('SMTP_USER',       'noreply@example.dk');
-define('SMTP_PASS',       'email-password');
+define('SMTP_PASS',       'email-password');//password is changed via protonmail.com control panel, so it is not a secret.
 define('SMTP_FROM_EMAIL', 'noreply@example.dk');
 define('SMTP_FROM_NAME',  'F1 Betting');
 
