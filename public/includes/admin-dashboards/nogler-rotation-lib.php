@@ -55,17 +55,32 @@ function nrSecretConfig(): array {
         // every existing user's 2FA/password immediately.
         'integration_seed_token' => [
             'name' => 'INTEGRATION_SEED_TOKEN', 'configConst' => 'INTEGRATION_SEED_TOKEN', 'icon' => 'fas fa-vial',
-            'policyDays' => 180, 'mode' => 'auto',
+            'policyDays' => 180, 'mode' => 'auto', 'githubSecretBase' => 'INTEGRATION_SEED_TOKEN',
         ],
         'cron_secret' => [
             'name' => 'CRON_SECRET', 'configConst' => 'CRON_SECRET', 'icon' => 'fas fa-clock',
-            'policyDays' => 180, 'mode' => 'auto',
+            'policyDays' => 180, 'mode' => 'auto', 'githubSecretBase' => 'CRON_SECRET',
         ],
+        // No 'githubSecretBase': unlike the two above, no CI/cron workflow reads this one —
+        // see .github/workflows/*.yml, none reference CHALLENGE_INVITE_SECRET.
         'challenge_invite_secret' => [
             'name' => 'CHALLENGE_INVITE_SECRET', 'configConst' => 'CHALLENGE_INVITE_SECRET', 'icon' => 'fas fa-comments',
             'policyDays' => 180, 'mode' => 'auto',
         ],
     ];
+}
+
+// Env-aware GitHub Actions secret name for an auto-rotatable item that has a CI/cron pairing —
+// live workflows read the bare name (e.g. secrets.CRON_SECRET), test workflows read the
+// _TEST-suffixed one (e.g. secrets.CRON_SECRET_TEST); see .github/workflows/cron-*.yml,
+// nightly-backup.yml, cron-content-topup.yml, e2e-test-orchestrator.yml. Returns null for
+// items with no such pairing (challenge_invite_secret) or an unknown key.
+function nrGithubSecretName(string $itemKey): ?string {
+    $cfg = nrSecretConfig()[$itemKey] ?? null;
+    $base = $cfg['githubSecretBase'] ?? null;
+    if ($base === null) return null;
+    $isLive = defined('APP_ENV') && APP_ENV === 'live';
+    return $isLive ? $base : $base . '_TEST';
 }
 
 // ── Pure functions (unit-tested in tests/unit/nogler-rotation-harness.php) ──
@@ -127,10 +142,26 @@ function nrConfigWritePath(): string {
     if (nrRotationFixtureModeActive()) {
         $fixturePath = sys_get_temp_dir() . '/f1betting-nr-fixture-config.php';
         // Self-seeding: E2E has no separate fixture-setup step for this file, so create it
-        // with a realistic single define() line the first time it's needed, rather than
-        // requiring an out-of-band setup script. Never touches the real config.php.
+        // with a realistic define() line for every 'auto'-mode secret's configConst the first
+        // time it's needed, rather than requiring an out-of-band setup script. One line per
+        // nrSecretConfig() 'auto' entry (not just CHALLENGE_INVITE_SECRET) so E2E can exercise
+        // the real rotation path for CRON_SECRET/INTEGRATION_SEED_TOKEN too — nrReplaceConfigConst()
+        // fails closed (ambiguous_target) if the line it's told to replace isn't present at all.
+        // Per-const, not just per-file: this file can already exist from before an 'auto' secret
+        // was added to nrSecretConfig() (or from an earlier fixture-file format), so checking
+        // only is_file() would leave a newly-added const permanently missing. Never touches the
+        // real config.php.
         if (!is_file($fixturePath)) {
-            file_put_contents($fixturePath, "<?php\ndefine('CHALLENGE_INVITE_SECRET', 'fixture-placeholder-value');\n");
+            file_put_contents($fixturePath, "<?php\n");
+        }
+        $content = file_get_contents($fixturePath);
+        foreach (nrSecretConfig() as $cfg) {
+            if ($cfg['mode'] !== 'auto') continue;
+            if (!preg_match("/define\\('" . preg_quote($cfg['configConst'], '/') . "',/", $content)) {
+                $line = "define('{$cfg['configConst']}', 'fixture-placeholder-value');\n";
+                file_put_contents($fixturePath, $line, FILE_APPEND);
+                $content .= $line;
+            }
         }
         return $fixturePath;
     }
@@ -319,7 +350,7 @@ function nrReplaceConfigConst(string $content, string $constName, string $newVal
 function nrRotateSecret(PDO $db, string $itemKey, string $actor): array {
     $secrets = nrSecretConfig();
     if (!isset($secrets[$itemKey]) || $secrets[$itemKey]['mode'] !== 'auto') {
-        return ['success' => false, 'error' => 'not_auto_rotatable'];
+        return ['success' => false, 'error' => 'not_auto_rotatable', 'newValue' => null];
     }
     $cfg = $secrets[$itemKey];
     $configPath = nrConfigWritePath();
@@ -328,18 +359,18 @@ function nrRotateSecret(PDO $db, string $itemKey, string $actor): array {
     $lockFp = @fopen($lockPath, 'c');
     if (!$lockFp || !flock($lockFp, LOCK_EX | LOCK_NB)) {
         if ($lockFp) fclose($lockFp);
-        return ['success' => false, 'error' => 'rotation_in_progress'];
+        return ['success' => false, 'error' => 'rotation_in_progress', 'newValue' => null];
     }
 
     try {
         if (!is_file($configPath) || !is_readable($configPath)) {
             nrLogAudit($db, $actor, 'rotate_secret_failed', $itemKey, 'config file not readable');
-            return ['success' => false, 'error' => 'config_unreadable'];
+            return ['success' => false, 'error' => 'config_unreadable', 'newValue' => null];
         }
         $content = file_get_contents($configPath);
         if ($content === false) {
             nrLogAudit($db, $actor, 'rotate_secret_failed', $itemKey, 'read failed');
-            return ['success' => false, 'error' => 'read_failed'];
+            return ['success' => false, 'error' => 'read_failed', 'newValue' => null];
         }
 
         $newValue = nrGenerateSecretValue();
@@ -347,7 +378,7 @@ function nrRotateSecret(PDO $db, string $itemKey, string $actor): array {
         if ($newContent === null) {
             nrLogAudit($db, $actor, 'rotate_secret_failed', $itemKey,
                 "could not unambiguously find exactly 1 define() for {$cfg['configConst']}");
-            return ['success' => false, 'error' => 'ambiguous_target'];
+            return ['success' => false, 'error' => 'ambiguous_target', 'newValue' => null];
         }
 
         // Backup is a hard precondition (test-manager condition) — no replace/rename is
@@ -356,19 +387,19 @@ function nrRotateSecret(PDO $db, string $itemKey, string $actor): array {
         $backupPath = $configPath . '.bak.' . time();
         if (@copy($configPath, $backupPath) === false) {
             nrLogAudit($db, $actor, 'rotate_secret_failed', $itemKey, 'backup copy failed');
-            return ['success' => false, 'error' => 'backup_failed'];
+            return ['success' => false, 'error' => 'backup_failed', 'newValue' => null];
         }
         @chmod($backupPath, 0600);
 
         $tmpPath = $configPath . '.tmp.' . getmypid();
         if (file_put_contents($tmpPath, $newContent) === false) {
             nrLogAudit($db, $actor, 'rotate_secret_failed', $itemKey, 'write to temp file failed');
-            return ['success' => false, 'error' => 'write_failed'];
+            return ['success' => false, 'error' => 'write_failed', 'newValue' => null];
         }
         if (!rename($tmpPath, $configPath)) {
             @unlink($tmpPath);
             nrLogAudit($db, $actor, 'rotate_secret_failed', $itemKey, 'atomic rename failed');
-            return ['success' => false, 'error' => 'rename_failed'];
+            return ['success' => false, 'error' => 'rename_failed', 'newValue' => null];
         }
         if (function_exists('opcache_invalidate')) {
             @opcache_invalidate($configPath, true);
@@ -376,7 +407,10 @@ function nrRotateSecret(PDO $db, string $itemKey, string $actor): array {
 
         nrRecordState($db, $itemKey, 'secret', $actor);
         nrLogAudit($db, $actor, 'rotate_secret', $itemKey, 'auto-rotated');
-        return ['success' => true, 'error' => null];
+        // newValue is returned only to the caller for one-time display (session flash) —
+        // never logged (nrLogAudit detail above stays "auto-rotated") and never persisted to
+        // admin_secret_state, so there is exactly one moment this value is readable in the app.
+        return ['success' => true, 'error' => null, 'newValue' => $newValue];
     } finally {
         flock($lockFp, LOCK_UN);
         fclose($lockFp);

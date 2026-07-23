@@ -104,6 +104,43 @@ test.describe('Dashboards Nøgler & Rotation', { tag: '@admin' }, () => {
         await expect(refreshedRow).toContainText(/0 \//); // age reset to 0
     });
 
+    test('rotating a secret with no GitHub Actions pairing shows a reveal-once panel with the new value and only the local-config line', async ({ page }) => {
+        await page.goto(`/admin-dashboards.php?tab=keys&${FIXTURE_QS}`);
+        page.once('dialog', (d) => d.accept());
+        const inviteRow = page.locator('[data-item-key="challenge_invite_secret"]');
+        await inviteRow.locator('> form button[type="submit"]').click();
+        await expect(page).toHaveURL(/nr_msg=secret_rotated/);
+
+        const panel = page.locator('#nr-reveal-panel');
+        await expect(panel).toHaveAttribute('data-item-key', 'challenge_invite_secret');
+        const value = await panel.locator('#nr-reveal-value').inputValue();
+        expect(value).toMatch(/^[0-9a-f]{64}$/); // nrGenerateSecretValue()'s shape
+        // No GitHub Actions workflow reads CHALLENGE_INVITE_SECRET (see nrSecretConfig()) — only
+        // the local-config-file follow-up line, not a GitHub-secret line too.
+        await expect(panel.locator('li')).toHaveCount(1);
+
+        // One-time reveal: read-and-unset in keys.php means a reload of the very same URL must
+        // not show it a second time.
+        await page.reload();
+        await expect(page.locator('#nr-reveal-panel')).toHaveCount(0);
+    });
+
+    test('rotating a CI-paired secret (CRON_SECRET) names the env-aware GitHub Actions secret in the reveal panel', async ({ page }) => {
+        await page.goto(`/admin-dashboards.php?tab=keys&${FIXTURE_QS}`);
+        page.once('dialog', (d) => d.accept());
+        const cronRow = page.locator('[data-item-key="cron_secret"]');
+        await cronRow.locator('> form button[type="submit"]').click();
+        await expect(page).toHaveURL(/nr_msg=secret_rotated/);
+
+        const panel = page.locator('#nr-reveal-panel');
+        await expect(panel).toHaveAttribute('data-item-key', 'cron_secret');
+        // GitHub-secret line + local-config line — CRON_SECRET is CI-paired (see nrSecretConfig()).
+        await expect(panel.locator('li')).toHaveCount(2);
+        // This suite only ever runs against the test environment — the env-aware name must be
+        // the _TEST-suffixed one, never the bare (live) CRON_SECRET.
+        await expect(panel).toContainText('CRON_SECRET_TEST');
+    });
+
     test('rotation requires confirmation — dismissing the dialog does not submit', async ({ page }) => {
         await page.goto(`/admin-dashboards.php?tab=keys&${FIXTURE_QS}`);
         page.once('dialog', (d) => d.dismiss());

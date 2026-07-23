@@ -12,6 +12,16 @@ $nrMsg    = $_GET['nr_msg'] ?? '';
 
 $envLabel = (defined('APP_ENV') && APP_ENV === 'live') ? 'Live' : 'Test';
 
+// Reveal-once panel for a just-rotated 'auto' secret — read + immediately unset, so a page
+// refresh (or navigating away and back) never shows the value a second time. See the
+// "newValue" comment in nrRotateSecret() for why this is the only place it's readable at all.
+$rotatedFlash = $_SESSION['flash_nr_rotated'] ?? null;
+unset($_SESSION['flash_nr_rotated']);
+$rotatedCfg = ($rotatedFlash && isset($rotatedFlash['itemKey'])) ? (nrSecretConfig()[$rotatedFlash['itemKey']] ?? null) : null;
+if ($rotatedFlash && !$rotatedCfg) $rotatedFlash = null; // unknown item_key — nothing to show
+$rotatedGithubSecret = $rotatedFlash ? nrGithubSecretName($rotatedFlash['itemKey']) : null;
+$rotatedConfigFile   = 'config.' . ((defined('APP_ENV') && APP_ENV === 'live') ? 'live' : 'test') . '.php';
+
 $tokenBadgeMeta = [
     'ok'      => ['label' => t('admin_dash_nr_badge_ok'),      'color' => 'var(--status-success-light)'],
     'warn'    => ['label' => t('admin_dash_nr_badge_warn'),    'color' => 'var(--status-warning-light)'],
@@ -48,6 +58,28 @@ $today = date('Y-m-d');
 <?php if ($nrMsg !== ''): ?>
     <?php $msgKey = 'admin_dash_nr_msg_' . $nrMsg; $isOk = str_ends_with($nrMsg, 'recorded') || str_ends_with($nrMsg, 'rotated'); ?>
     <div class="alert <?= $isOk ? 'alert-success' : 'alert-danger' ?>"><?= escape(t($msgKey)) ?></div>
+<?php endif; ?>
+
+<?php if ($rotatedFlash): ?>
+    <div class="gha-panel" id="nr-reveal-panel" data-item-key="<?= escape($rotatedFlash['itemKey']) ?>" style="padding:16px 18px;margin-bottom:18px;border:1px solid var(--f1-red)">
+        <div style="font-weight:800;font-size:14px;margin-bottom:6px">
+            <i class="fas fa-triangle-exclamation" style="color:var(--f1-red);margin-right:7px"></i><?= escape(sprintf(t('admin_dash_nr_reveal_title'), $rotatedCfg['name'])) ?>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px"><?= t('admin_dash_nr_reveal_once_hint') ?></div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+            <input type="text" readonly value="<?= escape($rotatedFlash['newValue']) ?>" id="nr-reveal-value" data-select-on-click
+                   style="flex:1;font-family:var(--font-mono);font-size:12px;padding:7px 10px;background:var(--bg-primary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary)">
+            <button type="button" class="btn btn-sm" data-copy-target="nr-reveal-value" style="border:1px solid var(--f1-red);color:var(--f1-red);background:transparent">
+                <i class="fas fa-copy"></i> <?= t('admin_dash_nr_copy') ?>
+            </button>
+        </div>
+        <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--text-secondary);line-height:1.7">
+            <?php if ($rotatedGithubSecret): ?>
+                <li><?= escape(sprintf(t('admin_dash_nr_reveal_github'), $rotatedGithubSecret)) ?></li>
+            <?php endif; ?>
+            <li><?= escape(sprintf(t('admin_dash_nr_reveal_local_config'), $rotatedCfg['configConst'], $rotatedConfigFile)) ?></li>
+        </ul>
+    </div>
 <?php endif; ?>
 
 <h2 style="font-size:16px;margin-bottom:16px"><?= escape(sprintf(t('admin_dash_nr_env_label'), $envLabel)) ?></h2>
@@ -204,6 +236,20 @@ document.querySelectorAll('[data-dash-cancel]').forEach(function (btn) {
     btn.addEventListener('click', function () {
         const details = btn.closest('details');
         if (details) details.open = false;
+    });
+});
+
+// Reveal-once rotation panel: click-to-select the value field, and a Copy button using the
+// Clipboard API (same CSP reason as above — no inline onclick="").
+document.querySelectorAll('[data-select-on-click]').forEach(function (el) {
+    el.addEventListener('click', function () { el.select(); });
+});
+document.querySelectorAll('[data-copy-target]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        const el = document.getElementById(btn.dataset.copyTarget);
+        if (!el) return;
+        el.select();
+        navigator.clipboard.writeText(el.value).catch(function () {});
     });
 });
 </script>

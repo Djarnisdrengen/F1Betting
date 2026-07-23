@@ -74,5 +74,19 @@ $duplicateFixture = "<?php\ndefine('DB_PASS', 'first');\ndefine('DB_PASS', 'seco
 $duplicate = nrReplaceConfigConst($duplicateFixture, 'DB_PASS', 'new');
 check('replace: 2+ matches (ambiguous, e.g. a prior botched edit) fails closed to null, does not guess', $duplicate === null);
 
+// ── nrGithubSecretName — reveal-panel GitHub Actions instruction ────────────────────
+// APP_ENV is never defined() in this CLI process, so nrGithubSecretName's `defined('APP_ENV')
+// && APP_ENV === 'live'` check is always false here — every case below exercises the
+// non-live (test, `_TEST`-suffixed) branch. The live/bare-name branch is exercised in practice
+// by nrRotationFixtureModeActive()'s own hard live-block (see its comment) rather than here.
+
+check("github secret name: cron_secret -> CRON_SECRET_TEST (non-live branch)",
+    nrGithubSecretName('cron_secret') === 'CRON_SECRET_TEST');
+check("github secret name: integration_seed_token -> INTEGRATION_SEED_TOKEN_TEST (non-live branch)",
+    nrGithubSecretName('integration_seed_token') === 'INTEGRATION_SEED_TOKEN_TEST');
+check('github secret name: challenge_invite_secret has no CI pairing -> null', nrGithubSecretName('challenge_invite_secret') === null);
+check('github secret name: unknown item key -> null', nrGithubSecretName('does_not_exist') === null);
+check('github secret name: record-mode secret (e.g. db_password) has no CI pairing -> null', nrGithubSecretName('db_password') === null);
+
 echo $fails === 0 ? "\nAll Nøgler & Rotation checks passed.\n" : "\n$fails check(s) FAILED.\n";
 exit($fails === 0 ? 0 : 1);

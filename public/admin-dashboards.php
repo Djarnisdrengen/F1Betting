@@ -59,6 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'nr_rotate_secret') {
         $itemKey = sanitizeString($_POST['item_key'] ?? '');
         $result = nrRotateSecret($db, $itemKey, $actorName);
+        // Reveal-once: the new value only ever exists in this one session-flash round-trip —
+        // never in the URL (server/proxy logs, browser history), never logged, never persisted
+        // beyond this request. Same pattern as $_SESSION['flash_recovery_codes'] in profile.php.
+        if ($result['success']) {
+            $_SESSION['flash_nr_rotated'] = ['itemKey' => $itemKey, 'newValue' => $result['newValue']];
+        }
         header('Location: admin-dashboards.php?tab=keys&nr_msg=' . urlencode($result['success'] ? 'secret_rotated' : $result['error']));
         exit;
     }

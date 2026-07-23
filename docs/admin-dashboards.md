@@ -9,6 +9,7 @@
   - [Why most secrets are record-only, not auto-rotated](#why-most-secrets-are-record-only-not-auto-rotated)
   - [Schema](#schema)
   - [The config-file writer](#the-config-file-writer)
+  - [After a rotation: what still needs manual follow-up](#after-a-rotation-what-still-needs-manual-follow-up)
   - [No live environment toggle](#no-live-environment-toggle)
 - [PaddockKB](#paddockkb)
 - [Challenges usage](#challenges-usage)
@@ -79,8 +80,10 @@ found that's true for almost none of them:
 - `PASSWORD_PEPPER` is mixed into every stored password hash — rotating it makes every existing
   hash fail to verify (mass lockout) unless paired with a rehash-on-login migration this feature
   doesn't implement.
-- `DB_PASS` / `SMTP_PASS` are credentials for an external system (MySQL / Proton Mail) — a fresh
-  random local value breaks the connection immediately unless changed there too.
+- `DB_PASS` / `SMTP_PASS` / `RESEND_API_KEY` are credentials for an external system (MySQL /
+  Proton Mail / the Resend fallback provider, see `public/includes/smtp.php`'s
+  `sendViaResend()`) — a fresh random local value breaks the connection immediately unless
+  changed there too.
 - `INTEGRATION_SEED_TOKEN` / `CRON_SECRET` are each paired with a matching GitHub Actions repo
   secret — rotating only the local copy breaks CI/cron until that's updated too.
 
@@ -93,10 +96,11 @@ genuinely side-effect-free to regenerate. Each secret's static config (`nrSecret
   `INTEGRATION_SEED_TOKEN` and `CRON_SECRET` too. Their risk (breaks CI/cron until the paired
   GitHub secret is manually updated to match) was judged an acceptable, same-day, no-user-impact
   tradeoff.
-- `'record'` — the human rotates it via the real channel (MySQL, Proton, the paired GitHub
-  secret, or a dedicated pepper/key migration) and this UI just records that it happened — same
-  "Roteret — indtast dato" flow access tokens already use: `DB_PASSWORD`, `SMTP_PASSWORD`,
-  `PASSWORD_PEPPER`, `MFA_KEY`. The latter two were **not** extended to `'auto'` — their risk
+- `'record'` — the human rotates it via the real channel (MySQL, Proton, Resend's own dashboard,
+  the paired GitHub secret, or a dedicated pepper/key migration) and this UI just records that it
+  happened — same "Roteret — indtast dato" flow access tokens already use: `DB_PASSWORD`,
+  `SMTP_PASSWORD`, `RESEND_API_KEY`, `PASSWORD_PEPPER`, `MFA_KEY`. The latter two were **not**
+  extended to `'auto'` — their risk
   (immediate mass password-reset / 2FA-re-enrollment for every member) is categorically worse
   than a CI break and wasn't approved.
 
@@ -137,6 +141,31 @@ from OPcache on hosts with `opcache.validate_timestamps=0`). Every failure mode 
 
 The writer always targets `config.php` — the runtime-loaded file every page already requires —
 never `config.test.php`/`config.live.php` directly (those are only the pre-deploy source files).
+
+### After a rotation: what still needs manual follow-up
+
+"Rotate now" only ever writes the new value to that host's `config.php`. Two things it deliberately
+does **not** do, both surfaced to the admin in a reveal-once panel on `admin-dashboards.php?tab=keys`
+right after a successful rotation (`$_SESSION['flash_nr_rotated']`, set in `admin-dashboards.php`'s
+`nr_rotate_secret` handler, read-and-unset once in `keys.php` — same one-time pattern as
+`$_SESSION['flash_recovery_codes']` in `profile.php`):
+
+- **Update the matching GitHub Actions secret**, for `CRON_SECRET` and `INTEGRATION_SEED_TOKEN`
+  only (`nrGithubSecretName()` resolves the env-aware name — bare on live, `_TEST`-suffixed on
+  test — or `null` for `CHALLENGE_INVITE_SECRET`, which no workflow reads). Until the GitHub secret
+  is updated to match, every cron-trigger workflow and the nightly backup/E2E orchestrator fail
+  auth against that environment. Repo → Settings → Secrets and variables → Actions.
+- **Update the local deploy-source file**, `config.test.php` or `config.live.php` (whichever
+  matches the environment just rotated), with the same new value. The rotation only touches the
+  server's `config.php`; the **next** `npm run deploy:test` / `deploy:live` re-uploads the local
+  file over it unconditionally (`deploy.js`'s `client.uploadFrom(configSrc, ...)`) and will
+  silently revert the rotation back to the old value if that local file wasn't updated too. This
+  applies to all three `'auto'` secrets, including `CHALLENGE_INVITE_SECRET`.
+
+The new value itself is never persisted or logged anywhere beyond that one reveal — `nrRotateSecret()`
+returns it only in its return array; `nrLogAudit()`'s detail column stays a fixed `'auto-rotated'`
+string, and `admin_secret_state` only ever stores rotation metadata (`rotated_at`/`rotated_by`),
+never the value.
 
 ### No live environment toggle
 
@@ -186,4 +215,11 @@ Two independent fixture gates, both requiring `INTEGRATION_SEED_TOKEN` to match 
 - `e2e_nr_fixture` — Nøgler & Rotation's config-file writer redirects to a self-seeding fixture
   file (`sys_get_temp_dir() . '/f1betting-nr-fixture-config.php'`) instead of the real
   `config.php`. **Hard-blocked whenever `APP_ENV === 'live'`, independent of token validity** —
-  `nrRotationFixtureModeActive()` checks `APP_ENV` before anything else.
+  `nrRotationFixtureModeActive()` checks `APP_ENV` before anything else. Seeded per-const, not
+  once per file: `nrConfigWritePath()` adds a `define('CONST', 'fixture-placeholder-value');`
+  line for every `'auto'`-mode `configConst` in `nrSecretConfig()` that the fixture file doesn't
+  already have (`CHALLENGE_INVITE_SECRET`, `CRON_SECRET`, `INTEGRATION_SEED_TOKEN` as of this
+  writing) — so E2E can exercise the real rotation path for all of them, not just the one the
+  fixture happened to be created for first. A future `'auto'` addition self-heals the same way,
+  and a stale fixture file left over from before this addition still gets the missing lines
+  appended rather than needing manual deletion.
