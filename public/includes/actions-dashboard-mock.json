@@ -1,0 +1,136 @@
+{
+  "runs": {
+    "nightly-tests.yml": [
+      {
+        "id": 90001, "run_number": 100, "run_attempt": 1, "status": "completed", "conclusion": "success",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "a1b2c3d4e5f6",
+        "created_at": "-2 hours", "run_started_at": "-2 hours", "updated_at": "-115 minutes"
+      },
+      {
+        "id": 90000, "run_number": 99, "run_attempt": 1, "status": "completed", "conclusion": "success",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "b2c3d4e5f6a1",
+        "created_at": "-30 hours", "run_started_at": "-30 hours", "updated_at": "-29 hours 55 minutes"
+      }
+    ],
+    "cron-notifications.yml": [
+      {
+        "id": 90010, "run_number": 200, "run_attempt": 1, "status": "completed", "conclusion": "success",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "c3d4e5f6a1b2",
+        "created_at": "-1 hours", "run_started_at": "-1 hours", "updated_at": "-59 minutes"
+      },
+      {
+        "id": 90009, "run_number": 199, "run_attempt": 1, "status": "completed", "conclusion": "success",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "d4e5f6a1b2c3",
+        "created_at": "-5 hours", "run_started_at": "-5 hours", "updated_at": "-4 hours 55 minutes"
+      },
+      {
+        "id": 90008, "run_number": 198, "run_attempt": 1, "status": "completed", "conclusion": "skipped",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "e5f6a1b2c3d4",
+        "created_at": "-9 hours", "run_started_at": "-9 hours", "updated_at": "-8 hours 59 minutes"
+      },
+      {
+        "id": 90007, "run_number": 197, "run_attempt": 1, "status": "completed", "conclusion": "success",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "f6a1b2c3d4e5",
+        "created_at": "-20 hours", "run_started_at": "-20 hours", "updated_at": "-19 hours 55 minutes"
+      }
+    ],
+    "cron-qualifying-import.yml": [
+      {
+        "id": 90020, "run_number": 50, "run_attempt": 1, "status": "completed", "conclusion": "failure",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "a1a1a1a1a1a1",
+        "created_at": "-3 hours", "run_started_at": "-3 hours", "updated_at": "-2 hours 58 minutes"
+      },
+      {
+        "id": 90019, "run_number": 49, "run_attempt": 1, "status": "completed", "conclusion": "success",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "b2b2b2b2b2b2",
+        "created_at": "-15 hours", "run_started_at": "-15 hours", "updated_at": "-14 hours 58 minutes"
+      }
+    ],
+    "nightly-backup.yml": [
+      {
+        "id": 90030, "run_number": 10, "run_attempt": 1, "status": "in_progress", "conclusion": null,
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "c3c3c3c3c3c3",
+        "created_at": "-10 minutes", "run_started_at": "-10 minutes", "updated_at": "-1 minutes"
+      }
+    ],
+    "cron-content-topup.yml": [
+      {
+        "id": 90040, "run_number": 30, "run_attempt": 1, "status": "completed", "conclusion": "success",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "d4d4d4d4d4d4",
+        "created_at": "-100 hours", "run_started_at": "-100 hours", "updated_at": "-99 hours 50 minutes"
+      }
+    ],
+    "cron-challenges.yml": [
+      {
+        "id": 90050, "run_number": 20, "run_attempt": 1, "status": "completed", "conclusion": "failure",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "e5e5e5e5e5e5",
+        "created_at": "-80 hours", "run_started_at": "-80 hours", "updated_at": "-79 hours 58 minutes"
+      }
+    ],
+    "monthly-security-review.yml": [
+      {
+        "id": 90060, "run_number": 5, "run_attempt": 1, "status": "completed", "conclusion": "success",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "f6f6f6f6f6f6",
+        "created_at": "-400 hours", "run_started_at": "-400 hours", "updated_at": "-399 hours 45 minutes"
+      }
+    ],
+    "paddock-rumors.yml": [
+      {
+        "id": 90070, "run_number": 60, "run_attempt": 1, "status": "completed", "conclusion": "success",
+        "event": "schedule", "actor": { "login": "github-actions[bot]" },
+        "head_branch": "main", "head_sha": "a2a2a2a2a2a2",
+        "created_at": "-60 hours", "run_started_at": "-60 hours", "updated_at": "-59 hours 40 minutes"
+      }
+    ],
+    "e2e-test-orchestrator.yml": [
+      {
+        "id": 90080, "run_number": 12, "run_attempt": 1, "status": "completed", "conclusion": "cancelled",
+        "event": "workflow_dispatch", "actor": { "login": "djarnisdrengen" },
+        "head_branch": "main", "head_sha": "b3b3b3b3b3b3",
+        "created_at": "-200 hours", "run_started_at": "-200 hours", "updated_at": "-199 hours 50 minutes"
+      }
+    ]
+  },
+  "jobs": {
+    "90001": [
+      {
+        "name": "nightly", "status": "completed", "conclusion": "success",
+        "steps": [
+          { "name": "Set up job", "status": "completed", "conclusion": "success", "started_at": "2026-01-01T00:00:00Z", "completed_at": "2026-01-01T00:00:02Z" },
+          { "name": "Run nightly report", "status": "completed", "conclusion": "success", "started_at": "2026-01-01T00:00:02Z", "completed_at": "2026-01-01T00:05:30Z" },
+          { "name": "Complete job", "status": "completed", "conclusion": "success", "started_at": "2026-01-01T00:05:30Z", "completed_at": "2026-01-01T00:05:31Z" }
+        ]
+      }
+    ],
+    "90020": [
+      {
+        "name": "import", "status": "completed", "conclusion": "failure",
+        "steps": [
+          { "name": "Set up job", "status": "completed", "conclusion": "success", "started_at": "2026-01-01T00:00:00Z", "completed_at": "2026-01-01T00:00:02Z" },
+          { "name": "Call timing API", "status": "completed", "conclusion": "failure", "started_at": "2026-01-01T00:00:02Z", "completed_at": "2026-01-01T00:02:10Z" }
+        ]
+      }
+    ],
+    "90030": [
+      {
+        "name": "backup", "status": "in_progress", "conclusion": null,
+        "steps": [
+          { "name": "Set up job", "status": "completed", "conclusion": "success", "started_at": "2026-01-01T00:00:00Z", "completed_at": "2026-01-01T00:00:02Z" },
+          { "name": "Dump MySQL", "status": "in_progress", "conclusion": null, "started_at": "2026-01-01T00:00:02Z", "completed_at": null }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/colors_and_type.css">
+<link rel="stylesheet" href="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/_ds_bundle.js"></script>
+<style>
+  html,body{margin:0;background:var(--bg-primary);}
+  a{color:var(--f1-red);text-decoration:none;}
+  a:hover{color:var(--f1-red-light);}
+  @keyframes idea-pulse{50%{box-shadow:0 0 0 4px rgba(225,6,0,0.10);}}
+  .dash-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;overflow:hidden;}
+  .kpi{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:10px;padding:14px 16px;}
+  .kpi .n{font-family:var(--font-mono);font-weight:700;font-size:25px;line-height:1;color:var(--text-primary);}
+  .kpi .l{font-size:12px;color:var(--text-muted);margin-top:8px;}
+  .idea-chip{font-family:var(--font-mono);font-size:9px;letter-spacing:0.09em;text-transform:uppercase;color:var(--f1-red);border:1px dashed var(--f1-red);padding:2px 6px;border-radius:5px;white-space:nowrap;}
+  .sec-h{display:flex;align-items:center;gap:8px;margin:0 0 14px;}
+  .sec-h h3{font-size:15px;font-weight:800;letter-spacing:-0.01em;}
+  .count-chip{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:6px;}
+  .row{border-bottom:1px solid var(--border-color);}
+  .row:last-child{border-bottom:none;}
+  .yaml{font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);background:var(--bg-primary);border:1px solid var(--border-color);padding:3px 8px;border-radius:6px;}
+</style>
+</helmet>
+
+<div class="theme-dark" style="min-height:100vh;background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border-color);background:var(--bg-secondary);position:sticky;top:0;z-index:20;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="width:30px;height:30px;border-radius:8px;background:var(--f1-red);display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-flag-checkered" style="color:#fff;font-size:14px;"></i></span>
+      <div style="line-height:1.15;"><div style="font-weight:800;font-size:15px;">Klub-admin</div><div style="font-size:11px;color:var(--text-muted);">Frederikssund Formel 1 Klub</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span class="label-mono" style="font-size:11px;color:var(--text-muted);"><i class="fas fa-circle" style="font-size:7px;color:var(--status-success-light);margin-right:6px;"></i>alle systemer kører</span>
+      <span style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="width:28px;height:28px;border-radius:50%;background:var(--bg-hover);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:12px;color:var(--text-secondary);">JØ</span>Jens · Admin</span>
+    </div>
+  </div>
+
+  <div style="max-width:1240px;margin:0 auto;padding:22px 28px 80px;">
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+      <sc-for list="{{ areas }}" as="a" hint-placeholder-count="3">
+        <button onClick="{{ a.onClick }}" style="display:flex;align-items:center;gap:9px;cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:14px;padding:10px 18px;border-radius:9px;border:{{ a.border }};background:{{ a.bg }};color:{{ a.color }};">
+          <i class="{{ a.icon }}" style="color:{{ a.iconColor }};font-size:14px;"></i>{{ a.label }}
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;padding-bottom:20px;margin-bottom:22px;border-bottom:1px solid var(--border-color);">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6">
+        <button onClick="{{ t.onClick }}" style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:13px;padding:8px 14px;border-radius:var(--radius-pill);border:{{ t.border }};background:{{ t.bg }};color:{{ t.color }};">
+          <i class="{{ t.icon }}" style="font-size:12px;"></i>{{ t.label }}
+          <sc-if value="{{ t.hasCount }}" hint-placeholder-val="{{ true }}"><span class="label-mono" style="font-size:11px;background:{{ t.countBg }};color:{{ t.countColor }};padding:0 7px;border-radius:var(--radius-pill);">{{ t.count }}</span></sc-if>
+        </button>
+      </sc-for>
+    </div>
+
+    <!-- ===================== CORE ===================== -->
+    <sc-if value="{{ v_core_races }}" hint-placeholder-val="{{ true }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div class="sec-h"><i class="fas fa-flag" style="color:var(--f1-red);"></i><h3>Løb</h3><span class="count-chip">sæson 2026</span><span style="flex:1;"></span><button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:12px;padding:8px 14px;border-radius:8px;"><i class="fas fa-plus" style="margin-right:6px;"></i>Nyt løb</button></div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ races }}" as="r" hint-placeholder-count="4">
+            <div class="row" style="display:grid;grid-template-columns:1fr auto auto auto;gap:16px;align-items:center;padding:13px 16px;">
+              <div><div style="font-weight:700;font-size:14px;">{{ r.name }}</div><div style="font-size:12px;color:var(--text-muted);">{{ r.date }} · {{ r.note }}</div></div>
+              <span class="label-mono" style="font-size:12px;color:var(--text-secondary);"><i class="fas fa-users" style="font-size:10px;margin-right:5px;color:var(--text-muted);"></i>{{ r.bets }}</span>
+              <span class="label-badge" style="padding:3px 10px;border-radius:var(--radius-pill);background:{{ r.badge.bg }};color:{{ r.badge.fg }};">{{ r.badge.label }}</span>
+              <div style="display:flex;gap:6px;"><button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:11px;padding:6px 9px;border-radius:6px;"><i class="fas fa-pen"></i></button><button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:11px;padding:6px 11px;border-radius:6px;">Resultat</button></div>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_core_drivers }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div class="sec-h"><i class="fas fa-car" style="color:var(--f1-red);"></i><h3>Kørere</h3><span class="count-chip">10 · 2026-grid</span><span style="flex:1;"></span><button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:12px;padding:8px 14px;border-radius:8px;"><i class="fas fa-plus" style="margin-right:6px;"></i>Tilføj kører</button></div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ drivers }}" as="d" hint-placeholder-count="10">
+            <div class="row" style="display:grid;grid-template-columns:28px 1fr 1fr auto auto;gap:14px;align-items:center;padding:11px 16px;">
+              <span class="label-mono" style="font-size:12px;color:var(--text-muted);">{{ d.no }}</span>
+              <span style="font-weight:700;font-size:13px;">{{ d.name }}</span>
+              <span style="font-size:12px;color:var(--text-secondary);">{{ d.team }}</span>
+              <span class="label-mono" style="font-size:12px;color:var(--text-primary);">{{ d.pts }} pts</span>
+              <button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:11px;padding:6px 9px;border-radius:6px;"><i class="fas fa-pen"></i></button>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_core_users }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div class="sec-h"><i class="fas fa-users" style="color:var(--f1-red);"></i><h3>Brugere</h3><span class="count-chip">4 medlemmer</span><span style="flex:1;"></span><button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:12px;padding:8px 14px;border-radius:8px;"><i class="fas fa-user-plus" style="margin-right:6px;"></i>Inviter</button></div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ users }}" as="u" hint-placeholder-count="4">
+            <div class="row" style="display:grid;grid-template-columns:34px 1fr auto auto auto;gap:14px;align-items:center;padding:12px 16px;">
+              <span style="width:34px;height:34px;border-radius:50%;background:var(--bg-hover);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:12px;color:var(--text-secondary);">{{ u.initials }}</span>
+              <div><div style="font-weight:700;font-size:13px;">{{ u.name }}</div><div style="font-size:12px;color:var(--text-muted);">{{ u.email }} · sidst {{ u.last }}</div></div>
+              <span style="color:var(--gold);font-family:var(--font-mono);font-weight:700;font-size:13px;">★{{ u.stars }}</span>
+              <span class="label-badge" style="padding:2px 10px;border-radius:var(--radius-pill);background:var(--bg-secondary);color:var(--text-secondary);">{{ u.role }}</span>
+              <button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:11px;padding:6px 9px;border-radius:6px;"><i class="fas fa-pen"></i></button>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_core_invites }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div class="sec-h"><i class="fas fa-envelope" style="color:var(--f1-red);"></i><h3>Invitationer</h3><span class="count-chip">afventer svar</span><span style="flex:1;"></span><button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:12px;padding:8px 14px;border-radius:8px;"><i class="fas fa-paper-plane" style="margin-right:6px;"></i>Send invitation</button></div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ invites }}" as="i" hint-placeholder-count="3">
+            <div class="row" style="display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:center;padding:12px 16px;">
+              <div><div style="font-family:var(--font-mono);font-weight:700;font-size:13px;">{{ i.email }}</div><div style="font-size:12px;color:var(--text-muted);">sendt af {{ i.by }} · {{ i.when }}</div></div>
+              <span class="label-badge" style="padding:2px 10px;border-radius:var(--radius-pill);background:{{ i.badge.bg }};color:{{ i.badge.fg }};">{{ i.badge.label }}</span>
+              <button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:11px;padding:6px 11px;border-radius:6px;">Send igen</button>
+              <button style="border:1px solid var(--border-color);background:transparent;color:var(--text-muted);cursor:pointer;font-size:11px;padding:6px 9px;border-radius:6px;"><i class="fas fa-xmark"></i></button>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_core_bets }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;">
+          <div class="kpi"><div class="n">15</div><div class="l">Bet i denne runde</div></div>
+          <div class="kpi"><div class="n" style="color:var(--pool-gold);">2.000 kr</div><div class="l">Pulje i alt</div></div>
+          <div class="kpi"><div class="n" style="color:var(--status-success-light);">92%</div><div class="l">Deltager-rate</div></div>
+        </div>
+        <div class="sec-h"><i class="fas fa-trophy" style="color:var(--f1-red);"></i><h3>Seneste bet</h3><span class="count-chip">Canadian GP</span></div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ betsList }}" as="b" hint-placeholder-count="5">
+            <div class="row" style="display:grid;grid-template-columns:1fr 1.3fr auto auto;gap:14px;align-items:center;padding:12px 16px;">
+              <span style="font-weight:700;font-size:13px;">{{ b.user }}</span>
+              <span class="label-mono" style="font-size:12px;color:var(--text-secondary);">{{ b.pick }}</span>
+              <span class="label-mono" style="font-size:12px;color:var(--text-primary);">{{ b.pts }} pts</span>
+              <span class="label-mono" style="font-size:11px;color:var(--text-muted);">{{ b.when }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_core_security }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div class="sec-h"><i class="fas fa-shield-halved" style="color:var(--f1-red);"></i><h3>Sikkerhed</h3></div>
+        <div style="font-size:12px;color:var(--text-muted);border:1px solid var(--border-color);border-radius:9px;padding:11px 14px;margin-bottom:16px;">App-adgang &amp; sessioner. Tokens &amp; secrets ligger i <a href="#" onClick="{{ gotoKeys }}">Dashboards → Nøgler &amp; Rotation</a>.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border-color);border-radius:9px;padding:12px 14px;"><span style="font-size:13px;">To-faktor for admins</span><span style="width:38px;height:22px;border-radius:999px;background:var(--f1-red);position:relative;"><span style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff;"></span></span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border-color);border-radius:9px;padding:12px 14px;"><span style="font-size:13px;">Auto-logout efter</span><span class="label-mono" style="font-size:13px;color:var(--text-secondary);">30 min</span></div>
+        </div>
+        <div class="sec-h"><h3 style="font-size:14px;">Aktive sessioner</h3></div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ sessions }}" as="s" hint-placeholder-count="3">
+            <div class="row" style="display:grid;grid-template-columns:24px 1fr auto auto;gap:14px;align-items:center;padding:12px 16px;">
+              <i class="{{ s.icon }}" style="color:var(--text-muted);text-align:center;"></i>
+              <div><div style="font-weight:700;font-size:13px;">{{ s.who }}</div><div class="label-mono" style="font-size:11px;color:var(--text-muted);">{{ s.ip }} · {{ s.when }}</div></div>
+              <sc-if value="{{ s.current }}" hint-placeholder-val="{{ true }}"><span class="label-badge" style="padding:2px 10px;border-radius:var(--radius-pill);background:linear-gradient(135deg,#10b981,#059669);color:#0b3b2b;">Denne enhed</span></sc-if>
+              <button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:11px;padding:6px 11px;border-radius:6px;">Log ud</button>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_core_settings }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div class="sec-h"><i class="fas fa-gear" style="color:var(--f1-red);"></i><h3>Indstillinger</h3></div>
+        <div style="display:flex;flex-direction:column;gap:14px;max-width:460px;">
+          <div><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">App-titel</div><div style="border:1px solid var(--border-color);border-radius:8px;padding:10px 12px;font-size:13px;">Frederikssund Formel 1 Klub</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">Sæson-år</div><div style="border:1px solid var(--border-color);border-radius:8px;padding:10px 12px;font-family:var(--font-mono);font-size:13px;">2026</div></div>
+            <div><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">Betting lukker</div><div style="border:1px solid var(--border-color);border-radius:8px;padding:10px 12px;font-family:var(--font-mono);font-size:13px;">48 t. før løb</div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border-color);border-radius:8px;padding:11px 12px;"><span style="font-size:13px;">Point-tabel (P1–P3)</span><span style="font-size:12px;color:var(--f1-red);cursor:pointer;">Rediger →</span></div>
+          <button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:13px;padding:11px 22px;border-radius:8px;align-self:flex-start;">Gem</button>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <!-- ===================== PADDOCK CHALLENGES ===================== -->
+    <sc-if value="{{ v_pc_members }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div class="sec-h"><i class="fas fa-user-check" style="color:var(--f1-red);"></i><h3>Medlemmer &amp; deltagere</h3><span class="count-chip">offentlige konkurrencer</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;">
+          <div class="kpi"><div class="n">248</div><div class="l">Aktive deltagere</div></div>
+          <div class="kpi"><div class="n" style="color:var(--f1-red);">7</div><div class="l">Ansøger fuldt medlemskab</div></div>
+          <div class="kpi"><div class="n" style="color:var(--status-success-light);">31%</div><div class="l">Deltager → medlem</div></div>
+        </div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ members }}" as="m" hint-placeholder-count="6">
+            <div class="row" style="display:grid;grid-template-columns:34px 1fr auto auto auto;gap:14px;align-items:center;padding:12px 16px;">
+              <span style="width:34px;height:34px;border-radius:50%;background:var(--bg-hover);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:12px;color:var(--text-secondary);">{{ m.initials }}</span>
+              <div><div style="font-weight:700;font-size:13px;">{{ m.name }}</div><div style="font-size:12px;color:var(--text-muted);">tilmeldt {{ m.joined }} · {{ m.pts }} pts</div></div>
+              <span class="label-badge" style="padding:2px 10px;border-radius:var(--radius-pill);background:{{ m.badge.bg }};color:{{ m.badge.fg }};">{{ m.badge.label }}</span>
+              <sc-if value="{{ m.pending }}" hint-placeholder-val="{{ true }}"><button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;padding:6px 12px;border-radius:6px;">Godkend</button></sc-if>
+              <sc-if value="{{ m.notPending }}" hint-placeholder-val="{{ false }}"><button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:11px;padding:6px 9px;border-radius:6px;"><i class="fas fa-pen"></i></button></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_pc_rumor }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div class="sec-h"><i class="fas fa-comment-dots" style="color:var(--f1-red);"></i><h3>Rumor or Not</h3><span class="count-chip">101 påstande</span><span style="flex:1;"></span><button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:12px;padding:8px 14px;border-radius:8px;"><i class="fas fa-plus" style="margin-right:6px;"></i>Ny påstand</button></div>
+        <div style="font-size:12px;color:var(--text-secondary);border:1px solid var(--border-color);border-radius:9px;padding:11px 14px;margin-bottom:16px;">Trækker fra PaddockKB. Nye rygter havner i <span style="color:var(--f1-red);cursor:pointer;" onClick="{{ gotoSuppressions }}">Suppressions</span> før udgivelse. <span class="idea-chip">Idé · KB-kobling</span></div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ claims }}" as="c" hint-placeholder-count="5">
+            <div class="row" style="display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:center;padding:12px 16px;">
+              <span style="font-size:13px;font-weight:600;">„{{ c.text }}"</span>
+              <span class="label-mono" style="font-size:11px;color:var(--text-muted);">{{ c.plays }} spil</span>
+              <span class="label-badge" style="padding:2px 10px;border-radius:var(--radius-pill);background:{{ c.badge.bg }};color:{{ c.badge.fg }};">{{ c.badge.label }}</span>
+              <button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:11px;padding:6px 9px;border-radius:6px;"><i class="fas fa-pen"></i></button>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_pc_trivia }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;">
+          <div class="kpi"><div class="n">121</div><div class="l">Spillere · runde 14</div></div>
+          <div class="kpi"><div class="n">101</div><div class="l">Spørgsmål i banken</div></div>
+          <div class="kpi"><div class="n" style="color:var(--status-success-light);">81%</div><div class="l">Gennemført</div></div>
+        </div>
+        <div class="sec-h"><i class="fas fa-circle-question" style="color:var(--f1-red);"></i><h3>Runder</h3><span style="flex:1;"></span><button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:12px;padding:8px 14px;border-radius:8px;"><i class="fas fa-plus" style="margin-right:6px;"></i>Ny runde</button></div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ rounds }}" as="r" hint-placeholder-count="3">
+            <div class="row" style="display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:13px 16px;">
+              <div><div style="font-weight:700;font-size:14px;">{{ r.n }}</div><div style="font-size:12px;color:var(--text-muted);">{{ r.meta }} · {{ r.when }}</div></div>
+              <span class="label-badge" style="padding:3px 10px;border-radius:var(--radius-pill);background:{{ r.badge.bg }};color:{{ r.badge.fg }};">{{ r.badge.label }}</span>
+              <button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:11px;padding:6px 11px;border-radius:6px;">Rediger</button>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_pc_duels }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;">
+          <div class="kpi"><div class="n">142</div><div class="l">Aktive deltagere</div></div>
+          <div class="kpi"><div class="n">31</div><div class="l">Åbne duels</div></div>
+          <div class="kpi"><div class="n" style="color:var(--status-success-light);">88%</div><div class="l">Gennemført</div></div>
+        </div>
+        <div class="sec-h"><i class="fas fa-bolt" style="color:var(--f1-red);"></i><h3>Opsætning</h3></div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border-color);border-radius:9px;padding:12px 14px;"><span style="font-size:13px;">Knyt duels til hvert løb</span><span style="width:38px;height:22px;border-radius:999px;background:var(--f1-red);position:relative;"><span style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff;"></span></span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border-color);border-radius:9px;padding:12px 14px;"><span style="font-size:13px;">Point pr. vundet duel</span><span class="label-mono" style="font-size:13px;color:var(--text-secondary);">5 pts</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border-color);border-radius:9px;padding:12px 14px;"><span style="font-size:13px;">Tillad gæster (uden login)</span><span style="width:38px;height:22px;border-radius:999px;background:var(--bg-hover);position:relative;"><span style="position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--text-muted);"></span></span></div>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <sc-if value="{{ v_pc_suppressions }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card"><div style="padding:20px 22px;">
+        <div class="sec-h"><i class="fas fa-ban" style="color:var(--f1-red);"></i><h3>Suppressions</h3><span class="count-chip">skjult / afvist indhold</span></div>
+        <div style="font-size:12px;color:var(--text-muted);border:1px solid var(--border-color);border-radius:9px;padding:11px 14px;margin-bottom:16px;">Påstande og spørgsmål der er skjult for spillere — enten manuelt eller auto-flag fra PaddockKB.</div>
+        <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+          <sc-for list="{{ suppressions }}" as="s" hint-placeholder-count="3">
+            <div class="row" style="display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:12px 16px;">
+              <div><div style="font-size:13px;font-weight:600;">„{{ s.text }}"</div><div style="font-size:12px;color:var(--text-muted);">{{ s.reason }} · {{ s.by }} · {{ s.when }}</div></div>
+              <span class="label-badge" style="padding:2px 10px;border-radius:var(--radius-pill);background:var(--bg-secondary);color:var(--text-secondary);">skjult</span>
+              <button style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:11px;padding:6px 11px;border-radius:6px;">Gendan</button>
+            </div>
+          </sc-for>
+        </div>
+      </div></div>
+    </sc-if>
+
+    <!-- ===================== DASHBOARDS ===================== -->
+    <sc-if value="{{ v_dash_oversigt }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <sc-for list="{{ hubPanels }}" as="p" hint-placeholder-count="4">
+          <div onClick="{{ p.onClick }}" style="cursor:pointer;border:1px solid var(--border-color);border-radius:13px;background:var(--bg-card);padding:18px;display:flex;flex-direction:column;gap:13px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:11px;"><span style="width:36px;height:36px;border-radius:9px;background:var(--bg-hover);display:inline-flex;align-items:center;justify-content:center;"><i class="{{ p.icon }}" style="color:var(--f1-red);font-size:16px;"></i></span><span style="font-weight:800;font-size:15px;">{{ p.name }}</span></div>
+              <sc-if value="{{ p.flag }}" hint-placeholder-val="{{ true }}"><span class="label-mono" style="font-size:11px;background:var(--f1-red);color:#fff;padding:1px 9px;border-radius:999px;">{{ p.flag }}</span></sc-if>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:9px;"><span class="label-mono" style="font-size:28px;color:var(--text-primary);">{{ p.stat }}</span><span style="font-size:13px;color:var(--text-muted);">{{ p.unit }}</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:13px;color:{{ p.tone }};">{{ p.note }}</span><span style="font-size:13px;color:var(--text-muted);">Åbn →</span></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:16px;border:1px solid rgba(225,6,0,0.4);border-radius:13px;background:linear-gradient(90deg,rgba(225,6,0,0.09),transparent 60%);padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;"><i class="fas fa-triangle-exclamation" style="color:var(--f1-red);"></i><span style="font-weight:800;font-size:14px;">Kræver handling — på tværs af drift</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text-secondary);">
+          <div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-circle" style="font-size:7px;color:var(--f1-red);"></i><span style="flex:1;">OpenAI API key er udløbet (Production)</span><span style="font-size:12px;color:var(--f1-red);cursor:pointer;" onClick="{{ gotoKeys }}">Nøgler →</span></div>
+          <div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-circle" style="font-size:7px;color:var(--f1-red);"></i><span style="flex:1;">Workflow „PaddockKB nightly ingest" fejlede kl. 04:00</span><span style="font-size:12px;color:var(--f1-red);cursor:pointer;" onClick="{{ gotoActions }}">Actions →</span></div>
+          <div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-circle" style="font-size:7px;color:var(--status-warning-light);"></i><span style="flex:1;">DB_ROOT_PASSWORD er forfalden (210/180 dage)</span><span style="font-size:12px;color:var(--f1-red);cursor:pointer;" onClick="{{ gotoKeys }}">Nøgler →</span></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ v_dash_keys }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 22px;border-bottom:1px solid var(--border-color);">
+          <div style="display:flex;gap:12px;"><div style="width:40px;height:40px;border-radius:10px;background:var(--f1-red);display:flex;align-items:center;justify-content:center;"><i class="fas fa-key" style="color:#fff;font-size:17px;"></i></div><div><h2 style="font-size:18px;font-weight:800;">Nøgler &amp; Rotation</h2><div class="label-lede" style="font-size:14px;margin-top:2px;">Hold øje med tokens og roter hemmeligheder i tide.</div></div></div>
+          <div style="display:inline-flex;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:9px;padding:3px;gap:2px;">
+            <button onClick="{{ setProd }}" style="border:none;cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:12px;padding:6px 14px;border-radius:6px;background:{{ prodBg }};color:{{ prodFg }};">Production</button>
+            <button onClick="{{ setTest }}" style="border:none;cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:12px;padding:6px 14px;border-radius:6px;background:{{ testBg }};color:{{ testFg }};">Test</button>
+          </div>
+        </div>
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:24px;">
+          <div style="border:1px solid rgba(225,6,0,0.45);background:linear-gradient(90deg,rgba(225,6,0,0.10),transparent 60%);border-radius:11px;padding:14px 16px;animation:idea-pulse 2.4s infinite;">
+            <div style="display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:9px;"><i class="fas fa-triangle-exclamation" style="color:var(--f1-red);"></i><span style="font-weight:800;font-size:14px;">Handling påkrævet</span></div><span class="label-mono" style="font-size:20px;color:var(--f1-red);">{{ actionCount }}</span></div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px;">
+              <sc-for list="{{ actions }}" as="a" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><i class="{{ a.icon }}" style="color:{{ a.color }};width:16px;text-align:center;"></i><span style="flex:1;color:var(--text-secondary);">{{ a.text }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+              <div style="width:110px;height:110px;border-radius:50%;background:{{ healthRing }};display:flex;align-items:center;justify-content:center;"><div style="width:82px;height:82px;border-radius:50%;background:var(--bg-card);display:flex;flex-direction:column;align-items:center;justify-content:center;"><span class="label-mono" style="font-size:25px;color:var(--text-primary);">{{ health }}</span><span style="font-size:9px;color:var(--text-muted);letter-spacing:0.06em;">SUNDHED</span></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+              <div class="kpi"><div class="n" style="color:var(--f1-red);">{{ kpiExpired }}</div><div class="l">Udløbne tokens</div></div>
+              <div class="kpi"><div class="n" style="color:var(--status-warning-light);">{{ kpiSoon }}</div><div class="l">Udløber &lt; 14 dage</div></div>
+              <div class="kpi"><div class="n" style="color:var(--f1-red);">{{ kpiOverdue }}</div><div class="l">Forfaldne secrets</div></div>
+              <div class="kpi"><div class="n">{{ kpiLastRot }}</div><div class="l">Sidst roteret</div></div>
+              <div class="kpi"><div class="n">{{ secretCount }}</div><div class="l">Secrets i config</div></div>
+              <div class="kpi"><div class="n">{{ tokenCount }}</div><div class="l">Access tokens</div></div>
+            </div>
+          </div>
+          <div>
+            <div class="sec-h"><i class="fas fa-plug" style="color:var(--f1-red);font-size:13px;"></i><h3>Access tokens</h3><span class="count-chip">{{ env }}</span></div>
+            <div style="font-size:12px;color:var(--text-muted);margin:-8px 0 12px;">Roteres hos udbyderen (GitHub / Anthropic / OpenAI) — registrér ny udløbsdato her når du er færdig.</div>
+            <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+              <sc-for list="{{ tokens }}" as="t" hint-placeholder-count="3">
+                <div class="row" style="display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:13px 16px;">
+                  <i class="{{ t.icon }}" style="color:var(--text-secondary);font-size:17px;text-align:center;"></i>
+                  <div style="min-width:0;"><div style="font-weight:700;font-size:13px;">{{ t.name }}</div><div style="font-size:11px;color:var(--text-muted);margin-top:1px;">Sidst roteret {{ t.lastRotated }} · {{ t.rotatedBy }}</div></div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px;">
+                    <div style="display:flex;align-items:center;gap:9px;"><span class="label-mono" style="font-size:11px;color:var(--text-secondary);">{{ t.expiryText }}</span><span class="label-badge" style="padding:3px 9px;border-radius:var(--radius-pill);background:{{ t.badge.bg }};color:{{ t.badge.fg }};">{{ t.badge.label }}</span></div>
+                    <sc-if value="{{ t.notEditing }}" hint-placeholder-val="{{ true }}"><button onClick="{{ t.edit }}" style="border:1px solid var(--border-color);cursor:pointer;background:transparent;color:var(--text-secondary);font-family:var(--font-display);font-weight:700;font-size:11px;padding:5px 11px;border-radius:6px;"><i class="fas fa-check" style="margin-right:6px;color:var(--f1-red);"></i>Roteret — indtast ny dato</button></sc-if>
+                    <sc-if value="{{ t.editing }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:6px;"><input type="date" value="{{ draft }}" onChange="{{ setDraft }}" style="background:var(--bg-primary);border:1px solid var(--f1-red);border-radius:6px;color:var(--text-primary);font-family:var(--font-mono);font-size:12px;padding:4px 8px;"><button onClick="{{ t.save }}" style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:11px;padding:6px 13px;border-radius:6px;">Gem</button><button onClick="{{ cancelEdit }}" style="border:1px solid var(--border-color);cursor:pointer;background:transparent;color:var(--text-muted);font-family:var(--font-display);font-weight:700;font-size:11px;padding:6px 9px;border-radius:6px;">Fortryd</button></div></sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div class="sec-h"><i class="fas fa-file-shield" style="color:var(--f1-red);font-size:13px;"></i><h3>Hemmeligheder &amp; passwords</h3><span class="count-chip">{{ secretCount }} · {{ env }}</span><span style="flex:1;"></span><span style="font-size:11px;color:var(--text-muted);">alder / politik</span></div>
+            <div style="font-size:12px;color:var(--text-muted);margin:-8px 0 12px;">„Roter nu" genererer en ny værdi og skriver den til config-filen automatisk.</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <sc-for list="{{ secrets }}" as="s" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:24px 1.4fr 1fr auto auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border-color);border-radius:9px;">
+                  <i class="{{ s.icon }}" style="color:var(--text-muted);font-size:13px;text-align:center;"></i>
+                  <div style="min-width:0;"><div style="font-family:var(--font-mono);font-weight:700;font-size:13px;">{{ s.name }}</div><div style="font-size:11px;color:var(--text-muted);">{{ s.by }}</div></div>
+                  <div><div style="height:6px;border-radius:3px;background:var(--bg-hover);overflow:hidden;"><div style="height:100%;width:{{ s.pct }}%;background:{{ s.barColor }};border-radius:3px;"></div></div><div class="label-mono" style="font-size:10px;color:var(--text-muted);margin-top:4px;">{{ s.ageText }}</div></div>
+                  <span class="label-badge" style="padding:3px 8px;border-radius:var(--radius-pill);background:{{ s.badge.bg }};color:{{ s.badge.fg }};justify-self:end;">{{ s.badge.label }}</span>
+                  <button onClick="{{ s.rotate }}" style="border:1px solid var(--f1-red);cursor:pointer;background:transparent;color:var(--f1-red);font-family:var(--font-display);font-weight:700;font-size:11px;padding:5px 11px;border-radius:6px;">Roter nu</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 280px;gap:18px;">
+            <div>
+              <div class="sec-h"><i class="fas fa-clock-rotate-left" style="color:var(--f1-red);font-size:13px;"></i><h3>Rotations-historik</h3></div>
+              <div>
+                <sc-for list="{{ audit }}" as="e" hint-placeholder-count="4">
+                  <div class="row" style="display:flex;gap:12px;padding:9px 0;"><span class="label-mono" style="font-size:11px;color:var(--text-muted);width:88px;flex-shrink:0;">{{ e.when }}</span><span style="font-size:12px;color:var(--text-secondary);"><strong style="color:var(--text-primary);">{{ e.who }}</strong> {{ e.action }} <span style="color:var(--text-muted);">({{ e.scope }})</span></span></div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="border:1px dashed var(--border-color);border-radius:11px;padding:14px;background:var(--bg-secondary);">
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;"><i class="fas fa-code-compare" style="color:var(--f1-red);"></i><span style="font-weight:800;font-size:13px;">Test ↔ Prod drift</span><span class="idea-chip">Idé</span></div>
+              <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;">Fanger secrets der findes i ét miljø men ikke det andet, eller er meget mere forældede i produktion.</div>
+              <div style="margin-top:12px;display:flex;flex-direction:column;gap:7px;"><div style="display:flex;align-items:center;gap:8px;font-size:12px;"><i class="fas fa-circle" style="font-size:7px;color:var(--status-warning-light);"></i><span>2 secrets mangler i Test</span></div><div style="display:flex;align-items:center;gap:8px;font-size:12px;"><i class="fas fa-circle" style="font-size:7px;color:var(--f1-red);"></i><span>DB-root 4× ældre i Prod</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ v_dash_paddockkb }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 22px;border-bottom:1px solid var(--border-color);">
+          <div style="display:flex;gap:12px;"><div style="width:40px;height:40px;border-radius:10px;background:var(--f1-red);display:flex;align-items:center;justify-content:center;"><i class="fas fa-book-open" style="color:#fff;font-size:16px;"></i></div><div><h2 style="font-size:18px;font-weight:800;">PaddockKB</h2><div class="label-lede" style="font-size:14px;margin-top:2px;">Videnbasen bag rygter, trivia og paddock-query.</div></div></div>
+          <span class="label-badge" style="padding:5px 12px;border-radius:var(--radius-pill);background:linear-gradient(135deg,#10b981,#059669);color:#0b3b2b;align-self:center;"><i class="fas fa-circle-check" style="margin-right:5px;"></i>Healthy</span>
+        </div>
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:24px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div style="border:1px solid var(--border-color);border-radius:11px;padding:14px 16px;"><div style="font-size:11px;color:var(--text-muted);letter-spacing:0.05em;text-transform:uppercase;">Sidste opdatering</div><div class="label-mono" style="font-size:20px;color:var(--text-primary);margin-top:6px;">for 6 t. siden</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;"><i class="fas fa-circle-check" style="color:var(--status-success-light);margin-right:5px;"></i>142 nye · 3 kilder · 41s</div></div>
+            <div style="border:1px solid var(--border-color);border-radius:11px;padding:14px 16px;"><div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-size:11px;color:var(--text-muted);letter-spacing:0.05em;text-transform:uppercase;">Næste planlagte</div><i class="fas fa-hourglass-half" style="color:var(--text-muted);font-size:12px;"></i></div><div class="label-mono" style="font-size:20px;color:var(--text-primary);margin-top:6px;">om 18 t. 12 m.</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">dagligt kl. 04:00 · auto</div></div>
+          </div>
+          <button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:13px;padding:11px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fas fa-rotate"></i>Kør opdatering nu</button>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div class="kpi"><div class="n">3.284</div><div class="l">Entries i alt</div></div>
+            <div class="kpi"><div class="n">5</div><div class="l">Kategorier</div></div>
+            <div class="kpi"><div class="n">18<span style="font-size:13px;">MB</span></div><div class="l">Index-størrelse</div></div>
+            <div class="kpi"><div class="n">612</div><div class="l">Queries (7d)</div></div>
+          </div>
+          <div>
+            <div class="sec-h"><i class="fas fa-layer-group" style="color:var(--f1-red);font-size:13px;"></i><h3>Indhold pr. kategori</h3><span style="flex:1;"></span><span style="font-size:11px;color:var(--text-muted);">friskhed</span></div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <sc-for list="{{ kbCats }}" as="c" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:110px 1fr 78px;gap:12px;align-items:center;"><span style="font-size:13px;font-weight:700;">{{ c.name }}</span><div style="height:8px;border-radius:4px;background:var(--bg-hover);overflow:hidden;"><div style="height:100%;width:{{ c.pct }}%;background:linear-gradient(90deg,var(--f1-red),var(--f1-red-light));border-radius:4px;"></div></div><div style="display:flex;align-items:center;gap:7px;justify-self:end;"><span class="label-mono" style="font-size:12px;color:var(--text-secondary);">{{ c.count }}</span><i class="fas fa-circle" style="font-size:7px;color:{{ c.freshColor }};"></i></div></div>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div class="sec-h"><i class="fas fa-arrow-down-up-across-line" style="color:var(--f1-red);font-size:13px;"></i><h3>Seneste ingest-kørsler</h3></div>
+            <div style="border:1px solid var(--border-color);border-radius:11px;overflow:hidden;">
+              <sc-for list="{{ kbRuns }}" as="r" hint-placeholder-count="4">
+                <div class="row" style="display:grid;grid-template-columns:96px 1fr auto auto;gap:12px;align-items:center;padding:11px 16px;"><span class="label-mono" style="font-size:11px;color:var(--text-muted);">{{ r.when }}</span><span style="font-size:13px;">{{ r.source }}</span><span class="label-mono" style="font-size:12px;color:var(--text-secondary);">+{{ r.added }}</span><span class="label-badge" style="padding:2px 8px;border-radius:var(--radius-pill);background:{{ r.badge.bg }};color:{{ r.badge.fg }};">{{ r.badge.label }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="border:1px dashed var(--border-color);border-radius:11px;padding:16px;background:var(--bg-secondary);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><i class="fas fa-magnifying-glass" style="color:var(--f1-red);"></i><span style="font-weight:800;font-size:14px;">Query-brug &amp; svar-kvalitet</span><span class="idea-chip">Idé</span></div>
+            <div style="display:grid;grid-template-columns:1fr 160px;gap:18px;">
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{ kbQueries }}" as="q" hint-placeholder-count="4">
+                  <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;"><span style="font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">„{{ q.q }}"</span><span class="label-mono" style="font-size:11px;color:var(--text-muted);">{{ q.count }}×</span></div>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid var(--border-color);"><span class="label-mono" style="font-size:28px;color:var(--status-success-light);">92%</span><span style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:4px;">svar med kilde-hit</span><span style="font-size:11px;color:var(--f1-red);margin-top:8px;text-align:center;">8% → dækningshuller</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ v_dash_challenges }}" hint-placeholder-val="{{ false }}">
+      <div class="dash-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 22px;border-bottom:1px solid var(--border-color);">
+          <div style="display:flex;gap:12px;"><div style="width:40px;height:40px;border-radius:10px;background:var(--f1-red);display:flex;align-items:center;justify-content:center;"><i class="fas fa-trophy" style="color:#fff;font-size:16px;"></i></div><div><h2 style="font-size:18px;font-weight:800;">Challenges · Brug</h2><div class="label-lede" style="font-size:14px;margin-top:2px;">Duels, Rumor or Not og Weekly Trivia.</div></div></div>
+          <span class="count-chip" style="align-self:center;">seneste 7 dage</span>
+        </div>
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:24px;">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div class="kpi"><div class="n">248</div><div class="l">Aktive deltagere</div></div>
+            <div class="kpi"><div class="n">1.906</div><div class="l">Spil (7d)</div></div>
+            <div class="kpi"><div class="n" style="color:var(--f1-red);">7</div><div class="l">Nye ansøgninger</div></div>
+            <div class="kpi"><div class="n" style="color:var(--status-success-light);">31%</div><div class="l">Deltager-rate</div></div>
+          </div>
+          <div>
+            <div class="sec-h"><i class="fas fa-flag-checkered" style="color:var(--f1-red);font-size:13px;"></i><h3>Konkurrencer</h3></div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <sc-for list="{{ challenges }}" as="c" hint-placeholder-count="3">
+                <div style="border:1px solid var(--border-color);border-radius:11px;padding:14px 16px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:8px;background:{{ c.iconBg }};display:flex;align-items:center;justify-content:center;"><i class="{{ c.icon }}" style="color:#fff;font-size:14px;"></i></div><div><div style="font-weight:800;font-size:14px;">{{ c.name }}</div><div style="font-size:11px;color:var(--text-muted);">{{ c.tag }}</div></div></div></div>
+                  <div style="display:grid;grid-template-columns:auto auto auto 1fr;gap:20px;align-items:flex-end;margin-top:14px;">
+                    <div><div class="label-mono" style="font-size:19px;color:var(--text-primary);">{{ c.players }}</div><div style="font-size:10px;color:var(--text-muted);">deltagere</div></div>
+                    <div><div class="label-mono" style="font-size:19px;color:var(--text-primary);">{{ c.plays }}</div><div style="font-size:10px;color:var(--text-muted);">spil (7d)</div></div>
+                    <div><div class="label-mono" style="font-size:19px;color:var(--status-success-light);">{{ c.completion }}%</div><div style="font-size:10px;color:var(--text-muted);">gennemført</div></div>
+                    <div style="display:flex;align-items:flex-end;gap:3px;height:34px;justify-self:end;"><sc-for list="{{ c.bars }}" as="b" hint-placeholder-count="8"><div style="width:7px;height:{{ b }}px;background:var(--f1-red);opacity:0.65;border-radius:2px;"></div></sc-for></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="border:1px dashed var(--border-color);border-radius:11px;padding:16px;background:var(--bg-secondary);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><i class="fas fa-filter" style="color:var(--f1-red);"></i><span style="font-weight:800;font-size:14px;">Fra besøgende til medlem</span><span class="idea-chip">Idé · funnel</span></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:200px 1fr auto;gap:12px;align-items:center;"><span style="font-size:13px;color:var(--text-secondary);">{{ f.label }}</span><div style="height:22px;border-radius:6px;background:var(--bg-hover);overflow:hidden;"><div style="height:100%;width:{{ f.pct }}%;background:linear-gradient(90deg,var(--f1-red),var(--f1-red-light));border-radius:6px;"></div></div><span class="label-mono" style="font-size:13px;color:var(--text-primary);width:64px;text-align:right;">{{ f.val }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ v_dash_actions }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+        <div class="kpi"><div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><i class="fas fa-diagram-project" style="margin-right:6px;"></i>Workflows</div><div class="n">9</div></div>
+        <div class="kpi"><div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><i class="fas fa-clock-rotate-left" style="margin-right:6px;"></i>Runs · seneste 24t</div><div class="n">14</div></div>
+        <div class="kpi"><div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><i class="fas fa-chart-line" style="margin-right:6px;"></i>Succesrate</div><div class="n" style="color:var(--status-success-light);">87%</div></div>
+        <div class="kpi"><div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><i class="fas fa-triangle-exclamation" style="margin-right:6px;"></i>Fejler nu</div><div class="n" style="color:var(--f1-red);">2</div></div>
+      </div>
+      <div class="dash-card" style="border-radius:11px;margin-bottom:14px;"><div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;"><span style="display:flex;align-items:center;gap:9px;font-weight:800;font-size:14px;"><i class="fas fa-clock-rotate-left" style="color:var(--f1-red);"></i>Runs · seneste 12t</span><span style="display:flex;align-items:center;gap:10px;"><span class="label-mono" style="font-size:12px;background:var(--bg-hover);color:var(--text-muted);padding:1px 9px;border-radius:999px;">7</span><i class="fas fa-chevron-down" style="color:var(--text-muted);font-size:12px;"></i></span></div></div>
+      <div style="display:grid;grid-template-columns:290px 1fr;gap:14px;align-items:start;">
+        <div class="dash-card" style="border-radius:11px;"><div style="padding:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span style="font-weight:800;font-size:13px;">Alle workflows</span><span class="label-mono" style="font-size:11px;background:var(--bg-hover);color:var(--text-muted);padding:1px 8px;border-radius:999px;">9</span></div>
+          <div style="display:flex;align-items:center;gap:8px;border:1px solid var(--border-color);border-radius:8px;padding:7px 10px;margin-bottom:12px;"><i class="fas fa-magnifying-glass" style="color:var(--text-muted);font-size:12px;"></i><span style="font-size:12px;color:var(--text-muted);">Filtrér workflows</span></div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <sc-for list="{{ ghWorkflows }}" as="w" hint-placeholder-count="9">
+              <div onClick="{{ w.onClick }}" style="cursor:pointer;display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;background:{{ w.bg }};">
+                <i class="{{ w.statusIcon }}" style="color:{{ w.statusColor }};font-size:14px;margin-top:2px;"></i>
+                <div style="min-width:0;flex:1;"><div style="font-weight:700;font-size:12px;color:{{ w.nameColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ w.name }}</div><div class="label-mono" style="font-size:10px;color:var(--text-muted);margin-top:2px;">{{ w.when }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div></div>
+        <div class="dash-card" style="border-radius:11px;"><div style="padding:20px 22px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;">
+            <div style="display:flex;gap:12px;"><div style="width:40px;height:40px;border-radius:10px;background:{{ ghDetail.iconBg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="{{ ghDetail.icon }}" style="color:#fff;font-size:16px;"></i></div><div><h2 style="font-size:19px;font-weight:800;">{{ ghDetail.name }}</h2><div style="font-size:12px;color:var(--text-secondary);margin-top:3px;"><i class="{{ ghDetail.statusIcon }}" style="color:{{ ghDetail.statusColor }};margin-right:5px;"></i>{{ ghDetail.summary }}</div></div></div>
+            <span class="yaml">{{ ghDetail.path }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;">
+            <div style="border:1px solid var(--border-color);border-radius:10px;padding:14px;"><div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;"><i class="fas fa-bullseye" style="color:var(--f1-red);font-size:12px;"></i><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;color:var(--f1-red);">PURPOSE</span></div><div style="font-size:12px;color:var(--text-secondary);line-height:1.55;">{{ ghDetail.purpose }}</div></div>
+            <div style="border:1px solid var(--border-color);border-radius:10px;padding:14px;"><div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;"><i class="fas fa-flag" style="color:var(--f1-red);font-size:12px;"></i><span style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.08em;color:var(--f1-red);">EXPECTED RESULT</span></div><div style="font-size:12px;color:var(--text-secondary);line-height:1.55;">{{ ghDetail.expected }}</div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;"><button style="border:none;cursor:pointer;background:var(--f1-red);color:#fff;font-family:var(--font-display);font-weight:700;font-size:12px;padding:9px 15px;border-radius:8px;"><i class="fas fa-play" style="margin-right:6px;"></i>Kør workflow</button><button style="border:1px solid var(--border-color);cursor:pointer;background:transparent;color:var(--text-secondary);font-family:var(--font-display);font-weight:700;font-size:12px;padding:9px 15px;border-radius:8px;"><i class="fas fa-file-lines" style="margin-right:6px;"></i>Vis log</button></div>
+          <div class="sec-h" style="margin-top:20px;"><i class="fas fa-list" style="color:var(--f1-red);font-size:13px;"></i><h3 style="font-size:14px;">Seneste kørsler</h3></div>
+          <div style="border:1px solid var(--border-color);border-radius:10px;overflow:hidden;">
+            <sc-for list="{{ ghDetail.runs }}" as="r" hint-placeholder-count="4">
+              <div class="row" style="display:grid;grid-template-columns:24px 1fr auto auto;gap:12px;align-items:center;padding:10px 14px;"><i class="{{ r.icon }}" style="color:{{ r.color }};font-size:13px;text-align:center;"></i><span class="label-mono" style="font-size:11px;color:var(--text-secondary);">{{ r.run }}</span><span class="label-mono" style="font-size:11px;color:var(--text-muted);">{{ r.when }}</span><span class="label-mono" style="font-size:11px;color:var(--text-muted);">{{ r.dur }}</span></div>
+            </sc-for>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:12px;"><span class="idea-chip">Idé · KB-kobling</span> &nbsp;Anthropic/OpenAI-nøgler bruges af flere workflows → status deles med <span style="color:var(--f1-red);cursor:pointer;" onClick="{{ gotoKeys }}">Nøgler &amp; Rotation</span>.</div>
+        </div></div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { area: 'dash', coreTab: 'races', pcTab: 'members', dashTab: 'oversigt',
+            env: 'prod', editing: null, draft: '', tokenEdits: {}, secretRot: {}, ghSel: 'rumors' };
+
+  fmtToday() { const m=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec']; const d=new Date(); return d.getDate()+'. '+m[d.getMonth()]; }
+  openEditor(k){ this.setState({ editing:k, draft:'' }); }
+  cancelEdit(){ this.setState({ editing:null, draft:'' }); }
+  setDraft(e){ this.setState({ draft:e.target.value }); }
+  saveToken(k){ const v=this.state.draft; if(!v)return; const days=Math.round((new Date(v).getTime()-Date.now())/86400000); this.setState(s=>({ tokenEdits:{...s.tokenEdits,[k]:{days,lastRotated:this.fmtToday(),rotatedBy:'Dig'}}, editing:null, draft:'' })); }
+  rotateSecret(k){ this.setState(s=>({ secretRot:{...s.secretRot,[k]:true} })); }
+  go(area,tab){ const key=area==='core'?'coreTab':area==='pc'?'pcTab':'dashTab'; this.setState({ area, [key]:tab }); }
+
+  renderVals() {
+    const area=this.state.area, env=this.state.env, isP=env==='prod';
+    const tCol=(on)=>on?'var(--f1-red)':'var(--text-secondary)';
+    const tBor=(on)=>on?'1px solid var(--f1-red)':'1px solid var(--border-color)';
+    const tBg =(on)=>on?'rgba(225,6,0,0.08)':'var(--bg-secondary)';
+
+    const mkArea=(id,label,icon)=>{const on=area===id;return{id,label,icon,onClick:()=>this.setState({area:id}),color:tCol(on),border:on?'1px solid var(--f1-red)':'1px solid var(--border-color)',bg:on?'rgba(225,6,0,0.10)':'var(--bg-secondary)',iconColor:on?'var(--f1-red)':'var(--text-muted)'};};
+    const areas=[mkArea('core','Core','fas fa-gear'),mkArea('pc','Paddock Challenges','fas fa-user-check'),mkArea('dash','Dashboards','fas fa-gauge-high')];
+
+    const defs={
+      core:[{id:'races',label:'Races',count:6,icon:'fas fa-flag'},{id:'drivers',label:'drivers',count:10,icon:'fas fa-car'},{id:'users',label:'users',count:4,icon:'fas fa-users'},{id:'invites',label:'invites',icon:'fas fa-envelope'},{id:'bets',label:'Bets',count:15,icon:'fas fa-trophy'},{id:'security',label:'Security',icon:'fas fa-shield-halved'},{id:'settings',label:'Settings',icon:'fas fa-gear'}],
+      pc:[{id:'members',label:'Members',icon:'fas fa-user-check'},{id:'rumor',label:'Rumor or Not',count:101,icon:'fas fa-comment-dots'},{id:'trivia',label:'Trivia',count:101,icon:'fas fa-circle-question'},{id:'duels',label:'Duels',icon:'fas fa-bolt'},{id:'suppressions',label:'Suppressions',icon:'fas fa-ban'}],
+      dash:[{id:'oversigt',label:'Oversigt',icon:'fas fa-table-cells-large'},{id:'keys',label:'Nøgler & Rotation',icon:'fas fa-key'},{id:'paddockkb',label:'PaddockKB',icon:'fas fa-book-open'},{id:'challenges',label:'Challenges',icon:'fas fa-trophy'},{id:'actions',label:'GitHub Actions',icon:'fab fa-github'}]
+    };
+    const stateKey=area==='core'?'coreTab':area==='pc'?'pcTab':'dashTab';
+    const cur=this.state[stateKey];
+    const tabs=defs[area].map(t=>{const on=cur===t.id;return{...t,hasCount:t.count!=null,onClick:()=>this.setState({[stateKey]:t.id}),color:tCol(on),border:tBor(on),bg:tBg(on),countBg:on?'rgba(225,6,0,0.15)':'var(--bg-hover)',countColor:on?'var(--f1-red)':'var(--text-muted)'};});
+
+    const V=(a,t)=>area===a&&cur===t;
+
+    // ---- badges ----
+    const TOK={ok:{label:'Healthy',fg:'#0b3b2b',bg:'linear-gradient(135deg,#10b981,#059669)'},warn:{label:'Udløber snart',fg:'#3a2600',bg:'linear-gradient(135deg,#f59e0b,#d97706)'},bad:{label:'Udløbet',fg:'#fff',bg:'linear-gradient(135deg,#ef4444,#dc2626)'}};
+    const SEC={ok:{label:'OK',fg:'#0b3b2b',bg:'linear-gradient(135deg,#10b981,#059669)'},due:{label:'Snart',fg:'#3a2600',bg:'linear-gradient(135deg,#f59e0b,#d97706)'},over:{label:'Forfalden',fg:'#fff',bg:'linear-gradient(135deg,#ef4444,#dc2626)'}};
+    const RUN={ok:{label:'OK',fg:'#0b3b2b',bg:'linear-gradient(135deg,#10b981,#059669)'},fail:{label:'Fejl',fg:'#fff',bg:'linear-gradient(135deg,#ef4444,#dc2626)'}};
+
+    // ---- tokens ----
+    const tokenSrc=isP?[
+      {name:'GitHub — fine-grained PAT',icon:'fab fa-github',days:12,lastRotated:'15. apr',rotatedBy:'Jens'},
+      {name:'Anthropic — API key',icon:'fas fa-robot',days:68,lastRotated:'20. maj',rotatedBy:'Søren'},
+      {name:'OpenAI — API key',icon:'fas fa-brain',days:-3,lastRotated:'01. nov',rotatedBy:'Jens'},
+    ]:[
+      {name:'GitHub — fine-grained PAT',icon:'fab fa-github',days:41,lastRotated:'02. jun',rotatedBy:'Jens'},
+      {name:'Anthropic — API key',icon:'fas fa-robot',days:5,lastRotated:'18. maj',rotatedBy:'Søren'},
+    ];
+    const tokens=tokenSrc.map(t=>{const ek=env+'|'+t.name;const ed=this.state.tokenEdits[ek];const days=ed?ed.days:t.days;const lastRotated=ed?ed.lastRotated:t.lastRotated;const rotatedBy=ed?ed.rotatedBy:t.rotatedBy;const key=days<0?'bad':days<=14?'warn':'ok';const expiryText=days<0?('udløbet · '+(-days)+' d. siden'):('udløber om '+days+' dage');return{...t,days,lastRotated,rotatedBy,badge:TOK[key],expiryText,editing:this.state.editing===ek,notEditing:this.state.editing!==ek,edit:()=>this.openEditor(ek),save:()=>this.saveToken(ek)};});
+
+    // ---- secrets ----
+    const secretSrc=isP?[
+      {name:'DB_PASSWORD',icon:'fas fa-database',age:83,policy:90,by:'Jens · 90d politik'},
+      {name:'DB_ROOT_PASSWORD',icon:'fas fa-database',age:210,policy:180,by:'Søren · 180d politik'},
+      {name:'SMTP_PASSWORD',icon:'fas fa-envelope',age:34,policy:90,by:'Jens · 90d politik'},
+      {name:'SESSION_SECRET',icon:'fas fa-cookie',age:51,policy:90,by:'Søren · 90d politik'},
+      {name:'ADMIN_PANEL_PW',icon:'fas fa-user-shield',age:96,policy:90,by:'Jens · 90d politik'},
+      {name:'JWT_SIGNING_KEY',icon:'fas fa-signature',age:120,policy:180,by:'Søren · 180d politik'},
+      {name:'BACKUP_ENCRYPT_KEY',icon:'fas fa-box-archive',age:300,policy:365,by:'Jens · 365d politik'},
+      {name:'CRON_WEBHOOK_SECRET',icon:'fas fa-clock',age:72,policy:90,by:'Søren · 90d politik'},
+      {name:'RECAPTCHA_SECRET',icon:'fas fa-shield-halved',age:40,policy:180,by:'Jens · 180d politik'},
+      {name:'DEPLOY_SSH_KEY',icon:'fas fa-terminal',age:150,policy:180,by:'Søren · 180d politik'},
+    ]:[
+      {name:'DB_PASSWORD',icon:'fas fa-database',age:21,policy:90,by:'Jens · 90d politik'},
+      {name:'SMTP_PASSWORD',icon:'fas fa-envelope',age:9,policy:90,by:'Jens · 90d politik'},
+      {name:'SESSION_SECRET',icon:'fas fa-cookie',age:12,policy:90,by:'Søren · 90d politik'},
+      {name:'ADMIN_PANEL_PW',icon:'fas fa-user-shield',age:78,policy:90,by:'Jens · 90d politik'},
+      {name:'JWT_SIGNING_KEY',icon:'fas fa-signature',age:44,policy:180,by:'Søren · 180d politik'},
+      {name:'CRON_WEBHOOK_SECRET',icon:'fas fa-clock',age:30,policy:90,by:'Søren · 90d politik'},
+      {name:'RECAPTCHA_SECRET',icon:'fas fa-shield-halved',age:15,policy:180,by:'Jens · 180d politik'},
+      {name:'DEPLOY_SSH_KEY',icon:'fas fa-terminal',age:60,policy:180,by:'Søren · 180d politik'},
+      {name:'TEST_STRIPE_KEY',icon:'fas fa-credit-card',age:5,policy:180,by:'Jens · 180d politik'},
+      {name:'DEBUG_TOKEN',icon:'fas fa-bug',age:2,policy:30,by:'Søren · 30d politik'},
+    ];
+    const secrets=secretSrc.map(s=>{const rk=env+'|'+s.name;const rot=!!this.state.secretRot[rk];const age=rot?0:s.age;const by=rot?'Dig · lige nu':s.by;const pct=Math.min(100,Math.round((age/s.policy)*100));const key=age>=s.policy?'over':age>=s.policy*0.8?'due':'ok';const barColor=key==='over'?'#ef4444':key==='due'?'#f59e0b':'#10b981';return{...s,age,by,pct,badge:SEC[key],barColor,ageText:age+' / '+s.policy+' dage',rotate:()=>this.rotateSecret(rk)};});
+
+    const kpiExpired=tokens.filter(t=>t.days<0).length;
+    const kpiSoon=tokens.filter(t=>t.days>=0&&t.days<=14).length+secrets.filter(s=>s.age>=s.policy*0.8&&s.age<s.policy).length;
+    const kpiOverdue=secrets.filter(s=>s.age>=s.policy).length;
+    const health=Math.max(0,Math.min(100,100-kpiExpired*16-kpiOverdue*11-kpiSoon*4));
+    const healthCol=health>=80?'#10b981':health>=55?'#f59e0b':'#ef4444';
+    const healthRing='conic-gradient('+healthCol+' '+health+'%, var(--border-color) 0)';
+    const kpiLastRot=isP?'4d':'2d';
+    const actions=[];
+    tokens.filter(t=>t.days<0).forEach(t=>actions.push({icon:t.icon,color:'#ef4444',text:t.name+' er udløbet'}));
+    tokens.filter(t=>t.days>=0&&t.days<=14).forEach(t=>actions.push({icon:t.icon,color:'#f59e0b',text:t.name+' udløber om '+t.days+' dage'}));
+    secrets.filter(s=>s.age>=s.policy).forEach(s=>actions.push({icon:s.icon,color:'#ef4444',text:s.name+' er forfalden ('+s.age+'d)'}));
+    if(!actions.length)actions.push({icon:'fas fa-circle-check',color:'#10b981',text:'Alt er sundt i '+env});
+    const audit=[
+      {when:'for 4 dage',who:'Jens',action:'roterede SMTP_PASSWORD',scope:'Test'},
+      {when:'for 2 uger',who:'Søren',action:'roterede Anthropic API key',scope:'Prod'},
+      {when:'for 3 uger',who:'Jens',action:'roterede SESSION_SECRET',scope:'Prod'},
+      {when:'for 1 md.',who:'Søren',action:'roterede GitHub PAT',scope:'Test'},
+      {when:'for 1 md.',who:'Jens',action:'tilføjede RECAPTCHA_SECRET',scope:'Prod'},
+    ];
+
+    // ---- KB ----
+    const kbCats=[{name:'Rygter',count:862,pct:100,freshColor:'#10b981'},{name:'Trivia',count:1104,pct:96,freshColor:'#10b981'},{name:'Kørere',count:640,pct:58,freshColor:'#10b981'},{name:'Løb',count:478,pct:44,freshColor:'#f59e0b'},{name:'Historik',count:200,pct:18,freshColor:'#ef4444'}];
+    const kbRuns=[{when:'i dag 04:00',source:'F1 news feed + rygter',added:142,badge:RUN.ok},{when:'i går 04:00',source:'Trivia-generator',added:60,badge:RUN.ok},{when:'21. jul 04:00',source:'Kører-stamdata',added:0,badge:RUN.fail},{when:'20. jul 04:00',source:'F1 news feed + rygter',added:118,badge:RUN.ok}];
+    const kbQueries=[{q:'hvem kører for Ferrari 2026',count:34},{q:'rygter om Verstappen',count:28},{q:'flest pole positions',count:19},{q:'næste grand prix dato',count:17}];
+
+    // ---- challenges usage ----
+    const challenges=[
+      {name:'Duels',tag:'1-mod-1 forudsigelser',icon:'fas fa-hand-fist',iconBg:'linear-gradient(135deg,#e10600,#b30500)',players:142,plays:604,completion:88,bars:[10,14,12,20,18,26,22,30]},
+      {name:'Rumor or Not',tag:'sandt eller rygte',icon:'fas fa-question',iconBg:'linear-gradient(135deg,#f59e0b,#d97706)',players:98,plays:812,completion:74,bars:[16,12,18,15,24,20,28,26]},
+      {name:'Weekly Trivia',tag:'ugentlig · leaderboard',icon:'fas fa-brain',iconBg:'linear-gradient(135deg,#10b981,#059669)',players:121,plays:490,completion:81,bars:[8,12,10,18,22,16,24,32]},
+    ];
+    const funnel=[{label:'Besøgende (30d)',val:'1.240',pct:100},{label:'Deltog i en challenge',val:'386',pct:31},{label:'Registreret som deltager',val:'154',pct:12},{label:'Anmodede fuldt medlemskab',val:'22',pct:5}];
+
+    // ---- hub overview ----
+    const hubPanels=[
+      {name:'Nøgler & Rotation',icon:'fas fa-key',stat:String(health),unit:'sundhed',note:(kpiExpired+kpiOverdue)+' handlinger påkrævet',tone:'var(--f1-red)',flag:kpiExpired+kpiOverdue,onClick:()=>this.setState({dashTab:'keys'})},
+      {name:'GitHub Actions',icon:'fab fa-github',stat:'87%',unit:'succes (30d)',note:'2 workflows fejler',tone:'var(--f1-red)',flag:2,onClick:()=>this.setState({dashTab:'actions'})},
+      {name:'PaddockKB',icon:'fas fa-book-open',stat:'Healthy',unit:'næste om 18 t.',note:'sidste ingest fejlede',tone:'var(--status-warning-light)',flag:1,onClick:()=>this.setState({dashTab:'paddockkb'})},
+      {name:'Paddock Challenges',icon:'fas fa-trophy',stat:'248',unit:'aktive spillere',note:'alt kører',tone:'var(--status-success-light)',flag:0,onClick:()=>this.setState({dashTab:'challenges'})},
+    ];
+
+    // ---- github actions ----
+    const okI={icon:'fas fa-circle-check',color:'#10b981'}, failI={icon:'fas fa-circle-xmark',color:'#ef4444'};
+    const wfDefs=[
+      {id:'rumors',name:'Paddock Rumors — KB Update',path:'.github/workflows/paddock-rumors.yml',status:'ok',when:'for 3 t.',iconBg:'linear-gradient(135deg,#e10600,#b30500)',icon:'fas fa-comment-dots',summary:'10 passed · 0 failed — seneste 10 kørsler',purpose:'Henter kvalifikations-, løbsresultat- og analyse-dækning fra Jolpica-F1, F1Technical og andre F1-kilder på tværs af ugen.',expected:'Videnbasen opdateres med nyt kildemateriale til content-topup at trække fra næste gang.',runs:[{run:'#482',when:'i dag 04:00',dur:'41s',...okI},{run:'#472',when:'i går 04:00',dur:'44s',...okI},{run:'#461',when:'21. jul',dur:'39s',...okI}]},
+      {id:'qual',name:'Cron — Qualifying Results Import',path:'.github/workflows/qualifying-import.yml',status:'fail',when:'5d siden',iconBg:'linear-gradient(135deg,#ef4444,#dc2626)',icon:'fas fa-flag',summary:'8 passed · 2 failed — seneste 10 kørsler',purpose:'Importerer kvalifikationsresultater efter hvert løb, så bet kan valideres mod P1–P3.',expected:'Kvalifikationstabel opdateret; bet der ikke matcher afvises automatisk.',runs:[{run:'#211',when:'19. jul 03:08',dur:'1m 12s',...failI},{run:'#204',when:'12. jul',dur:'58s',...okI},{run:'#198',when:'05. jul',dur:'1m 02s',...okI}]},
+      {id:'deploy',name:'Deploy → Production',path:'.github/workflows/deploy.yml',status:'ok',when:'i går',iconBg:'linear-gradient(135deg,#10b981,#059669)',icon:'fas fa-rocket',summary:'12 passed · 0 failed — seneste 10 kørsler',purpose:'Bygger og udruller til produktionsmiljøet ved push til main.',expected:'Ny version live; sundhedstjek grønt efter deploy.',runs:[{run:'#530',when:'i går 21:40',dur:'1m 02s',...okI},{run:'#529',when:'20. jul',dur:'59s',...okI}]},
+      {id:'ci',name:'CI — build & test',path:'.github/workflows/ci.yml',status:'ok',when:'for 3 t.',iconBg:'linear-gradient(135deg,#6b7280,#4b5563)',icon:'fas fa-code',summary:'40 passed · 1 failed — seneste 41 kørsler',purpose:'Kører PHP-lint og unit-tests på hver pull request.',expected:'Alle tests grønne før merge tillades.',runs:[{run:'#1482',when:'for 3 t.',dur:'2m 14s',...okI},{run:'#1481',when:'for 6 t.',dur:'2m 08s',...okI}]},
+      {id:'backup',name:'Nightly Backup (cron)',path:'.github/workflows/backup.yml',status:'ok',when:'i dag 02:00',iconBg:'linear-gradient(135deg,#6b7280,#4b5563)',icon:'fas fa-box-archive',summary:'30 passed · 0 failed — seneste 30 kørsler',purpose:'Krypterer og uploader database-dump til off-site storage.',expected:'Dagligt backup-arkiv gemt og verificeret.',runs:[{run:'#530',when:'i dag 02:00',dur:'38s',...okI},{run:'#529',when:'i går 02:00',dur:'40s',...okI}]},
+      {id:'lint',name:'Lint & Security Scan',path:'.github/workflows/lint.yml',status:'ok',when:'for 2 d.',iconBg:'linear-gradient(135deg,#6b7280,#4b5563)',icon:'fas fa-shield-halved',summary:'22 passed · 0 failed — seneste 22 kørsler',purpose:'Statisk analyse + dependency-scan for kendte sårbarheder.',expected:'Ingen high/critical fund; ellers fejler kørslen.',runs:[{run:'#147',when:'for 2 d.',dur:'1m 20s',...okI}]},
+      {id:'kbingest',name:'PaddockKB Nightly Ingest',path:'.github/workflows/kb-ingest.yml',status:'fail',when:'i dag 04:00',iconBg:'linear-gradient(135deg,#ef4444,#dc2626)',icon:'fas fa-book-open',summary:'9 passed · 1 failed — seneste 10 kørsler',purpose:'Kører den natlige indeksering af nyt KB-materiale til rygter og trivia.',expected:'Index genopbygget; nye entries søgbare fra query.php.',runs:[{run:'#96',when:'i dag 04:00',dur:'12s',...failI},{run:'#95',when:'i går 04:00',dur:'44s',...okI}]},
+      {id:'trivia',name:'Trivia Generator',path:'.github/workflows/trivia-gen.yml',status:'ok',when:'i går',iconBg:'linear-gradient(135deg,#6b7280,#4b5563)',icon:'fas fa-circle-question',summary:'14 passed · 0 failed — seneste 14 kørsler',purpose:'Genererer ugens trivia-spørgsmål fra PaddockKB.',expected:'Ny runde udkast klar til admin-godkendelse.',runs:[{run:'#78',when:'i går 05:00',dur:'22s',...okI}]},
+      {id:'leaderboard',name:'Leaderboard Recalc',path:'.github/workflows/leaderboard.yml',status:'ok',when:'for 3 t.',iconBg:'linear-gradient(135deg,#6b7280,#4b5563)',icon:'fas fa-ranking-star',summary:'60 passed · 0 failed — seneste 60 kørsler',purpose:'Genberegner point og placeringer efter resultat-indtastning.',expected:'Leaderboard opdateret på tværs af alle konkurrencer.',runs:[{run:'#530',when:'for 3 t.',dur:'9s',...okI}]},
+    ];
+    const ghWorkflows=wfDefs.map(w=>{const on=this.state.ghSel===w.id;return{...w,onClick:()=>this.setState({ghSel:w.id}),statusIcon:w.status==='ok'?'fas fa-circle-check':'fas fa-circle-xmark',statusColor:w.status==='ok'?'#10b981':'#ef4444',bg:on?'var(--bg-hover)':'transparent',nameColor:on?'var(--text-primary)':'var(--text-secondary)'};});
+    const sel=wfDefs.find(w=>w.id===this.state.ghSel)||wfDefs[0];
+    const ghDetail={...sel,statusIcon:sel.status==='ok'?'fas fa-circle-check':'fas fa-circle-xmark',statusColor:sel.status==='ok'?'#10b981':'#ef4444'};
+
+    // ---- core data ----
+    const RACE={done:{label:'Afsluttet',fg:'var(--text-primary)',bg:'var(--bg-hover)'},closed:{label:'Betting lukket',fg:'#fff',bg:'linear-gradient(135deg,#ef4444,#dc2626)'},open:{label:'Betting åben',fg:'#0b3b2b',bg:'linear-gradient(135deg,#10b981,#059669)'},soon:{label:'Kommende',fg:'var(--text-secondary)',bg:'var(--bg-secondary)'}};
+    const races=[{name:'Monaco GP',date:'25. maj',bets:'8/10',badge:RACE.done,note:'resultat indtastet'},{name:'Spanish GP',date:'01. jun',bets:'9/10',badge:RACE.closed,note:'afventer resultat'},{name:'Canadian GP',date:'15. jun',bets:'6/10',badge:RACE.open,note:'lukker om 2 d.'},{name:'Austrian GP',date:'29. jun',bets:'0/10',badge:RACE.soon,note:'åbner om 9 d.'}];
+    const drivers=[
+      {no:'1',name:'Max Verstappen',team:'Red Bull Racing',pts:'214'},{no:'4',name:'Lando Norris',team:'McLaren',pts:'198'},{no:'16',name:'Charles Leclerc',team:'Ferrari',pts:'171'},{no:'44',name:'Lewis Hamilton',team:'Ferrari',pts:'160'},{no:'81',name:'Oscar Piastri',team:'McLaren',pts:'152'},{no:'63',name:'George Russell',team:'Mercedes',pts:'133'},{no:'55',name:'Carlos Sainz',team:'Williams',pts:'88'},{no:'14',name:'Fernando Alonso',team:'Aston Martin',pts:'64'},{no:'12',name:'Kimi Antonelli',team:'Mercedes',pts:'59'},{no:'6',name:'Isack Hadjar',team:'Racing Bulls',pts:'31'},
+    ];
+    const users=[
+      {name:'Jens Østergaard',initials:'JØ',email:'jens@…',role:'admin',stars:2,last:'i dag'},
+      {name:'Søren Munk',initials:'SM',email:'soren@…',role:'medlem',stars:1,last:'i går'},
+      {name:'Henrik Lund',initials:'HL',email:'henrik@…',role:'medlem',stars:0,last:'for 3 d.'},
+      {name:'Peter Boysen',initials:'PB',email:'peter@…',role:'medlem',stars:3,last:'for 1 t.'},
+    ];
+    const INV={sent:{label:'Sendt',fg:'#3a2600',bg:'linear-gradient(135deg,#f59e0b,#d97706)'},opened:{label:'Åbnet',fg:'#0b3b2b',bg:'linear-gradient(135deg,#10b981,#059669)'}};
+    const invites=[{email:'mikkel.krogh@gmail.com',by:'Jens',when:'for 2 d.',badge:INV.opened},{email:'anders.b@hotmail.com',by:'Søren',when:'for 5 d.',badge:INV.sent},{email:'lars.nielsen@yahoo.dk',by:'Jens',when:'for 1 uge',badge:INV.sent}];
+    const betsList=[{user:'Peter Boysen',pick:'Verstappen · Norris · Leclerc',pts:'25',when:'for 1 t.'},{user:'Jens Østergaard',pick:'Norris · Verstappen · Piastri',pts:'18',when:'for 3 t.'},{user:'Søren Munk',pick:'Leclerc · Hamilton · Russell',pts:'12',when:'i går'},{user:'Henrik Lund',pick:'Verstappen · Leclerc · Norris',pts:'22',when:'i går'},{user:'Mikkel Krogh',pick:'Piastri · Norris · Verstappen',pts:'15',when:'for 2 d.'}];
+    const sessions=[{who:'Jens Østergaard (dig)',icon:'fas fa-laptop',ip:'85.191.x.x · København',when:'aktiv nu',current:true,notCurrent:false},{who:'Søren Munk',icon:'fas fa-mobile-screen',ip:'93.166.x.x · Frederikssund',when:'for 2 t.',current:false,notCurrent:true},{who:'Jens Østergaard',icon:'fas fa-tablet-screen-button',ip:'85.191.x.x · København',when:'i går',current:false,notCurrent:true}];
+
+    // ---- PC data ----
+    const MBADGE={member:{label:'Fuldt medlem',fg:'#0b3b2b',bg:'linear-gradient(135deg,#10b981,#059669)'},participant:{label:'Deltager',fg:'var(--text-secondary)',bg:'var(--bg-secondary)'},pending:{label:'Ansøger',fg:'#3a2600',bg:'linear-gradient(135deg,#f59e0b,#d97706)'}};
+    const members=[
+      {name:'Peter Boysen',initials:'PB',joined:'apr 2025',pts:'312',badge:MBADGE.member,pending:false,notPending:true},
+      {name:'Mikkel Krogh',initials:'MK',joined:'for 2 t.',pts:'8',badge:MBADGE.pending,pending:true,notPending:false},
+      {name:'Henrik Lund',initials:'HL',joined:'jan 2025',pts:'240',badge:MBADGE.member,pending:false,notPending:true},
+      {name:'Anders Bech',initials:'AB',joined:'for 1 d.',pts:'14',badge:MBADGE.pending,pending:true,notPending:false},
+      {name:'Lars Nielsen',initials:'LN',joined:'maj 2025',pts:'96',badge:MBADGE.participant,pending:false,notPending:true},
+      {name:'Thomas Dahl',initials:'TD',joined:'jun 2025',pts:'52',badge:MBADGE.participant,pending:false,notPending:true},
+    ];
+    const CLM={true_:{label:'Sandt',fg:'#0b3b2b',bg:'linear-gradient(135deg,#10b981,#059669)'},rumor:{label:'Rygte',fg:'#fff',bg:'linear-gradient(135deg,#ef4444,#dc2626)'},pending:{label:'Afventer',fg:'#3a2600',bg:'linear-gradient(135deg,#f59e0b,#d97706)'}};
+    const claims=[
+      {text:'Hamilton skifter til Cadillac i 2027',plays:0,badge:CLM.pending},
+      {text:'Verstappen har en exit-klausul for 2026',plays:210,badge:CLM.rumor},
+      {text:'Norris forlængede med McLaren til 2028',plays:188,badge:CLM.true_},
+      {text:'Ferrari kører med ny titelsponsor næste år',plays:142,badge:CLM.rumor},
+      {text:'Antonelli fik superlicens som 18-årig',plays:96,badge:CLM.true_},
+    ];
+    const ROUND={live:{label:'Aktiv',fg:'#0b3b2b',bg:'linear-gradient(135deg,#10b981,#059669)'},plan:{label:'Planlagt',fg:'#3a2600',bg:'linear-gradient(135deg,#f59e0b,#d97706)'},done:{label:'Afsluttet',fg:'var(--text-secondary)',bg:'var(--bg-secondary)'}};
+    const rounds=[{n:'Runde 14',meta:'8 spørgsmål · 121 spillere',badge:ROUND.live,when:'lukker søndag 23:59'},{n:'Runde 15',meta:'8 spørgsmål · kladde',badge:ROUND.plan,when:'udgives 28. jul'},{n:'Runde 13',meta:'8 spørgsmål · vundet af Peter B.',badge:ROUND.done,when:'20. jul'}];
+    const suppressions=[{text:'Ukorrekt rygte om kører-helbred',reason:'Upassende',by:'Jens',when:'for 3 d.'},{text:'Trivia: dobbelt-spørgsmål (Monaco 1994)',reason:'Duplikat',by:'auto-flag',when:'for 1 uge'},{text:'Rygte uden kilde i PaddockKB',reason:'Ingen kilde',by:'auto-flag',when:'for 1 uge'}];
+
+    return {
+      areas, tabs,
+      v_core_races:V('core','races'),v_core_drivers:V('core','drivers'),v_core_users:V('core','users'),v_core_invites:V('core','invites'),v_core_bets:V('core','bets'),v_core_security:V('core','security'),v_core_settings:V('core','settings'),
+      v_pc_members:V('pc','members'),v_pc_rumor:V('pc','rumor'),v_pc_trivia:V('pc','trivia'),v_pc_duels:V('pc','duels'),v_pc_suppressions:V('pc','suppressions'),
+      v_dash_oversigt:V('dash','oversigt'),v_dash_keys:V('dash','keys'),v_dash_paddockkb:V('dash','paddockkb'),v_dash_challenges:V('dash','challenges'),v_dash_actions:V('dash','actions'),
+      gotoKeys:()=>this.go('dash','keys'), gotoActions:()=>this.go('dash','actions'), gotoSuppressions:()=>this.go('pc','suppressions'),
+      env,
+      setProd:()=>this.setState({env:'prod'}), setTest:()=>this.setState({env:'test'}),
+      prodBg:isP?'var(--f1-red)':'transparent', prodFg:isP?'#fff':'var(--text-secondary)',
+      testBg:!isP?'var(--f1-red)':'transparent', testFg:!isP?'#fff':'var(--text-secondary)',
+      draft:this.state.draft, setDraft:(e)=>this.setDraft(e), cancelEdit:()=>this.cancelEdit(),
+      tokens, tokenCount:tokens.length, secrets, secretCount:secrets.length,
+      kpiExpired, kpiSoon, kpiOverdue, kpiLastRot, health, healthRing,
+      actions, actionCount:actions[0].color==='#10b981'?0:actions.length, audit,
+      kbCats, kbRuns, kbQueries, challenges, funnel, hubPanels,
+      ghWorkflows, ghDetail,
+      races, drivers, users, invites, betsList, sessions,
+      members, claims, rounds, suppressions,
+    };
+  }
+}
+</script>
+</body>
+</html>

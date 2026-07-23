@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/colors_and_type.css">
+  <link rel="stylesheet" href="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/_ds_bundle.js"></script>
+  <style>
+    a { color: var(--f1-red); text-decoration: none; }
+    a:hover { color: var(--f1-red-light); }
+    .gha-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+    .gha-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 8px; }
+    .gha-scroll::-webkit-scrollbar-track { background: transparent; }
+    .gha-wf-row:hover { background: var(--bg-hover) !important; }
+    .gha-run-row:hover { background: var(--bg-hover) !important; }
+    .gha-icon-btn:hover { background: var(--bg-hover) !important; color: var(--text-primary) !important; }
+    .gha-input:focus { outline: none; border-color: var(--f1-red) !important; box-shadow: 0 0 0 3px rgba(225,6,0,0.20); }
+    .sv-cell:hover { outline: 1px solid var(--f1-red); }
+  </style>
+</helmet>
+<div class="gha-root theme-dark" ref="{{ rootRef }}" style="min-height:100vh;background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);display:flex;flex-direction:column">
+
+  <header style="display:flex;align-items:center;gap:16px;padding:14px 24px;background:var(--bg-secondary);border-bottom:1px solid var(--border-color);position:sticky;top:0;z-index:20">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:30px;height:30px;border-radius:7px;background:var(--f1-red);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:900;font-size:13px;letter-spacing:-0.02em">F1</div>
+      <div style="display:flex;flex-direction:column;line-height:1.15">
+        <span style="font-family:var(--font-display);font-weight:800;font-size:15px">Frederikssund F1 Klub</span>
+        <span style="font-size:12px;color:var(--text-muted)">{{ t.ops }}</span>
+      </div>
+    </div>
+    <div style="width:1px;height:26px;background:var(--border-color)"></div>
+    <div style="display:flex;align-items:center;gap:9px">
+      <i class="fa-brands fa-github" style="font-size:18px;color:var(--text-secondary)"></i>
+      <h1 style="font-size:18px;font-family:var(--font-display);font-weight:800">Actions</h1>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;gap:7px">
+      <button class="gha-icon-btn" onClick="{{ onToggleTheme }}" title="{{ t.tipTheme }}" style="display:flex;align-items:center;justify-content:center;height:34px;width:34px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-secondary);cursor:pointer;font-size:14px"><i class="fa-solid {{ themeIcon }}"></i></button>
+      <button class="gha-icon-btn" onClick="{{ onToggleFont }}" title="{{ t.tipFont }}" style="display:flex;align-items:center;justify-content:center;height:34px;min-width:38px;padding:0 8px;background:{{ fontBtnBg }};border:1px solid {{ fontBtnBorder }};border-radius:var(--radius-md);color:{{ fontBtnColor }};cursor:pointer;font-family:var(--font-accent);font-weight:700;font-size:14px">Aa</button>
+      <button class="gha-icon-btn" onClick="{{ onToggleLang }}" title="{{ t.tipLang }}" style="display:flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 11px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-secondary);cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:12.5px;letter-spacing:0.03em"><i class="fa-solid fa-globe" style="font-size:12px"></i>{{ langLabel }}</button>
+    </div>
+    <div style="width:1px;height:26px;background:var(--border-color)"></div>
+    <div style="display:flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:12.5px;font-weight:700;color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:6px 11px">
+      <i class="fa-solid fa-code-branch" style="color:var(--text-muted)"></i>
+      main
+    </div>
+  </header>
+
+  <div style="max-width:1360px;width:100%;margin:0 auto;padding:22px 24px 40px">
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+      <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:12.5px;font-weight:600;margin-bottom:8px"><i class="fa-solid fa-diagram-project"></i> {{ t.workflows }}</div>
+        <div style="font-family:var(--font-display);font-weight:800;font-size:30px">{{ stats.total }}</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:12.5px;font-weight:600;margin-bottom:8px"><i class="fa-solid fa-clock-rotate-left"></i> {{ t.runs24 }}</div>
+        <div style="font-family:var(--font-display);font-weight:800;font-size:30px">{{ stats.runs24 }}</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:12.5px;font-weight:600;margin-bottom:8px"><i class="fa-solid fa-chart-line"></i> {{ t.successRate }}</div>
+        <div style="font-family:var(--font-display);font-weight:800;font-size:30px;color:var(--status-success-light)">{{ stats.successRate }}%</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:12.5px;font-weight:600;margin-bottom:8px"><i class="fa-solid fa-triangle-exclamation"></i> {{ t.failingNow }}</div>
+        <div style="font-family:var(--font-display);font-weight:800;font-size:30px;color:{{ stats.failingColor }}">{{ stats.failing }}</div>
+      </div>
+    </div>
+
+    <section style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:18px">
+      <div class="gha-run-row" onClick="{{ onToggle12 }}" style="display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid {{ open12Border }};cursor:pointer;transition:background 0.15s">
+        <div style="display:flex;align-items:center;gap:9px"><i class="fa-solid fa-clock-rotate-left" style="color:var(--f1-red)"></i><h3 style="font-family:var(--font-display);font-weight:800;font-size:15px">{{ t.last12 }}</h3></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-family:var(--font-mono);font-weight:700;font-size:12px;color:var(--text-muted);background:var(--bg-secondary);border-radius:var(--radius-pill);padding:2px 9px">{{ recent12Count }}</span>
+          <i class="fa-solid {{ chevron12 }}" style="color:var(--text-muted);font-size:12px"></i>
+        </div>
+      </div>
+      <sc-if value="{{ open12 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:1fr 140px 210px 190px 90px;gap:0;padding:9px 20px;border-bottom:1px solid var(--border-color);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-muted)">
+        <span>{{ t.colWorkflow }}</span><span>{{ t.colStatus }}</span><span>{{ t.colTrigger }}</span><span>{{ t.colStarted }}</span><span style="text-align:right">{{ t.colDuration }}</span>
+      </div>
+      <div class="gha-scroll" style="max-height:340px;overflow-y:auto">
+        <sc-for list="{{ recent12 }}" as="r" hint-placeholder-count="10">
+          <div class="gha-run-row" onClick="{{ r.select }}" style="display:grid;grid-template-columns:1fr 140px 210px 190px 90px;gap:0;align-items:center;padding:11px 20px;border-bottom:1px solid var(--border-color);cursor:pointer;transition:background 0.15s">
+            <span style="display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;min-width:0"><i class="fa-solid {{ r.wfIcon }}" style="color:var(--f1-red);font-size:13px;width:15px;text-align:center"></i><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.wfName }}</span></span>
+            <span style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:{{ r.statusColor }}"><i class="fa-solid {{ r.statusIcon }}" style="font-size:13px"></i>{{ r.statusLabel }}</span>
+            <span style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-secondary);min-width:0"><i class="fa-solid {{ r.triggerIcon }}" style="color:var(--text-muted);font-size:12px;width:14px"></i><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.triggerText }}</span></span>
+            <span style="display:flex;flex-direction:column;line-height:1.25"><span class="label-mono" style="font-size:12px;color:var(--text-secondary)">{{ r.startedFull }}</span><span style="font-size:10.5px;color:var(--text-muted)">{{ r.ago }}</span></span>
+            <span class="label-mono" style="font-size:12.5px;color:var(--text-secondary);text-align:right">{{ r.duration }}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{ recent12Empty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:22px;text-align:center;color:var(--text-muted);font-size:13px">{{ t.noRuns12 }}</div>
+        </sc-if>
+      </div>
+      </sc-if>
+    </section>
+
+    <div style="display:grid;grid-template-columns:326px 1fr;gap:18px;align-items:start">
+
+      <aside style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);overflow:hidden;position:sticky;top:82px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid var(--border-color)">
+          <span style="font-family:var(--font-display);font-weight:800;font-size:15px">{{ t.allWorkflows }}</span>
+          <span style="font-family:var(--font-mono);font-weight:700;font-size:12px;color:var(--text-muted);background:var(--bg-secondary);border-radius:var(--radius-pill);padding:2px 9px">{{ stats.total }}</span>
+        </div>
+        <div style="padding:12px 12px 6px">
+          <div style="position:relative">
+            <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px"></i>
+            <input class="gha-input" type="text" value="{{ query }}" onChange="{{ onSearch }}" placeholder="{{ t.filter }}" style="width:100%;box-sizing:border-box;padding:9px 12px 9px 32px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-body);font-size:13.5px">
+          </div>
+        </div>
+        <div class="gha-scroll" style="max-height:calc(100vh - 240px);overflow-y:auto;padding:6px 8px 10px">
+          <sc-for list="{{ workflows }}" as="wf" hint-placeholder-count="9">
+            <div class="gha-wf-row" onClick="{{ wf.select }}" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:var(--radius-md);cursor:pointer;background:{{ wf.rowBg }};border-left:3px solid {{ wf.rowBar }};transition:background 0.15s">
+              <i class="fa-solid {{ wf.statusIcon }}" style="font-size:15px;color:{{ wf.statusColor }};width:16px;text-align:center"></i>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600;font-size:13.5px;color:{{ wf.nameColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ wf.name }}</div>
+                <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text-muted);margin-top:1px"><i class="fa-solid fa-clock-rotate-left" style="margin-right:5px;font-size:10px"></i>{{ wf.lastFull }}</div>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:10.5px;font-weight:700;color:var(--text-muted);white-space:nowrap">{{ wf.lastAgo }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:22px 12px;text-align:center;color:var(--text-muted);font-size:13px">{{ noMatchMsg }}</div>
+          </sc-if>
+        </div>
+      </aside>
+
+      <main style="min-width:0">
+        <section style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:22px 24px;margin-bottom:16px">
+          <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px">
+            <div style="width:44px;height:44px;border-radius:var(--radius-md);background:var(--bg-secondary);border:1px solid var(--border-color);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="fa-solid {{ detail.icon }}" style="font-size:20px;color:var(--f1-red)"></i>
+            </div>
+            <div style="flex:1;min-width:0">
+              <h2 style="font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1.2">{{ detail.name }}</h2>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+                <i class="fa-solid {{ detail.statusIcon }}" style="color:{{ detail.statusColor }};font-size:13px"></i>
+                <span style="font-size:13px;color:var(--text-secondary)">{{ detail.runsSummary }}</span>
+              </div>
+            </div>
+            <span style="font-family:var(--font-mono);font-weight:700;font-size:11.5px;color:var(--text-secondary);background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:6px 11px;white-space:nowrap">{{ detail.file }}</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:14px 16px">
+              <div style="display:flex;align-items:center;gap:7px;color:var(--f1-red);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:7px"><i class="fa-solid fa-bullseye"></i> {{ t.purpose }}</div>
+              <p style="font-size:13.5px;line-height:1.55;color:var(--text-secondary);margin:0">{{ detail.purpose }}</p>
+            </div>
+            <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:14px 16px">
+              <div style="display:flex;align-items:center;gap:7px;color:var(--f1-red);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:7px"><i class="fa-solid fa-flag-checkered"></i> {{ t.expected }}</div>
+              <p style="font-size:13.5px;line-height:1.55;color:var(--text-secondary);margin:0">{{ detail.expected }}</p>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px">
+            <div style="display:flex;align-items:center;gap:9px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:9px 13px">
+              <i class="fa-solid fa-calendar-days" style="color:var(--text-muted);font-size:13px"></i>
+              <div><div style="font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.03em;font-weight:700">{{ t.schedule }}</div><div style="font-size:13px;font-weight:600">{{ detail.schedule }}</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:9px 13px">
+              <i class="fa-solid fa-terminal" style="color:var(--text-muted);font-size:13px"></i>
+              <div><div style="font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.03em;font-weight:700">{{ t.cron }}</div><div class="label-mono" style="font-size:13px">{{ detail.cron }}</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:9px 13px">
+              <i class="fa-solid {{ detail.triggerIcon }}" style="color:var(--text-muted);font-size:13px"></i>
+              <div><div style="font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.03em;font-weight:700">{{ t.trigger }}</div><div style="font-size:13px;font-weight:600">{{ detail.triggerLabel }}</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;background:var(--bg-secondary);border:1px solid var(--f1-red);border-radius:var(--radius-md);padding:9px 13px">
+              <i class="fa-solid {{ detail.nextIcon }}" style="color:var(--f1-red);font-size:13px"></i>
+              <div><div style="font-size:10.5px;color:var(--f1-red);text-transform:uppercase;letter-spacing:0.03em;font-weight:700">{{ t.nextRun }}</div><div class="label-mono" style="font-size:13px">{{ detail.nextLabel }} <span style="color:var(--text-muted);font-weight:400">· {{ detail.nextRel }}</span></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border-color)">
+            <h3 style="font-family:var(--font-display);font-weight:800;font-size:15px">{{ t.last10 }}</h3>
+            <span style="font-size:12px;color:var(--text-muted)">{{ t.clickHint }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:150px 78px 1fr 130px 92px 30px;gap:0;padding:9px 20px;border-bottom:1px solid var(--border-color);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-muted)">
+            <span>{{ t.colStatus }}</span><span>{{ t.colRun }}</span><span>{{ t.colTrigger }}</span><span>{{ t.colStarted }}</span><span style="text-align:right">{{ t.colDuration }}</span><span></span>
+          </div>
+          <sc-for list="{{ detail.runs }}" as="run" hint-placeholder-count="10">
+            <div>
+              <div class="gha-run-row" onClick="{{ run.toggle }}" style="display:grid;grid-template-columns:150px 78px 1fr 130px 92px 30px;gap:0;align-items:center;padding:12px 20px;border-bottom:1px solid var(--border-color);cursor:pointer;background:{{ run.rowBg }};transition:background 0.15s">
+                <span style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:{{ run.statusColor }}"><i class="fa-solid {{ run.statusIcon }}" style="font-size:14px"></i>{{ run.statusLabel }}</span>
+                <span class="label-mono" style="font-size:12.5px;color:var(--text-secondary)">{{ run.no }}</span>
+                <span style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-secondary);min-width:0"><i class="fa-solid {{ run.triggerIcon }}" style="color:var(--text-muted);font-size:12px;width:14px"></i><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ run.triggerText }}</span></span>
+                <span class="label-mono" style="font-size:12px;color:var(--text-muted)">{{ run.ago }}</span>
+                <span class="label-mono" style="font-size:12.5px;color:var(--text-secondary);text-align:right">{{ run.duration }}</span>
+                <span style="text-align:right;color:var(--text-muted)"><i class="fa-solid {{ run.chevron }}" style="font-size:11px"></i></span>
+              </div>
+              <sc-if value="{{ run.open }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:14px 20px 18px;background:var(--bg-secondary);border-bottom:1px solid var(--border-color)">
+                  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:11px;font-size:12px;color:var(--text-muted)">
+                    <span><i class="fa-solid fa-user" style="margin-right:6px"></i>{{ run.actor }}</span>
+                    <span><i class="fa-solid fa-code-branch" style="margin-right:6px"></i>{{ run.branch }}</span>
+                    <span><i class="fa-solid fa-hashtag" style="margin-right:5px"></i><span class="label-mono">{{ run.sha }}</span></span>
+                    <span><i class="fa-solid fa-clock" style="margin-right:6px"></i><span class="label-mono">{{ run.startedFull }}</span></span>
+                  </div>
+                  <div class="gha-scroll label-mono" style="background:var(--bg-primary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:12px 14px;font-size:12px;line-height:1.75;font-weight:400;overflow-x:auto">
+                    <sc-for list="{{ run.log }}" as="line" hint-placeholder-count="6">
+                      <div style="white-space:pre;color:{{ line.color }}"><span style="color:var(--text-muted);user-select:none">{{ line.ts }}  </span>{{ line.text }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </section>
+      </main>
+    </div>
+
+    <section style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);overflow:hidden;margin-top:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:15px 20px;border-bottom:1px solid var(--border-color)">
+        <div style="display:flex;align-items:center;gap:9px"><i class="fa-solid fa-calendar-week" style="color:var(--f1-red)"></i><h3 style="font-family:var(--font-display);font-weight:800;font-size:15px">{{ t.schedTitle }} · {{ sched.monthLabel }}</h3></div>
+        <div style="display:flex;align-items:center;gap:14px;font-size:10.5px;color:var(--text-muted)">
+          <span>{{ t.heatLabel }}</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:rgba(225,6,0,0.38)"></span>{{ t.heat1 }}</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:rgba(225,6,0,0.65)"></span>{{ t.heatFew }}</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:rgba(225,6,0,0.95)"></span>{{ t.heatMany }}</span>
+          <span style="width:1px;height:14px;background:var(--border-color)"></span>
+          <span style="display:flex;align-items:center;gap:5px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--f1-red);font-size:10px"></i>{{ t.collideKey }}</span>
+        </div>
+      </div>
+      <div class="gha-scroll" style="padding:12px 20px 18px;overflow-x:auto">
+        <div style="min-width:720px">
+          <div style="display:grid;grid-template-columns:196px 84px 1fr;gap:10px;align-items:end;margin-bottom:6px">
+            <div></div>
+            <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--text-muted)">{{ t.colTime }}</div>
+            <div style="display:grid;grid-template-columns:repeat({{ sched.dayCount }},1fr);gap:2px">
+              <sc-for list="{{ sched.days }}" as="d" hint-placeholder-count="31">
+                <div style="text-align:center;font-family:var(--font-mono);font-weight:700;line-height:1.25;background:{{ d.headBg }};border-radius:4px;padding:2px 0"><div style="font-size:10px;font-weight:800;color:{{ d.wdColor }}">{{ d.wd }}</div><div style="font-size:10px;color:{{ d.color }}">{{ d.d }}</div></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:196px 84px 1fr;gap:10px;align-items:center;margin-bottom:5px">
+            <div style="display:flex;align-items:center;gap:7px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:var(--text-muted)"><i class="fa-solid fa-triangle-exclamation" style="color:var(--f1-red);font-size:11px"></i>{{ t.collisions }}</div>
+            <div></div>
+            <div style="display:grid;grid-template-columns:repeat({{ sched.dayCount }},1fr);gap:2px">
+              <sc-for list="{{ sched.collisions }}" as="cx" hint-placeholder-count="31">
+                <div class="sv-cell" title="{{ cx.title }}" style="height:16px;border-radius:3px;background:{{ cx.bg }};display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px"><sc-if value="{{ cx.strong }}" hint-placeholder-val="{{ false }}"><i class="fa-solid fa-triangle-exclamation"></i></sc-if></div>
+              </sc-for>
+            </div>
+          </div>
+          <sc-for list="{{ sched.rows }}" as="row" hint-placeholder-count="8">
+            <div class="gha-wf-row" onClick="{{ row.select }}" style="display:grid;grid-template-columns:196px 84px 1fr;gap:10px;align-items:center;padding:4px 6px;margin:0 -6px;border-top:1px solid var(--border-color);border-radius:var(--radius-sm);cursor:pointer;background:{{ row.rowBg }};transition:background 0.15s">
+              <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                <i class="fa-solid {{ row.icon }}" style="font-size:12px;color:var(--f1-red);width:15px;text-align:center"></i>
+                <div style="min-width:0"><div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ row.nameColor }}">{{ row.name }}</div><div style="font-family:var(--font-mono);font-size:9.5px;font-weight:700;color:var(--text-muted)">{{ row.cadence }}</div></div>
+              </div>
+              <div class="label-mono" style="font-size:11px;color:var(--text-secondary)">{{ row.timeLabel }}</div>
+              <div style="display:grid;grid-template-columns:repeat({{ sched.dayCount }},1fr);gap:2px">
+                <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="31">
+                  <div title="{{ cell.title }}" style="height:19px;border-radius:3px;background:{{ cell.bg }};border:1px solid {{ cell.border }}"></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:12px"><i class="fa-solid fa-circle-info" style="margin-right:6px"></i>{{ t.schedNote }}</div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360,&quot;height&quot;:1000},&quot;lang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;da&quot;,&quot;en&quot;],&quot;default&quot;:&quot;da&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Localization&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;,&quot;clubhouse-dark&quot;,&quot;clubhouse-light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;fontSystem&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;defaultOpenLogs&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.rootRef = React.createRef();
+    this.state = {
+      selectedId: 'nightly-tests', open: {}, query: '', open12: false,
+      theme: props.theme || 'dark',
+      fontSystem: !!props.fontSystem,
+      lang: props.lang || 'da'
+    };
+    this.NOW = new Date('2026-07-22T15:12:00Z').getTime();
+  }
+
+  componentDidMount() { this.applyTheme(); }
+  componentDidUpdate() { this.applyTheme(); }
+  applyTheme() {
+    const map = { dark:'theme-dark', light:'theme-light', 'clubhouse-dark':'theme-clubhouse theme-dark', 'clubhouse-light':'theme-clubhouse theme-light' };
+    const cls = 'gha-root ' + (map[this.state.theme] || 'theme-dark') + (this.state.fontSystem ? ' font-system' : '');
+    const el = this.rootRef.current;
+    if (el && el.className !== cls) el.className = cls;
+  }
+
+  isDark() { return !String(this.state.theme).includes('light'); }
+  toggleTheme() {
+    const club = String(this.state.theme).includes('clubhouse');
+    const toDark = !this.isDark();
+    this.setState({ theme: (club ? 'clubhouse-' : '') + (toDark ? 'dark' : 'light') });
+  }
+
+  strings(l) {
+    const S = {
+      en: { ops:'Ops & automation', workflows:'Workflows', runs24:'Runs · last 24h', successRate:'Success rate', failingNow:'Failing now',
+        allWorkflows:'All workflows', filter:'Filter workflows', noMatch:'No workflows match', purpose:'Purpose', expected:'Expected result',
+        schedule:'Schedule', cron:'Cron', trigger:'Trigger', nextRun:'Next scheduled run', last10:'Last 10 runs', clickHint:'Click a run to see its output',
+        colStatus:'Status', colRun:'Run', colTrigger:'Trigger', colStarted:'Started', colDuration:'Duration', colWorkflow:'Workflow',
+        last12:'Runs · last 12h', noRuns12:'No runs in the last 12 hours.',
+        passed:'passed', failed:'failed', cancelled:'cancelled', skipped:'skipped', last10lower:'last 10 runs',
+        st_success:'Success', st_failure:'Failure', st_cancelled:'Cancelled', st_skipped:'Skipped',
+        tr_schedule:'Scheduled', tr_push:'Push', tr_pull_request:'Pull request', tr_workflow_dispatch:'Manual',
+        onNextPr:'On next pull request', onDemand:'on demand',
+        schedTitle:'Run schedule', colTime:'Time (CET)', heatLabel:'Runs/day:', heat1:'1×', heatFew:'few', heatMany:'many',
+        schedNote:'Sorted by frequency (most runs first). Hover a cell for the exact date, time and run count. The collision row flags days where 3+ jobs start at the same time (email runs hourly, so it overlaps every job).',
+        collisions:'Collisions', collideKey:'3+ jobs at same time',
+        tipTheme:'Switch theme', tipFont:'Switch font', tipLang:'Skift til dansk' },
+      da: { ops:'Drift & automatisering', workflows:'Workflows', runs24:'Kørsler · seneste 24t', successRate:'Succesrate', failingNow:'Fejler nu',
+        allWorkflows:'Alle workflows', filter:'Filtrér workflows', noMatch:'Ingen workflows matcher', purpose:'Formål', expected:'Forventet resultat',
+        schedule:'Tidsplan', cron:'Cron', trigger:'Udløser', nextRun:'Næste planlagte kørsel', last10:'Seneste 10 kørsler', clickHint:'Klik på en kørsel for at se output',
+        colStatus:'Status', colRun:'Kørsel', colTrigger:'Udløser', colStarted:'Startet', colDuration:'Varighed', colWorkflow:'Workflow',
+        last12:'Kørsler · seneste 12t', noRuns12:'Ingen kørsler de seneste 12 timer.',
+        passed:'bestået', failed:'fejlet', cancelled:'annulleret', skipped:'sprunget over', last10lower:'seneste 10 kørsler',
+        st_success:'Succes', st_failure:'Fejl', st_cancelled:'Annulleret', st_skipped:'Sprunget over',
+        tr_schedule:'Planlagt', tr_push:'Push', tr_pull_request:'Pull request', tr_workflow_dispatch:'Manuel',
+        onNextPr:'Ved næste pull request', onDemand:'efter behov',
+        schedTitle:'Kørselsplan', colTime:'Tid (CET)', heatLabel:'Kørsler/dag:', heat1:'1×', heatFew:'få', heatMany:'mange',
+        schedNote:'Sorteret efter hyppighed (flest kørsler først). Hold musen over en celle for dato, tid og antal kørsler. Kollisionsrækken markerer dage hvor 3+ jobs starter samtidig (email kører hver time og overlapper derfor alle).',
+        collisions:'Kollisioner', collideKey:'3+ jobs samtidig',
+        tipTheme:'Skift tema', tipFont:'Skift skrifttype', tipLang:'Switch to English' }
+    };
+    return S[l] || S.en;
+  }
+
+  daWf() {
+    return {
+      'content-topup': { purpose:'Opdaterer forsidens blurbs og fylder puljen af kommende løb op, så medlemmer aldrig lander på forældet indhold mellem grand prix\u2019er.', expected:'Nye indholdsrækker indsat og sidecachen varmet op. Jobbet slutter rent med antal opdaterede elementer.', schedule:'Hver 6. time' },
+      'email-notify': { purpose:'Sender e-mail til medlemmer med et åbent bet før hver betting-deadline, så ingen misser et løb ved et uheld.', expected:'Påmindelser sendt via SMTP uden hårde bounces. Antal sendte og skips logget.', schedule:'Hver time' },
+      'quali-import': { purpose:'Henter kvalifikationsresultatet fra timing-udbyderen, gemmer startgriddet og låser alle bets for løbet.', expected:'Grid importeret og alle åbne bets låst. Ingen rækker efterladt ulåst når quali er officiel.', schedule:'Lør 15:00 CET · løbsweekender' },
+      'weekly-challenges': { purpose:'Genererer ugens side-challenge og tildeler bonuspoint, og genberegner derefter sæsonens leaderboard.', expected:'Ny challenge offentliggjort og bonusser tildelt. Leaderboard-totaler genberegnet og cachet.', schedule:'Mandage 07:00 CET' },
+      'e2e': { purpose:'Kører hele Playwright end-to-end-suiten mod staging-miljøet ved hver pull request og efter behov.', expected:'Alle suiter grønne med traces, screenshots og HTML-rapport uploadet som artifacts.', schedule:'Ved pull request · manuel' },
+      'sec-review': { purpose:'Kører dependency-audit, secret-scan og adgangsgennemgang på tværs af repo og hosting og arkiverer en signeret rapport.', expected:'Rapport committet til /reports uden kritiske fund. Nye CVE\u2019er åbnes som issues.', schedule:'Den 1. i måneden 04:00 CET' },
+      'db-backup': { purpose:'Dumper MySQL-databasen, krypterer arkivet og uploader det til offsite object storage hver nat.', expected:'Krypteret backup uploadet og checksum verificeret. Opbevaring beskåret til de seneste 30 dage.', schedule:'Dagligt 03:00 CET' },
+      'nightly-tests': { purpose:'Kører unit- og integrationstests plus en CodeQL- og dependency-sårbarhedsscanning mod main-branchen hver nat.', expected:'Alle tests består og scanningen rapporterer ingen nye high-severity-alerts. Coverage offentliggjort.', schedule:'Dagligt 02:00 CET' },
+      'kb-update': { purpose:'Skraber de godkendte F1-nyhedsfeeds og opsummerer dem i den vidensbase, klubbens bot svarer ud fra.', expected:'KB opdateret med nye rygte-resuméer og embeddings genindekseret. Dubletter sprunget over.', schedule:'Dagligt 09:00 CET' }
+    };
+  }
+
+  seeded(a, b) { const x = Math.sin(a * 127.1 + b * 311.7 + 13.7) * 43758.5453; return x - Math.floor(x); }
+
+  schedDefs() {
+    const H = (...h)=>()=>h;
+    return {
+      'email-notify':     { time:':00 · hourly', hours:()=>[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23] },
+      'content-topup':    { time:'1/7/13/19',    hours:()=>[0,6,12,18] },
+      'nightly-tests':    { time:'02:00',        hours:()=>[1] },
+      'db-backup':        { time:'03:00',        hours:()=>[2] },
+      'kb-update':        { time:'09:00',        hours:()=>[8] },
+      'weekly-challenges':{ time:'Mon 07:00',    hours:(dt)=> dt.getUTCDay()===1?[6]:[] },
+      'quali-import':     { time:'Sat 15:00',    hours:(dt,rw)=> (dt.getUTCDay()===6 && rw)?[14]:[] },
+      'sec-review':       { time:'1st 04:00',    hours:(dt)=> dt.getUTCDate()===1?[3]:[] }
+    };
+  }
+  buildSchedule(defs, L, t, selectedId) {
+    const Y=2026, M=6, TODAY=22, dayCount=31, sd=this.schedDefs();
+    const wdLetters = L==='da' ? ['S','M','T','O','T','F','L'] : ['S','M','T','W','T','F','S'];
+    const pad2 = n => String(n).padStart(2,'0');
+    const sats=[]; for(let d=1; d<=dayCount; d++){ if(new Date(Date.UTC(Y,M,d)).getUTCDay()===6) sats.push(d); }
+    const race=new Set([sats[1], sats[3]]);
+    const moShort = L==='da' ? 'jul' : 'Jul';
+    const sched = defs.filter(w => sd[w.id]);
+    const days=[]; for(let d=1; d<=dayCount; d++){ const dt=new Date(Date.UTC(Y,M,d)); const wd=dt.getUTCDay(); const we=(wd===0||wd===6);
+      days.push({ dt, d, wd:wdLetters[wd], race:race.has(d), weekend:we,
+        color: d===TODAY?'var(--f1-red)':(we?'var(--text-muted)':'var(--text-secondary)'),
+        wdColor: we?'var(--f1-red)':'var(--text-secondary)',
+        headBg: we?'rgba(225,6,0,0.08)':'transparent' }); }
+    const rows = sched
+      .map(w => { const s=sd[w.id]; let total=0; const cells=days.map(dm=>{ const c=s.hours(dm.dt, dm.race).length; total+=c;
+        const a = c>=24?0.95 : c>=4?0.65 : c>=1?0.38 : 0;
+        return { count:c, bg: c? `rgba(225,6,0,${a})` : (dm.weekend?'rgba(225,6,0,0.04)':'var(--bg-secondary)'),
+          border: dm.d===TODAY ? 'var(--text-primary)' : (c? `rgba(225,6,0,${Math.min(1,a+0.2)})` : 'var(--border-color)'),
+          title: `${w.name} · ${dm.d}. ${moShort} · ${c? s.time : (L==='da'?'kører ikke':'no run')}${c? ' · '+c+'×':''}` }; });
+        const sel = w.id===selectedId;
+        return { id:w.id, icon:w.icon, name:w.name, cadence:w.schedule, timeLabel:s.time, cells, total,
+          rowBg: sel?'var(--bg-hover)':'transparent', nameColor: sel?'var(--text-primary)':'var(--text-secondary)',
+          select: ()=> this.setState({ selectedId:w.id }) }; })
+      .sort((a,b)=> b.total - a.total);
+    // collisions: hours on a given day where 3+ workflows start together
+    const collisions = days.map(dm=>{
+      const perHour={};
+      sched.forEach(w=>{ sd[w.id].hours(dm.dt, dm.race).forEach(h=>{ (perHour[h]=perHour[h]||[]).push(w.name); }); });
+      const strongH = Object.keys(perHour).map(Number).filter(h=>perHour[h].length>=3).sort((a,b)=>a-b);
+      const strong = strongH.length>0;
+      const title = strong
+        ? strongH.map(h=> `${pad2((h+1)%24)}:00 — ${perHour[h].join(', ')} (${perHour[h].length})`).join('  ·  ')
+        : (L==='da' ? `${dm.d}. jul · ingen 3-vejs kollision` : `${moShort} ${dm.d} · no 3-way collision`);
+      return { strong, title, bg: strong ? 'rgba(225,6,0,0.92)' : (dm.weekend?'rgba(225,6,0,0.06)':'transparent') };
+    });
+    return { monthLabel: L==='da'?'Juli 2026':'July 2026', dayCount, days, rows, collisions };
+  }
+
+  data() {
+    return [
+      { id:'content-topup', name:'Cron — Content Top-up', icon:'fa-newspaper',
+        purpose:'Refreshes homepage blurbs and tops up the upcoming-race content pool so members never land on stale copy between grands prix.',
+        expected:'New content rows inserted and the page cache warmed. Job exits clean with a count of items refreshed.',
+        schedule:'Every 6 hours', cron:'0 */6 * * *', trigger:'schedule', intervalH:6, baseDur:95, lastRun:812,
+        steps:['Checkout','Setup PHP 8.3','Fetch race calendar','Generate blurbs','Warm cache'], failStep:3,
+        failMsg:'Renderer error: undefined index "circuit_name" in BlurbBuilder.php:74',
+        okMsg:'14 blurbs refreshed · cache warmed',
+        recent:['success','success','success','failure','success','success','success','success','success','success'] },
+      { id:'email-notify', name:'Cron — Email Notifications', icon:'fa-envelope',
+        purpose:'Emails members who still have an open bet before each betting deadline so nobody misses a race by accident.',
+        expected:'Queued reminders dispatched over SMTP with zero hard bounces. Sent count and skips logged.',
+        schedule:'Hourly', cron:'0 * * * *', trigger:'schedule', intervalH:1, baseDur:38, lastRun:4821,
+        steps:['Checkout','Setup PHP 8.3','Query pending bettors','Render templates','Send via SMTP'], failStep:4,
+        failMsg:'SMTP 421: mailer temporarily unavailable — 2 messages requeued',
+        okMsg:'6 reminders sent · 0 bounces',
+        recent:['success','success','success','success','success','success','cancelled','success','success','success'] },
+      { id:'quali-import', name:'Cron — Qualifying Results Import', icon:'fa-flag-checkered',
+        purpose:'Pulls the qualifying classification from the timing provider, stores the starting grid, and locks all bets for the race.',
+        expected:'Grid imported and every open bet locked. Zero rows left unlocked once quali is official.',
+        schedule:'Sat 15:00 CET · race weekends', cron:'0 14 * * 6', trigger:'schedule', intervalH:168, baseDur:130, lastRun:24,
+        steps:['Checkout','Setup PHP 8.3','Call timing API','Validate grid','Lock bets','Notify Discord'], failStep:2,
+        failMsg:'HTTP 504 gateway timeout from timing.f1 provider after 3 retries',
+        okMsg:'grid imported · 9 bets locked',
+        recent:['success','skipped','skipped','success','failure','success','skipped','skipped','success','success'] },
+      { id:'weekly-challenges', name:'Cron — Weekly Challenges', icon:'fa-bolt',
+        purpose:'Generates the weekly side-challenge and applies its bonus points, then recomputes the season leaderboard.',
+        expected:'New challenge published and bonuses applied. Leaderboard totals recomputed and cached.',
+        schedule:'Mondays 07:00 CET', cron:'0 6 * * 1', trigger:'schedule', intervalH:168, baseDur:62, lastRun:41,
+        steps:['Checkout','Setup PHP 8.3','Generate challenge','Apply bonuses','Recompute leaderboard'], failStep:3,
+        failMsg:'Deadlock on bonuses table — gave up after 3 transaction retries',
+        okMsg:'challenge #41 published · bonuses applied',
+        recent:['success','success','success','success','success','success','success','success','failure','success'] },
+      { id:'e2e', name:'E2E Orchestrator (test env)', icon:'fa-vial',
+        purpose:'Runs the full Playwright end-to-end suite against the staging environment on every pull request and on demand.',
+        expected:'All suites green with traces, screenshots and the HTML report uploaded as build artifacts.',
+        schedule:'On pull request · manual', cron:'—', trigger:'pull_request', intervalH:7, baseDur:640, lastRun:391,
+        steps:['Checkout','Setup Node 20','Install deps','Boot staging','Run Playwright','Upload artifacts'], failStep:4,
+        failMsg:'3 tests failed — bet-flow.spec.ts › locks after deadline: timed out 30000ms',
+        okMsg:'128 tests passed · artifacts uploaded',
+        recent:['failure','success','success','cancelled','success','failure','success','success','success','failure'] },
+      { id:'sec-review', name:'Monthly Security Review', icon:'fa-shield-halved',
+        purpose:'Runs a dependency audit, secret scan and access review across the repo and hosting, then files a signed report.',
+        expected:'Report committed to /reports with zero critical findings. Any new CVEs opened as issues.',
+        schedule:'1st of month 04:00 CET', cron:'0 3 1 * *', trigger:'schedule', intervalH:720, baseDur:210, lastRun:9,
+        steps:['Checkout','Composer audit','gitleaks scan','Access review','Generate report','Commit report'], failStep:1,
+        failMsg:'composer audit found 1 high advisory — see report for remediation',
+        okMsg:'report committed · 0 critical findings',
+        recent:['success','success','success','success','success','success','success','success','success','success'] },
+      { id:'db-backup', name:'Nightly DB Backup', icon:'fa-database',
+        purpose:'Dumps the MySQL database, encrypts the archive, and uploads it to offsite object storage every night.',
+        expected:'Encrypted backup uploaded and checksum verified. Retention pruned to the last 30 days.',
+        schedule:'Daily 03:00 CET', cron:'0 2 * * *', trigger:'schedule', intervalH:24, baseDur:150, lastRun:305,
+        steps:['Checkout','Dump MySQL','Encrypt (age)','Upload to R2','Verify checksum','Prune > 30d'], failStep:3,
+        failMsg:'R2 upload failed: connection reset — object not committed',
+        okMsg:'42.6 MB uploaded · checksum verified',
+        recent:['success','success','success','success','success','success','success','success','success','success'] },
+      { id:'nightly-tests', name:'Nightly Tests & Security Scan', icon:'fa-flask',
+        purpose:'Runs unit and integration tests plus a CodeQL and dependency vulnerability scan against the main branch nightly.',
+        expected:'All tests pass and the scan reports no new high-severity alerts. Coverage published.',
+        schedule:'Daily 02:00 CET', cron:'0 1 * * *', trigger:'schedule', intervalH:24, baseDur:325, lastRun:306,
+        steps:['Checkout','Setup PHP 8.3','Composer install','PHPUnit','CodeQL analyze','Dependency review'], failStep:3,
+        failMsg:'PHPUnit: 2 assertions failed in ScoringServiceTest::testPerfectPodiumPoints',
+        okMsg:'214 tests passed · scan clean',
+        recent:['success','failure','success','success','success','success','failure','success','success','success'] },
+      { id:'kb-update', name:'Paddock Rumors — KB Update', icon:'fa-comments',
+        purpose:'Scrapes the approved F1 news feeds and summarises them into the knowledge base the club bot answers from.',
+        expected:'KB refreshed with new rumor summaries and embeddings re-indexed. Duplicate stories skipped.',
+        schedule:'Daily 09:00 CET', cron:'0 8 * * *', trigger:'schedule', intervalH:24, baseDur:180, lastRun:274,
+        steps:['Checkout','Setup Python 3.12','Fetch feeds','Summarise (LLM)','Re-index embeddings','Commit KB'], failStep:3,
+        failMsg:'LLM provider 429 rate-limited during summarise — partial batch discarded',
+        okMsg:'7 summaries added · index rebuilt',
+        recent:['success','success','success','success','cancelled','success','success','success','success','success'] }
+    ];
+  }
+
+  statusMeta(s) {
+    return ({
+      success:{ c:'var(--status-success-light)', icon:'fa-circle-check' },
+      failure:{ c:'var(--status-danger-light)', icon:'fa-circle-xmark' },
+      cancelled:{ c:'var(--text-muted)', icon:'fa-ban' },
+      skipped:{ c:'var(--text-muted)', icon:'fa-circle-minus' }
+    })[s];
+  }
+  triggerIcon(t) {
+    return ({ schedule:'fa-clock', push:'fa-code-commit', pull_request:'fa-code-pull-request', workflow_dispatch:'fa-hand-pointer' })[t];
+  }
+
+  relTime(ms, l) {
+    const d = this.NOW - ms, m = d / 60000;
+    const u = l === 'da' ? { m:'min', h:'t', d:'d', w:'u', mo:'md' } : { m:'m', h:'h', d:'d', w:'w', mo:'mo' };
+    const f = (n, k) => l === 'da' ? ('for ' + n + u[k] + ' siden') : (n + u[k] + ' ago');
+    if (m < 60) return f(Math.max(1, Math.round(m)), 'm');
+    const h = m / 60; if (h < 24) return f(Math.round(h), 'h');
+    const day = h / 24; if (day < 7) return f(Math.round(day), 'd');
+    const w = day / 7; if (w < 5) return f(Math.round(w), 'w');
+    return f(Math.round(day / 30), 'mo');
+  }
+  nextRel(ms, l) {
+    const d = ms - this.NOW, m = d / 60000;
+    const u = l === 'da' ? { m:'min', h:'t', d:'d', w:'u', mo:'md' } : { m:'m', h:'h', d:'d', w:'w', mo:'mo' };
+    const f = (n, k) => l === 'da' ? ('om ' + n + u[k]) : ('in ' + n + u[k]);
+    if (m < 60) return f(Math.max(1, Math.round(m)), 'm');
+    const h = m / 60; if (h < 24) return f(Math.round(h), 'h');
+    const day = h / 24; if (day < 7) return f(Math.round(day), 'd');
+    const w = day / 7; if (w < 5) return f(Math.round(w), 'w');
+    return f(Math.round(day / 30), 'mo');
+  }
+  fullTime(ms, l) {
+    const dt = new Date(ms + 3600000);
+    const mo = (l === 'da' ? ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'] : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'])[dt.getUTCMonth()];
+    const p = n => String(n).padStart(2, '0');
+    const time = `${p(dt.getUTCHours())}:${p(dt.getUTCMinutes())} CET`;
+    return l === 'da' ? `${dt.getUTCDate()}. ${mo} ${time}` : `${mo} ${dt.getUTCDate()}, ${time}`;
+  }
+  clock(s) { if (s < 60) return s + 's'; return Math.floor(s / 60) + 'm ' + (s % 60) + 's'; }
+  hexSha(a, b) { return Math.floor(this.seeded(a, b) * 0xfffffff).toString(16).padStart(7, '0'); }
+
+  buildRuns(wf, L, t) {
+    const humans = ['mikkel','soeren','jens','claus','henrik'];
+    const runs = [];
+    let time = this.NOW - this.seeded(wf.lastRun, 1) * wf.intervalH * 0.3 * 3600000;
+    for (let i = 0; i < wf.recent.length; i++) {
+      const status = wf.recent[i], no = wf.lastRun - i;
+      const sm = this.statusMeta(status);
+      let trig, actor;
+      if (wf.id === 'e2e') {
+        trig = ['pull_request','push','pull_request','workflow_dispatch','push'][i % 5];
+        actor = humans[Math.floor(this.seeded(no, 5) * humans.length)];
+      } else if (this.seeded(no, 9) > 0.9) {
+        trig = 'workflow_dispatch'; actor = humans[Math.floor(this.seeded(no, 6) * humans.length)];
+      } else { trig = 'schedule'; actor = 'github-actions[bot]'; }
+      let mult = status === 'failure' ? 0.6 : status === 'cancelled' ? 0.4 : status === 'skipped' ? 0.03 : 1;
+      const dur = Math.max(3, Math.round(wf.baseDur * mult * (0.75 + 0.5 * this.seeded(no, 4))));
+      const started = time;
+      time -= wf.intervalH * 3600000 * (0.9 + 0.2 * this.seeded(no, 2));
+
+      const log = [];
+      const tsBase = new Date(started + 3600000);
+      let sec = 0;
+      const stamp = () => { const dt = new Date(tsBase.getTime() + sec * 1000); const p = n => String(n).padStart(2,'0'); return `${p(dt.getUTCHours())}:${p(dt.getUTCMinutes())}:${p(dt.getUTCSeconds())}`; };
+      if (status === 'skipped') {
+        log.push({ ts: stamp(), text: 'Skipped — ' + (wf.id === 'quali-import' ? 'no race scheduled this weekend' : 'nothing to do'), color: 'var(--text-muted)' });
+      } else {
+        log.push({ ts: stamp(), text: 'Set up job', color: 'var(--text-muted)' });
+        for (let s = 0; s < wf.steps.length; s++) {
+          const stepDur = Math.max(1, Math.round(this.seeded(no, s + 20) * (dur / wf.steps.length) + 1));
+          if (status === 'failure' && s === wf.failStep) {
+            sec += stepDur;
+            log.push({ ts: stamp(), text: '✗ ' + wf.steps[s], color: 'var(--status-danger-light)' });
+            log.push({ ts: stamp(), text: '  ' + wf.failMsg, color: 'var(--status-danger-light)' });
+            log.push({ ts: stamp(), text: '##[error]Process completed with exit code 1', color: 'var(--status-danger-light)' });
+            break;
+          }
+          const cancelIdx = Math.floor(wf.steps.length / 2);
+          if (status === 'cancelled' && s === cancelIdx) {
+            sec += Math.round(stepDur / 2);
+            log.push({ ts: stamp(), text: '■ ' + wf.steps[s] + ' — cancelled by ' + actor, color: 'var(--status-warning-light)' });
+            log.push({ ts: stamp(), text: '##[warning]The run was cancelled', color: 'var(--status-warning-light)' });
+            break;
+          }
+          sec += stepDur;
+          log.push({ ts: stamp(), text: '✓ ' + wf.steps[s] + '  (' + stepDur + 's)', color: 'var(--text-secondary)' });
+        }
+        if (status === 'success') {
+          sec += 1;
+          log.push({ ts: stamp(), text: '✓ Complete — ' + wf.okMsg, color: 'var(--status-success-light)' });
+        }
+      }
+
+      runs.push({
+        key: wf.id + '-' + no, no: '#' + no,
+        status, statusColor: sm.c, statusIcon: sm.icon, statusLabel: t['st_' + status],
+        triggerIcon: this.triggerIcon(trig), triggerText: t['tr_' + trig] + ' · ' + actor,
+        actor, branch: trig === 'pull_request' ? 'pr/' + (300 + Math.floor(this.seeded(no,8)*80)) : 'main',
+        sha: this.hexSha(wf.lastRun, no),
+        ago: this.relTime(started, L), startedFull: this.fullTime(started, L), _started: started,
+        duration: this.clock(dur), log
+      });
+    }
+    return runs;
+  }
+
+  renderVals() {
+    const L = this.state.lang, t = this.strings(L), DA = this.daWf();
+    const defs = this.data();
+    const built = defs.map(wf => ({ wf, runs: this.buildRuns(wf, L, t) }));
+    const q = (this.state.query || '').trim().toLowerCase();
+
+    let runs24 = 0, ok = 0, graded = 0, failing = 0;
+    built.forEach(b => {
+      b.runs.forEach(r => { if (this.NOW - r._started < 24 * 3600000) runs24++;
+        if (r.status !== 'skipped') { graded++; if (r.status === 'success') ok++; } });
+      if (b.runs[0].status === 'failure') failing++;
+    });
+    const stats = {
+      total: defs.length, runs24, successRate: Math.round((ok / graded) * 100),
+      failing, failingColor: failing > 0 ? 'var(--status-danger-light)' : 'var(--status-success-light)'
+    };
+
+    const selectedId = built.some(b => b.wf.id === this.state.selectedId) ? this.state.selectedId : built[0].wf.id;
+
+    const sched = this.buildSchedule(defs, L, t, selectedId);
+    const rank = {}; sched.rows.forEach((r, i) => { rank[r.id] = i; });
+
+    const workflows = built
+      .filter(b => !q || b.wf.name.toLowerCase().includes(q))
+      .map(b => {
+        const last = b.runs[0], sm = this.statusMeta(last.status), sel = b.wf.id === selectedId;
+        return {
+          id: b.wf.id, name: b.wf.name,
+          statusIcon: sm.icon, statusColor: sm.c, lastAgo: last.ago, lastFull: last.startedFull,
+          rowBg: sel ? 'var(--bg-hover)' : 'transparent', rowBar: sel ? 'var(--f1-red)' : 'transparent',
+          nameColor: sel ? 'var(--text-primary)' : 'var(--text-secondary)',
+          select: () => this.setState({ selectedId: b.wf.id })
+        };
+      })
+      .sort((a, b) => (rank[a.id] != null ? rank[a.id] : 99) - (rank[b.id] != null ? rank[b.id] : 99));
+
+    const sb = built.find(b => b.wf.id === selectedId);
+    const wf = sb.wf;
+    const counts = { success:0, failure:0, cancelled:0, skipped:0 };
+    wf.recent.forEach(s => counts[s]++);
+    const parts = [];
+    if (counts.success) parts.push(counts.success + ' ' + t.passed);
+    if (counts.failure) parts.push(counts.failure + ' ' + t.failed);
+    if (counts.cancelled) parts.push(counts.cancelled + ' ' + t.cancelled);
+    if (counts.skipped) parts.push(counts.skipped + ' ' + t.skipped);
+    const lastSm = this.statusMeta(sb.runs[0].status);
+    const defOpen = this.props.defaultOpenLogs;
+
+    let nextLabel, nextRel, nextIcon;
+    if (wf.trigger === 'schedule') {
+      const iv = wf.intervalH * 3600000;
+      let cand = sb.runs[0]._started + iv;
+      while (cand < this.NOW) cand += iv;
+      nextLabel = this.fullTime(cand, L); nextRel = this.nextRel(cand, L); nextIcon = 'fa-clock';
+    } else {
+      nextLabel = t.onNextPr; nextRel = t.onDemand; nextIcon = 'fa-code-pull-request';
+    }
+
+    const useDa = L === 'da';
+    const detail = {
+      name: wf.name, icon: wf.icon,
+      purpose: useDa ? DA[wf.id].purpose : wf.purpose,
+      expected: useDa ? DA[wf.id].expected : wf.expected,
+      schedule: useDa ? DA[wf.id].schedule : wf.schedule,
+      cron: wf.cron, triggerIcon: this.triggerIcon(wf.trigger), triggerLabel: t['tr_' + wf.trigger],
+      nextLabel, nextRel, nextIcon,
+      file: '.github/workflows/' + wf.id + '.yml',
+      statusColor: lastSm.c, statusIcon: lastSm.icon,
+      runsSummary: parts.join(' · ') + ' — ' + t.last10lower,
+      runs: sb.runs.map((r, i) => {
+        const isOpen = (this.state.open[r.key] !== undefined) ? this.state.open[r.key] : (defOpen && i === 0);
+        return { ...r, open: isOpen,
+          chevron: isOpen ? 'fa-chevron-up' : 'fa-chevron-down',
+          rowBg: isOpen ? 'var(--bg-hover)' : 'transparent',
+          toggle: () => this.setState(st => ({ open: { ...st.open, [r.key]: !((st.open[r.key] !== undefined) ? st.open[r.key] : (defOpen && i === 0)) } }))
+        };
+      })
+    };
+
+    const recent12 = [];
+    built.forEach(b => b.runs.forEach(r => {
+      if (this.NOW - r._started <= 12 * 3600000)
+        recent12.push({ ...r, wfName: b.wf.name, wfIcon: b.wf.icon, select: () => this.setState({ selectedId: b.wf.id }) });
+    }));
+    recent12.sort((a, b) => b._started - a._started);
+
+    return {
+      rootRef: this.rootRef, t, stats, workflows, detail, sched,
+      recent12, recent12Count: recent12.length, recent12Empty: recent12.length === 0,
+      open12: this.state.open12, chevron12: this.state.open12 ? 'fa-chevron-up' : 'fa-chevron-down',
+      open12Border: this.state.open12 ? 'var(--border-color)' : 'transparent',
+      onToggle12: () => this.setState(s => ({ open12: !s.open12 })),
+      query: this.state.query, noResults: workflows.length === 0,
+      noMatchMsg: t.noMatch + ' \u201C' + this.state.query + '\u201D.',
+      themeIcon: this.isDark() ? 'fa-sun' : 'fa-moon',
+      langLabel: L.toUpperCase(),
+      fontBtnBg: this.state.fontSystem ? 'var(--bg-card)' : 'var(--bg-hover)',
+      fontBtnBorder: this.state.fontSystem ? 'var(--border-color)' : 'var(--f1-red)',
+      fontBtnColor: this.state.fontSystem ? 'var(--text-secondary)' : 'var(--text-primary)',
+      onSearch: e => this.setState({ query: e.target.value }),
+      onToggleTheme: () => this.toggleTheme(),
+      onToggleFont: () => this.setState(s => ({ fontSystem: !s.fontSystem })),
+      onToggleLang: () => this.setState(s => ({ lang: s.lang === 'da' ? 'en' : 'da' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

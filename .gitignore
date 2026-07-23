@@ -15,6 +15,7 @@ config.live.php
 public/logs/*.log
 public/logs/*.bak
 public/cron/cron_import_log.txt
+public/cache/github-actions/*.json
 
 # git-ftp metadata
 .git/ftp/

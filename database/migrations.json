@@ -25,6 +25,8 @@
     { "migration": "add_challenges.sql (participant-model refinement)", "table": "challenge_access_tokens" },
     { "migration": "add_challenges.sql (participant-model refinement)", "table": "challenge_invites" },
     { "migration": "add_challenges.sql (invite guardrails)", "table": "challenge_email_suppressions" },
-    { "migration": "add_challenges.sql (invite guardrails)", "table": "settings", "columns": ["challenge_invite_daily_cap"] }
+    { "migration": "add_challenges.sql (invite guardrails)", "table": "settings", "columns": ["challenge_invite_daily_cap"] },
+    { "migration": "add_admin_dashboards.sql", "table": "admin_secret_state" },
+    { "migration": "add_admin_dashboards.sql", "table": "admin_audit_log" }
   ]
 }

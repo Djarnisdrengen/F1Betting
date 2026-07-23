@@ -53,4 +53,19 @@ define('RESEND_API_KEY',  're_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 // ── CRON ──────────────────────────────────────────────────────────────
 define('CRON_SECRET', 'change-me');
 
+// ── GITHUB ACTIONS DASHBOARD (Dashboards → GitHub Actions / PaddockKB) ──
+// Optional. A GitHub PAT for Djarnisdrengen/F1Betting. Without it the dashboard falls back to
+// unauthenticated GitHub API calls (60 requests/hour, shared across the whole hosting IP) —
+// fine for occasional use, but a token is recommended for reliability.
+// Scope: fine-grained "Actions" repo permission — read-only is enough for the GitHub Actions
+// dashboard itself, but PaddockKB's "Kør opdatering nu" button (workflow_dispatch) needs
+// read+WRITE. Classic PAT: "repo" scope covers both. Without write access, "Kør opdatering nu"
+// shows an "insufficient permissions" message rather than failing silently.
+// define('GITHUB_TOKEN', 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+
+// ── NØGLER & ROTATION (Dashboards → Nøgler & Rotation) ──────────────────
+// No new secret needed — "Roter nu" (auto-mode secrets only; see docs/admin-dashboards.md for
+// why only CHALLENGE_INVITE_SECRET is auto-rotatable) writes directly to this same config.php
+// file it's already running from.
+
 require_once __DIR__ . '/config.shared.php';

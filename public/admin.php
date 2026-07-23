@@ -4,6 +4,7 @@ require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/scoring.php';
 require_once __DIR__ . '/includes/challenges.php';
 require_once __DIR__ . '/includes/smtp.php';
+require_once __DIR__ . '/includes/admin-area-nav.php';
 requireAdmin();
 
 $db = getDB();
@@ -621,12 +622,6 @@ $tabCounts = [
     'bets'    => $db->query("SELECT COUNT(*) FROM bets")->fetchColumn(),
 ];
 
-// Pending Challenges promotion requests — badges the standalone admin-challenges.php link below.
-$challengesPromoCount = (int) $db->query("
-    SELECT COUNT(*) FROM challenge_participants
-    WHERE promotion_requested_at IS NOT NULL AND core_user_id IS NULL
-")->fetchColumn();
-
 // Security tab: group login_attempts by IP and by account over the same 15-minute
 // window isRateLimited() checks, so the badge count and the tab body always agree
 // with the actual lockout state. Fetched here (not just in the switch below) so the
@@ -723,21 +718,7 @@ include __DIR__ . '/includes/header.php';
 <div class="hf-container">
 <h1 class="mb-3"><i class="fas fa-cog text-accent"></i> <?= t('admin') ?></h1>
 
-<!-- Admin area switcher — admin.php and admin-challenges.php are separate pages, not
-     tabs of one page, so this sits a level above the per-page tab row below. -->
-<nav class="admin-area-nav" aria-label="<?= t('admin') ?>">
-    <a href="admin.php" class="admin-area-tab active">
-        <i class="fas fa-cog"></i>
-        <span><?= t('admin_area_core') ?></span>
-    </a>
-    <a href="admin-challenges.php" class="admin-area-tab">
-        <i class="fas fa-user-check"></i>
-        <span><?= t('admin_area_challenges') ?></span>
-        <?php if ($challengesPromoCount > 0): ?>
-            <span class="admin-area-badge"><?= $challengesPromoCount ?></span>
-        <?php endif; ?>
-    </a>
-</nav>
+<?php renderAdminAreaNav('core'); ?>
 
 <?php if ($message): ?>
     <div class="alert alert-success"><?= escape($message) ?></div>
