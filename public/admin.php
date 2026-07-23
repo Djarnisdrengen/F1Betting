@@ -605,6 +605,7 @@ $tabIcons = [
     'invites' => 'envelope',
     'bets'    => 'trophy',
     'security'=> 'shield-halved',
+    'logs'    => 'file-lines',
     'settings'=> 'cog',
 ];
 
@@ -687,6 +688,32 @@ switch ($currentTab) {
         // Resolve scope='mfa' accounts (user UUIDs) to an email/display name for display.
         $usersById = array_column($db->query("SELECT id, email, display_name FROM users")->fetchAll(), null, 'id');
         break;
+    case 'logs':
+        // The 4 file logs the app writes to (config.shared.php). Rotated at 200KB by
+        // logToFile(), so reading the whole current file and tailing it is cheap.
+        $logFiles = [
+            'app'                => ['label' => t('logs_app'),                'path' => APP_LOG_FILE],
+            'mail'               => ['label' => t('logs_mail'),               'path' => MAIL_LOG_FILE],
+            'cron_notifications' => ['label' => t('logs_cron_notifications'), 'path' => CRON_NOTIFICATIONS_LOG_FILE],
+            'cron_qualifying'    => ['label' => t('logs_cron_qualifying'),    'path' => CRON_QUALIFYING_LOG_FILE],
+        ];
+        foreach ($logFiles as &$lf) {
+            $lf['exists'] = file_exists($lf['path']);
+            $lf['size']   = $lf['exists'] ? filesize($lf['path']) : 0;
+            $lf['mtime']  = $lf['exists'] ? filemtime($lf['path']) : null;
+        }
+        unset($lf);
+
+        $currentLog = $_GET['log'] ?? 'app';
+        if (!isset($logFiles[$currentLog])) $currentLog = 'app';
+
+        $logTailLines = 300;
+        $logLines = [];
+        if ($logFiles[$currentLog]['exists']) {
+            $allLines = file($logFiles[$currentLog]['path'], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+            $logLines = array_reverse(array_slice($allLines, -$logTailLines));
+        }
+        break;
     // settings and drivers tabs: $settings + $drivers already loaded
 }
 
@@ -741,7 +768,7 @@ include __DIR__ . '/includes/header.php';
 
 
     <?php
-    $allowedTabs = ['races', 'drivers', 'users', 'bets', 'invites', 'security', 'settings'];
+    $allowedTabs = ['races', 'drivers', 'users', 'bets', 'invites', 'security', 'logs', 'settings'];
     if (in_array($currentTab, $allowedTabs)) {
         include __DIR__ . "/includes/admin/{$currentTab}.php";
     }

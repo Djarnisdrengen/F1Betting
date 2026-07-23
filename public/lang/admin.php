@@ -115,6 +115,16 @@ return [
         'security_no_attempts'      => 'Ingen forsøg inden for de sidste 15 minutter',
         'login_attempts_cleared'    => 'Loginforsøg nulstillet!',
 
+        // Logs
+        'logs_app'                  => 'App',
+        'logs_mail'                 => 'Mail',
+        'logs_cron_notifications'   => 'Cron: Notifikationer',
+        'logs_cron_qualifying'      => 'Cron: Kvalifikation',
+        'logs_last_modified'        => 'Sidst opdateret:',
+        'logs_not_found'            => 'Ingen logfil endnu — der er ikke skrevet noget til den.',
+        'logs_empty'                => 'Logfilen er tom.',
+        'logs_showing_last'         => 'Viser de seneste %d af op til %d linjer.',
+
         // Admin area switcher (admin.php <-> admin-challenges.php)
         'admin_area_core'            => 'Core',
         'admin_area_challenges'      => 'Paddock Challenges',
@@ -358,6 +368,16 @@ return [
         'security_clear'            => 'Clear',
         'security_no_attempts'      => 'No attempts in the last 15 minutes',
         'login_attempts_cleared'    => 'Login attempts cleared!',
+
+        // Logs
+        'logs_app'                  => 'App',
+        'logs_mail'                 => 'Mail',
+        'logs_cron_notifications'   => 'Cron: Notifications',
+        'logs_cron_qualifying'      => 'Cron: Qualifying',
+        'logs_last_modified'        => 'Last updated:',
+        'logs_not_found'            => 'No log file yet — nothing has been written to it.',
+        'logs_empty'                => 'The log file is empty.',
+        'logs_showing_last'         => 'Showing the last %d of up to %d lines.',
 
         // Admin area switcher (admin.php <-> admin-challenges.php)
         'admin_area_core'            => 'Core',
