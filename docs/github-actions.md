@@ -6,6 +6,7 @@
   - [What it does](#what-it-does)
 - [Nightly DB Backup Workflow](#nightly-db-backup-workflow)
 - [Cron Trigger Workflows](#cron-trigger-workflows)
+- [Cache Warming Workflow](#cache-warming-workflow)
 - [Content Top-up Workflow](#content-top-up-workflow)
 - [Monthly Security Review Workflow](#monthly-security-review-workflow)
 - [E2E Orchestrator Workflow (test env)](#e2e-orchestrator-workflow-test-env)
@@ -82,6 +83,33 @@ work for qualifying import's **live** job (that file is excluded from the live d
 partway through) — trigger a real run instead to verify that one by hand.
 
 **Required secrets/variables:** `BASE_URL_LIVE`, `BASE_URL_TEST`, `CRON_SECRET`, `CRON_SECRET_TEST`
+
+---
+
+## Cache Warming Workflow
+
+**File:** `.github/workflows/cron-warm-actions-cache.yml`
+**Schedule:** `*/5 * * * *` (every 5 minutes — the practical minimum GitHub Actions' `schedule:`
+trigger supports)
+**Can also be triggered:** manually via the Actions tab → "Run workflow"
+
+Hits `public/cron/warm_actions_cache.php`, which calls `ghWarmAllWorkflowRunCaches()` to
+unconditionally refetch all 9 workflows' recent runs and rewrite
+`public/cache/github-actions/*.json`. Exists purely so `admin-dashboards.php`'s Oversigt and
+Actions tabs read an already-warm cache on a normal page load instead of blocking the request on
+GitHub API calls — see the Actions Dashboard section's **Caching** note below for the full
+before/after. Same shape as the Cron Trigger Workflows above: `trigger-live`
+(`vars.BASE_URL_LIVE`, `secrets.CRON_SECRET`) and `trigger-test` (`vars.BASE_URL_TEST`,
+`secrets.CRON_SECRET_TEST`) — no new secrets/variables, both already exist.
+
+`GH_RUNS_CACHE_TTL` (360s, `actions-dashboard.php`) is deliberately longer than the 5-minute
+schedule so a late-firing schedule (GitHub Actions' cron trigger is known to lag under load, not
+a bug specific to this workflow) doesn't turn every page load back into a cache miss. If this
+workflow is ever paused or fails outright, page loads still work — they just fall back to
+fetching directly (see Caching below), only slower.
+
+**Required secrets/variables:** `BASE_URL_LIVE`, `BASE_URL_TEST`, `CRON_SECRET`, `CRON_SECRET_TEST`
+(all already provisioned for the Cron Trigger Workflows above)
 
 ---
 
@@ -231,11 +259,17 @@ generic cron evaluator over the real cron strings rather than a hand-summarized 
 an earlier illustrative draft of that table didn't match what's actually configured for several
 of these workflows).
 
-**Caching:** a 60-second file cache at `public/cache/github-actions/*.json` for the per-workflow
-run lists (`GET .../runs`), keeping page-load API usage to 9 calls/60s (one per known workflow
-file — no separate "list workflows" call is needed). Per-run job/step data is fetched lazily
-(only when a run row is expanded in the UI) and cached far longer once a run has completed
-(immutable), 15s while still in progress.
+**Caching:** a file cache at `public/cache/github-actions/*.json` for the per-workflow run lists
+(`GET .../runs`), `GH_RUNS_CACHE_TTL` = 360s. Kept warm by the Cache Warming Workflow above
+(every 5 minutes) so a normal page load reads straight from this cache — no GitHub API call on
+the request path at all. On a cache miss (warm job late/failed, or the cache dir just cleared),
+`ghListWorkflowRunsMulti()` fetches every stale/missing workflow file in **one** concurrent
+`curl_multi` round trip instead of one sequential `curl` call per file (this is also what
+Dashboards → Oversigt's `ghGetHealthSnapshot()` uses) — both tabs used to pay for up to 9
+sequential GitHub round trips on every visit before this cache-warming/batching pair was added,
+which is what made both tabs slow to load. Per-run job/step data is fetched lazily (only when a
+run row is expanded in the UI) and cached far longer once a run has completed (immutable), 15s
+while still in progress.
 
 **`GITHUB_TOKEN` (optional but recommended):** see `config.example.php`. Without it the
 dashboard falls back to unauthenticated GitHub API calls — 60 requests/hour, shared with

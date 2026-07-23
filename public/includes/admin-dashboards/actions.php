@@ -46,10 +46,12 @@ $workflowConfig = ghWorkflowConfig();
 $monthStart     = $nowUtc->modify('first day of this month')->setTime(0, 0, 0);
 $schedule       = ghComputeSchedule($workflowConfig, $monthStart, $nowUtc);
 
+$runsByFile = ghListWorkflowRunsMulti(array_column($workflowConfig, 'file'), 10);
+
 $runsByWorkflow = [];
 foreach ($workflowConfig as $id => $wf) {
     $views = [];
-    foreach (ghListWorkflowRuns($wf['file'], 10) as $run) {
+    foreach ($runsByFile[$wf['file']] ?? [] as $run) {
         $views[] = gaBuildRunView($run, $id, $wf, $lang, $nowUtc);
     }
     $runsByWorkflow[$id] = $views;

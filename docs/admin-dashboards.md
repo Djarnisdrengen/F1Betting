@@ -58,6 +58,14 @@ Pure composition — no independent computation of any figure. Calls, in order:
 `chGetUsageSnapshot($db)`. A tile whose backing function isn't reachable renders whatever that
 function returns for the "no data yet" case rather than fataling.
 
+`ghGetHealthSnapshot()` (and the GitHub Actions tab itself) used to be the slow part of this
+page — each fetched its 9 workflows' recent runs with one sequential GitHub API call per
+workflow. Both now read `public/cache/github-actions/*.json`, kept warm by a scheduled cron
+(`docs/github-actions.md` → Cache Warming Workflow) so a normal page load hits no GitHub API at
+all; a cache miss falls back to `ghListWorkflowRunsMulti()`, which fetches every stale workflow
+concurrently in one round trip rather than 9 sequential ones. See `docs/github-actions.md`'s
+Actions Dashboard section for the full mechanism — this tab and the GitHub Actions tab share it.
+
 ## Nøgler & Rotation
 
 ### Why most secrets are record-only, not auto-rotated

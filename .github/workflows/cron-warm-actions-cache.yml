@@ -1,0 +1,61 @@
+name: Cron — Warm Actions Dashboard Cache
+
+# Keeps public/cache/github-actions/*.json warm so admin-dashboards.php's Oversigt and Actions
+# tabs almost always read a fresh local cache instead of blocking the request on GitHub API
+# calls (perf fix — see docs/github-actions.md and docs/admin-dashboards.md). Every 5 minutes is
+# the practical minimum GitHub Actions' `schedule:` trigger supports; GH_RUNS_CACHE_TTL (360s,
+# actions-dashboard.php) comfortably outlasts a 5-minute interval even when GitHub Actions'
+# scheduler itself lags (a known characteristic of `schedule:`, not a bug here) — a normal page
+# load should still read a warm cache, and the dashboard's own parallel fetch is the fallback
+# for whenever it doesn't.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+
+jobs:
+  trigger-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Warm GitHub Actions cache (live)
+        env:
+          BASE_URL: ${{ vars.BASE_URL_LIVE }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL + '/cron/warm_actions_cache.php';
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Actions cache warm complete')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "
+
+  trigger-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Warm GitHub Actions cache (test)
+        env:
+          BASE_URL: ${{ vars.BASE_URL_TEST }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET_TEST }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL + '/cron/warm_actions_cache.php';
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Actions cache warm complete')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "

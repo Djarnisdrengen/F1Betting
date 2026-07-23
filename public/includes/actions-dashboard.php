@@ -9,6 +9,11 @@
 define('GH_REPO_OWNER', 'Djarnisdrengen');
 define('GH_REPO_NAME',  'F1Betting');
 define('GH_CACHE_DIR',  __DIR__ . '/../cache/github-actions');
+// Kept warm by cron/warm_actions_cache.php every 5 minutes (cron-warm-actions-cache.yml) — 360s
+// comfortably outlasts a 5-minute schedule even with GitHub Actions' scheduling jitter, so a
+// normal page load reads the warm cache; this TTL is only the fallback for when the warm job is
+// late, failed, or the cache dir was just cleared.
+define('GH_RUNS_CACHE_TTL', 360);
 
 // ── Static workflow config ──────────────────────────────────────────────────
 // Purpose/expected copy lives in public/lang/admin.php (admin_actions_wf_<id>_purpose/expected).
@@ -407,8 +412,12 @@ function ghApiCurlGet(string $url): ?array {
     return is_array($data) ? $data : null;
 }
 
+function ghCacheFilePath(string $cacheKey): string {
+    return GH_CACHE_DIR . '/' . preg_replace('/[^a-z0-9_-]/i', '_', $cacheKey) . '.json';
+}
+
 function ghCached(string $cacheKey, int $ttlSeconds, callable $fetch): ?array {
-    $cacheFile = GH_CACHE_DIR . '/' . preg_replace('/[^a-z0-9_-]/i', '_', $cacheKey) . '.json';
+    $cacheFile = ghCacheFilePath($cacheKey);
     if (is_file($cacheFile) && (time() - filemtime($cacheFile)) < $ttlSeconds) {
         $cached = json_decode((string)file_get_contents($cacheFile), true);
         if (is_array($cached)) return $cached;
@@ -426,20 +435,168 @@ function ghCached(string $cacheKey, int $ttlSeconds, callable $fetch): ?array {
     return null;
 }
 
-function ghListWorkflowRuns(string $file, int $perPage = 10): array {
-    if (ghFixtureModeActive()) {
-        if (ghFixtureVariant() === 'error') { $GLOBALS['ghFetchError'] = true; return []; }
-        return ghFixtureData()['runs'][$file] ?? [];
+// Concurrent counterpart to ghApiCurlGet() — same headers/timeouts/error-logging, but issues
+// every URL over the wire at once via curl_multi instead of one round trip per URL. Returns
+// url => decoded body|null (null carries the same meaning as ghApiCurlGet()'s null: a per-URL
+// fetch failure, already logged).
+function ghApiCurlGetBatch(array $urls): array {
+    if (empty($urls)) return [];
+    $headers = [
+        'User-Agent: F1Betting-ActionsDashboard',
+        'Accept: application/vnd.github+json',
+        'X-GitHub-Api-Version: 2022-11-28',
+    ];
+    if (defined('GITHUB_TOKEN') && GITHUB_TOKEN !== '') {
+        $headers[] = 'Authorization: Bearer ' . GITHUB_TOKEN;
     }
-    $data = ghCached("runs_$file", 60, function () use ($file, $perPage) {
-        $url = sprintf(
-            'https://api.github.com/repos/%s/%s/actions/workflows/%s/runs?per_page=%d',
-            GH_REPO_OWNER, GH_REPO_NAME, rawurlencode($file), $perPage
+
+    $mh = curl_multi_init();
+    $handles = [];
+    foreach (array_unique($urls) as $url) {
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_CONNECTTIMEOUT => 5,
+        ]);
+        curl_multi_add_handle($mh, $ch);
+        $handles[$url] = $ch;
+    }
+
+    $active = null;
+    do {
+        $status = curl_multi_exec($mh, $active);
+    } while ($status === CURLM_CALL_MULTI_PERFORM);
+    while ($active && $status === CURLM_OK) {
+        if (curl_multi_select($mh) === -1) {
+            usleep(100);
+        }
+        do {
+            $status = curl_multi_exec($mh, $active);
+        } while ($status === CURLM_CALL_MULTI_PERFORM);
+    }
+
+    $results = [];
+    foreach ($handles as $url => $ch) {
+        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $response  = curl_multi_getcontent($ch);
+        $curlError = curl_error($ch);
+        if ($curlError || $httpCode !== 200) {
+            error_log("[actions-dashboard] GitHub API error ($url): HTTP $httpCode $curlError");
+            $GLOBALS['ghFetchError'] = true;
+            $results[$url] = null;
+        } else {
+            $data = json_decode((string)$response, true);
+            $results[$url] = is_array($data) ? $data : null;
+        }
+        curl_multi_remove_handle($mh, $ch);
+        curl_close($ch);
+    }
+    curl_multi_close($mh);
+    return $results;
+}
+
+// Batch counterpart to ghCached() — resolves every key's freshness against its own cache file,
+// then fetches every miss in a single ghApiCurlGetBatch() round trip instead of one per key.
+// $keyToTtl: cacheKey => ttlSeconds (0 forces a miss, i.e. always refetch — used for warming).
+// $urlForKey: cacheKey => url. $transform: raw fetched body => value to cache/return (defaults
+// to identity) — lets a caller unwrap an API envelope before it's written to disk, the same way
+// the closures passed into ghCached() do today.
+function ghCachedBatch(array $keyToTtl, callable $urlForKey, ?callable $transform = null): array {
+    $transform ??= fn($v) => $v;
+    $result = [];
+    $missUrls = []; // cacheKey => url
+
+    foreach ($keyToTtl as $key => $ttl) {
+        $cacheFile = ghCacheFilePath($key);
+        if ($ttl > 0 && is_file($cacheFile) && (time() - filemtime($cacheFile)) < $ttl) {
+            $cached = json_decode((string)file_get_contents($cacheFile), true);
+            if (is_array($cached)) { $result[$key] = $cached; continue; }
+        }
+        $missUrls[$key] = $urlForKey($key);
+    }
+
+    if ($missUrls) {
+        $fetched = ghApiCurlGetBatch(array_values($missUrls));
+        foreach ($missUrls as $key => $url) {
+            $cacheFile = ghCacheFilePath($key);
+            $raw = $fetched[$url] ?? null;
+            if ($raw !== null) {
+                $fresh = $transform($raw);
+                @file_put_contents($cacheFile, json_encode($fresh));
+                $result[$key] = $fresh;
+                continue;
+            }
+            // Fetch failed — serve stale cache if we have any rather than nothing.
+            if (is_file($cacheFile)) {
+                $cached = json_decode((string)file_get_contents($cacheFile), true);
+                if (is_array($cached)) { $result[$key] = $cached; continue; }
+            }
+            $result[$key] = [];
+        }
+    }
+    return $result;
+}
+
+// Multi-file counterpart to ghListWorkflowRuns() — same per-file fixture-mode behavior, same
+// cache keys, but resolves every requested file's cache misses in one network round trip
+// instead of one curl call per file. ghGetHealthSnapshot() and the Actions tab both always want
+// every configured workflow's runs at once, which is exactly the case this collapses from 9
+// sequential GitHub round trips to 1.
+function ghListWorkflowRunsMulti(array $files, int $perPage = 10, ?int $ttlOverride = null): array {
+    $files = array_values(array_unique($files));
+    $out = [];
+    $needsFetch = [];
+
+    foreach ($files as $file) {
+        if (ghFixtureModeActive()) {
+            if (ghFixtureVariant() === 'error') { $GLOBALS['ghFetchError'] = true; $out[$file] = []; continue; }
+            $out[$file] = ghFixtureData()['runs'][$file] ?? [];
+            continue;
+        }
+        $needsFetch[$file] = true;
+    }
+
+    if ($needsFetch) {
+        $ttl = $ttlOverride ?? GH_RUNS_CACHE_TTL;
+        $keyToTtl = [];
+        $fileForKey = [];
+        foreach (array_keys($needsFetch) as $file) {
+            $key = "runs_$file";
+            $keyToTtl[$key] = $ttl;
+            $fileForKey[$key] = $file;
+        }
+
+        $raw = ghCachedBatch(
+            $keyToTtl,
+            fn($key) => sprintf(
+                'https://api.github.com/repos/%s/%s/actions/workflows/%s/runs?per_page=%d',
+                GH_REPO_OWNER, GH_REPO_NAME, rawurlencode($fileForKey[$key]), $perPage
+            ),
+            fn($resp) => $resp['workflow_runs'] ?? []
         );
-        $resp = ghApiCurlGet($url);
-        return $resp['workflow_runs'] ?? null;
-    });
-    return $data ?? [];
+
+        foreach ($fileForKey as $key => $file) {
+            $out[$file] = $raw[$key] ?? [];
+        }
+    }
+
+    return $out;
+}
+
+// Used only by the cron cache-warming endpoint (public/cron/warm_actions_cache.php) — refetches
+// every configured workflow's runs unconditionally (ttl=0 forces every key to miss) and
+// rewrites their cache files, so on-demand page loads normally read an already-warm cache
+// instead of paying for the network round trip themselves.
+function ghWarmAllWorkflowRunCaches(): array {
+    $files = array_column(ghWorkflowConfig(), 'file');
+    return ghListWorkflowRunsMulti($files, 10, 0);
+}
+
+function ghListWorkflowRuns(string $file, int $perPage = 10): array {
+    return ghListWorkflowRunsMulti([$file], $perPage)[$file] ?? [];
 }
 
 // ── Workflow dispatch (write) — used only by PaddockKB's "Kør opdatering nu" (Feature 4).
@@ -517,10 +674,13 @@ function ghSummarizeRuns(array $runsByWorkflow, DateTimeImmutable $now): array {
 // ghListWorkflowRuns()/ghSummarizeRuns() the Actions tab itself uses.
 function ghGetHealthSnapshot(): array {
     $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+    $workflowConfig = ghWorkflowConfig();
+    $runsByFile = ghListWorkflowRunsMulti(array_column($workflowConfig, 'file'), 10);
+
     $runsByWorkflow = [];
-    foreach (ghWorkflowConfig() as $id => $wf) {
+    foreach ($workflowConfig as $id => $wf) {
         $views = [];
-        foreach (ghListWorkflowRuns($wf['file'], 10) as $run) {
+        foreach ($runsByFile[$wf['file']] ?? [] as $run) {
             $started = new DateTimeImmutable($run['run_started_at'] ?? $run['created_at']);
             $views[] = ['status' => ghNormalizeRunStatus($run), 'startedUtc' => $started];
         }

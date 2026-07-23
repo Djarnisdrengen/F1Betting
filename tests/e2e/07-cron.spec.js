@@ -59,6 +59,26 @@ test.describe("Cron jobs", { tag: "@cron" }, () => {
         });
     });
 
+    // ─── Warm Actions Dashboard cache — access control ────────────────────────
+    // cron/warm_actions_cache.php (cron-warm-actions-cache.yml, every 5 minutes) — same
+    // Bearer CRON_SECRET gate as every other cron/*.php endpoint above, tested the same way so
+    // it isn't the one cron endpoint in the suite whose auth gate goes unguarded by a test.
+
+    test.describe("warm actions cache — access control", () => {
+        test("unauthorized without token", async ({ page }) => {
+            await page.goto("/cron/warm_actions_cache.php");
+            const text = await page.textContent("body");
+            expect(text).toContain("Unauthorized access");
+        });
+
+        test("authorized with CRON_SECRET completes cleanly", async ({ page }) => {
+            await page.setExtraHTTPHeaders({ Authorization: `Bearer ${CRON_SECRET}` });
+            await page.goto("/cron/warm_actions_cache.php");
+            const text = await page.textContent("body");
+            expect(text).toContain("Actions cache warm complete");
+        });
+    });
+
     // ─── Notifications — betting just opened ──────────────────────────────────
     // Race is 47h30m away with a 48h window → bettingOpens fell 30min ago (within the 1-hour trigger).
     // One user has no bet, so the cron should send an open-notification email to them.
