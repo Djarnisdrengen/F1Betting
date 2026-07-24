@@ -64,6 +64,15 @@ try {
     $db->query("DELETE FROM races");
     $db->query("DELETE FROM drivers");
 
+    // Paddock Challenges has never been deployed to live (see docs/paddock-challenges-reference.md),
+    // so there's no live data to copy here — unlike users/races/drivers/bets above, this is a pure
+    // wipe, not a wipe-and-recopy. It stops stray test/fixture participants (e.g. leftover e2e
+    // accounts) from accumulating indefinitely across syncs, and cascades to everything hung off
+    // them: challenge_points, magic_links, access_tokens, invites, answers, duels, duel_quickmatch,
+    // duel_predictions, trivia_answers. challenge_items/challenge_trivia_questions (editorial
+    // content) and challenge_email_suppressions (opt-out/bounce list) are deliberately left alone.
+    $challengeParticipantsCleared = $db->exec("DELETE FROM challenge_participants");
+
     // password_resets and invites are intentionally excluded (session-scoped).
     // settings IS synced so scoring rules match live — divergent points_p2 etc.
     // would silently produce wrong totals during recalculation testing.
@@ -151,11 +160,12 @@ try {
     }
 
     echo json_encode([
-        'ok'                 => true,
-        'dropped_old_tables' => $droppedCount,
-        'copied'             => $copied,
-        'passwords_reset'    => $passwordsReset,
-        'passkeys_cleared'   => (int)$stalePasskeys,
+        'ok'                              => true,
+        'dropped_old_tables'              => $droppedCount,
+        'copied'                          => $copied,
+        'passwords_reset'                 => $passwordsReset,
+        'passkeys_cleared'                => (int)$stalePasskeys,
+        'challenge_participants_cleared'  => (int)$challengeParticipantsCleared,
     ]);
 } catch (PDOException $e) {
     if ($db->inTransaction()) {

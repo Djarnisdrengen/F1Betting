@@ -39,7 +39,9 @@ test.describe('Admin two-tier nav', { tag: '@admin' }, () => {
     test('Core and Paddock Challenges retain their own existing tab counts unchanged', async ({ page }) => {
         await page.goto('/admin.php');
         // Regression guard, not a re-spec: Core's own tab row (races/drivers/users/...) still
-        // renders under the new Level-1 chrome exactly as before this feature.
-        await expect(page.locator('.admin-nav-tab')).toHaveCount(7);
+        // renders under the new Level-1 chrome exactly as before this feature. Count is 8
+        // (races/drivers/users/invites/bets/security/logs/settings) since the Logs tab landed
+        // the same day as this dashboards feature, on a separate branch.
+        await expect(page.locator('.admin-nav-tab')).toHaveCount(8);
     });
 });

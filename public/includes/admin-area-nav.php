@@ -12,9 +12,9 @@ function renderAdminAreaNav(string $activeArea, ?int $challengesPromoCount = nul
     }
     ?>
     <nav class="admin-area-nav" aria-label="<?= t('admin') ?>">
-        <a href="admin.php" class="admin-area-tab <?= $activeArea === 'core' ? 'active' : '' ?>">
-            <i class="fas fa-cog"></i>
-            <span><?= t('admin_area_core') ?></span>
+        <a href="admin-dashboards.php" class="admin-area-tab <?= $activeArea === 'dashboards' ? 'active' : '' ?>">
+            <i class="fas fa-gauge-high"></i>
+            <span><?= t('admin_area_dashboards') ?></span>
         </a>
         <a href="admin-challenges.php" class="admin-area-tab <?= $activeArea === 'challenges' ? 'active' : '' ?>">
             <i class="fas fa-user-check"></i>
@@ -23,9 +23,9 @@ function renderAdminAreaNav(string $activeArea, ?int $challengesPromoCount = nul
                 <span class="admin-area-badge"><?= $challengesPromoCount ?></span>
             <?php endif; ?>
         </a>
-        <a href="admin-dashboards.php" class="admin-area-tab <?= $activeArea === 'dashboards' ? 'active' : '' ?>">
-            <i class="fas fa-gauge-high"></i>
-            <span><?= t('admin_area_dashboards') ?></span>
+        <a href="admin.php" class="admin-area-tab <?= $activeArea === 'core' ? 'active' : '' ?>">
+            <i class="fas fa-cog"></i>
+            <span><?= t('admin_area_core') ?></span>
         </a>
     </nav>
     <?php

@@ -64,6 +64,7 @@ async function sync() {
     parts.push(`${copied.races} races`);
     parts.push(`${copied.bets} bets copied`);
     parts.push(`user_passkeys cleared (${body.passkeys_cleared} stale)`);
+    parts.push(`${body.challenge_participants_cleared} challenge participants cleared`);
     if (passwords_reset) parts.push("passwords reset to SYNC_TEST_PASSWORD");
     else                 parts.push("⚠️  SYNC_TEST_PASSWORD not set — passwords unverifiable on test");
     console.log("✅ Sync complete:", parts.join(", "));

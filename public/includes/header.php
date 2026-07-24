@@ -159,7 +159,7 @@ try {
         <span class="hf-badge open" style="padding:2px 8px;font-size:9px;"><?= t('ch_new_badge') ?></span>
     </a>
     <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
-    <a href="admin.php" class="hf-drawer-row <?= $currentPage === 'admin' ? 'active' : '' ?>">
+    <a href="admin-dashboards.php" class="hf-drawer-row <?= $currentPage === 'admin-dashboards' ? 'active' : '' ?>">
         <i class="fas fa-cog"></i><span><?= t('admin') ?></span>
     </a>
     <?php endif; ?>

@@ -23,6 +23,8 @@
 - [19. The test-environment banner is gated by APP_ENV — never loosen the guard](#19-the-test-environment-banner-is-gated-by-app_env--never-loosen-the-guard)
 - [20. Passkeys are bound to PASSKEY_RPID — a one-way door per environment](#20-passkeys-are-bound-to-passkey_rpid--a-one-way-door-per-environment)
 - [21. Every `.hf-drawer-row` needs its own active-state check — there's no shared mechanism](#21-every-hf-drawer-row-needs-its-own-active-state-check--theres-no-shared-mechanism)
+- [22. A stray test race can hijack `getNextDuelRace()` for every duels user](#22-a-stray-test-race-can-hijack-getnextduelrace-for-every-duels-user)
+- [23. sync:live also wipes challenge_participants — there's no live copy to restore it from](#23-synclive-also-wipes-challenge_participants--theres-no-live-copy-to-restore-it-from)
 
 ---
 
@@ -228,3 +230,30 @@ The burger drawer (`public/includes/header.php`) highlights the current page wit
 Copy-pasting a row without updating that string is silent: the link still works, the icon renders, nothing errors — it just never highlights, on any page, ever. This exact bug shipped on the `challenges-board.php` row (added without the check) and went unnoticed until someone visited that page and asked where the marker was.
 
 When adding a new drawer row, always include `$currentPage === '<page-basename-without-.php>' ? 'active' : ''` — match it against the other rows in the same file, don't assume it's inherited from anywhere.
+
+---
+
+## 22. A stray test race can hijack `getNextDuelRace()` for every duels user
+
+`getNextDuelRace()` (`public/includes/challenges.php`) picks a single race for the whole Duels tab — the globally soonest upcoming row in `races`, full stop, with no concept of "this one's just an E2E fixture":
+
+```sql
+SELECT * FROM races WHERE TIMESTAMP(race_date, race_time) > NOW()
+ORDER BY race_date ASC, race_time ASC LIMIT 1
+```
+
+`44-duels.spec.js` seeds a race named `E2E Duel Test Race` scheduled at `NOW() + 2h` (`test-seed.php`'s `seed_duel_race` action) and normally deletes it by name in its own `afterEach`/`afterAll` (`cleanup_challenges`). If a run dies before teardown — or two runs race each other, since the delete matches by name, not a run id — that row survives, and because "+2 hours" is almost always sooner than any real `test: <Grand Prix>` row, it becomes the "next" duel race for **everyone**, including a human tester manually clicking Quick Match. Symptom: a real participant queues, never pairs (nobody else is routed to their actual race anymore), and a second real participant's Quick Match instead pairs them with a leftover e2e fixture account. This is the same class of bug as the home hero's "globally next race" collision (`index.php`'s hero picks the globally-next race the same way) — a single global "next X" query with no separation between real and test-seeded rows.
+
+Fix once found: delete the stray race directly — it cascades via FK to `duels`/`duel_predictions`/`duel_quickmatch` automatically, so nothing else needs cleaning up by hand. `npm run sync:live` now also clears this as routine maintenance (see gotcha below), so a sync is a reasonable first thing to try if Duels looks haunted — though it won't help *between* syncs, since nothing runs continuously to catch a stray race the moment it's left behind.
+
+---
+
+## 23. `sync:live` also wipes `challenge_participants` — there's no live copy to restore it from
+
+Paddock Challenges has never been deployed to live (see `docs/paddock-challenges-reference.md`), so unlike `users`/`races`/`drivers`/`bets`, `sync-from-live.php` has nothing to copy back in for `challenge_participants` — it's a pure `DELETE FROM challenge_participants`, no recopy step. This exists specifically to stop stray test/fixture participants from accumulating across syncs (see gotcha #22 above for how one such straggler once hijacked Quick Match).
+
+Because the FKs cascade, this single delete also clears: `challenge_points`, `challenge_magic_links`, `challenge_access_tokens`, `challenge_invites`, `challenge_answers`, `duels`, `duel_quickmatch`, `duel_predictions`, `challenge_trivia_answers` — i.e. every participant's CP ledger, tokens, duels, and answers, gone with them.
+
+**Deliberately left alone:** `challenge_items` / `challenge_trivia_questions` (editorial rumor/trivia content — not participant data, and wiping it would disrupt manual QA of the admin review/publish flow) and `challenge_email_suppressions` (the opt-out/bounce list exists specifically to *persist* across resets — clearing it risks re-emailing someone who already opted out).
+
+If you're testing Paddock Challenges and your participants vanish after a `sync:live`, this is why — not a bug, and there's no way to opt out per-participant.

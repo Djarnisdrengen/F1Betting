@@ -385,18 +385,20 @@ return [
         'ch_duel_waiting_race'  => 'Begge har låst — venter på at løbet afsluttes',
         'ch_duel_view'          => 'Vis',
         'ch_duel_verify_prompt' => 'Dueller kræver en gemt plads, så din modstander kan finde dig. Bekræft din email for at spille.',
-        'ch_duel_queued'        => 'Du er i køen — vi finder en modstander til dig snart.',
+        'ch_duel_queued'        => 'Du er nummer %d i køen — vi finder en modstander til dig snart.',
         'ch_duel_pick_error'    => 'Kunne ikke gemme dit valg. Prøv igen.',
         'ch_your_opponent'      => 'din modstander',
         'ch_you'                => 'Dig',
         'ch_back'               => 'Tilbage',
 
         // Challenges — join flow
+        'ch_join_heading'       => 'Dagens paddock-spil venter.',
+        'ch_join_intro'         => 'Gæt rygter, svar på quiz, og udfordr andre i dueller — ingen konto nødvendig.',
         'ch_join_title'         => 'Join Paddock Challenges',
         'ch_join_subtitle'      => 'Spil dagens spil med kun din email',
         'ch_join_returning_hint' => 'Spillet før? Indtast samme email for at komme tilbage.',
-        'ch_join_send_magic_link' => 'Send Magical Link',
-        'ch_join_success_check_email' => 'Tjek din email for et magisk link (tjek også spam)',
+        'ch_join_send_magic_link' => 'Send login-link',
+        'ch_join_success_check_email' => 'Tjek din email for et login-link (tjek også spam)',
         'ch_join_core_member_prompt' => 'Du har allerede en konto. Log ind for at få adgang til Paddock Challenges.',
         'ch_join_didnt_receive' => 'Modtog du ikke linket? Prøv igen.',
         'rate_limited'          => 'For mange forsøg. Vent venligst og prøv igen senere.',
@@ -414,10 +416,12 @@ return [
         'ch_verify_loading'      => 'Indlæser…',
 
         // Challenges — email
-        'ch_email_magic_subject' => 'Dit magiske Paddock Challenges-link',
+        'ch_email_magic_subject' => 'Din Paddock Challenges login-link',
         'ch_email_greeting'      => 'Hej!',
+        'ch_email_join_intro'    => 'Du får denne email, fordi du bad om at logge ind på Paddock Challenges — vores gættespil til Paddock Picks. Klik nedenfor for at komme i gang med det samme.',
         'ch_email_magic_button'  => 'Åbn Paddock Challenges',
         'ch_email_link_expires'  => 'Dette link udløber om 30 minutter',
+        'ch_email_join_reentry'  => 'Skal du logge ind igen senere, f.eks. fra en anden enhed? Gå til tilmeldingssiden og indtast samme email — så sender vi et nyt link.<br><br><strong style="color:#ffffff;">💡 Tip: slip for at vente på en ny email hver gang — sæt en adgangskode under "Konto" i Paddock Challenges, så kan du logge ind direkte fremover.</strong><br><br>Har du ikke selv bedt om dette, kan du roligt ignorere denne email.',
 
         // Challenges — conversion
         'ch_upgrade_title'       => 'Opgrader til fuld konto',
@@ -495,7 +499,7 @@ return [
         'ch_rules_s6_p2'         => 'Vil du også spille om puljen? Det kræver fuldt medlemskab — anmod om det fra din profil, og en administrator godkender det. CP konverteres ikke til puljepoint.',
         'ch_rules_s7_title'      => 'Fair play',
         'ch_rules_s7_p1'         => 'Ét svar pr. kort eller spørgsmål — ingen ekstra forsøg, så gør det tælle.',
-        'ch_rules_s7_p2'         => 'Dit magiske link og din adgang er personlig — del dem ikke, ellers kan andre samle CP eller låse valg i dit navn.',
+        'ch_rules_s7_p2'         => 'Dit login-link og din adgang er personlig — del dem ikke, ellers kan andre samle CP eller låse valg i dit navn.',
 
         // Shared auth messages
         'go_to_login'           => 'Gå til login',
@@ -891,18 +895,20 @@ return [
         'ch_duel_waiting_race'  => 'Both locked in — waiting for the race to finish',
         'ch_duel_view'          => 'View',
         'ch_duel_verify_prompt' => 'Duels need a saved spot so your opponent can find you. Verify your email to play.',
-        'ch_duel_queued'        => "You're in the queue — we'll match you with an opponent soon.",
+        'ch_duel_queued'        => "You're #%d in line — we'll match you with an opponent soon.",
         'ch_duel_pick_error'    => 'Could not save your pick. Try again.',
         'ch_your_opponent'      => 'your opponent',
         'ch_you'                => 'You',
         'ch_back'               => 'Back',
 
         // Challenges — join flow
+        'ch_join_heading'       => "Today's paddock games are waiting.",
+        'ch_join_intro'         => 'Guess rumors, answer trivia, and challenge others to duels — no account needed.',
         'ch_join_title'         => 'Join Paddock Challenges',
         'ch_join_subtitle'      => 'Play today\'s games with just your email',
         'ch_join_returning_hint' => 'Played before? Enter the same email to get back in.',
-        'ch_join_send_magic_link' => 'Send Magic Link',
-        'ch_join_success_check_email' => 'Check your email for a magic link (check spam too)',
+        'ch_join_send_magic_link' => 'Send login link',
+        'ch_join_success_check_email' => 'Check your email for a login link (check spam too)',
         'ch_join_core_member_prompt' => 'You already have an account. Log in to access Paddock Challenges.',
         'ch_join_didnt_receive' => 'Didn\'t receive the link? Try again.',
         'rate_limited'          => 'Too many attempts. Please wait and try again later.',
@@ -920,10 +926,12 @@ return [
         'ch_verify_loading'      => 'Loading...',
 
         // Challenges — email
-        'ch_email_magic_subject' => 'Your Paddock Challenges magic link',
+        'ch_email_magic_subject' => 'Your Paddock Challenges login link',
         'ch_email_greeting'      => 'Hi!',
+        'ch_email_join_intro'    => "You're getting this email because you asked to sign in to Paddock Challenges — our prediction game for Paddock Picks. Click below to jump straight in.",
         'ch_email_magic_button'  => 'Open Paddock Challenges',
         'ch_email_link_expires'  => 'This link expires in 30 minutes',
+        'ch_email_join_reentry'  => 'Need to sign in again later, or from a different device? Just go back to the join page and enter the same email — we\'ll send you a fresh link.<br><br><strong style="color:#ffffff;">💡 Tip: skip waiting for an email next time — set a password under "Account" in Paddock Challenges to sign in directly from now on.</strong><br><br>Didn\'t request this? You can safely ignore this email.',
 
         // Challenges — conversion
         'ch_upgrade_title'       => 'Upgrade to full account',
@@ -1001,7 +1009,7 @@ return [
         'ch_rules_s6_p2'         => "Want to play for the pool too? That takes full membership — request one from your profile, and an admin will approve it. CP doesn't convert into pool points.",
         'ch_rules_s7_title'      => 'Fair play',
         'ch_rules_s7_p1'         => 'One answer per card or question — no retries, so make it count.',
-        'ch_rules_s7_p2'         => "Your magic link and access are personal — don't share them, or someone else could rack up CP or lock in picks under your name.",
+        'ch_rules_s7_p2'         => "Your login link and access are personal — don't share them, or someone else could rack up CP or lock in picks under your name.",
 
         // Shared auth messages
         'go_to_login'           => 'Go to login',

@@ -1894,6 +1894,7 @@ body.light .hf-cta-primary.hf-cta-primary--challenges {
     box-shadow: 0 4px 14px rgba(36,114,232,0.22);
 }
 body.light .hf-toc a.active::before { background: var(--f1-red); }
+body.light [data-testid="duel-queued-msg"] { color: #000; }
 
 /* ============================================================
    Top bar — logo + hamburger

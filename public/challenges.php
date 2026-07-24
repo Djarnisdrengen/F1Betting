@@ -298,8 +298,13 @@ if ($section === 'duels') {
     $waitingDuels    = [];
     $settledDuels    = [];
     $viewDuel        = null;
+    $queuePosition   = null;
 
     if ($isVerifiedParticipant) {
+        if ($duelRace) {
+            $queuePosition = getQuickMatchPosition($db, $participant['id'], $duelRace['id']);
+        }
+
         $stmt = $db->prepare("
             SELECT d.*, r.name AS race_name, r.race_date, r.race_time,
                    cp_c.display_name AS challenger_name, cp_o.display_name AS opponent_name
@@ -936,8 +941,8 @@ include __DIR__ . '/includes/header.php';
 
             <?php else: ?>
                 <div data-testid="duel-list" style="padding-top:8px;">
-                    <?php if (!empty($_GET['queued'])): ?>
-                        <div class="alert alert-success" data-testid="duel-queued-msg"><?= t('ch_duel_queued') ?></div>
+                    <?php if ($queuePosition !== null): ?>
+                        <div class="alert alert-warning" data-persist data-testid="duel-queued-msg" data-position="<?= $queuePosition ?>"><?= sprintf(t('ch_duel_queued'), $queuePosition) ?></div>
                     <?php endif; ?>
 
                     <?php if ($duelRace && !$duelRaceLocked): ?>

@@ -5,11 +5,11 @@ function formatLogSize($bytes) {
 }
 ?>
 
-<div class="hf-seg mb-2">
+<nav class="admin-nav mb-2" aria-label="<?= t('logs') ?>">
     <?php foreach ($logFiles as $key => $lf): ?>
-        <a href="?tab=logs&log=<?= $key ?>" class="<?= $currentLog === $key ? 'active' : '' ?>"><?= escape($lf['label']) ?></a>
+        <a href="?tab=logs&log=<?= $key ?>" class="admin-nav-tab <?= $currentLog === $key ? 'active' : '' ?>"><?= escape($lf['label']) ?></a>
     <?php endforeach; ?>
-</div>
+</nav>
 
 <div class="card mb-2">
     <div class="card-body flex items-center justify-between" style="flex-wrap:wrap;gap:0.5rem;">

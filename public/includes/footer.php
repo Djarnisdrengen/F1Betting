@@ -1,6 +1,6 @@
     </main>
 
-    <?php if (!in_array($currentPage, ['admin', 'admin-actions'], true)): ?>
+    <?php if (!in_array($currentPage, ['admin', 'admin-actions', 'admin-dashboards', 'admin-challenges'], true)): ?>
     <?php include __DIR__ . '/bottom_bar.php'; ?>
     <?php endif; ?>
 

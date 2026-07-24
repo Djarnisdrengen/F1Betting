@@ -1,5 +1,34 @@
 <div class="card mt-3">
     <div class="card-body">
+        <h2 style="margin-bottom:16px;"><?= t('admin_ch_qm_queue') ?></h2>
+
+        <?php if (empty($qmQueue)): ?>
+            <p class="text-muted" data-testid="admin-qm-queue-empty"><?= t('admin_ch_qm_queue_empty') ?></p>
+        <?php else: ?>
+            <?php foreach ($qmQueue as $q): ?>
+                <div class="card mb-1" data-testid="admin-qm-queue-row" data-participant-id="<?= escape($q['participant_id']) ?>" data-position="<?= $q['position'] ?>">
+                    <div class="card-body admin-user-card-body">
+                        <div class="admin-user-info">
+                            <span class="btn btn-sm" style="background:var(--bg-secondary);color:var(--text-primary);border:none;cursor:default;min-width:34px;text-align:center;">
+                                <?= sprintf(t('admin_ch_qm_position'), $q['position']) ?>
+                            </span>
+                            <div>
+                                <strong><?= escape($q['display_name'] ?: $q['email']) ?></strong>
+                                <br><small class="text-muted"><?= escape($q['race_name']) ?> · <?= sprintf(t('admin_ch_qm_waiting_since'), escape(date('d M Y H:i', strtotime($q['created_at'])))) ?></small>
+                            </div>
+                        </div>
+                        <?php if ($q['expired']): ?>
+                            <span class="btn btn-sm" style="background:var(--f1-red);color:#fff;border:none;cursor:default;flex-shrink:0;"><?= t('admin_ch_qm_expired') ?></span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
         <h2 style="margin-bottom:16px;"><?= t('admin_ch_duels') ?></h2>
 
         <div class="flex gap-1 items-center mb-2" style="flex-wrap:wrap;">

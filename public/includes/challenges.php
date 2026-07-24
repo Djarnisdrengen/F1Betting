@@ -628,6 +628,30 @@ function tryQuickMatchPairing(PDO $db, string $participantId, string $raceId): ?
     }
 }
 
+/**
+ * 1-based position of a queued participant in the Quick Match line for a race — how many
+ * `duel_quickmatch` rows (including their own) were queued at or before theirs, oldest first,
+ * ties on `created_at` broken by `participant_id` for a stable order (the same order
+ * `tryQuickMatchPairing()` pairs from, though it never needs a tiebreak since it only ever
+ * reads the single oldest row). Returns null if the participant isn't queued for this race.
+ */
+function getQuickMatchPosition(PDO $db, string $participantId, string $raceId): ?int {
+    $stmt = $db->prepare("SELECT created_at FROM duel_quickmatch WHERE race_id = ? AND participant_id = ?");
+    $stmt->execute([$raceId, $participantId]);
+    $queuedAt = $stmt->fetchColumn();
+
+    if ($queuedAt === false) {
+        return null;
+    }
+
+    $posStmt = $db->prepare("
+        SELECT COUNT(*) FROM duel_quickmatch
+        WHERE race_id = ? AND (created_at < ? OR (created_at = ? AND participant_id <= ?))
+    ");
+    $posStmt->execute([$raceId, $queuedAt, $queuedAt, $participantId]);
+    return (int) $posStmt->fetchColumn();
+}
+
 /** Presence/duplicate/valid-driver checks only (NFR-302) — none of core betting's extra rules. */
 function validateDuelPick(string $p1, string $p2, string $p3, array $validDriverIds): string {
     if (!$p1 || !$p2 || !$p3) {

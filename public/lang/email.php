@@ -99,13 +99,13 @@ return [
         'email_bet_confirm_picks'           => 'Dine valg:',
         'email_bet_confirm_meta'            => 'Registreret på %s: %s',
 
-        // Magic link email (Challenges)
+        // Login-link email (Challenges)
         'email_magic_subject'               => 'Din Paddock Challenges login-link',
         'email_magic_greeting'              => 'Hej,',
-        'email_magic_intro'                 => 'Klik på linket nedenfor for at logge ind på Paddock Challenges.',
+        'email_magic_intro'                 => 'Du får denne email, fordi du har opgivet din email på Paddock Challenges for at udfordre en ven. Klik nedenfor for at bekræfte din email og logge ind.',
         'email_magic_button'                => 'Log ind på Paddock Challenges',
         'email_magic_expiry'                => 'Dette link udløber om 30 minutter.',
-        'email_magic_ignore'                => 'Hvis du ikke anmodede om dette, kan du ignorere denne email.',
+        'email_magic_ignore'                => 'Skal du logge ind igen senere, f.eks. fra en anden enhed? Gå til Paddock Challenges og indtast samme email — så sender vi et nyt link.<br><br><strong style="color:#ffffff;">💡 Tip: slip for at vente på en ny email hver gang — sæt en adgangskode under "Konto", så kan du logge ind direkte fremover.</strong><br><br>Har du ikke selv bedt om dette, kan du roligt ignorere denne email.',
 
         // Challenge invite email (beat my score) — keys prefixed ch_ so they never collide with
         // the core admin invite-a-member keys above (email_invite_*); a same-name collision here
@@ -236,13 +236,13 @@ return [
         'email_bet_confirm_picks'           => 'Your picks:',
         'email_bet_confirm_meta'            => 'Recorded on %s: %s',
 
-        // Magic link email (Challenges)
+        // Login-link email (Challenges)
         'email_magic_subject'               => 'Your Paddock Challenges login link',
         'email_magic_greeting'              => 'Hi,',
-        'email_magic_intro'                 => 'Click the link below to sign in to Paddock Challenges.',
+        'email_magic_intro'                 => "You're getting this email because you entered your email on Paddock Challenges to challenge a friend. Click below to confirm your email and sign in.",
         'email_magic_button'                => 'Sign in to Paddock Challenges',
         'email_magic_expiry'                => 'This link expires in 30 minutes.',
-        'email_magic_ignore'                => 'If you did not request this, you can ignore this email.',
+        'email_magic_ignore'                => 'Need to sign in again later, or from a different device? Just go to Paddock Challenges and enter the same email — we\'ll send you a fresh link.<br><br><strong style="color:#ffffff;">💡 Tip: skip waiting for an email next time — set a password under "Account" to sign in directly from now on.</strong><br><br>Didn\'t request this? You can safely ignore this email.',
 
         // Challenge invite email (beat my score) — ch_ prefix, see da block above for why.
         'ch_email_invite_subject'           => 'You have been challenged in Paddock Challenges',

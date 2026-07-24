@@ -126,8 +126,9 @@ return [
         'logs_showing_last'         => 'Viser de seneste %d af op til %d linjer.',
 
         // Admin area switcher (admin.php <-> admin-challenges.php <-> admin-dashboards.php)
-        'admin_area_core'            => 'Core',
-        'admin_area_challenges'      => 'Paddock Challenges',
+        'admin_page_title'           => 'Administration',
+        'admin_area_core'            => 'Core-indstillinger',
+        'admin_area_challenges'      => 'Paddock Challenges-indstillinger',
         'admin_area_dashboards'      => 'Dashboards',
 
         // Dashboards area — section tabs (admin-dashboards.php)
@@ -328,6 +329,11 @@ return [
         'admin_ch_duel_sort_label'   => 'Sortér:',
         'admin_ch_duel_sort_newest'  => 'Nyeste først',
         'admin_ch_duel_sort_oldest'  => 'Ældste først',
+        'admin_ch_qm_queue'          => 'Quick Match-kø',
+        'admin_ch_qm_queue_empty'    => 'Ingen venter på en modstander lige nu.',
+        'admin_ch_qm_position'       => 'Nr. %d',
+        'admin_ch_qm_waiting_since'  => 'I kø siden %s',
+        'admin_ch_qm_expired'        => 'Løb startet',
 
         // Challenges admin — tabbed control room + full content/suppression list views
         'admin_ch_nav_members'       => 'Medlemmer',
@@ -348,6 +354,8 @@ return [
         'admin_ch_rumor_deleted'     => 'Rygte slettet.',
         'admin_ch_rumor_list_empty'  => 'Ingen rygter matcher filteret.',
         'admin_ch_trivia_week'       => 'Uge %s · %d/6 spørgsmål',
+        'admin_ch_answers_none'      => 'Ingen svar endnu',
+        'admin_ch_answers_count'     => '%d svar · %d%% korrekt',
         'admin_ch_bulk_select_all'   => 'Vælg alle',
         'admin_ch_bulk_publish'      => 'Publicér valgte',
         'admin_ch_bulk_unpublish'    => 'Afpublicér valgte',
@@ -587,8 +595,9 @@ return [
         'logs_showing_last'         => 'Showing the last %d of up to %d lines.',
 
         // Admin area switcher (admin.php <-> admin-challenges.php <-> admin-dashboards.php)
-        'admin_area_core'            => 'Core',
-        'admin_area_challenges'      => 'Paddock Challenges',
+        'admin_page_title'           => 'Administration',
+        'admin_area_core'            => 'Core settings',
+        'admin_area_challenges'      => 'Paddock Challenges settings',
         'admin_area_dashboards'      => 'Dashboards',
 
         // Dashboards area — section tabs (admin-dashboards.php)
@@ -789,6 +798,11 @@ return [
         'admin_ch_duel_sort_label'   => 'Sort:',
         'admin_ch_duel_sort_newest'  => 'Newest first',
         'admin_ch_duel_sort_oldest'  => 'Oldest first',
+        'admin_ch_qm_queue'          => 'Quick Match Queue',
+        'admin_ch_qm_queue_empty'    => 'No one is waiting for an opponent right now.',
+        'admin_ch_qm_position'       => '#%d',
+        'admin_ch_qm_waiting_since'  => 'Waiting since %s',
+        'admin_ch_qm_expired'        => 'Race started',
 
         // Challenges admin — tabbed control room + full content/suppression list views
         'admin_ch_nav_members'       => 'Members',
@@ -809,6 +823,8 @@ return [
         'admin_ch_rumor_deleted'     => 'Item deleted.',
         'admin_ch_rumor_list_empty'  => 'No items match this filter.',
         'admin_ch_trivia_week'       => 'Week %s · %d/6 questions',
+        'admin_ch_answers_none'      => 'No answers yet',
+        'admin_ch_answers_count'     => '%d answers · %d%% correct',
         'admin_ch_bulk_select_all'   => 'Select all',
         'admin_ch_bulk_publish'      => 'Publish selected',
         'admin_ch_bulk_unpublish'    => 'Unpublish selected',

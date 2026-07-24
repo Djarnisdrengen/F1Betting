@@ -71,15 +71,61 @@ test.describe('Duels — create flow', { tag: '@challenges' }, () => {
 
         await a.page.goto('/challenges.php?section=duels');
         await a.page.locator('[data-testid="duel-quick-match-btn"]').click();
-        await expect(a.page.getByTestId('duel-queued-msg')).toBeVisible();
+        // Sole entry in the queue — position is 1, and (unlike the old flash-only message) stays
+        // visible on a plain reload too, since it's now read live off duel_quickmatch each load.
+        await expect(a.page.getByTestId('duel-queued-msg')).toHaveAttribute('data-position', '1');
+        await a.page.reload();
+        await expect(a.page.getByTestId('duel-queued-msg')).toHaveAttribute('data-position', '1');
 
         await b.page.goto('/challenges.php?section=duels');
         await b.page.locator('[data-testid="duel-quick-match-btn"]').click();
         await expect(b.page).toHaveURL(/section=duels&duel=/);
         await expect(b.page.getByTestId('duel-detail')).toBeVisible();
 
+        // A is paired too now — the queue banner must not still claim they're waiting.
+        await a.page.reload();
+        await expect(a.page.getByTestId('duel-queued-msg')).toHaveCount(0);
+
         await a.context.close();
         await b.context.close();
+    });
+
+    // The pairing lock makes a >1-deep queue structurally impossible in steady state (each
+    // quick-match call inserts itself and immediately tries to pair before releasing the lock,
+    // so a second comer always pairs away rather than piling up) — this only exercises position 1,
+    // then confirms the row disappears the moment pairing happens. Admin view is a separate
+    // explicitly-authenticated context (newAdminPage), not the `admin` fixture's ambient session —
+    // that fixture's storageState becomes the *default* for any browser.newContext() call in the
+    // same test (including newVerifiedParticipant's), which would silently make "fresh" participants
+    // admin-authenticated too and defeat the point of this test.
+    test('Quick Match queue lists a waiting participant with their position, clears once paired', async ({ browser }) => {
+        await seed.duelRace({ state: 'open' });
+        const a = await newVerifiedParticipant(browser, 'qmq_a');
+        const adminPage = await newAdminPage(browser);
+
+        await a.page.goto('/challenges.php?section=duels');
+        await a.page.locator('[data-testid="duel-quick-match-btn"]').click();
+        await expect(a.page.getByTestId('duel-queued-msg')).toBeVisible();
+
+        await adminPage.page.goto('/admin-challenges.php?tab=duels');
+        const row = adminPage.page.locator('[data-testid="admin-qm-queue-row"][data-participant-id="' + a.participant_id + '"]');
+        await expect(row).toBeVisible();
+        await expect(row).toHaveAttribute('data-position', '1');
+
+        const b = await newVerifiedParticipant(browser, 'qmq_b');
+        await b.page.goto('/challenges.php?section=duels');
+        await b.page.locator('[data-testid="duel-quick-match-btn"]').click();
+        await expect(b.page).toHaveURL(/section=duels&duel=/);
+
+        // Scoped to this test's own participant, not a blanket toHaveCount(0) — the panel is
+        // deliberately global across every race (that's the point, see docs), so an unrelated
+        // queue entry left by some other spec must not make this test flaky.
+        await adminPage.page.reload();
+        await expect(row).toHaveCount(0);
+
+        await a.context.close();
+        await b.context.close();
+        await adminPage.context.close();
     });
 
     // DUEL-06: two concurrent requests must produce exactly one duel, queue emptied — never

@@ -155,6 +155,9 @@
                     · <span class="hf-badge <?= $q['status'] === 'published' ? 'open' : 'soon' ?>">
                           <?= $q['status'] === 'published' ? t('admin_ch_trivia_status_published') : t('admin_ch_trivia_status_draft') ?>
                       </span>
+                    · <?= (int) $q['answer_count'] > 0
+                            ? sprintf(t('admin_ch_answers_count'), (int) $q['answer_count'], (int) round($q['correct_count'] / $q['answer_count'] * 100))
+                            : t('admin_ch_answers_none') ?>
                 </div>
             </div>
             <div class="flex gap-1" style="flex-shrink:0;flex-wrap:wrap;">

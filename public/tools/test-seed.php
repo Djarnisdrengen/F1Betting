@@ -1352,7 +1352,13 @@ if (($_GET['action'] ?? '') === 'seed_challenge_answer') {
 // publish_date per call and items aren't participant-scoped for cleanup_challenges to reap.
 if (($_GET['action'] ?? '') === 'seed_rumor_deck') {
     $realFlags   = array_filter(explode(',', $_GET['real'] ?? '1,0,1'), fn($v) => $v !== '');
-    $publishDate = $_GET['publish_date'] ?? date('Y-m-d');
+    // Default publish_date is a fixed far-past sentinel, not today: nextRumorItem() orders
+    // publish_date ASC (earliest wins), and the weekly content-topup cron (cron-content-topup.yml,
+    // Fridays 06:00 UTC, --publish) regularly leaves real published items dated today/this-week
+    // sitting in the test DB. A "today" default let that real content outrank the seeded item on
+    // ordering ties, making identity-sensitive tests (which guess/is_real value gets served)
+    // flaky depending on which real row happened to win. 2000-01-01 always sorts first.
+    $publishDate = $_GET['publish_date'] ?? '2000-01-01';
 
     $items = [];
     foreach (array_values($realFlags) as $i => $flag) {

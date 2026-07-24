@@ -96,7 +96,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <div class="hf-container">
-<h1 class="mb-3"><i class="fas fa-gauge-high text-accent"></i> <?= t('admin_area_dashboards') ?></h1>
+<h1 class="mb-3"><i class="fas fa-gauge-high text-accent"></i> <?= t('admin_page_title') ?></h1>
 
 <?php renderAdminAreaNav('dashboards'); ?>
 

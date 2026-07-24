@@ -19,10 +19,11 @@
 
 ## Overview
 
-The admin area is organized into three top-level areas — **Core** (`admin.php`), **Paddock
-Challenges** (`admin-challenges.php`), and **Dashboards** (`admin-dashboards.php`) — via a shared
-`<nav class="admin-area-nav">` (`public/includes/admin-area-nav.php`). Core and Paddock Challenges
-are unchanged from before this feature; only their nav chrome was restyled.
+The admin area is organized into three top-level areas — **Dashboards** (`admin-dashboards.php`),
+**Paddock Challenges** (`admin-challenges.php`), and **Core** (`admin.php`) — via a shared
+`<nav class="admin-area-nav">` (`public/includes/admin-area-nav.php`), in that left-to-right order.
+Dashboards is the default landing page for the site header's "Admin" link. Core and Paddock
+Challenges are otherwise unchanged from before this feature; only their nav chrome was restyled.
 
 Dashboards has five section tabs, all served by `public/admin-dashboards.php?tab=`:
 

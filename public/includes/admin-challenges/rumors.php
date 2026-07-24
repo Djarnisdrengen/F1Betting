@@ -125,6 +125,9 @@
                 · <span class="hf-badge <?= $item['status'] === 'published' ? 'open' : 'soon' ?>">
                       <?= $item['status'] === 'published' ? t('admin_ch_rumor_status_published') : t('admin_ch_rumor_status_draft') ?>
                   </span>
+                · <?= (int) $item['answer_count'] > 0
+                        ? sprintf(t('admin_ch_answers_count'), (int) $item['answer_count'], (int) round($item['correct_count'] / $item['answer_count'] * 100))
+                        : t('admin_ch_answers_none') ?>
             </div>
         </div>
         <div class="flex gap-1" style="flex-shrink:0;flex-wrap:wrap;">

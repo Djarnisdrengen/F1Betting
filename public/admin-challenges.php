@@ -500,10 +500,20 @@ switch ($currentTab) {
             ? $_GET['rumor_status'] : 'all';
         $rumorTotalCount = $tabCounts['rumors'];
         $rumorDraftCount = (int) $db->query("SELECT COUNT(*) FROM challenge_items WHERE status = 'draft'")->fetchColumn();
+        // answer_count/correct_count (REQ: per-item usage) come from a grouped subquery rather than
+        // a plain JOIN so items with zero answers still appear (COALESCE'd to 0), not dropped.
+        $rumorAnswerSql = "
+            SELECT ci.*, COALESCE(a.answer_count, 0) AS answer_count, COALESCE(a.correct_count, 0) AS correct_count
+            FROM challenge_items ci
+            LEFT JOIN (
+                SELECT item_id, COUNT(*) AS answer_count, SUM(correct) AS correct_count
+                FROM challenge_answers GROUP BY item_id
+            ) a ON a.item_id = ci.id
+        ";
         if ($rumorFilter === 'all') {
-            $rumorItems = $db->query("SELECT * FROM challenge_items ORDER BY created_at DESC")->fetchAll();
+            $rumorItems = $db->query("$rumorAnswerSql ORDER BY ci.created_at DESC")->fetchAll();
         } else {
-            $stmt = $db->prepare("SELECT * FROM challenge_items WHERE status = ? ORDER BY created_at DESC");
+            $stmt = $db->prepare("$rumorAnswerSql WHERE ci.status = ? ORDER BY ci.created_at DESC");
             $stmt->execute([$rumorFilter]);
             $rumorItems = $stmt->fetchAll();
         }
@@ -517,12 +527,20 @@ switch ($currentTab) {
             ? $_GET['trivia_status'] : 'all';
         $triviaTotalCount = $tabCounts['trivia'];
         $triviaDraftCount = (int) $db->query("SELECT COUNT(*) FROM challenge_trivia_questions WHERE status = 'draft'")->fetchColumn();
+        // answer_count/correct_count (REQ: per-item usage) come from a grouped subquery rather than
+        // a plain JOIN so questions with zero answers still appear (COALESCE'd to 0), not dropped.
+        $triviaAnswerSql = "
+            SELECT tq.*, COALESCE(a.answer_count, 0) AS answer_count, COALESCE(a.correct_count, 0) AS correct_count
+            FROM challenge_trivia_questions tq
+            LEFT JOIN (
+                SELECT question_id, COUNT(*) AS answer_count, SUM(correct) AS correct_count
+                FROM challenge_trivia_answers GROUP BY question_id
+            ) a ON a.question_id = tq.id
+        ";
         if ($triviaFilter === 'all') {
-            $triviaQuestions = $db->query("
-                SELECT * FROM challenge_trivia_questions ORDER BY publish_date DESC, created_at DESC
-            ")->fetchAll();
+            $triviaQuestions = $db->query("$triviaAnswerSql ORDER BY tq.publish_date DESC, tq.created_at DESC")->fetchAll();
         } else {
-            $stmt = $db->prepare("SELECT * FROM challenge_trivia_questions WHERE status = ? ORDER BY publish_date DESC, created_at DESC");
+            $stmt = $db->prepare("$triviaAnswerSql WHERE tq.status = ? ORDER BY tq.publish_date DESC, tq.created_at DESC");
             $stmt->execute([$triviaFilter]);
             $triviaQuestions = $stmt->fetchAll();
         }
@@ -556,6 +574,30 @@ switch ($currentTab) {
             }
         }
         [, $duelDriversById] = fetchDrivers($db);
+
+        // Quick Match queue (not yet paired into a `duels` row) — oldest-first per race, same
+        // order tryQuickMatchPairing() reads from. Grouped by race_id rather than filtered to
+        // just getNextDuelRace() because a queued row is never cleaned up if its race's window
+        // closes before anyone else joins (REQ-302 says unmatched requests "expire", but nothing
+        // actually deletes the row) — showing every race's queue lets admin spot those orphans.
+        $qmQueueRows = $db->query("
+            SELECT dq.race_id, dq.participant_id, dq.created_at,
+                   cp.display_name, cp.email,
+                   r.name AS race_name, r.race_date, r.race_time
+            FROM duel_quickmatch dq
+            JOIN challenge_participants cp ON cp.id = dq.participant_id
+            JOIN races r ON r.id = dq.race_id
+            ORDER BY dq.race_id ASC, dq.created_at ASC, dq.participant_id ASC
+        ")->fetchAll();
+
+        $qmQueue = [];
+        $qmPositionCounter = [];
+        foreach ($qmQueueRows as $row) {
+            $qmPositionCounter[$row['race_id']] = ($qmPositionCounter[$row['race_id']] ?? 0) + 1;
+            $row['position'] = $qmPositionCounter[$row['race_id']];
+            $row['expired']  = isDuelRaceLocked($row);
+            $qmQueue[] = $row;
+        }
         break;
 
     case 'suppressions':
@@ -568,7 +610,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <div class="hf-container">
-<h1 class="mb-3"><i class="fas fa-user-check text-accent"></i> <?= t('admin_ch_title') ?></h1>
+<h1 class="mb-3"><i class="fas fa-user-check text-accent"></i> <?= t('admin_page_title') ?></h1>
 
 <?php renderAdminAreaNav('challenges', $tabCounts['members']); ?>
 
