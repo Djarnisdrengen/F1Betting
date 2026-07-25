@@ -84,7 +84,7 @@ include __DIR__ . '/includes/header.php';
 
     <!-- Identity + schedule card -->
     <div class="hf-racefull" style="margin-bottom:1.25rem;">
-        <div class="hf-racefull-hd">
+        <div class="hf-racefull-hd" style="padding:22px 24px;">
             <div class="hf-racefull-info" style="flex:1;">
                 <div class="hf-racemeta" style="margin-bottom:0.25rem;font-size:0.8rem;">
                     <?= t('round') ?> <?= $round ?> <?= t('of') ?> <?= $totalRounds ?>
@@ -105,6 +105,9 @@ include __DIR__ . '/includes/header.php';
             </div>
             <span class="hf-badge <?= $badgeMap[$status['class']] ?? 'done' ?>"><?= $status['label'] ?></span>
         </div>
+
+        <!-- Schedule + results: padded to match the header card's inset from the outer border -->
+        <div style="padding:0 24px 22px;">
 
         <!-- Schedule box: timings + actions -->
         <div class="race-schedule">
@@ -211,6 +214,8 @@ include __DIR__ . '/includes/header.php';
                     </div>
                 <?php endif; ?>
             </div>
+
+        </div>
 
         </div>
 
