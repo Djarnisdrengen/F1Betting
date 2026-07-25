@@ -1700,6 +1700,18 @@ if (($_GET['action'] ?? '') === 'simulation_status') {
     exit;
 }
 
+// Action: list_challenge_content — read-only: id/status/publish_date for every Rumor or Not item
+// (kind=rumor) or Trivia question (kind=trivia). Cleanup/recon helper — lets a caller find which
+// rows to remove (e.g. via admin-challenges.php's bulk_delete_rumor/bulk_delete_trivia) without
+// direct DB access.
+if (($_GET['action'] ?? '') === 'list_challenge_content') {
+    $kind = ($_GET['kind'] ?? '') === 'trivia' ? 'trivia' : 'rumor';
+    $table = $kind === 'trivia' ? 'challenge_trivia_questions' : 'challenge_items';
+    $rows = $db->query("SELECT id, status, publish_date FROM $table ORDER BY publish_date ASC")->fetchAll();
+    echo json_encode(['ok' => true, 'kind' => $kind, 'items' => $rows]);
+    exit;
+}
+
 // Action: list_drivers — read-only: id/name for every driver. Recon helper, same rationale as
 // list_races (avoids needing direct DB access to look up valid driver ids for results/picks).
 if (($_GET['action'] ?? '') === 'list_drivers') {
