@@ -205,6 +205,7 @@ async function main() {
     fs.writeFileSync(stateFile, JSON.stringify(state, null, 2));
 
     console.log(`✅ Imported ${body.inserted} ${status} question(s) (playable week of ${publishDate}).`);
+    console.log(`IDS:${(body.ids || []).join(',')}`);
     if (!publish) console.log('   Review them on admin-challenges.php.');
     if (body.errors?.length) console.warn('⚠️  Some items were skipped:', body.errors);
 }

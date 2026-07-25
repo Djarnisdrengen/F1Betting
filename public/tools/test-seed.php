@@ -1632,6 +1632,15 @@ if (($_GET['action'] ?? '') === 'seed_converted_guest') {
     exit;
 }
 
+// Action: list_races — read-only: id/name/race_date/result_p1-3 for every race. Recon helper
+// (e.g. before a simulation touches update_race) so a caller can tell which races already carry
+// real results and must not be overwritten, without needing direct DB access.
+if (($_GET['action'] ?? '') === 'list_races') {
+    $rows = $db->query("SELECT id, name, race_date, result_p1, result_p2, result_p3 FROM races ORDER BY race_date ASC")->fetchAll();
+    echo json_encode(['ok' => true, 'races' => $rows]);
+    exit;
+}
+
 // Action: seed_challenge_magic_link — creates a magic link token (with backdatable expiry)
 if (($_GET['action'] ?? '') === 'seed_challenge_magic_link') {
     $participantId = $_GET['participant_id'] ?? '';
