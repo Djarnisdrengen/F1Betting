@@ -107,6 +107,9 @@ build-deploy/backups/
 build-deploy/screenshots/
 build-deploy/security-reports/
 build-deploy/nightly-reports/
+
+# bin/simulate-challenges.js run output (the harness is checked in, its output is not)
+bin/simulate-runs/
 tests/email-previews/
 
 # Added by ggshield

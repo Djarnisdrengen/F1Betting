@@ -123,6 +123,18 @@ Because the content ships unreviewed, the **quality gate is after the fact**: ma
 
 ---
 
+## Multi-week simulation harness (TEST only)
+
+`bin/simulate-challenges.js` plays out N weeks of all three games end to end for a synthetic roster — real Claude-drafted content (backdated), real per-answer CP scoring, real Duel resolution off a real `update_race` submission, and the real weekly cron for Perfect Week bonuses. It's not a mock of the system; it drives the same code paths a live quarter of play would, compressed into one run. Useful for pre-launch rehearsal (Challenges has never been deployed to live — see the top of this doc) or after a scoring-relevant change, to see multi-week behavior (streaks, Perfect Weeks, KB draw-down) without waiting real weeks for it.
+
+Run `node bin/simulate-challenges-preflight.js` first (admin login/CSRF + one tiny real content call, well under a minute) before the full run, which seeds a whole roster and isn't cheap to re-run. The harness is checked in with a specific season/roster already configured (see its header comment for what to edit for a different quarter); output goes to `bin/simulate-runs/<timestamp>/` (gitignored).
+
+It relies on a few `test-seed.php` actions added specifically to support it, reusable for other tooling: `seed_rumor_answer` / `seed_trivia_answer` (answer an arbitrary already-published item, awarding CP through the real `awardChallengePoints()` — distinct from the existing fixed-fixture `seed_challenge_answer`), `list_races` / `list_drivers` / `list_challenge_content` (read-only recon, so scripts don't need direct DB access), and `simulation_status` (per-participant CP/streak/answer-count rollup, for verifying a ledger against what was actually answered rather than trusting it blind). The generators (`bin/generate-{rumor,trivia}-*.js`) also gained an optional `--publish-date=YYYY-MM-DD` override, and `cron/challenge_weekly.php` an optional `?score_week=YYYY-MM-DD` — both no-ops unless passed explicitly, so the real Friday/Monday automation is unaffected.
+
+Cleanup after a run: simulated participants/content aren't auto-swept. Easiest is admin-challenges.php's existing bulk-delete (Members / Rumors / Trivia / Duels tabs); a promoted core member's linked `users` row needs removing separately on the core admin Users tab (see duty #3 above — deleting a participant never cascades to it).
+
+---
+
 ## Related docs
 
 - `docs/architecture.md` — "Home Page Hero (Paddock Challenges)" and "Admin — Paddock Challenges Control Room" sections.
