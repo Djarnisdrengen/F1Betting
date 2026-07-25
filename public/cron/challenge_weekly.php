@@ -29,8 +29,15 @@ $tz = new DateTimeZone('Europe/Copenhagen');
 // Evaluate the *previous* ISO week — the cron runs Monday morning, after the week it scores
 // has fully closed (REQ-402's Sunday 23:59:59 boundary). Computed from today rather than
 // assumed to always run on a Monday, so a manual re-run mid-week still scores the same week.
-$mondayThisWeek = (new DateTime('today', $tz))->modify('monday this week');
-$mondayPrevWeek = (clone $mondayThisWeek)->modify('-7 days');
+// ?score_week=YYYY-MM-DD (a Monday) overrides which week gets scored, still behind the same
+// Bearer auth above — for backdated/manual runs (e.g. a simulation) targeting a week other
+// than "the one before real today". Omitted, behavior is unchanged.
+if (!empty($_GET['score_week'])) {
+    $mondayPrevWeek = new DateTime($_GET['score_week'], $tz);
+} else {
+    $mondayThisWeek = (new DateTime('today', $tz))->modify('monday this week');
+    $mondayPrevWeek = (clone $mondayThisWeek)->modify('-7 days');
+}
 $sundayPrevWeek = (clone $mondayPrevWeek)->modify('+6 days');
 $isoWeek        = isoWeekKey($mondayPrevWeek);
 

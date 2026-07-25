@@ -33,6 +33,7 @@ $status = (($payload['status'] ?? 'draft') === 'published') ? 'published' : 'dra
 $db = getDB();
 $inserted = 0;
 $errors = [];
+$ids = [];
 
 $stmt = $db->prepare("
     INSERT INTO challenge_items
@@ -48,8 +49,9 @@ foreach ($items as $i => $item) {
         continue;
     }
 
+    $id = generateUUID();
     $stmt->execute([
-        generateUUID(),
+        $id,
         $textDa,
         $textEn,
         trim($item['context_da'] ?? ''),
@@ -62,6 +64,7 @@ foreach ($items as $i => $item) {
         $item['publish_date'] ?? date('Y-m-d'),
     ]);
     $inserted++;
+    $ids[] = $id;
 }
 
-echo json_encode(['ok' => true, 'inserted' => $inserted, 'errors' => $errors]);
+echo json_encode(['ok' => true, 'inserted' => $inserted, 'ids' => $ids, 'errors' => $errors]);

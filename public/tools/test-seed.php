@@ -1346,6 +1346,88 @@ if (($_GET['action'] ?? '') === 'seed_challenge_answer') {
     exit;
 }
 
+// Action: seed_rumor_answer — records a participant's answer against a real (already-published)
+// Rumor or Not item id, correct/incorrect as requested, and awards CP through the same
+// awardChallengePoints() the real POST handler uses (source_ref = "rumor_or_not:$itemId", so
+// idempotency and the leaderboard behave identically to a real play). Distinct from
+// seed_challenge_answer, which only writes against its own fixed fixture item — this one plays
+// arbitrary items (e.g. a batch just imported by bin/generate-rumor-items.js) without going
+// through the HTTP play flow for every answer.
+if (($_GET['action'] ?? '') === 'seed_rumor_answer') {
+    require_once __DIR__ . '/../includes/challenges.php';
+
+    $participantId = $_GET['participant_id'] ?? '';
+    $itemId        = $_GET['item_id'] ?? '';
+    $correct       = intval($_GET['correct'] ?? 1) ? 1 : 0;
+    if (!$participantId || !$itemId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'participant_id and item_id required']);
+        exit;
+    }
+
+    $stmt = $db->prepare("SELECT is_real FROM challenge_items WHERE id = ?");
+    $stmt->execute([$itemId]);
+    $item = $stmt->fetch();
+    if (!$item) {
+        http_response_code(404);
+        echo json_encode(['ok' => false, 'error' => 'item not found']);
+        exit;
+    }
+    $isReal   = intval($item['is_real']);
+    $guessReal = $correct ? $isReal : (1 - $isReal);
+
+    $db->prepare("
+        INSERT INTO challenge_answers (id, participant_id, item_id, guess_real, correct)
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE guess_real = VALUES(guess_real), correct = VALUES(correct)
+    ")->execute([seed_uuid(), $participantId, $itemId, $guessReal, $correct]);
+
+    $awarded = $correct ? awardChallengePoints($db, $participantId, 'rumor_or_not', 10, "rumor_or_not:$itemId") : false;
+    echo json_encode(['ok' => true, 'item_id' => $itemId, 'cp_awarded' => $awarded]);
+    exit;
+}
+
+// Action: seed_trivia_answer — records a participant's answer against a real (already-published)
+// Trivia question id, correct/incorrect as requested, and awards CP through the same
+// awardChallengePoints() the real POST handler uses (source_ref = "trivia:$questionId"). Mirrors
+// seed_rumor_answer above; unlike seed_trivia_week's backdating branch (which only writes
+// challenge_trivia_answers for the cron's own idempotency tests), this one also awards the
+// per-answer CP so leaderboard/streak numbers reflect it, same as a real play.
+if (($_GET['action'] ?? '') === 'seed_trivia_answer') {
+    require_once __DIR__ . '/../includes/challenges.php';
+
+    $participantId = $_GET['participant_id'] ?? '';
+    $questionId    = $_GET['question_id'] ?? '';
+    $correct       = intval($_GET['correct'] ?? 1) ? 1 : 0;
+    if (!$participantId || !$questionId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'participant_id and question_id required']);
+        exit;
+    }
+
+    $stmt = $db->prepare("SELECT correct_option, options_da FROM challenge_trivia_questions WHERE id = ?");
+    $stmt->execute([$questionId]);
+    $question = $stmt->fetch();
+    if (!$question) {
+        http_response_code(404);
+        echo json_encode(['ok' => false, 'error' => 'question not found']);
+        exit;
+    }
+    $correctOption = intval($question['correct_option']);
+    $optionCount   = count(json_decode($question['options_da'], true) ?: []);
+    $chosenOption  = $correct ? $correctOption : (($correctOption + 1) % max($optionCount, 2));
+
+    $db->prepare("
+        INSERT INTO challenge_trivia_answers (id, participant_id, question_id, chosen_option, correct)
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE chosen_option = VALUES(chosen_option), correct = VALUES(correct)
+    ")->execute([seed_uuid(), $participantId, $questionId, $chosenOption, $correct]);
+
+    $awarded = $correct ? awardChallengePoints($db, $participantId, 'trivia', 5, "trivia:$questionId") : false;
+    echo json_encode(['ok' => true, 'question_id' => $questionId, 'cp_awarded' => $awarded]);
+    exit;
+}
+
 // Action: seed_rumor_deck — N published Rumor or Not items with known is_real flags, plus one
 // draft item (verifies drafts never leak into the play queue). Fresh random ids every call
 // (unlike seed_challenge_answer's fixed fixture row) since RUM-04 (rollover) needs an explicit

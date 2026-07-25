@@ -59,6 +59,10 @@ function parseArgs() {
     return args;
 }
 
+// --publish-date=YYYY-MM-DD overrides the default "upcoming Monday" — for backdating batches
+// into a past week (e.g. a simulation run). The real Friday workflow never passes this, so
+// production behavior is unaffected.
+
 async function claude(prompt, maxTokens = 700) {
     if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set');
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -119,7 +123,9 @@ ${QUESTION_JSON_SHAPE}`;
 async function main() {
     const { env, count, publish } = parseArgs();
     const stateFile = statePath(env);
-    const publishDate = upcomingMonday();
+    const publishDate = process.argv.some((a) => a.startsWith('--publish-date='))
+        ? process.argv.find((a) => a.startsWith('--publish-date=')).split('=')[1]
+        : upcomingMonday();
 
     if (!fs.existsSync(KB_PATH)) {
         console.error(`❌ Knowledge base not found at ${KB_PATH}`);
