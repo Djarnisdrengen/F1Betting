@@ -135,7 +135,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
 
 <?php if ($showRaceHero): ?>
 <!-- Race hero -->
-<section class="hf-hero" data-testid="hero-race">
+<section class="hf-hero clickable-card" data-testid="hero-race" data-href="race.php?id=<?= escape($heroRace['id']) ?>">
     <div class="hf-container">
         <div class="hf-hero-inner">
             <div class="hf-hero-left">
