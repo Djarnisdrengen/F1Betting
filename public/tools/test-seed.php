@@ -1698,7 +1698,7 @@ if (($_GET['action'] ?? '') === 'list_drivers') {
 // (e.g. before a simulation touches update_race) so a caller can tell which races already carry
 // real results and must not be overwritten, without needing direct DB access.
 if (($_GET['action'] ?? '') === 'list_races') {
-    $rows = $db->query("SELECT id, name, race_date, result_p1, result_p2, result_p3 FROM races ORDER BY race_date ASC")->fetchAll();
+    $rows = $db->query("SELECT id, name, location, race_date, race_time, quali_date, quali_time, quali_p1, quali_p2, quali_p3, result_p1, result_p2, result_p3 FROM races ORDER BY race_date ASC")->fetchAll();
     echo json_encode(['ok' => true, 'races' => $rows]);
     exit;
 }
