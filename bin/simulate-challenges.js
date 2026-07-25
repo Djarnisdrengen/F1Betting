@@ -15,9 +15,12 @@
  * target season file, e.g. database/seasons/data_YYYY.sql) and ROSTER as needed; everything
  * else (content gen, play simulation, duels, cron scoring, reporting) is unchanged.
  *
- * Needs locally: config.test.php (deploy target), build-deploy/.env with ANTHROPIC_API_KEY
- * (real content generation costs real API credits and draws down the shared paddock-rumors KB
- * for the test environment — see docs/paddock-challenges-reference.md).
+ * Needs locally: config.test.php (deploy target), build-deploy/.env with
+ * ANTHROPIC_API_KEY_SIMULATION — a dedicated key (name it "paddock-challenges-simulation" in the
+ * Anthropic console), separate from the ANTHROPIC_API_KEY that cron-content-topup.yml and a
+ * manual bin/generate-*.js run use, so simulation runs don't share budget/usage with the real
+ * weekly content pipeline. Real content generation costs real API credits and draws down the
+ * shared paddock-rumors KB for the test environment — see docs/paddock-challenges-reference.md.
  *
  * Before a full run, `node bin/simulate-challenges-preflight.js` is worth running first — it
  * checks admin login/CSRF and does one real (tiny) content-generation call in under a minute,
@@ -35,8 +38,18 @@ const { URL } = require('url');
 const { execFileSync } = require('child_process');
 
 const REPO = path.join(__dirname, '..');
+require('dotenv').config({ path: path.join(REPO, 'build-deploy/.env') });
 const { readPhpConfig } = require(path.join(REPO, 'build-deploy/php-config'));
 const cfg = readPhpConfig('test');
+
+// Dedicated simulation key, not the shared ANTHROPIC_API_KEY — see header comment. Passed to the
+// generator child processes below as their ANTHROPIC_API_KEY (dotenv inside those scripts never
+// overrides an already-set env var, so this substitution is transparent to them).
+const SIMULATION_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY_SIMULATION;
+if (!SIMULATION_ANTHROPIC_KEY) {
+    console.error('ANTHROPIC_API_KEY_SIMULATION not set in build-deploy/.env — see this file\'s header comment.');
+    process.exit(1);
+}
 
 const OUT_DIR = path.join(REPO, 'bin/simulate-runs', new Date().toISOString().replace(/[:.]/g, '-'));
 fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -155,6 +168,7 @@ function generateContent(kind, monday, count = 6) {
     try {
         out = execFileSync('node', [script, '--env=test', `--count=${count}`, '--publish', `--publish-date=${monday}`], {
             cwd: REPO, encoding: 'utf8', timeout: 300000,
+            env: { ...process.env, ANTHROPIC_API_KEY: SIMULATION_ANTHROPIC_KEY },
         });
     } catch (e) {
         return { ids: [], log: (e.stdout || '') + (e.stderr || ''), error: e.message };

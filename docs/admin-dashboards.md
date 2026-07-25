@@ -98,21 +98,29 @@ genuinely side-effect-free to regenerate. Each secret's static config (`nrSecret
   GitHub secret is manually updated to match) was judged an acceptable, same-day, no-user-impact
   tradeoff.
 - `'record'` — the human rotates it via the real channel (MySQL, Proton, Resend's own dashboard,
-  the paired GitHub secret, or a dedicated pepper/key migration) and this UI just records that it
-  happened — same "Roteret — indtast dato" flow access tokens already use: `DB_PASSWORD`,
-  `SMTP_PASSWORD`, `RESEND_API_KEY`, `PASSWORD_PEPPER`, `MFA_KEY`. The latter two were **not**
-  extended to `'auto'` — their risk
-  (immediate mass password-reset / 2FA-re-enrollment for every member) is categorically worse
-  than a CI break and wasn't approved.
+  the paired GitHub secret, the Anthropic console, or a dedicated pepper/key migration) and this
+  UI just records that it happened — same "Roteret — indtast dato" flow access tokens already
+  use: `DB_PASSWORD`, `SMTP_PASSWORD`, `RESEND_API_KEY`, `PASSWORD_PEPPER`, `MFA_KEY`, and the
+  dedicated `Anthropic — paddock-challenges-simulation` API key (see below). `MFA_KEY`/
+  `PASSWORD_PEPPER` were **not** extended to `'auto'` — their risk (immediate mass password-reset
+  / 2FA-re-enrollment for every member) is categorically worse than a CI break and wasn't
+  approved.
 
 Age tracking, the health score, and the audit log apply identically regardless of mode — only the
 auto-write button is scoped to the secrets it's actually safe (or explicitly approved) for.
 
-The one real access token this app holds is `GITHUB_TOKEN` (used by the Actions/PaddockKB tabs).
-"Anthropic"/"OpenAI" in the original design handoff don't correspond to any credential in
-`config.php` — Anthropic's key is a GitHub Actions repo secret used only inside CI runners, and
-there's no OpenAI key anywhere in this codebase (it belongs to the separate `f1-intelligence`
-Vercel deployment — do not confuse the two, see `CLAUDE.md`).
+The one real access token this app holds is `GITHUB_TOKEN` (used by the Actions/PaddockKB tabs) —
+"OpenAI" in the original design handoff doesn't correspond to any credential in this codebase (it
+belongs to the separate `f1-intelligence` Vercel deployment — do not confuse the two, see
+`CLAUDE.md`). Anthropic doesn't have a Tokens-section row either — its API keys carry no
+provider-set expiry date, which the Tokens section's countdown model needs — but it does have a
+`'record'`-mode **Secret** row: a dedicated key named `paddock-challenges-simulation` in the
+Anthropic console, used only by `bin/simulate-challenges.js` and tracked with no `configConst`
+(it's never loaded into `config.php` — only `build-deploy/.env` locally and, if wired into CI, its
+own GitHub Actions secret). This is a separate credential from the shared `ANTHROPIC_API_KEY` that
+`cron-content-topup.yml` / `bin/generate-rumor-items.js` / `generate-trivia-questions.js` use,
+which stays untracked here — it's a GitHub Actions repo secret with no local rotation event to
+record.
 
 ### Schema
 

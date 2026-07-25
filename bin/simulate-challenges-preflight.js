@@ -6,6 +6,9 @@
  * player-visible) content-generation + import round trip. Takes well under a minute; catches a
  * bad config/token/API-key before the roster gets seeded and real API credits get spent on a
  * run that can't finish. Usage: node bin/simulate-challenges-preflight.js
+ *
+ * Needs the same build-deploy/.env ANTHROPIC_API_KEY_SIMULATION as bin/simulate-challenges.js —
+ * see that file's header comment for why it's a dedicated key, not the shared ANTHROPIC_API_KEY.
  */
 const path = require('path');
 const http = require('http');
@@ -14,8 +17,15 @@ const { URL } = require('url');
 const { execFileSync } = require('child_process');
 
 const REPO = path.join(__dirname, '..');
+require('dotenv').config({ path: path.join(REPO, 'build-deploy/.env') });
 const { readPhpConfig } = require(path.join(REPO, 'build-deploy/php-config'));
 const cfg = readPhpConfig('test');
+
+const SIMULATION_ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY_SIMULATION;
+if (!SIMULATION_ANTHROPIC_KEY) {
+    console.error('ANTHROPIC_API_KEY_SIMULATION not set in build-deploy/.env — see bin/simulate-challenges.js\'s header comment.');
+    process.exit(1);
+}
 
 function httpGet(url, cookieStr) {
     return new Promise((resolve, reject) => {
@@ -63,7 +73,10 @@ async function main() {
     console.log('   races ok?', races.ok, 'count', races.races && races.races.length);
 
     console.log('4. One real generator call (rumor, count=1, publish, backdated)...');
-    const out = execFileSync('node', ['bin/generate-rumor-items.js', '--env=test', '--count=1', '--publish', '--publish-date=2099-01-05'], { cwd: REPO, encoding: 'utf8', timeout: 120000 });
+    const out = execFileSync('node', ['bin/generate-rumor-items.js', '--env=test', '--count=1', '--publish', '--publish-date=2099-01-05'], {
+        cwd: REPO, encoding: 'utf8', timeout: 120000,
+        env: { ...process.env, ANTHROPIC_API_KEY: SIMULATION_ANTHROPIC_KEY },
+    });
     console.log(out);
     const idsLine = out.split('\n').find((l) => l.startsWith('IDS:'));
     console.log('   parsed ids:', idsLine);
