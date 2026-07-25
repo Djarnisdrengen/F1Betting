@@ -19,10 +19,12 @@ if ($currentPage === 'challenges') {
         <div class="hf-bb-icon"><i class="fas fa-trophy"></i></div>
         <span><?= t('ch_nav_board') ?></span>
     </a>
+    <?php if ($settings['challenges_enabled'] ?? 1): ?>
     <a href="challenges.php" class="hf-bb-item <?= $currentPage === 'challenges' ? 'active' : '' ?>">
         <div class="hf-bb-icon" style="background:var(--f1-accent-challenges);color:#fff;border-radius:9px;width:30px;height:30px;box-shadow:0 3px 10px rgba(36,114,232,.5);">
             <i class="fas fa-gamepad"></i>
         </div>
         <span><?= t('ch_nav_short') ?></span>
     </a>
+    <?php endif; ?>
 </nav>

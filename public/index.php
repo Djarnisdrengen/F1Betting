@@ -186,6 +186,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
     </div>
 </section>
 
+<?php if ($settings['challenges_enabled'] ?? 1): ?>
 <!-- Challenges slim strip (REQ-007) -->
 <div class="hf-container">
     <a href="challenges.php" class="clickable-card" data-testid="challenges-strip" style="margin-top:18px;border-radius:12px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border-color);display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
@@ -201,8 +202,10 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
         <i class="fas fa-chevron-right text-muted" style="font-size:12px;"></i>
     </a>
 </div>
+<?php endif; ?>
 
 <?php else: ?>
+<?php if ($settings['challenges_enabled'] ?? 1): ?>
 <!-- Challenges hero (REQ-006, between races) -->
 <section class="hf-hero" data-testid="challenges-hero" style="background:radial-gradient(circle at 84% -15%, rgba(36,114,232,.4), transparent 55%), radial-gradient(circle at 5% 125%, rgba(251,191,36,.14), transparent 50%), var(--bg-secondary);">
     <div class="hf-container">
@@ -234,6 +237,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
         </div>
     </div>
 </section>
+<?php endif; ?>
 
 <div class="hf-container">
     <?php if (!empty($upcomingRaces)): ?>
@@ -248,7 +252,7 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
         </div>
     <?php endif; ?>
 
-    <?php if (!empty($cpTop3)): ?>
+    <?php if (($settings['challenges_enabled'] ?? 1) && !empty($cpTop3)): ?>
         <div class="hf-section-h" style="margin-top:22px;"><h2><?= t('ch_challenge_points') ?></h2><a href="challenges.php?section=board"><?= t('ch_full_board') ?></a></div>
         <?php foreach ($cpTop3 as $i => $row): ?>
             <?php $isSelfCp = $challengeParticipant && $row['participant_id'] === $challengeParticipant['id']; ?>

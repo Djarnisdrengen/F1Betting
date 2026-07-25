@@ -578,9 +578,10 @@ if (isset($_POST['update_settings'])) {
     $pointsWrongPos = intval($_POST['points_wrong_pos'] ?? 5);
     $bettingWindowHours = sanitizeInt($_POST['betting_window_hours'] ?? 48, 1, 168);
     $betSize = intval($_POST['bet_size'] ?? 10);
-    
-    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ? WHERE id = 1");
-    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize]);
+    $challengesEnabled = isset($_POST['challenges_enabled']) ? 1 : 0;
+
+    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ?, challenges_enabled = ? WHERE id = 1");
+    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize, $challengesEnabled]);
     $message = t('settings_saved');
 }
 

@@ -86,6 +86,17 @@
                 <input type="number" name="bet_size" class="form-input" value="<?= intval($settings['bet_size'] ?? 10) ?>" min="1" max="1000">
             </div>
 
+            <h4 class="mb-1 mt-2"><i class="fas fa-gamepad text-accent"></i> <?= t('challenges_visibility_section') ?></h4>
+            <p class="text-muted mb-2" style="font-size: 0.875rem;">
+                <?= t('challenges_visibility_desc') ?>
+            </p>
+            <div class="form-group mb-2">
+                <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" name="challenges_enabled" value="1" data-testid="challenges-enabled-toggle" <?= !empty($settings['challenges_enabled']) ? 'checked' : '' ?>>
+                    <?= t('challenges_enabled_label') ?>
+                </label>
+            </div>
+
             <button type="submit" name="update_settings" class="btn btn-primary">
                 <i class="fas fa-save"></i> <?= t('save') ?>
             </button>

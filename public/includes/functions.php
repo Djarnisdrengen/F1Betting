@@ -184,7 +184,8 @@ function getSettings() {
         'points_p2' => 18,
         'points_p3' => 15,
         'points_wrong_pos' => 5,
-        'betting_window_hours' => 48
+        'betting_window_hours' => 48,
+        'challenges_enabled' => 1
     ];
 }
 

@@ -27,6 +27,7 @@
     { "migration": "add_challenges.sql (invite guardrails)", "table": "challenge_email_suppressions" },
     { "migration": "add_challenges.sql (invite guardrails)", "table": "settings", "columns": ["challenge_invite_daily_cap"] },
     { "migration": "add_admin_dashboards.sql", "table": "admin_secret_state" },
-    { "migration": "add_admin_dashboards.sql", "table": "admin_audit_log" }
+    { "migration": "add_admin_dashboards.sql", "table": "admin_audit_log" },
+    { "migration": "add_challenges_toggle.sql", "table": "settings", "columns": ["challenges_enabled"] }
   ]
 }

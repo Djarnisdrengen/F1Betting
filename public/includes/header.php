@@ -125,7 +125,7 @@ try {
             <span class="yr"><?= escape($settings['app_year']) ?></span>
         </span>
     </a>
-    <?php if ($challengeParticipant): ?>
+    <?php if (($settings['challenges_enabled'] ?? 1) && $challengeParticipant): ?>
     <a class="hf-cp-chip" href="/challenges.php" data-testid="cp-chip" aria-hidden="true" tabindex="-1">
         <i class="fas fa-bolt" aria-hidden="true"></i><?= intval($challengeCP) ?> CP
     </a>
@@ -166,10 +166,12 @@ try {
     <a href="leaderboard.php" class="hf-drawer-row <?= $currentPage === 'leaderboard' ? 'active' : '' ?>">
         <i class="fas fa-trophy"></i><span><?= t('leaderboard') ?></span>
     </a>
+    <?php if ($settings['challenges_enabled'] ?? 1): ?>
     <a href="challenges.php" class="hf-drawer-row <?= $currentPage === 'challenges' ? 'active' : '' ?>" style="position:relative;">
         <i class="fas fa-gamepad" style="color:var(--f1-accent-challenges);"></i><span><?= t('ch_nav_challenges') ?></span>
         <span class="hf-badge open" style="padding:2px 8px;font-size:9px;"><?= t('ch_new_badge') ?></span>
     </a>
+    <?php endif; ?>
     <?php if ($currentUser && $currentUser['role'] === 'admin'): ?>
     <a href="admin-dashboards.php" class="hf-drawer-row <?= $currentPage === 'admin-dashboards' ? 'active' : '' ?>">
         <i class="fas fa-cog"></i><span><?= t('admin') ?></span>
@@ -179,7 +181,7 @@ try {
     <a href="profile.php" class="hf-drawer-row <?= $currentPage === 'profile' ? 'active' : '' ?>">
         <i class="fas fa-user"></i><span><?= t('profile') ?></span>
     </a>
-    <?php elseif ($challengeParticipant): ?>
+    <?php elseif (($settings['challenges_enabled'] ?? 1) && $challengeParticipant): ?>
     <a href="challenges-profile.php" class="hf-drawer-row <?= $currentPage === 'challenges-profile' ? 'active' : '' ?>">
         <i class="fas fa-user"></i><span><?= t('profile') ?></span>
         <?php if (empty($challengeParticipant['core_user_id']) && empty($challengeParticipant['promotion_requested_at'])): ?>
