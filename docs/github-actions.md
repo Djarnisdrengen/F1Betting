@@ -205,7 +205,7 @@ Find artifacts under **Actions → Monthly Security Review → (select run) → 
 **File:** `.github/workflows/e2e-test-orchestrator.yml`
 **Trigger:** manual only (`workflow_dispatch`) — no schedule, since it mutates the shared test DB the same way a local `npm run test:e2e:test` does.
 
-Runs the full E2E orchestrator (`tests/run-e2e-suites.js`, all 11 suites, 175 tests) against
+Runs the full E2E orchestrator (`tests/run-e2e-suites.js`, all 12 suites, 339 tests) against
 the test env. Added as part of the E2E suite restructuring
 (`epics/Optimize test suite structure/plan.md`, SHOULD-3) to give the orchestrator — the
 riskiest new component in that epic, since it repoints `npm run test:e2e:test` — at least one

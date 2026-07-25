@@ -64,7 +64,7 @@ function listCount(projectName) {
 
 // MUST-1: an untagged spec or a typo'd tag (`@predicitons`) must never silently vanish, and a
 // double-tagged test must never silently inflate the count. Diff "raw testDir glob" (the `all`
-// project, no grep) against "sum across the 11 primary project greps" and fail loudly on any
+// project, no grep) against "sum across the 12 primary project greps" and fail loudly on any
 // mismatch, before running a single leg.
 function orphanCheck() {
     const raw = listCount('all');
@@ -72,7 +72,7 @@ function orphanCheck() {
     const sum = bySuite.reduce((acc, [, n]) => acc + n, 0);
     if (sum !== raw) {
         console.error(`❌ Orphan/drift check failed: raw testDir glob has ${raw} tests, but the`);
-        console.error(`   11 primary suite tags sum to ${sum}. Per-suite counts:`);
+        console.error(`   12 primary suite tags sum to ${sum}. Per-suite counts:`);
         for (const [slug, n] of bySuite) console.error(`     ${slug}: ${n}`);
         console.error('   An untagged spec, a typo\'d tag, or a double-tagged test is likely.');
         return null;
@@ -162,7 +162,7 @@ async function main() {
         }
     }
     const countBySlug = new Map(baseline?.bySuite || []);
-    // Scoped to the legs actually running this time (not the full 175) — so cumulative % means
+    // Scoped to the legs actually running this time (not the full 339) — so cumulative % means
     // "progress through this run," not "progress through the full taxonomy minus what we skipped."
     const grandTotal = baseline ? legs.reduce((acc, [slug]) => acc + (countBySlug.get(slug) || 0), 0) : null;
 

@@ -20,6 +20,7 @@
     "test:e2e:appearance": "EMAIL_BACKEND=intercept PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --project=appearance --config tests/playwright.config.js",
     "test:e2e:preferences-editor": "EMAIL_BACKEND=intercept PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --project=preferences-editor --config tests/playwright.config.js",
     "test:e2e:cron": "EMAIL_BACKEND=intercept PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --project=cron --config tests/playwright.config.js",
+    "test:e2e:challenges": "EMAIL_BACKEND=intercept PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --project=challenges --config tests/playwright.config.js",
     "test:e2e:mobile": "EMAIL_BACKEND=intercept PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu22.04-x64 DEPLOY_ENV=test npx playwright test --project=mobile --config tests/playwright.config.js",
     "test:security": "node tests/security/security.js",
     "test:security:ratelimit": "node tests/security/security.js --ratelimit",

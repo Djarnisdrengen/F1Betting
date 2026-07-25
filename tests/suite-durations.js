@@ -10,10 +10,11 @@ module.exports = {
     predictions: 3,
     scoring: 6,
     'race-page': 3,
-    admin: 8,
+    admin: 25,
     profile: 9,
-    appearance: 9,
+    appearance: 19,
     'preferences-editor': 10,
     cron: 5,
+    challenges: 102,
     mobile: 2,
 };

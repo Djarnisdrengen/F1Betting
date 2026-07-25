@@ -35,8 +35,9 @@ if (process.env.E2E_LEG_JSON_OUTPUT) {
     reporters.push(["json", { outputFile: process.env.E2E_LEG_JSON_OUTPUT }]);
 }
 
-// 11 UX-oriented suites (see epics/Optimize test suite structure/epic-e2e-test-restructure.md
-// for the taxonomy) partition all tests via Playwright's native `{ tag }` — zero file moves.
+// 12 UX-oriented suites (see epics/Optimize test suite structure/epic-e2e-test-restructure.md
+// for the original taxonomy; `challenges` was added later for Paddock Challenges) partition all
+// tests via Playwright's native `{ tag }` — zero file moves.
 // `mobile` is a secondary, standalone-only cross-cutting suite that reuses 3 already-counted
 // tests (excluded from the primary list on purpose — see the epic's "Resolved Contradictions").
 // `all` has no grep — it is (a) the orchestrator's raw baseline for the orphan/drift check

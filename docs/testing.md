@@ -46,8 +46,8 @@ All tests run against the deployed site over HTTP — there is no local test ser
 |---|---|---|---|---|
 | `npm run test:smoke` | B | Key pages return 200 and contain expected content | test or live | ~5s |
 | `npm run test:unit` | B | Mailer transport logic (no network), plus small PHP CLI harnesses: passkey vectors, duel 5/2/0 scoring, `isRaceHeroWindow()` D9 boundaries | local | ~1s |
-| `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery — 11 suites run sequentially | test | ~2.5–3 min (measured) |
-| `npm run test:e2e:<suite>` | A | One suite standalone (see [Suites](#suites) below) | test | a few seconds–~1.5 min |
+| `npm run test:e2e:test` | A | Full user journeys — login, betting, admin, scoring, email delivery — 12 suites run sequentially | test | ~5 min (measured) |
+| `npm run test:e2e:<suite>` | A | One suite standalone (see [Suites](#suites) below) | test | a few seconds–~1m45s |
 | `npm run test:e2e:live` | A | Smoke suite only — read-only live health check | live | ~30s |
 | `npm run test:resend` | B | Sends one email directly via Resend API; verifies backup transport is operational | live | ~5s |
 | `npm run test:email:preview` | B | Renders all 20 email types locally as HTML files for manual visual review | test | ~30s |
@@ -61,11 +61,15 @@ Stack B = standalone Node scripts (read config directly from `php-config.js`, fa
 
 ## Suites
 
-The 175 E2E tests are partitioned into 11 UX-oriented suites via Playwright's native
+The 339 E2E tests are partitioned into 12 UX-oriented suites via Playwright's native
 `{ tag: '@slug' }` on each `test.describe` block (`tests/playwright.config.js`'s `projects`
 array greps by tag) — zero files moved, zero test bodies changed. Each suite is independently
 runnable via `npm run test:e2e:<suite>` and produces its own pass/fail result. Full background
-in `epics/Optimize test suite structure/epic-e2e-test-restructure.md` and `plan.md`.
+in `epics/Optimize test suite structure/epic-e2e-test-restructure.md` and `plan.md` (that epic's
+own counts — 175 tests, 11 suites — are a dated snapshot from when it landed; `admin` and
+`appearance` have since grown with the Dashboards area and nav-shell work, and `challenges` was
+added later as a 12th suite for Paddock Challenges. Durations below are re-measured against
+current `main`, not the epic's original numbers).
 
 | Suite (npm slug) | Source file(s) | Tests | `:live`? | Measured duration (standalone) |
 |---|---|---|---|---|
@@ -75,26 +79,27 @@ in `epics/Optimize test suite structure/epic-e2e-test-restructure.md` and `plan.
 | `predictions` | `04-betting` | 5 | No | ~3s |
 | `scoring` | `admin/13-scoring` | 12 | No | ~6s |
 | `race-page` | `14-race-page` | 16 | No | ~3s |
-| `admin` | `admin/10-content`, `admin/12-users`, `admin/12-email-delivery`, `06-emails` | 15 | No | ~8s |
+| `admin` | `admin/10-content`, `admin/12-users`, `admin/12-email-delivery`, `06-emails`, `admin/14-*`, `admin/15-20-dashboards-*` | 66 | No | ~25s |
 | `profile` | `05-profile` | 17 | No | ~9s |
-| `appearance` | `08-preferences` | 10 | No | ~9s |
+| `appearance` | `08-preferences`, `10-nav-shell` | 26 | No | ~19s |
 | `preferences-editor` | `09-profile-preferences` | 15 | No | ~10s |
-| `cron` | `07-cron` | 9 | No | ~5s |
-| `mobile` (standalone only, secondary tag) | 3 inline viewport tests, already inside their home suites | 3 (reused, not double-counted in the full run) | No | ~2s |
+| `cron` | `07-cron` | 11 | No | ~5s |
+| `challenges` | `challenges/40,42,43,44,46,47,48,49,50` | 95 | No | ~102s (2nd slowest) |
+| `mobile` (standalone only, secondary tag) | inline viewport tests, already inside their home suites | 17 (reused, not double-counted in the full run) | No | ~2s |
 
-Full orchestrated run (`npm run test:e2e:test`, `tests/run-e2e-suites.js`) measured at **~2.5–3
-minutes total**, sequential — well inside the epic's tolerance (no regression vs. the ~5–10 min
-pre-restructure baseline; session-reuse across legs, MUST-5, more than offsets the per-leg
-process-bootstrap cost). Authentication dominates at ~60% of total run time since its 49 tests
-run serially with real SMTP round-trips; it's the first candidate if the full run ever needs to
-get faster.
+Full orchestrated run (`npm run test:e2e:test`, `tests/run-e2e-suites.js`) measured at **~5
+minutes total**, sequential. `auth` and `challenges` together account for the majority of total
+run time — `auth`'s 49 tests run serially with real SMTP round-trips, `challenges`'s 95 tests
+span the full Paddock Challenges surface (participant access, rumor/trivia/duels play, admin
+authoring, invite guardrails, home hero, content auto-publish); they're the first candidates if
+the full run ever needs to get faster.
 
 **`predictions` (5 tests) covers bet *placement*** — pre-race display of odds/pool/countdown
 lives in `race-page` (16 tests). The small count in `predictions` isn't a coverage gap.
 
 **Only `smoke` gets a `:live` script** (`npm run test:e2e:smoke:live`) — every other suite
 mutates data (bets, users, races, passwords), and `docs/test-strategy.md` principle 4 forbids
-mutating Live. `npm run test:e2e:test:legacy` runs the full 175 in one un-tagged invocation
+mutating Live. `npm run test:e2e:test:legacy` runs the full 339 in one un-tagged invocation
 (pre-restructure behavior, kept as a rollback path).
 
 ---
@@ -130,23 +135,23 @@ Runs automatically at the end of every `deploy:test` and `deploy:live`.
 ## E2E Tests (Playwright)
 
 ```bash
-npm run test:e2e:test              # full suite against test env — 11 suites, sequential, via the orchestrator
+npm run test:e2e:test              # full suite against test env — 12 suites, sequential, via the orchestrator
 npm run test:e2e:<suite>           # one suite standalone, e.g. test:e2e:profile — see Suites above
 npm run test:e2e:live              # smoke suite only, against live
 npm run test:e2e:smoke:live        # same as above, explicit
-npm run test:e2e:test:legacy       # single un-tagged invocation, all 175 tests (rollback path)
-npm run test:e2e:test:no-auth      # full run minus Authentication (its ~99s dominates the run)
+npm run test:e2e:test:legacy       # single un-tagged invocation, all 339 tests (rollback path)
+npm run test:e2e:test:no-auth      # full run minus Authentication (~99s, one of the two slowest suites)
 ```
 
 `E2E_SKIP_SUITES` (comma-separated slugs) drives the exclusion — `test:e2e:test:no-auth` is just
 `E2E_SKIP_SUITES=auth`. Set it yourself for other combinations, e.g.
 `E2E_SKIP_SUITES=auth,cron node tests/run-e2e-suites.js`. Purely a run-scope choice: the
-orphan/drift check (MUST-1) still validates all 175 tests across all 11 tags regardless of what
+orphan/drift check (MUST-1) still validates all 339 tests across all 12 tags regardless of what
 this run skips, and cumulative-progress % rescales to whatever subset is actually running.
 
 Config: `tests/playwright.config.js`. Screenshots on failure: `build-deploy/screenshots/`.
 Full-run orchestration: `tests/run-e2e-suites.js` — spawns each suite as its own Playwright
-process, strictly sequential, with cross-suite progress (`Suite k of 11 — cumulative X/175`).
+process, strictly sequential, with cross-suite progress (`Suite k of 12 — cumulative X/339`).
 It self-checks that every test is tagged into exactly one primary suite before running anything
 (an untagged spec or a typo'd tag fails the run loudly rather than silently vanishing), and
 distinguishes a crashed leg from one with real test failures via a paired JSON reporter per leg.

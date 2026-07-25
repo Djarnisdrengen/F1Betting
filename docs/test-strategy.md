@@ -197,7 +197,7 @@ writes HTML to `tests/email-previews/`. See [testing.md](testing.md) for the ful
 1. Add seed/cleanup action to `test-seed.php` if data is needed
 2. Add typed wrapper to `helpers/seed.js`
 3. Add a numbered spec (e.g. `08-newfeature.spec.js`) — picked up automatically by `testMatch` glob
-4. **Tag its `test.describe` block with `{ tag: '@<suite-slug>' }`** — which of the 11 suites in
+4. **Tag its `test.describe` block with `{ tag: '@<suite-slug>' }`** — which of the 12 suites in
    `docs/testing.md`'s [Suites](testing.md#suites) table does this belong to? An untagged spec
    still runs in the legacy/full-glob path, but silently drops out of its suite's `npm run
    test:e2e:<suite>` and the orchestrator's per-suite counts — the orchestrator's orphan check
