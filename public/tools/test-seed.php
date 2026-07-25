@@ -1660,6 +1660,20 @@ if (($_GET['action'] ?? '') === 'simulation_status') {
             $gStmt = $db->prepare("SELECT game, SUM(points) as pts, COUNT(*) as awards FROM challenge_points WHERE participant_id = ? GROUP BY game");
             $gStmt->execute([$row['id']]);
             $row['by_game'] = $gStmt->fetchAll();
+
+            // Raw answer counts, independent of the CP ledger — a verification cross-check so a
+            // caller can confirm awards_count/points actually matches what was answered, not just
+            // trust the ledger's own arithmetic.
+            $raStmt = $db->prepare("SELECT COUNT(*) AS total, SUM(correct) AS correct FROM challenge_answers WHERE participant_id = ?");
+            $raStmt->execute([$row['id']]);
+            $row['rumor_answers_raw'] = $raStmt->fetch();
+            $taStmt = $db->prepare("SELECT COUNT(*) AS total, SUM(correct) AS correct FROM challenge_trivia_answers WHERE participant_id = ?");
+            $taStmt->execute([$row['id']]);
+            $row['trivia_answers_raw'] = $taStmt->fetch();
+            $dStmt2 = $db->prepare("SELECT COUNT(*) AS n FROM duels WHERE (challenger_id = ? OR opponent_id = ?) AND status = 'resolved'");
+            $dStmt2->execute([$row['id'], $row['id']]);
+            $row['duels_resolved_raw'] = intval($dStmt2->fetch()['n']);
+
             $leaderboard[] = $row;
         }
     }
