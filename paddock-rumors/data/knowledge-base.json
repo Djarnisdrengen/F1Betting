@@ -1706,5 +1706,20 @@
     "source_url": "https://en.wikipedia.org/wiki/2026_Belgian_Grand_Prix",
     "updated_at": "2026-07-19T17:01:42.014Z",
     "content_hash": "e50ac6d190fa80be"
+  },
+  {
+    "id": "quali-2026-r11-hungaroring",
+    "title": "Hungarian Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 11 Qualifying: Hungarian Grand Prix. Lando Norris took pole position for the Hungarian Grand Prix at the Hungaroring, setting a Q3 lap time of 1:17.207 for McLaren. Lewis Hamilton qualified second for Ferrari just 0.012 seconds behind, representing an exceptionally tight margin at the front. Charles Leclerc secured third for Ferrari at 1:17.445, while Andrea Kimi Antonelli placed fourth for Mercedes at 1:17.479, impressively splitting the two Ferrari entries. Oscar Piastri qualified fifth for McLaren at 1:17.684, leaving Max Verstappen sixth for Red Bull at 1:17.725, a notable result given Red Bull's recent form.\n\nArvid Lindblad reached Q3 for RB F1 Team in ninth, a strong showing for the young driver. Nico Hülkenberg placed Audi in tenth. Fernando Alonso qualified only 16th for Aston Martin, with Williams drivers Carlos Sainz and Alexander Albon both eliminated in Q1, underperforming relative to expectations.\n\nThe qualifying order indicates Ferrari and McLaren hold a clear pace advantage at this circuit, with Mercedes competitive and Red Bull marginally off the leading group. The tight top-four spread suggests a closely contested opening phase of the race is probable.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 11,
+      "circuit": "hungaroring",
+      "pole_driver": "lando-norris"
+    },
+    "source_url": null,
+    "updated_at": "2026-07-25T18:57:30.044Z",
+    "content_hash": "181c49a8160f0fb6"
   }
 ]
