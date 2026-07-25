@@ -1632,6 +1632,60 @@ if (($_GET['action'] ?? '') === 'seed_converted_guest') {
     exit;
 }
 
+// Action: simulation_status — read-only reporting helper for a Challenges simulation run.
+// participant_ids (CSV) → per-participant total CP, per-game CP breakdown, and the real
+// getChallengeStreak() (reused, not reimplemented). race_id (optional) → that race's duels with
+// both sides' picks/scores, for a weekly write-up without needing direct DB access.
+if (($_GET['action'] ?? '') === 'simulation_status') {
+    require_once __DIR__ . '/../includes/challenges.php';
+
+    $participantIds = isset($_GET['participant_ids']) && $_GET['participant_ids'] !== ''
+        ? explode(',', $_GET['participant_ids']) : [];
+
+    $leaderboard = [];
+    if ($participantIds) {
+        $ph = implode(',', array_fill(0, count($participantIds), '?'));
+        $stmt = $db->prepare("
+            SELECT p.id, p.display_name, p.email, p.core_user_id,
+                   COALESCE(SUM(cp.points), 0) AS total_cp
+            FROM challenge_participants p
+            LEFT JOIN challenge_points cp ON cp.participant_id = p.id
+            WHERE p.id IN ($ph)
+            GROUP BY p.id
+            ORDER BY total_cp DESC
+        ");
+        $stmt->execute($participantIds);
+        foreach ($stmt->fetchAll() as $row) {
+            $row['streak'] = getChallengeStreak($db, $row['id']);
+            $gStmt = $db->prepare("SELECT game, SUM(points) as pts, COUNT(*) as awards FROM challenge_points WHERE participant_id = ? GROUP BY game");
+            $gStmt->execute([$row['id']]);
+            $row['by_game'] = $gStmt->fetchAll();
+            $leaderboard[] = $row;
+        }
+    }
+
+    $duels = [];
+    if (!empty($_GET['race_id'])) {
+        $dStmt = $db->prepare("
+            SELECT d.id, d.race_id, d.status,
+                   cpart.display_name AS challenger_name, opart.display_name AS opponent_name,
+                   dpc.p1 AS c_p1, dpc.p2 AS c_p2, dpc.p3 AS c_p3, dpc.score AS c_score,
+                   dpo.p1 AS o_p1, dpo.p2 AS o_p2, dpo.p3 AS o_p3, dpo.score AS o_score
+            FROM duels d
+            JOIN challenge_participants cpart ON cpart.id = d.challenger_id
+            JOIN challenge_participants opart ON opart.id = d.opponent_id
+            LEFT JOIN duel_predictions dpc ON dpc.duel_id = d.id AND dpc.participant_id = d.challenger_id
+            LEFT JOIN duel_predictions dpo ON dpo.duel_id = d.id AND dpo.participant_id = d.opponent_id
+            WHERE d.race_id = ?
+        ");
+        $dStmt->execute([$_GET['race_id']]);
+        $duels = $dStmt->fetchAll();
+    }
+
+    echo json_encode(['ok' => true, 'leaderboard' => $leaderboard, 'duels' => $duels]);
+    exit;
+}
+
 // Action: list_drivers — read-only: id/name for every driver. Recon helper, same rationale as
 // list_races (avoids needing direct DB access to look up valid driver ids for results/picks).
 if (($_GET['action'] ?? '') === 'list_drivers') {
