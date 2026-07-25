@@ -260,6 +260,10 @@ body.clubhouse .bet-item.my-bet {
 @keyframes pp-pop  { from { opacity:0; transform:translateY(12px) scale(.98); } to { opacity:1; transform:none; } }
 @keyframes pp-drop { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
 .hf-arena-base { background-color: var(--bg-primary); animation: pp-fade .25s ease; }
+/* Rules page (challenges-rules.php) — blue challenges accent instead of red */
+.hf-arena-base .hf-rule-num { color: var(--f1-accent-challenges); }
+.hf-arena-base .hf-toc a.active::before { background: var(--f1-accent-challenges); }
+.hf-arena-base .hf-toc a.active .n { background: var(--f1-accent-challenges); }
 .hf-arena-header {
     background: var(--bg-secondary);
     padding: 16px;
@@ -528,30 +532,6 @@ body.clubhouse .bet-item.my-bet {
     font-size: 17px;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 0 20px rgba(251, 191, 36, .35);
-}
-
-/* ---- Rules page (challenges-rules.php) ---- */
-.hf-rules-chip {
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: var(--bg-card);
-    color: var(--text-primary);
-    font-size: 12px;
-    font-weight: 600;
-    text-decoration: none;
-}
-.hf-rules-card {
-    background: var(--bg-card);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 0 0 16px;
-    scroll-margin-top: 84px;
-}
-.hf-rules-num {
-    font-weight: 900;
-    font-size: 26px;
-    color: var(--f1-accent-challenges);
-    line-height: 1;
 }
 
 .btn-secondary {
@@ -1894,6 +1874,7 @@ body.light .hf-cta-primary.hf-cta-primary--challenges {
     box-shadow: 0 4px 14px rgba(36,114,232,0.22);
 }
 body.light .hf-toc a.active::before { background: var(--f1-red); }
+body.light .hf-arena-base .hf-toc a.active::before { background: var(--f1-accent-challenges); }
 body.light [data-testid="duel-queued-msg"] { color: #000; }
 
 /* ============================================================
@@ -1917,16 +1898,14 @@ body.light [data-testid="duel-queued-msg"] { color: #000; }
     display: flex; align-items: center; gap: 10px;
     text-decoration: none;
     color: inherit;
+    flex-shrink: 0;
+    min-width: 0;
 }
-.hf-logo-mark {
-    width: 32px; height: 32px;
-    border-radius: 7px;
-    background: var(--f1-red);
-    color: white;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-family: var(--display);
-    font-weight: 900; font-size: 13px;
-    letter-spacing: -0.02em;
+.hf-logo-img {
+    height: 32px;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
 }
 .hf-logo-text {
     font-family: var(--display);
@@ -1944,6 +1923,20 @@ body.light [data-testid="duel-queued-msg"] { color: #000; }
     margin-left: 6px;
     font-size: 12px;
 }
+.hf-top-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.hf-rules-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.1s;
+}
+.hf-rules-btn:hover { background: var(--bg-hover); }
+.hf-rules-btn:active { transform: scale(0.94); }
+.hf-rules-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.hf-rules-btn--core { color: var(--f1-red); }
+.hf-rules-btn--ch { color: var(--f1-accent-challenges); }
 .hf-hamburger {
     width: 40px; height: 40px;
     border-radius: 10px;
@@ -3169,14 +3162,18 @@ body.light [data-testid="duel-queued-msg"] { color: #000; }
 .hf-all-bets-toggle:focus { outline: none; }
 .hf-all-bets-toggle i:last-child { margin-left: auto; }
 .hf-all-bets-body { border-top: 1px solid var(--border-color); padding: 8px 0; }
-.hf-bet-close {
+.hf-bet-toprow {
     flex: 0 0 100%; order: -1; margin-bottom: 4px;
-    height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.hf-bet-close {
+    width: 32px; height: 32px; border-radius: 8px;
     background: transparent; border: none; color: var(--text-muted);
     cursor: pointer; font-size: 16px;
-    display: flex; align-items: center; justify-content: flex-end;
+    display: flex; align-items: center; justify-content: center;
     text-decoration: none;
 }
+.hf-bet-rules { width: 32px; height: 32px; }
 .hf-bet-close:focus { outline: none; }
 .hf-bet-close:hover { background: var(--bg-hover); color: var(--text-primary); }
 

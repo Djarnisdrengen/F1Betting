@@ -32,23 +32,40 @@ include __DIR__ . '/includes/header.php';
     <div class="hf-container" style="padding:20px;color:var(--text-primary);">
         <p style="font-size:15px;line-height:1.6;opacity:.9;margin:0 0 20px;"><?= t('ch_rules_intro') ?></p>
 
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;">
-            <?php foreach ($sections as $s): ?>
-            <a href="#<?= $s['id'] ?>" class="hf-rules-chip"><?= escape($s['title']) ?></a>
+        <!-- MD-only chip row -->
+        <div class="hf-rules-chips">
+            <?php foreach ($sections as $i => $s): ?>
+            <a href="#<?= $s['id'] ?>" style="display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:7px;text-decoration:none;">
+                <div style="font-family:var(--font-display);font-weight:800;font-size:11px;color:var(--text-muted);letter-spacing:.08em;"><?= str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT) ?></div>
+                <div style="font-family:var(--font-display);font-weight:700;font-size:13px;color:var(--text-primary);"><?= escape($s['title']) ?></div>
+            </a>
             <?php endforeach; ?>
         </div>
 
-        <?php foreach ($sections as $i => $s): ?>
-        <div class="hf-rules-card" id="<?= $s['id'] ?>">
-            <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px;">
-                <span class="hf-rules-num"><?= str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT) ?></span>
-                <h2 style="margin:0;font-size:17px;font-weight:700;color:var(--text-primary);"><?= escape($s['title']) ?></h2>
+        <div class="hf-rules-layout">
+            <!-- LG+ TOC sidebar -->
+            <nav class="hf-toc">
+                <div class="hf-toc-title"><?= t('rules_contents') ?></div>
+                <?php foreach ($sections as $i => $s): ?>
+                <a href="#<?= $s['id'] ?>"><span class="n"><?= str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT) ?></span><?= escape($s['title']) ?></a>
+                <?php endforeach; ?>
+            </nav>
+
+            <!-- Rules body -->
+            <div>
+                <?php foreach ($sections as $i => $s): ?>
+                <div class="hf-rule" id="<?= $s['id'] ?>">
+                    <div class="hf-rule-num"><?= str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT) ?></div>
+                    <div>
+                        <h3><?= escape($s['title']) ?></h3>
+                        <?php foreach ($s['body'] as $p): ?>
+                        <p><?= $p ?></p>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </div>
-            <?php foreach ($s['body'] as $p): ?>
-            <p style="font-size:14px;line-height:1.6;opacity:.9;margin:0 0 10px;"><?= $p ?></p>
-            <?php endforeach; ?>
         </div>
-        <?php endforeach; ?>
 
         <div style="text-align:center;margin-top:8px;">
             <?php if ($participant): ?>

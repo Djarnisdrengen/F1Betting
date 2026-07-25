@@ -414,15 +414,10 @@ include __DIR__ . '/includes/header.php';
 
 <div class="hf-arena-base" style="min-height:100vh;padding-bottom:80px;">
     <div class="hf-arena-header">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-            <h1 style="margin:0;font-size:24px;font-weight:700;color:var(--text-primary);">
-                <i class="fas fa-gamepad" style="margin-right:8px;color:var(--f1-accent-challenges);"></i>
-                <?= t('ch_nav_challenges') ?>
-            </h1>
-            <a href="challenges-rules.php" style="color:var(--text-primary);opacity:.75;font-size:13px;text-decoration:none;white-space:nowrap;">
-                <i class="fas fa-circle-question" style="margin-right:6px;"></i><?= t('ch_rules_link') ?>
-            </a>
-        </div>
+        <h1 style="margin:0;font-size:24px;font-weight:700;color:var(--text-primary);">
+            <i class="fas fa-gamepad" style="margin-right:8px;color:var(--f1-accent-challenges);"></i>
+            <?= t('ch_nav_challenges') ?>
+        </h1>
     </div>
 
     <div class="hf-container" style="padding:20px;color:var(--text-primary);">

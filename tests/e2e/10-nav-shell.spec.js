@@ -94,3 +94,63 @@ test.describe('Bottom bar exclusions and hub behavior', { tag: '@appearance' }, 
         await expect(page.locator('.hf-bottom a[href="challenges.php"]')).toHaveClass(/active/);
     });
 });
+
+// Top-bar rules-link icon: red → rules.php on core pages (logged in, not profile/admin),
+// blue → challenges-rules.php on every challenges-* page (always, no login required).
+test.describe('Top bar — rules link (signed out)', { tag: '@appearance' }, () => {
+    test('core page: no icon when signed out (rules.php is login-gated)', async ({ page }) => {
+        await page.goto('/leaderboard.php');
+        await expect(page.locator('[data-testid="rules-link"]')).toHaveCount(0);
+    });
+
+    test('challenges page: blue icon visible without login', async ({ page }) => {
+        await page.goto('/challenges.php');
+        const link = page.locator('[data-testid="rules-link"]');
+        await expect(link).toBeVisible();
+        await expect(link).toHaveClass(/hf-rules-btn--ch/);
+        await expect(link).toHaveAttribute('href', 'challenges-rules.php');
+    });
+});
+
+test.describe('Top bar — rules link (signed in)', { tag: '@appearance' }, () => {
+    test.use({ storageState: ADMIN_AUTH });
+
+    test('core page: red icon links to rules.php', async ({ page }) => {
+        await page.goto('/leaderboard.php');
+        const link = page.locator('[data-testid="rules-link"]');
+        await expect(link).toBeVisible();
+        await expect(link).toHaveClass(/hf-rules-btn--core/);
+        await expect(link).toHaveAttribute('href', 'rules.php');
+    });
+
+    test('challenges page: still the blue challenges icon, not the core one', async ({ page }) => {
+        await page.goto('/challenges.php');
+        const link = page.locator('[data-testid="rules-link"]');
+        await expect(link).toHaveClass(/hf-rules-btn--ch/);
+        await expect(link).toHaveAttribute('href', 'challenges-rules.php');
+    });
+
+    test('rules.php itself: icon marked active, not suppressed', async ({ page }) => {
+        await page.goto('/rules.php');
+        await expect(page.locator('[data-testid="rules-link"]')).toHaveClass(/active/);
+    });
+
+    test('profile.php and admin pages: no rules icon at all', async ({ page }) => {
+        await page.goto('/profile.php');
+        await expect(page.locator('[data-testid="rules-link"]')).toHaveCount(0);
+
+        await page.goto('/admin-dashboards.php');
+        await expect(page.locator('[data-testid="rules-link"]')).toHaveCount(0);
+    });
+
+    test('bet modal: has its own rules link distinct from the (DOM-present but overlay-covered) header one', async ({ page }) => {
+        await page.goto('/bet.php');
+        // header.php still renders behind the full-screen modal overlay — two elements sharing
+        // one data-testid here would make locators ambiguous (Playwright strict-mode violation),
+        // so the modal link must use its own testid rather than "rules-link".
+        await expect(page.locator('[data-testid="rules-link"]')).toHaveCount(1);
+        const modalLink = page.locator('[data-testid="rules-link-bet"]');
+        await expect(modalLink).toBeVisible();
+        await expect(modalLink).toHaveAttribute('href', 'rules.php');
+    });
+});

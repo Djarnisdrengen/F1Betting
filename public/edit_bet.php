@@ -136,7 +136,12 @@ include __DIR__ . '/includes/header.php';
                 </div>
             </div>
             <span class="hf-bet-badge open"><?= t('betting_open') ?></span>
-            <a href="index.php" class="hf-bet-close" aria-label="<?= t('close') ?>">✕</a>
+            <div class="hf-bet-toprow">
+                <a href="rules.php" class="hf-rules-btn hf-rules-btn--core hf-bet-rules" data-testid="rules-link-bet" aria-label="<?= escape(t('rules')) ?>" title="<?= escape(t('rules')) ?>">
+                    <i class="fas fa-question" aria-hidden="true"></i>
+                </a>
+                <a href="index.php" class="hf-bet-close" aria-label="<?= t('close') ?>">✕</a>
+            </div>
         </section>
 
         <?php if ($betCount > 0): ?>

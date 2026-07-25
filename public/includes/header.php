@@ -77,6 +77,12 @@ $currentUser = getCurrentUser();
 $settings = getSettings();
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 
+// Rules-link header icon: which rules page (if any) this page should point to.
+// Challenges pages always get challenges-rules.php (no login required there); core pages
+// get rules.php but only when logged in, and never on profile/admin (not betting context).
+$isChallengesPage    = $currentPage === 'challenges' || str_starts_with($currentPage, 'challenges-');
+$isRulesExcludedCore = $currentPage === 'profile' || str_starts_with($currentPage, 'admin');
+
 // Challenge identity + CP chip. Resolving here (still pre-output) also re-establishes a
 // returning participant's session from the ch_access device cookie app-wide (B3/REQ-121).
 $challengeParticipant = null;
@@ -113,7 +119,7 @@ try {
 <body class="<?= escape($theme) ?> font-<?= escape($fontStack) ?>">
 <header class="hf-top">
     <a class="hf-logo" href="/">
-        <span class="hf-logo-mark">F1</span>
+        <img class="hf-logo-img" src="assets/logo_header_<?= escape($theme) ?>.png" alt="<?= escape($settings['app_title']) ?>">
         <span class="hf-logo-text">
             <?= escape($settings['app_title']) ?>
             <span class="yr"><?= escape($settings['app_year']) ?></span>
@@ -124,9 +130,20 @@ try {
         <i class="fas fa-bolt" aria-hidden="true"></i><?= intval($challengeCP) ?> CP
     </a>
     <?php endif; ?>
-    <button class="hf-hamburger" id="hf-hamburger" aria-label="Menu" aria-expanded="false" aria-controls="hf-drawer">
-        <span class="bars"><span></span><span></span><span></span></span>
-    </button>
+    <div class="hf-top-actions">
+        <?php if ($isChallengesPage): ?>
+        <a href="challenges-rules.php" class="hf-rules-btn hf-rules-btn--ch <?= $currentPage === 'challenges-rules' ? 'active' : '' ?>" data-testid="rules-link" aria-label="<?= escape(t('ch_rules_link')) ?>" title="<?= escape(t('ch_rules_link')) ?>">
+            <i class="fas fa-question" aria-hidden="true"></i>
+        </a>
+        <?php elseif ($currentUser && !$isRulesExcludedCore): ?>
+        <a href="rules.php" class="hf-rules-btn hf-rules-btn--core <?= $currentPage === 'rules' ? 'active' : '' ?>" data-testid="rules-link" aria-label="<?= escape(t('rules')) ?>" title="<?= escape(t('rules')) ?>">
+            <i class="fas fa-question" aria-hidden="true"></i>
+        </a>
+        <?php endif; ?>
+        <button class="hf-hamburger" id="hf-hamburger" aria-label="Menu" aria-expanded="false" aria-controls="hf-drawer">
+            <span class="bars"><span></span><span></span><span></span></span>
+        </button>
+    </div>
 </header>
 
 <?php if (defined('APP_ENV') && APP_ENV === 'test'): ?>
@@ -149,11 +166,6 @@ try {
     <a href="leaderboard.php" class="hf-drawer-row <?= $currentPage === 'leaderboard' ? 'active' : '' ?>">
         <i class="fas fa-trophy"></i><span><?= t('leaderboard') ?></span>
     </a>
-    <?php if ($currentUser): ?>
-    <a href="rules.php" class="hf-drawer-row <?= $currentPage === 'rules' ? 'active' : '' ?>">
-        <i class="fas fa-book"></i><span><?= t('rules') ?></span>
-    </a>
-    <?php endif; ?>
     <a href="challenges.php" class="hf-drawer-row <?= $currentPage === 'challenges' ? 'active' : '' ?>" style="position:relative;">
         <i class="fas fa-gamepad" style="color:var(--f1-accent-challenges);"></i><span><?= t('ch_nav_challenges') ?></span>
         <span class="hf-badge open" style="padding:2px 8px;font-size:9px;"><?= t('ch_new_badge') ?></span>

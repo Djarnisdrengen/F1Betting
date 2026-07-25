@@ -1,5 +1,10 @@
 <?php
-$arenaTint = $currentPage === 'challenges' ? 'background: rgba(13,13,16,.95);' : '';
+$arenaTint = '';
+if ($currentPage === 'challenges') {
+    $arenaTint = ($theme ?? 'dark') === 'light'
+        ? 'background: rgba(226,229,238,.95);'
+        : 'background: rgba(13,13,16,.95);';
+}
 ?>
 <nav class="hf-bottom" style="<?= $arenaTint ?>">
     <a href="/" class="hf-bb-item <?= $currentPage === 'index' ? 'active' : '' ?>">
