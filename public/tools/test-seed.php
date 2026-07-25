@@ -1632,6 +1632,14 @@ if (($_GET['action'] ?? '') === 'seed_converted_guest') {
     exit;
 }
 
+// Action: list_drivers — read-only: id/name for every driver. Recon helper, same rationale as
+// list_races (avoids needing direct DB access to look up valid driver ids for results/picks).
+if (($_GET['action'] ?? '') === 'list_drivers') {
+    $rows = $db->query("SELECT id, name, team, number FROM drivers ORDER BY name ASC")->fetchAll();
+    echo json_encode(['ok' => true, 'drivers' => $rows]);
+    exit;
+}
+
 // Action: list_races — read-only: id/name/race_date/result_p1-3 for every race. Recon helper
 // (e.g. before a simulation touches update_race) so a caller can tell which races already carry
 // real results and must not be overwritten, without needing direct DB access.
