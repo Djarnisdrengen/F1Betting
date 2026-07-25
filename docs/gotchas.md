@@ -25,6 +25,7 @@
 - [21. Every `.hf-drawer-row` needs its own active-state check — there's no shared mechanism](#21-every-hf-drawer-row-needs-its-own-active-state-check--theres-no-shared-mechanism)
 - [22. A stray test race can hijack `getNextDuelRace()` for every duels user](#22-a-stray-test-race-can-hijack-getnextduelrace-for-every-duels-user)
 - [23. sync:live also wipes challenge_participants — there's no live copy to restore it from](#23-synclive-also-wipes-challenge_participants--theres-no-live-copy-to-restore-it-from)
+- [24. A hand-built POST to a bulk-delete/bulk-update handler needs `ids[]`, not repeated `ids`](#24-a-hand-built-post-to-a-bulk-deletebulk-update-handler-needs-ids-not-repeated-ids)
 
 ---
 
@@ -257,3 +258,11 @@ Because the FKs cascade, this single delete also clears: `challenge_points`, `ch
 **Deliberately left alone:** `challenge_items` / `challenge_trivia_questions` (editorial rumor/trivia content — not participant data, and wiping it would disrupt manual QA of the admin review/publish flow) and `challenge_email_suppressions` (the opt-out/bounce list exists specifically to *persist* across resets — clearing it risks re-emailing someone who already opted out).
 
 If you're testing Paddock Challenges and your participants vanish after a `sync:live`, this is why — not a bug, and there's no way to opt out per-participant.
+
+---
+
+## 24. A hand-built POST to a bulk-delete/bulk-update handler needs `ids[]`, not repeated `ids`
+
+`admin-challenges.php`'s bulk actions (`bulk_delete_rumor`, `bulk_delete_trivia`, `bulk_delete_participants`, `bulk_delete_duels`, ...) all read `(array) ($_POST['ids'] ?? [])`. When a real `<form>` submits checkboxes named `ids[]`, PHP already builds `$_POST['ids']` as an array and this works exactly as it looks. But a script POSTing by hand (`curl`, `fetch`, a Node `URLSearchParams`/manual body) that sends the field as plain repeated `ids=x&ids=y&ids=z` — no brackets — gets a very different, silent result: PHP's form parser only treats a field as an array when the *name itself* carries `[]` (or an explicit index like `ids[0]`). Repeated bare `ids=` keys just overwrite each other, so `$_POST['ids']` ends up a single scalar string — whichever value happened to land last — and `(array) $scalar` then wraps *that one value* in a one-element array. The handler runs successfully (200/302, no error, `admin_ch_bulk_updated` flash message and everything), it just silently only touched one row instead of all of them.
+
+Caught while cleaning up after `bin/simulate-challenges.js` (see `docs/paddock-challenges-reference.md`): a hand-rolled cleanup POST looked like it worked (redirect, no error) but a follow-up count showed only 1 of 52 rumor items and 1 of 54 trivia items were actually gone. Fix: build the body with bracket notation per id — `ids%5B%5D=<id1>&ids%5B%5D=<id2>&...` (`%5B%5D` is `[]` URL-encoded) — and always verify a bulk operation's actual effect afterward (a count before/after, not just the HTTP status), the same way you'd want a bulk migration verified.
