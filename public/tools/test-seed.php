@@ -1862,6 +1862,22 @@ if (($_GET['action'] ?? '') === 'get_prefs') {
 $db->query("UPDATE settings SET bet_size = 10");
 $db->query("DELETE FROM bets");
 
+// users/races are wiped unconditionally below, so any leaderboard_snapshots rows scored
+// against them would otherwise become permanently orphaned (no FK/cascade ties this table
+// back to users/races — see cleanup_score_race above for the only other place that deletes
+// from it). Guard with CREATE TABLE IF NOT EXISTS since this reset can run before any page
+// that lazily creates the table (getLeaderboard()) has ever run.
+$db->exec("CREATE TABLE IF NOT EXISTS leaderboard_snapshots (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    race_id VARCHAR(36) NOT NULL,
+    `rank` INT NOT NULL,
+    points INT NOT NULL,
+    scored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_user_race (user_id, race_id)
+) DEFAULT CHARSET=utf8mb4");
+$db->query("DELETE FROM leaderboard_snapshots");
+
 // Preserve f1_admin service account across the wipe
 $adminStmt = $db->prepare("SELECT * FROM users WHERE email = ?");
 $adminStmt->execute([F1_ADMIN_EMAIL]);
