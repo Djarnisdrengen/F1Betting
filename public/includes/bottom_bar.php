@@ -5,8 +5,10 @@ if ($currentPage === 'challenges') {
         ? 'background: rgba(226,229,238,.95);'
         : 'background: rgba(13,13,16,.95);';
 }
+$challengesEnabled = $settings['challenges_enabled'] ?? 1;
+$navCols = $challengesEnabled ? 4 : 3;
 ?>
-<nav class="hf-bottom" style="<?= $arenaTint ?>">
+<nav class="hf-bottom" style="<?= $arenaTint ?>grid-template-columns: repeat(<?= $navCols ?>, 1fr);">
     <a href="/" class="hf-bb-item <?= $currentPage === 'index' ? 'active' : '' ?>">
         <div class="hf-bb-icon"><i class="fas fa-home"></i></div>
         <span><?= t('home') ?></span>
@@ -19,7 +21,7 @@ if ($currentPage === 'challenges') {
         <div class="hf-bb-icon"><i class="fas fa-trophy"></i></div>
         <span><?= t('ch_nav_board') ?></span>
     </a>
-    <?php if ($settings['challenges_enabled'] ?? 1): ?>
+    <?php if ($challengesEnabled): ?>
     <a href="challenges.php" class="hf-bb-item <?= $currentPage === 'challenges' ? 'active' : '' ?>">
         <div class="hf-bb-icon" style="background:var(--f1-accent-challenges);color:#fff;border-radius:9px;width:30px;height:30px;box-shadow:0 3px 10px rgba(36,114,232,.5);">
             <i class="fas fa-gamepad"></i>
