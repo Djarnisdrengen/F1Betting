@@ -1889,6 +1889,7 @@ body.light [data-testid="duel-queued-msg"] { color: #000; }
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
     flex-shrink: 0;
     position: sticky;
     top: 0;
@@ -1898,7 +1899,6 @@ body.light [data-testid="duel-queued-msg"] { color: #000; }
     display: flex; align-items: center; gap: 10px;
     text-decoration: none;
     color: inherit;
-    flex-shrink: 0;
     min-width: 0;
 }
 .hf-logo-img {
@@ -1956,6 +1956,12 @@ body.light [data-testid="duel-queued-msg"] { color: #000; }
 }
 .hf-hamburger .bars span {
     height: 2px; background: currentColor; border-radius: 1px;
+}
+
+@media (max-width: 480px) {
+    .hf-top { padding: 0 12px; }
+    .hf-logo { gap: 8px; }
+    .hf-logo-img { height: 18px; }
 }
 
 /* ============================================================
