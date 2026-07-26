@@ -21,9 +21,14 @@
 
 The admin area is organized into three top-level areas — **Dashboards** (`admin-dashboards.php`),
 **Paddock Challenges** (`admin-challenges.php`), and **Core** (`admin.php`) — via a shared
-`<nav class="admin-area-nav">` (`public/includes/admin-area-nav.php`), in that left-to-right order.
+`renderAdminAreaNav()` (`public/includes/admin-area-nav.php`), in that left-to-right order.
 Dashboards is the default landing page for the site header's "Admin" link. Core and Paddock
 Challenges are otherwise unchanged from before this feature; only their nav chrome was restyled.
+
+Since the Admin area redesign epic (`epics/Admin area redesign/plan.md`), one canonical layout-
+primitive set — nav rows, page headers, KPI stat cards, section wrappers, badges, buttons — spans
+all three areas; see [patterns.md → Admin Layout Primitives](patterns.md#admin-layout-primitives)
+for the shared conventions any new admin screen should reuse.
 
 Dashboards has five section tabs, all served by `public/admin-dashboards.php?tab=`:
 
@@ -46,9 +51,14 @@ so Oversigt can call them regardless of which tab is actually active).
 ## Two-tier nav
 
 `renderAdminAreaNav(string $activeArea, ?int $challengesPromoCount = null)` renders the shared
-Level-1 row. Each of the three top-level pages (`admin.php`, `admin-challenges.php`,
-`admin-dashboards.php`) then renders its own Level-2 `<nav class="admin-nav">` tab row exactly as
-before (Core/Paddock Challenges: unchanged markup; Dashboards: its own 5-tab row).
+Level-1 row; it delegates to the lower-level `renderAdminTabRow('area', $activeArea, $items)`. Each
+of the three top-level pages (`admin.php`, `admin-challenges.php`, `admin-dashboards.php`) then
+renders its own Level-2 tab row via its own `renderAdminTabRow($groupKey, $activeTab, $items)` call
+— both levels share one rendering function and one visual system
+(`.admin-shell`/`.admin-tabs`/`.admin-tab`/`.admin-dropdown`, container-query responsive at 720px),
+rather than each page hand-copying its own tab-row markup. See
+[patterns.md → Admin Layout Primitives](patterns.md#admin-layout-primitives) for the full
+signature and the container-query mechanics.
 
 `admin-actions.php` is now a thin 302 redirect to `admin-dashboards.php?tab=actions`, preserving
 the query string — old bookmarks and the `?ajax=run_jobs` endpoint both keep working.

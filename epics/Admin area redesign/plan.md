@@ -389,6 +389,57 @@ queries:
 **Verification:** `46-admin-challenges.spec.js` and `44-duels.spec.js` pass; full `npm run deploy:test`
 and `npm run test:e2e:test` run as the phase-end gate.
 
+## Phase 5 — docs + full-suite pass + manual visual check (2026-07-26)
+
+Docs updated: `docs/patterns.md` gained an "Admin Layout Primitives" section documenting
+`renderAdminTabRow()`, `.admin-page-header`, `.stat-card-grid`/`.stat-card`, `.section-card` vs
+`.card`, `.badge-*`, `.btn-danger`/`.admin-icon-btn`, and `.admin-tab-content` as the conventions
+any new admin screen should reuse; `docs/admin-dashboards.md`'s "Two-tier nav" section (still
+describing the pre-Phase-1 `<nav class="admin-nav">` markup) was corrected to describe
+`renderAdminTabRow()` and linked to the new patterns.md section.
+
+`npm run deploy:test` + full `npm run test:e2e:test`: **11/12 suites 100% green**, including the
+entire `admin` suite (30.3s). The 12th suite (`challenges`) had the same 5 pre-existing failures
+documented in [[project_rumor_playable_test_fixture]] (recurring weekly content-topup pollution) —
+zero overlap with anything this epic touched.
+
+**Manual container-query visual pass — one real finding, not caught by the existing automated
+breakpoint tests (which only assert at 1024px/375px):** screenshotted all three admin areas at
+375/719/721/768/1024/1280px via a throwaway authenticated script (not a committed test). The
+**720px `@container` threshold on `.admin-shell` never actually fires between 768px and 1023px
+viewport width.** Root cause: `.hf-container` (the shared page wrapper every admin page nests
+inside) has its own responsive tiers — content width is `viewport - 32` below 768px, then a
+**constant 712px** for the entire 768-1023px range (`max-width:760px` + `24px` padding each side),
+then jumps straight to ~1016px at the site's own 1024px breakpoint. Since 712 < 720, `.admin-shell`
+never crosses the threshold anywhere in that 256px-wide band — the mobile dropdown shows there
+regardless, and the flat `.admin-tabs` row only actually appears at ≥1024px viewport width in
+practice. Verified this isn't itself a wrapping problem being correctly avoided: forcing `.admin-
+tabs` to display at the 712px width shows Dashboards' and Challenges' 5-tab rows and the Level-1
+3-area row all fit on one line fine; only Core's 8-tab Level-2 row would wrap to 2 lines at that
+width, so a lower threshold would trade the dropdown for 2-line-wrapped tabs there specifically.
+
+This directly contradicts this plan's own Testing-approach section, which asserted "the shell-
+width-vs-viewport-width divergence... doesn't concretely apply to this codebase" — that assertion
+was checked only in the abstract (no nested narrower embedding context) and missed that
+`.hf-container`'s *own* tiered breakpoints create the same effect a narrow embedding context would.
+
+**Decision (2026-07-26, Djarnis):** leave the 720px threshold as-is, no CSS change — the dropdown
+is fully functional at every width, this is a UX-polish gap (flat tabs would look marginally nicer
+in the 768-1023px band) not a functional bug, and a fix has its own tradeoff (Core's 8-tab row
+wrapping to 2 lines) rather than being a clean win. Documented here so the ~1024px *effective*
+breakpoint (not 720px) is the number anyone extending `renderAdminTabRow()`/`.admin-shell` should
+actually expect in practice, on this specific page structure.
+
+**Also found, confirmed pre-existing and out of this epic's scope:** Keys & Rotation
+(`admin-dashboards.php?tab=keys`) health-ring + KPI row uses a hardcoded inline
+`grid-template-columns:130px 1fr` wrapper (from the prior "Admin settings and dashboards" epic,
+never touched by this epic's Phase 2 class-rename-only scope — see Phase 2's own note that
+`.dash-health-ring`/`.dash-health-score` were deliberately not renamed) that squeezes `.stat-card-
+grid` into a narrow single column beside the ring at 375px, and several Secrets & Passwords rows'
+long constant names (`INTEGRATION_SEED_TOKEN`, etc.) truncate awkwardly against their "OK" badge at
+that width. Not fixed — outside this epic's Phase 2 scope (rename only, not restructure), noted
+here rather than silently ignored. See Deferred.
+
 ## Deferred
 
 - Any KPI card whose number isn't already computable from data a page already fetches (decision 6) —
@@ -398,3 +449,10 @@ and `npm run test:e2e:test` run as the phase-end gate.
   explicitly excludes these ("no hover-lift on cards... admin data rows stay flat").
 - A true cross-host Test↔Prod nav/primitive parity check — out of scope; this epic's CSS/markup
   changes deploy per-environment the same way every other admin change already does.
+- Keys & Rotation's health-ring + KPI-row mobile squeeze at 375px (hardcoded `130px 1fr` grid
+  wrapper, pre-existing from the prior epic) and the Secrets & Passwords rows' long constant-name
+  truncation against the "OK" badge at the same width — found during Phase 5's manual visual pass,
+  confirmed out of this epic's Phase 2 rename-only scope, not fixed.
+- The 720px nav `@container` threshold's effective-~1024px-in-practice behavior (Phase 5 finding,
+  above) — accepted as-is per Djarnis's 2026-07-26 call, not revisited unless a future epic touches
+  `.hf-container`'s own responsive tiers.

@@ -20,6 +20,7 @@
 - [Security Headers](#security-headers)
 - [Code Style](#code-style)
 - [UI Toggle Conventions](#ui-toggle-conventions)
+- [Admin Layout Primitives](#admin-layout-primitives)
 
 ---
 
@@ -338,3 +339,82 @@ Because `.btn-primary`, `.hf-tab-btn`, `.hf-pref-btn`, `.text-accent`, and the a
 **Deliberately excluded** (kept as their existing colour, not part of this accent): semantic right/wrong-answer feedback (Rumor-or-Not's red/green guess buttons, Trivia's correct/incorrect icons, duel win/loss colouring), gold CP/streak/points indicators, and the entire `admin-challenges.php` control room (its tab/badge classes are shared verbatim with core `admin.php`; recolouring them would bleed into non-Challenges admin screens).
 
 Any new preference toggle added in future must follow the same current-state convention.
+
+---
+
+## Admin Layout Primitives
+
+One shared chrome — navigation, headers, KPI cards, section wrappers, buttons — spans all three
+admin areas (Core `admin.php`, Paddock Challenges `admin-challenges.php`, Dashboards
+`admin-dashboards.php`). Introduced by `epics/Admin area redesign/plan.md`; reuse these on any new
+admin screen instead of re-deriving colors or copy-pasting a tab row by hand.
+
+**Tab navigation — `renderAdminTabRow()`:**
+
+```php
+renderAdminTabRow(string $groupKey, string $activeKey, array $items, string $ariaLabel = '');
+// $items: [['key' => ..., 'href' => ..., 'icon' => ..., 'label' => ..., 'count' => optional int], ...]
+```
+
+One function renders **both** nav levels — the Level-1 area switcher (`renderAdminAreaNav()`
+delegates to it, `$groupKey = 'area'`) and each page's own Level-2 tab row (`$groupKey` = anything
+else, e.g. `'challenges'`). It emits an `.admin-shell` container holding a desktop `.admin-tabs` row
+and a mobile `<details class="admin-dropdown">`, both always in the DOM — a container query
+(`@container admin-vp (max-width: 720px)` on `.admin-shell`) decides which is visible, so the
+open/close mechanic itself needs zero JS. `$groupKey` also picks the `data-testid`
+(`admin-area-tab` vs `admin-tab`, `-mobile` suffixed on the dropdown's `<a>`s) so tests can target
+"the three area tabs" vs "this page's tabs" without depending on CSS class names.
+
+**The 720px number is nominal, not the real-world crossover point.** `.admin-shell` nests inside
+the shared `.hf-container`, whose own responsive tiers pin content width at a constant 712px for
+the entire 768–1023px viewport range (only widening at the site's 1024px breakpoint) — so in
+practice the flat `.admin-tabs` row only appears at ≥1024px viewport width, and the dropdown covers
+everything below that. Confirmed and accepted as-is during the redesign epic's Phase 5 visual pass
+(see `epics/Admin area redesign/plan.md`) rather than chasing the literal 720px value — don't assume
+resizing to just over 720px viewport width will show the flat row on a page nested in
+`.hf-container`.
+
+**Page/tab heading — `.admin-page-header`:** icon + title row, used once per *page* (Core has one
+global `<h1>`, so its per-tab bodies don't repeat it) or once per *tab* where the tab has no
+higher-level heading above it (all five Dashboards tabs, which had no in-tab heading before this).
+Don't add it to a tab that already sits under a page-level `<h1>`.
+
+**KPI numbers — `.stat-card-grid` / `.stat-card`:**
+
+```html
+<div class="stat-card-grid">
+  <div class="stat-card">
+    <div class="stat-card-label"><i class="fas fa-..."></i> Label</div>
+    <div class="stat-card-value">42</div>          <!-- add .success / .danger to color the number -->
+  </div>
+</div>
+```
+
+`.stat-card-grid` is `repeat(auto-fit, minmax(160px, 1fr))` — reflows without a media query. Only
+add a KPI card when its number is already computed from data the page fetches anyway; a genuinely
+new query is a bigger change than "layout primitive" and should be called out explicitly rather than
+snuck in alongside a reskin.
+
+**Section/panel wrapper — `.section-card` vs `.card`:** these are **not interchangeable** —
+`.section-card` groups a whole panel or collapsible settings section (Dashboards tabs, Settings'
+General/Hero/Betting-rules groups); `.card`/`.card-body` is the per-row wrapper for dense repeating
+lists (Users, Bets, Members, Duels, etc.) and must stay the outer element on every such row — new
+row content nests *inside* it, never replaces it, so existing `.card`/`.card-body` E2E locators keep
+working.
+
+**Status pills — `.badge-accent` / `-success` / `-danger` / `-warning` / `-neutral`:** replaces
+scattered inline `style="background:#..."` lookups for state pills (duel status, etc.). Pick by
+semantic meaning, not by eyeballing a hex value — `.badge-accent` (not `.badge-danger`) is the one
+that resolves to `var(--f1-red)`; `.badge-danger` resolves to the distinct `--status-danger` red.
+
+**Buttons — `.btn-danger` / `.admin-icon-btn`:** `.btn-danger` is the standard class for
+delete/veto/destructive actions (replaces inline `background:var(--f1-red)` on buttons — keep the
+existing `.btn-delete` class alongside it where present, it drives the shared confirm-modal JS).
+`.admin-icon-btn` gives an icon-only button (e.g. Edit) uniform 34×34 sizing — additive, alongside
+whatever button-color class already applies.
+
+**`.admin-tab-content` wrapper:** wrap each page's per-tab include output in
+`<div class="admin-tab-content">...</div>`. It carries the `.admin-tab-content .card:hover`
+override that keeps admin data rows flat (no hover-lift/glow) — the generic site-wide `.card:hover`
+rule adds a lift meant for content cards, not admin list rows. Any new admin tab whose rows are
+`.card`-wrapped needs this wrapper or it inherits that unwanted lift.
