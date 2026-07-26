@@ -128,10 +128,21 @@
             <p class="text-muted mb-2" style="font-size: 0.875rem;">
                 <?= t('challenges_visibility_desc') ?>
             </p>
-            <div class="form-group mb-0">
-                <label class="form-label" style="display:flex;align-items:center;gap:8px;">
-                    <input type="checkbox" name="challenges_enabled" value="1" data-testid="challenges-enabled-toggle" <?= !empty($settings['challenges_enabled']) ? 'checked' : '' ?>>
-                    <?= t('challenges_enabled_label') ?>
+            <div class="admin-toggle-row">
+                <div class="admin-toggle-row-status">
+                    <?= t('email_delivery_status') ?>:
+                    <strong data-testid="challenges-enabled-status">
+                        <?= !empty($settings['challenges_enabled']) ? t('challenges_status_on') : t('challenges_status_off') ?>
+                    </strong>
+                </div>
+                <label class="btn btn-secondary admin-toggle-btn"
+                       data-on-text="<?= escape(t('challenges_toggle_off')) ?>"
+                       data-off-text="<?= escape(t('challenges_toggle_on')) ?>"
+                       data-on-status="<?= escape(t('challenges_status_on')) ?>"
+                       data-off-status="<?= escape(t('challenges_status_off')) ?>">
+                    <input type="checkbox" name="challenges_enabled" value="1" class="admin-toggle-input" data-testid="challenges-enabled-toggle" <?= !empty($settings['challenges_enabled']) ? 'checked' : '' ?>>
+                    <i class="fas fa-toggle-<?= !empty($settings['challenges_enabled']) ? 'on' : 'off' ?>"></i>
+                    <span class="admin-toggle-btn-text"><?= !empty($settings['challenges_enabled']) ? t('challenges_toggle_off') : t('challenges_toggle_on') ?></span>
                 </label>
             </div>
         </div>
@@ -170,7 +181,7 @@ if (defined('SMTP_INTERCEPT') && SMTP_INTERCEPT):
         <form method="POST">
             <?= csrfField() ?>
             <input type="hidden" name="toggle_smtp_live" value="1">
-            <button type="submit" class="btn <?= $emailLive ? 'btn-secondary' : 'btn-primary' ?>" data-testid="email-delivery-toggle">
+            <button type="submit" class="btn btn-secondary" data-testid="email-delivery-toggle">
                 <i class="fas fa-toggle-<?= $emailLive ? 'on' : 'off' ?>"></i>
                 <?= $emailLive ? t('email_delivery_switch_intercept') : t('email_delivery_switch_live') ?>
             </button>
@@ -198,11 +209,34 @@ document.addEventListener('DOMContentLoaded', function () {
             el.addEventListener('input', function () { savebar.classList.add('dirty'); });
             el.addEventListener('change', function () { savebar.classList.add('dirty'); });
         });
+
+        // The Features toggle is a checkbox styled as a button (kept inside the main form so
+        // it stays Save/Discard-governed, not an immediate action like Ranking maintenance /
+        // Email delivery) — its icon/label/status text need a manual refresh on toggle and on
+        // Discard, since neither "change" nor form.reset() updates them on their own.
+        var challengesToggle = document.querySelector('[data-testid="challenges-enabled-toggle"]');
+        var challengesBtn = challengesToggle ? challengesToggle.closest('.admin-toggle-btn') : null;
+        function syncChallengesToggle() {
+            if (!challengesToggle || !challengesBtn) return;
+            var checked = challengesToggle.checked;
+            var icon = challengesBtn.querySelector('i');
+            var text = challengesBtn.querySelector('.admin-toggle-btn-text');
+            var status = document.querySelector('[data-testid="challenges-enabled-status"]');
+            icon.classList.toggle('fa-toggle-on', checked);
+            icon.classList.toggle('fa-toggle-off', !checked);
+            text.textContent = checked ? challengesBtn.dataset.onText : challengesBtn.dataset.offText;
+            if (status) status.textContent = checked ? challengesBtn.dataset.onStatus : challengesBtn.dataset.offStatus;
+        }
+        if (challengesToggle) {
+            challengesToggle.addEventListener('change', syncChallengesToggle);
+        }
+
         var discardBtn = document.getElementById('settings-discard-btn');
         if (discardBtn) {
             discardBtn.addEventListener('click', function () {
                 form.reset();
                 savebar.classList.remove('dirty');
+                syncChallengesToggle();
             });
         }
     }

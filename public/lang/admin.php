@@ -99,7 +99,10 @@ return [
         'bet_size_label'            => 'Indsatsstørrelse',
         'challenges_visibility_section' => 'Paddock Challenges Synlighed',
         'challenges_visibility_desc'    => 'Skjul navigation og forsidens "hero" for Paddock Challenges uden at slukke for selve funktionen — indhold, cron-jobs og direkte links (fx challenges.php) virker stadig.',
-        'challenges_enabled_label'      => 'Vis Paddock Challenges i navigation og på forsiden',
+        'challenges_status_on'          => 'Synlig',
+        'challenges_status_off'         => 'Skjult',
+        'challenges_toggle_on'          => 'Slå til',
+        'challenges_toggle_off'         => 'Slå fra',
 
         // Leaderboard maintenance
         'backfill_snapshots_section' => 'Rangordning Vedligehold',
@@ -578,7 +581,10 @@ return [
         'bet_size_label'            => 'Bet Size',
         'challenges_visibility_section' => 'Paddock Challenges Visibility',
         'challenges_visibility_desc'    => 'Hide navigation and the homepage hero for Paddock Challenges without turning off the feature itself — content, cron jobs, and direct links (e.g. challenges.php) still work.',
-        'challenges_enabled_label'      => 'Show Paddock Challenges in navigation and on the homepage',
+        'challenges_status_on'          => 'Visible',
+        'challenges_status_off'         => 'Hidden',
+        'challenges_toggle_on'          => 'Turn on',
+        'challenges_toggle_off'         => 'Turn off',
 
         // Leaderboard maintenance
         'backfill_snapshots_section' => 'Leaderboard Maintenance',

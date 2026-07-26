@@ -680,6 +680,26 @@ body.clubhouse .bet-item.my-bet {
 }
 .admin-section-static-body { padding: 12px 24px 20px; }
 
+/* Settings page: on/off row inside a static section card (Features/Ranking maintenance/
+   Email delivery) — status text left, one uniformly-styled button right, per the design
+   handoff (all three use the same plain bordered button, never color-coded by state). */
+.admin-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.admin-toggle-row-status { font-size: 0.875rem; color: var(--text-primary); }
+.admin-toggle-btn { cursor: pointer; position: relative; }
+.admin-toggle-btn .admin-toggle-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+}
+
 
 .card-header {
     padding: 1.25rem;
