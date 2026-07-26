@@ -20,11 +20,13 @@ test.describe('Settings form — sticky save bar', { tag: '@admin' }, () => {
         }
     });
 
-    test('loads in "all changes saved" state, collapsible sections closed, static sections expanded', async ({ page }) => {
+    test('loads in "all changes saved" state, collapsed with no Save/Discard actions, collapsible sections closed, static sections expanded', async ({ page }) => {
         const savebar = page.locator('[data-testid="settings-savebar"]');
         await expect(savebar).toBeVisible();
         await expect(savebar).not.toHaveClass(/dirty/);
         await expect(page.locator('.admin-savebar-saved-only')).toBeVisible();
+        await expect(page.locator('[data-testid="settings-save-btn"]')).toBeHidden();
+        await expect(page.locator('[data-testid="settings-discard-btn"]')).toBeHidden();
 
         await expect(page.locator('#settings-section-general')).toBeHidden();
         await expect(page.locator('#settings-section-hero')).toBeHidden();
@@ -43,10 +45,13 @@ test.describe('Settings form — sticky save bar', { tag: '@admin' }, () => {
         const newTitle = originalAppTitle + ' E2E';
         await page.fill('input[name="app_title"]', newTitle);
         await expect(savebar).toHaveClass(/dirty/);
+        await expect(page.locator('[data-testid="settings-save-btn"]')).toBeVisible();
+        await expect(page.locator('[data-testid="settings-discard-btn"]')).toBeVisible();
 
         await page.click('[data-testid="settings-save-btn"]');
         await expect(page).toHaveURL(/tab=settings/);
         await expect(savebar).not.toHaveClass(/dirty/);
+        await expect(page.locator('[data-testid="settings-save-btn"]')).toBeHidden();
         await expect(page.locator('input[name="app_title"]')).toHaveValue(newTitle);
     });
 

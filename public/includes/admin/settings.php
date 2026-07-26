@@ -6,7 +6,7 @@
             <span class="admin-savebar-saved-only"><i class="fas fa-circle-check"></i> <?= t('settings_all_saved') ?></span>
             <span class="admin-savebar-dirty-only"><i class="fas fa-circle"></i> <?= t('settings_unsaved') ?></span>
         </div>
-        <div class="flex gap-1">
+        <div class="flex gap-1 admin-savebar-actions">
             <button type="button" class="btn btn-secondary" id="settings-discard-btn" data-testid="settings-discard-btn"><?= t('discard') ?></button>
             <button type="submit" name="update_settings" class="btn btn-primary" data-testid="settings-save-btn">
                 <i class="fas fa-floppy-disk"></i> <?= t('save_changes') ?>

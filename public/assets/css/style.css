@@ -618,29 +618,37 @@ body.clubhouse .bet-item.my-bet {
     border-radius: var(--radius-md);
 }
 
-/* Settings page: sticky dirty/save bar */
+/* Settings page: sticky dirty/save bar — collapsed to a quiet status line until the user
+   edits something, then expands into the full bordered bar with Save/Discard actions. */
 .admin-savebar {
     position: sticky;
     top: 72px;
     z-index: 20;
     margin: 0 0 20px;
     background: var(--bg-card);
-    border: 1px solid var(--f1-red);
+    border: 1px solid transparent;
     border-radius: var(--radius-lg);
-    padding: 12px 18px;
+    padding: 8px 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    transition: border-color 0.15s, box-shadow 0.15s, padding 0.15s;
 }
 .admin-savebar-status { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-primary); font-weight: 600; }
 .admin-savebar-status .fa-circle-check { color: var(--status-success); }
 .admin-savebar-status .fa-circle { color: var(--f1-red); font-size: 8px; }
 .admin-savebar-dirty-only { display: none; align-items: center; gap: 8px; }
+.admin-savebar .admin-savebar-actions { display: none; }
+.admin-savebar.dirty {
+    border-color: var(--f1-red);
+    padding: 12px 18px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
 .admin-savebar.dirty .admin-savebar-saved-only { display: none; }
 .admin-savebar.dirty .admin-savebar-dirty-only { display: flex; }
+.admin-savebar.dirty .admin-savebar-actions { display: flex; }
 
 /* Settings page: collapsible section cards */
 .admin-section-toggle {
