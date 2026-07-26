@@ -113,7 +113,7 @@
     <span style="flex:1;"></span>
     <button type="submit" name="action" value="bulk_publish_trivia" class="btn btn-primary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_publish') ?></button>
     <button type="submit" name="action" value="bulk_unpublish_trivia" class="btn btn-secondary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_unpublish') ?></button>
-    <button type="submit" name="action" value="bulk_delete_trivia" class="btn btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_bulk_delete_confirm')) ?>" style="background:var(--f1-red);color:#fff;border:none;" disabled><?= t('admin_ch_bulk_delete') ?></button>
+    <button type="submit" name="action" value="bulk_delete_trivia" class="btn btn-danger btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_bulk_delete_confirm')) ?>" disabled><?= t('admin_ch_bulk_delete') ?></button>
 </form>
 <?php endif; ?>
 
@@ -162,7 +162,7 @@
             </div>
             <div class="flex gap-1" style="flex-shrink:0;flex-wrap:wrap;">
                 <a href="?tab=trivia&trivia_status=<?= escape($triviaFilter) ?>&edit=<?= escape($q['id']) ?>#trivia-<?= escape($q['id']) ?>"
-                   class="btn btn-secondary btn-sm" title="<?= t('edit') ?>"><i class="fas fa-edit"></i></a>
+                   class="btn btn-secondary btn-sm admin-icon-btn" title="<?= t('edit') ?>"><i class="fas fa-edit"></i></a>
 
                 <?php if ($q['status'] !== 'published'): ?>
                 <form method="POST" style="display:inline">
@@ -177,7 +177,7 @@
                     <?= csrfField() ?>
                     <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
                     <input type="hidden" name="trivia_status" value="<?= escape($triviaFilter) ?>">
-                    <button type="submit" name="action" value="delete_trivia_question" class="btn btn-sm btn-delete" data-name="<?= escape($label) ?>" style="background:var(--f1-red);color:#fff;border:none;"><?= t('admin_ch_trivia_delete') ?></button>
+                    <button type="submit" name="action" value="delete_trivia_question" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($label) ?>"><?= t('admin_ch_trivia_delete') ?></button>
                 </form>
             </div>
         </div>

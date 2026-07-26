@@ -635,12 +635,14 @@ foreach ($tabIcons as $key => $icon) {
 renderAdminTabRow('challenges', $currentTab, $chTabItems, t('admin_ch_title'));
 ?>
 
+<div class="admin-tab-content">
 <?php
 $allowedTabs = ['members', 'rumors', 'trivia', 'duels', 'suppressions'];
 if (in_array($currentTab, $allowedTabs)) {
     include __DIR__ . "/includes/admin-challenges/{$currentTab}.php";
 }
 ?>
+</div>
 </div>
 
 <!-- Collapsible "Add new" headers (Rumors/Trivia) — same mechanism as admin.php's own

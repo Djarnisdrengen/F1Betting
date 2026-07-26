@@ -50,7 +50,7 @@
                 </label>
                 <span class="text-muted" data-bulk-count="duel" data-tpl="<?= escape(str_replace('%d', '{n}', t('admin_ch_bulk_selected'))) ?>" style="font-size:13px;"></span>
                 <span style="flex:1;"></span>
-                <button type="submit" name="action" value="bulk_delete_duels" class="btn btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_duel_bulk_delete_confirm')) ?>" style="background:var(--f1-red);color:#fff;border:none;" disabled><?= t('admin_ch_bulk_delete') ?></button>
+                <button type="submit" name="action" value="bulk_delete_duels" class="btn btn-danger btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_duel_bulk_delete_confirm')) ?>" disabled><?= t('admin_ch_bulk_delete') ?></button>
             </form>
 
             <?php foreach ($duelsOversight as $d): ?>
@@ -66,13 +66,12 @@
                     } else {
                         $displayStatus = $locked ? 'locked' : 'open';
                     }
-                    $statusColors = [
-                        'open'    => ['bg' => 'var(--bg-secondary)', 'fg' => 'var(--text-primary)'],
-                        'locked'  => ['bg' => '#f59e0b', 'fg' => '#1a1a1a'],
-                        'settled' => ['bg' => 'var(--status-success, #10b981)', 'fg' => '#fff'],
-                        'void'    => ['bg' => 'var(--f1-red)', 'fg' => '#fff'],
-                    ];
-                    $sc = $statusColors[$displayStatus];
+                    $statusBadgeClass = [
+                        'open'    => 'badge-neutral',
+                        'locked'  => 'badge-warning',
+                        'settled' => 'badge-success',
+                        'void'    => 'badge-accent',
+                    ][$displayStatus];
                     $duelName = ($d['challenger_name'] ?: $d['challenger_email']) . ' vs ' . ($d['opponent_name'] ?: $d['opponent_email']);
                 ?>
                 <div class="card mb-1" data-testid="admin-duel-row" data-duel-id="<?= escape($d['id']) ?>" data-status="<?= $displayStatus ?>">
@@ -99,14 +98,14 @@
                             </div>
                         </div>
                         <div class="flex gap-1 items-center" style="flex-shrink:0;flex-wrap:wrap;">
-                            <span class="btn btn-sm" style="background:<?= $sc['bg'] ?>;color:<?= $sc['fg'] ?>;border:none;cursor:default;">
+                            <span class="btn btn-sm <?= $statusBadgeClass ?>" style="cursor:default;">
                                 <?= t('admin_ch_duel_status_' . $displayStatus) ?>
                             </span>
                             <form method="POST" style="display:inline">
                                 <?= csrfField() ?>
                                 <input type="hidden" name="duel_id" value="<?= escape($d['id']) ?>">
                                 <input type="hidden" name="duel_sort" value="<?= escape($duelSort) ?>">
-                                <button type="submit" name="action" value="delete_duel" class="btn btn-sm btn-delete" data-name="<?= escape($duelName) ?>" style="background:var(--f1-red);color:#fff;border:none;">
+                                <button type="submit" name="action" value="delete_duel" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($duelName) ?>">
                                     <i class="fas fa-trash"></i> <?= t('admin_ch_duel_delete') ?>
                                 </button>
                             </form>

@@ -6,7 +6,7 @@
             <p class="text-muted"><?= t('admin_ch_queue_empty') ?></p>
         <?php else: ?>
             <?php foreach ($pendingRequests as $req): ?>
-                <div class="card mb-1">
+                <div class="card mb-1" data-testid="promotion-request-row">
                     <div class="card-body admin-user-card-body">
                         <div class="admin-user-info">
                             <div class="user-avatar"><?= escape(strtoupper(substr($req['display_name'] ?: $req['email'], 0, 1))) ?></div>
@@ -49,7 +49,7 @@
             <p class="text-muted"><?= t('admin_ch_no_converted_guests') ?></p>
         <?php else: ?>
             <?php foreach ($convertedGuests as $guest): ?>
-                <div class="card mb-1">
+                <div class="card mb-1" data-testid="converted-guest-row">
                     <div class="card-body admin-user-card-body">
                         <div class="admin-user-info">
                             <div class="user-avatar"><?= escape(strtoupper(substr($guest['display_name'] ?: $guest['email'], 0, 1))) ?></div>
@@ -92,7 +92,7 @@
     </label>
     <span class="text-muted" data-bulk-count="participant" data-tpl="<?= escape(str_replace('%d', '{n}', t('admin_ch_bulk_selected'))) ?>" style="font-size:13px;"></span>
     <span style="flex:1;"></span>
-    <button type="submit" name="action" value="bulk_delete_participants" class="btn btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_participant_bulk_delete_confirm')) ?>" style="background:var(--f1-red);color:#fff;border:none;" disabled><?= t('admin_ch_bulk_delete') ?></button>
+    <button type="submit" name="action" value="bulk_delete_participants" class="btn btn-danger btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_participant_bulk_delete_confirm')) ?>" disabled><?= t('admin_ch_bulk_delete') ?></button>
 </form>
 
 <?php foreach ($allParticipants as $p):
@@ -128,7 +128,7 @@
             <form method="POST" style="display:inline">
                 <?= csrfField() ?>
                 <input type="hidden" name="participant_id" value="<?= escape($p['id']) ?>">
-                <button type="submit" name="action" value="delete_participant" class="btn btn-sm btn-delete" data-name="<?= escape($deleteName) ?>" style="background:var(--f1-red);color:#fff;border:none;">
+                <button type="submit" name="action" value="delete_participant" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($deleteName) ?>">
                     <i class="fas fa-trash"></i> <?= t('admin_ch_participant_delete') ?>
                 </button>
             </form>

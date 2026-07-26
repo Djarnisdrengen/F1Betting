@@ -333,6 +333,62 @@ See `tests/e2e/admin/21-settings-form.spec.js` for the new dirty-bar/save/discar
 per the Testing approach section above) and [[project_admin_area_redesign_phase1]] (Claude memory) for
 the full shipped-file list.
 
+## Phase 4 — corrected during implementation (2026-07-26)
+
+Before writing code, re-verified this plan's Phase 4 assumptions against the actual mock and the
+current `public/includes/admin-challenges/{members,rumors,trivia,duels,suppressions}.php` markup via
+three parallel Explore passes — same pattern as Phase 2's decision 4 and Phase 3's own corrections. All
+three corrections *shrink* scope, same direction as Phase 3:
+
+- **No `.stat-card-grid` KPI headers on Members/Trivia/Duels**, despite decision 6 expecting them. The
+  mock's five Paddock Challenges panels (`Admin Settings.dc.html`) have **zero** stat-card-grids — not
+  because the numbers aren't derivable (several are: `count($allParticipants)`, `$triviaTotalCount`,
+  `count($duelsOversight)`), but because the design never put KPI cards on this section at all. Not
+  built.
+- **No per-tab `.admin-page-header`.** `admin-challenges.php:613` already renders one shared `<h1>`
+  above all 5 tabs, exactly the situation Phase 3 found for Core's `admin.php:720`. Not added.
+- **No row restructuring.** `.card`/`.card-body` and `.hf-racefull` (the two existing row wrappers
+  across these 5 files) stay exactly as-is per decision 3; the mock's one real sample row (Members → All
+  participants) is a single flex row, not 3-line-stacked, confirming no restructure was called for.
+
+**What shipped instead** — presentational class swaps only, zero markup restructuring, zero new
+queries:
+
+- `duels.php`'s duel-status pill: replaced the `$statusColors` PHP lookup (the only hardcoded hex across
+  all 5 files — `'locked' => ['bg' => '#f59e0b', 'fg' => '#1a1a1a']`) with Phase 3's `.badge-neutral`/
+  `.badge-warning`/`.badge-success`/`.badge-accent` (open/locked/settled/void respectively) — verified
+  exact token equivalence against `style.css` first (`.badge-accent` uses `--f1-red`, matching the old
+  `void` color exactly; `.badge-danger` would NOT have matched, it's a different red, `--status-danger`
+  `#ef4444`). Not test-coupled — no spec locates this pill by class/color.
+- Delete/veto/bulk-delete buttons across `members.php`, `rumors.php`, `trivia.php`, `duels.php`: swapped
+  inline `style="background:var(--f1-red);color:#fff;border:none;"` for `.btn-danger`, the exact class
+  Phase 3 already standardized on for Core's delete buttons. Kept every button's existing icon/text
+  markup and the `.btn-delete` class itself unchanged (it drives the shared confirm-modal JS in
+  `app.js` and is directly targeted by `46-admin-challenges.spec.js` and `44-duels.spec.js`).
+- `rumors.php`/`trivia.php` Edit buttons (already icon-only) gained `.admin-icon-btn` for the uniform
+  34×34 sizing — zero markup change beyond the class.
+- **Explicit exception, not an oversight:** `members.php`'s bistable guest `toggle_guest_competition`
+  button (line 68) was left on its inline style. It doesn't map onto a single `.badge-*`/`.btn-danger`
+  class (color depends on `in_competition` state), and it's the one button in all 5 files directly
+  asserted on literal inline-style content (`46-admin-challenges.spec.js:72-78`, regex-matching
+  `/f1-red/` and `/bg-secondary/`) — not worth the test churn for a cosmetic-only change with no
+  established convention to move to.
+- **Real inconsistency found and fixed, not just color polish:** `admin-challenges.php` had no
+  `.admin-tab-content` wrapper around its tab include, unlike Core (`admin.php:753`) — so its `.card`
+  rows (Members queue/guest rows, Duels queue/oversight rows, Suppressions rows) still got the site-wide
+  `.card:hover` red-tinted lift/glow that Phase 3's CSS rule (`style.css:604-608`) explicitly kills for
+  admin data rows, per the README's "admin data rows stay flat" rule. Fixed by adding the same wrapper
+  div Core uses — Challenges rows are now flat too, matching Core and the README.
+- **Test hardening, not required but recommended and shipped:** added `data-testid="promotion-request-
+  row"` / `data-testid="converted-guest-row"` to `members.php`'s two card sections, additive alongside
+  the existing `.card.mb-1` classes those rows are still located by. These were the only row family
+  across all 5 files with zero `data-testid` — located purely by class + text filtering
+  (`46-admin-challenges.spec.js`'s `cardFor()` helper, ~14 call sites) — the single highest-risk
+  regression surface the locator audit found.
+
+**Verification:** `46-admin-challenges.spec.js` and `44-duels.spec.js` pass; full `npm run deploy:test`
+and `npm run test:e2e:test` run as the phase-end gate.
+
 ## Deferred
 
 - Any KPI card whose number isn't already computable from data a page already fetches (decision 6) —
