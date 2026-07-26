@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    a { color: var(--f1-red); }
+    a:hover { color: var(--f1-red-light); }
+    input[type="text"], input[type="number"], textarea {
+      font-family: var(--font-body);
+    }
+    input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--f1-red) !important;
+      box-shadow: 0 0 0 3px rgba(225,6,0,0.20);
+    }
+  </style>
+</helmet>
+
+<div class="theme-dark" style="background:var(--bg-primary); color:var(--text-primary); min-height:100vh; font-family:var(--font-body); padding-bottom:96px;">
+
+  <div style="height:56px; padding:0 24px; background:var(--bg-secondary); border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:30;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:32px; height:32px; border-radius:7px; background:var(--f1-red); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px; font-family:var(--font-display);">F1</div>
+      <div style="font-family:var(--font-display); font-weight:800; font-size:15px;">Fr.sund F1 Klub <span style="color:var(--text-muted); font-weight:500; font-size:12px; margin-left:6px;">anno 1992</span></div>
+    </div>
+    <i class="fas fa-bars" style="color:var(--text-secondary);"></i>
+  </div>
+
+  <div style="padding:10px 24px; background:repeating-linear-gradient(135deg, #f5b400 0 18px, #1a1a1d 18px 36px); display:flex; justify-content:center;">
+    <div style="background:#f5b400; color:#1a1a1d; font-family:var(--font-display); font-weight:800; font-size:13px; letter-spacing:0.04em; padding:6px 16px; border-radius:4px; display:flex; align-items:center; gap:8px;">
+      <i class="fas fa-triangle-exclamation"></i> DETTE ER EN TESTHJEMMESIDE
+    </div>
+  </div>
+
+  <div style="max-width:1200px; margin:0 auto; padding:28px 24px 0;">
+    <h1 style="font-family:var(--font-display); font-size:1.75rem; display:flex; align-items:center; gap:12px; margin:0 0 20px;">
+      <i class="fas fa-gear" style="color:var(--f1-red);"></i> Administration
+    </h1>
+
+    <div style="display:flex; gap:8px; border-bottom:1px solid var(--border-color); padding-bottom:14px; margin-bottom:14px;">
+      <div style="padding:8px 16px; border-radius:8px; color:var(--text-secondary); font-weight:600; font-size:14px; display:flex; align-items:center; gap:8px;"><i class="fas fa-gauge"></i> Dashboards</div>
+      <div style="padding:8px 16px; border-radius:8px; color:var(--text-secondary); font-weight:600; font-size:14px; display:flex; align-items:center; gap:8px;"><i class="fas fa-user-shield"></i> Paddock Challenges-indstillinger</div>
+      <div style="padding:8px 16px; border-radius:8px; background:rgba(225,6,0,0.14); border:1px solid rgba(225,6,0,0.4); color:var(--f1-red-light); font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px;"><i class="fas fa-gear"></i> Core-indstillinger</div>
+    </div>
+
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:24px;">
+      <sc-for list="{{ subNavItems }}" as="item" hint-placeholder-count="8">
+        <div style="padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px; background:{{ item.bg }}; color:{{ item.color }};">
+          <i class="{{ item.icon }}"></i> {{ item.label }} <sc-if value="{{ item.count }}"><span style="color:var(--text-muted);">{{ item.count }}</span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- Sticky save bar -->
+    <div style="position:sticky; top:56px; z-index:20; margin:0 0 20px; background:var(--bg-card); border:1px solid {{ dirty }}; border-color:var(--f1-red); border-radius:12px; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 6px 20px rgba(0,0,0,0.35);">
+      <div style="display:flex; align-items:center; gap:10px; font-size:14px; color:var(--text-secondary);">
+        <sc-if value="{{ dirty }}" hint-placeholder-val="{{ false }}">
+          <i class="fas fa-circle" style="color:var(--f1-red); font-size:8px;"></i>
+          <span style="color:var(--text-primary); font-weight:600;">Du har ugemte ændringer</span>
+        </sc-if>
+        <sc-if value="{{ notDirty }}" hint-placeholder-val="{{ true }}">
+          <i class="fas fa-circle-check" style="color:var(--status-success);"></i>
+          <span>Alt er gemt</span>
+        </sc-if>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button onClick="{{ onDiscard }}" style="height:40px; padding:0 18px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-secondary); font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer;" style-hover="background:var(--bg-hover); color:var(--text-primary);">Fortryd</button>
+        <button onClick="{{ onSave }}" style="height:40px; padding:0 22px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(225,6,0,0.30);" style-hover="background:var(--f1-red-light);">
+          <i class="fas fa-floppy-disk"></i> Gem ændringer
+        </button>
+      </div>
+    </div>
+
+    <!-- General -->
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:16px;">
+      <button onClick="{{ onToggleGeneral }}" style="width:100%; background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:space-between; text-align:left; color:var(--text-primary);">
+        <span style="font-family:var(--font-display); font-weight:800; font-size:15px; display:flex; align-items:center; gap:10px; color:var(--text-primary);"><i class="fas fa-id-badge" style="color:var(--f1-red);"></i> Generelt</span>
+        <i class="{{ generalChevron }}" style="color:var(--text-muted);"></i>
+      </button>
+      <div style="color:var(--text-muted); font-size:13px; margin:8px 0 16px;">Klubbens navn og grundlæggelsesår, vist i header og footer.</div>
+      <sc-if value="{{ generalOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">App Titel</span>
+          <input type="text" value="{{ appTitle }}" onChange="{{ onAppTitle }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">År</span>
+          <input type="text" value="{{ year }}" onChange="{{ onYear }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+      </div>
+      </sc-if>
+    </div>
+
+    <!-- Hero content -->
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:16px;">
+      <button onClick="{{ onToggleHero }}" style="width:100%; background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:space-between; text-align:left; color:var(--text-primary);">
+        <span style="font-family:var(--font-display); font-weight:800; font-size:15px; display:flex; align-items:center; gap:10px; color:var(--text-primary);"><i class="fas fa-house" style="color:var(--f1-red);"></i> Hero på forside</span>
+        <i class="{{ heroChevron }}" style="color:var(--text-muted);"></i>
+      </button>
+      <div style="color:var(--text-muted); font-size:13px; margin:8px 0 16px;">Titel og undertekst i toppen af forsiden, på begge sprog.</div>
+      <sc-if value="{{ heroOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 24px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); padding-bottom:4px; border-bottom:1px solid var(--border-color);">English</div>
+        <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); padding-bottom:4px; border-bottom:1px solid var(--border-color);">Dansk</div>
+
+        <label style="display:flex; flex-direction:column; gap:6px; margin-top:12px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Hero titel</span>
+          <input type="text" value="{{ heroTitleEn }}" onChange="{{ onHeroTitleEn }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px; margin-top:12px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Hero titel</span>
+          <input type="text" value="{{ heroTitleDa }}" onChange="{{ onHeroTitleDa }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Hero tekst</span>
+          <textarea rows="2" value="{{ heroTextEn }}" onChange="{{ onHeroTextEn }}" style="padding:12px 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px; resize:vertical;"></textarea>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Hero tekst</span>
+          <textarea rows="2" value="{{ heroTextDa }}" onChange="{{ onHeroTextDa }}" style="padding:12px 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px; resize:vertical;"></textarea>
+        </label>
+      </div>
+      </sc-if>
+    </div>
+
+    <!-- Betting rules -->
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:16px;">
+      <button onClick="{{ onToggleBetting }}" style="width:100%; background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:space-between; text-align:left; color:var(--text-primary);">
+        <span style="font-family:var(--font-display); font-weight:800; font-size:15px; display:flex; align-items:center; gap:10px; color:var(--text-primary);"><i class="fas fa-flag-checkered" style="color:var(--f1-red);"></i> Betting regler</span>
+        <i class="{{ bettingChevron }}" style="color:var(--text-muted);"></i>
+      </button>
+      <div style="color:var(--text-muted); font-size:13px; margin:8px 0 18px;">Hvornår betting åbner, hvor mange point korrekte forudsigelser giver, og standard-indsatsen.</div>
+      <sc-if value="{{ bettingOpen }}" hint-placeholder-val="{{ false }}">
+
+      <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid var(--border-color);">
+        <label style="display:flex; flex-direction:column; gap:6px; width:140px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;"><i class="fas fa-clock" style="margin-right:6px; color:var(--text-muted);"></i>Timer før løb</span>
+          <input type="number" value="{{ bettingHours }}" onChange="{{ onBettingHours }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <div style="color:var(--text-muted); font-size:13px; padding-bottom:12px;">Betting åbner {{ bettingHours }} timer før løbsstart og lukker ved løbsstart.</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:8px;">
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:20px; border-radius:5px; background:linear-gradient(135deg,#fbbf24,#d97706); color:#1a1a1d; font-family:var(--font-display); font-weight:800; font-size:11px; display:inline-flex; align-items:center; justify-content:center;">P1</span> Point</span>
+          <input type="number" value="{{ p1 }}" onChange="{{ onP1 }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:20px; border-radius:5px; background:linear-gradient(135deg,#9ca3af,#6b7280); color:#1a1a1d; font-family:var(--font-display); font-weight:800; font-size:11px; display:inline-flex; align-items:center; justify-content:center;">P2</span> Point</span>
+          <input type="number" value="{{ p2 }}" onChange="{{ onP2 }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:20px; border-radius:5px; background:linear-gradient(135deg,#cd7c2f,#a15c1d); color:#fff; font-family:var(--font-display); font-weight:800; font-size:11px; display:inline-flex; align-items:center; justify-content:center;">P3</span> Point</span>
+          <input type="number" value="{{ p3 }}" onChange="{{ onP3 }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Forkert position</span>
+          <input type="number" value="{{ wrongPos }}" onChange="{{ onWrongPos }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+      </div>
+      <div style="color:var(--text-muted); font-size:12px; margin-bottom:18px; display:flex; align-items:center; gap:6px;"><i class="fas fa-circle-info"></i> "Forkert position" point gives når en kører er i top 3, men på forkert position.</div>
+
+      <label style="display:flex; flex-direction:column; gap:6px; width:200px;">
+        <span style="font-size:13px; color:var(--text-secondary); font-weight:600;"><i class="fas fa-ticket" style="margin-right:6px; color:var(--text-muted);"></i>Indsatsstørrelse</span>
+        <input type="number" value="{{ betSize }}" onChange="{{ onBetSize }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+      </label>
+      </sc-if>
+    </div>
+
+    <!-- Feature toggles -->
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:24px;">
+      <div style="font-family:var(--font-display); font-weight:800; font-size:15px; margin-bottom:2px; display:flex; align-items:center; gap:10px;"><i class="fas fa-sliders" style="color:var(--f1-red);"></i> Funktioner</div>
+      <div style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">Slå synlige features til/fra uden at påvirke deres data.</div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 0; border-top:1px solid var(--border-color);">
+        <div>
+          <div style="font-size:14px; font-weight:600; color:var(--text-primary);">Status: {{ paddockStatus }}</div>
+          <div style="font-size:13px; color:var(--text-muted); margin-top:2px; max-width:56ch;">Skjuler navigation og forsidens hero for Paddock Challenges uden at slukke funktionen — indhold, cron-jobs og direkte links virker stadig.</div>
+        </div>
+        <button onClick="{{ onTogglePaddock }}" style="flex-shrink:0; height:40px; padding:0 18px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;" style-hover="background:var(--bg-hover);">
+          <i class="{{ paddockIcon }}"></i> {{ paddockLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:16px;">
+      <div style="font-family:var(--font-display); font-weight:800; font-size:15px; margin-bottom:2px; display:flex; align-items:center; gap:10px;"><i class="fas fa-clock-rotate-left" style="color:var(--f1-red);"></i> Rangordning Vedligehold</div>
+      <div style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">Skal køres efter afsluttede løb, for at vise rangordningsændringer (▲/▼) på leaderboardet.</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 0; border-top:1px solid var(--border-color);">
+        <div>
+          <div style="font-size:14px; font-weight:600; color:var(--text-primary);">Gendan historiske snapshots</div>
+          <div style="font-size:13px; color:var(--text-muted); margin-top:2px; max-width:56ch;">Kører for alle afsluttede løb. Kan køres sikkert flere gange.</div>
+        </div>
+        <button style="flex-shrink:0; height:40px; padding:0 18px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;" style-hover="background:var(--bg-hover);">
+          <i class="fas fa-rotate"></i> Gendan
+        </button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:24px;">
+      <div style="font-family:var(--font-display); font-weight:800; font-size:15px; margin-bottom:2px; display:flex; align-items:center; gap:10px;"><i class="fas fa-envelope" style="color:var(--f1-red);"></i> E-mail-levering (testmiljø)</div>
+      <div style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">På testmiljøet sendes e-mails som standard. E2E-tests slår opsamling til under kørslen og fra igen bagefter.</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 0; border-top:1px solid var(--border-color);">
+        <div>
+          <div style="font-size:14px; font-weight:600; color:var(--text-primary);">Status: Opsamler <span style="color:var(--text-muted); font-weight:500;">(sender ikke)</span></div>
+          <div style="font-size:13px; color:var(--text-muted); margin-top:2px; max-width:56ch;">Skift til rigtig afsendelse, hvis du vil have e-mails leveret.</div>
+        </div>
+        <button style="flex-shrink:0; height:40px; padding:0 18px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;" style-hover="background:var(--bg-hover);">
+          <i class="fas fa-envelope-open"></i> Slå til
+        </button>
+      </div>
+    </div>
+
+    <div style="text-align:center; color:var(--text-muted); font-size:11px; padding:20px 0;">Fr.sund F1 Klub · anno 1992 · v3.0.0</div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    appTitle: 'Fr.sund F1 Klub',
+    year: 'anno 1992',
+    heroTitleEn: 'Predict the podium',
+    heroTitleDa: 'Forudsig podiet',
+    heroTextEn: 'Predict the podium',
+    heroTextDa: 'Forudsig podiet',
+    bettingHours: 48,
+    p1: 25, p2: 18, p3: 15, wrongPos: 5,
+    betSize: 10,
+    showPaddock: true,
+    dirty: false,
+    generalOpen: false,
+    heroOpen: false,
+    bettingOpen: false,
+  };
+
+  set(field) {
+    return (e) => this.setState({ [field]: e.target.value, dirty: true });
+  }
+
+  renderVals() {
+    const s = this.state;
+    return {
+      ...s,
+      notDirty: !s.dirty,
+      paddockStatus: s.showPaddock ? 'Vist' : 'Skjult',
+      paddockIcon: s.showPaddock ? 'fas fa-eye-slash' : 'fas fa-eye',
+      paddockLabel: s.showPaddock ? 'Skjul' : 'Vis',
+      generalChevron: s.generalOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down',
+      heroChevron: s.heroOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down',
+      bettingChevron: s.bettingOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down',
+      onToggleGeneral: () => this.setState(s => ({ generalOpen: !s.generalOpen })),
+      onToggleHero: () => this.setState(s => ({ heroOpen: !s.heroOpen })),
+      onToggleBetting: () => this.setState(s => ({ bettingOpen: !s.bettingOpen })),
+      subNavItems: [
+        { icon: 'fas fa-flag', label: 'Løb', count: '5', bg: 'transparent', color: 'var(--text-secondary)' },
+        { icon: 'fas fa-car', label: 'drivers', count: '10', bg: 'transparent', color: 'var(--text-secondary)' },
+        { icon: 'fas fa-users', label: 'users', count: '4', bg: 'transparent', color: 'var(--text-secondary)' },
+        { icon: 'fas fa-envelope', label: 'invites', count: '', bg: 'transparent', color: 'var(--text-secondary)' },
+        { icon: 'fas fa-trophy', label: 'Bets', count: '15', bg: 'transparent', color: 'var(--text-secondary)' },
+        { icon: 'fas fa-shield-halved', label: 'Sikkerhed', count: '', bg: 'transparent', color: 'var(--text-secondary)' },
+        { icon: 'fas fa-file-lines', label: 'Logs', count: '', bg: 'transparent', color: 'var(--text-secondary)' },
+        { icon: 'fas fa-gear', label: 'Indstillinger', count: '', bg: 'rgba(225,6,0,0.14)', color: 'var(--f1-red-light)' },
+      ],
+      onAppTitle: this.set('appTitle'),
+      onYear: this.set('year'),
+      onHeroTitleEn: this.set('heroTitleEn'),
+      onHeroTitleDa: this.set('heroTitleDa'),
+      onHeroTextEn: this.set('heroTextEn'),
+      onHeroTextDa: this.set('heroTextDa'),
+      onBettingHours: this.set('bettingHours'),
+      onP1: this.set('p1'),
+      onP2: this.set('p2'),
+      onP3: this.set('p3'),
+      onWrongPos: this.set('wrongPos'),
+      onBetSize: this.set('betSize'),
+      onTogglePaddock: () => this.setState(s => ({ showPaddock: !s.showPaddock, dirty: true })),
+      onSave: () => this.setState({ dirty: false }),
+      onDiscard: () => this.setState({ dirty: false }),
+    };
+  }
+}
+</script>
+</body>
+</html>
