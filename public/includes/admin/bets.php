@@ -24,7 +24,7 @@ $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
                 <?php if ($canDeleteBets): ?>
                     <span class="badge status-open"><?= t('betting_open_label') ?></span>
                 <?php endif; ?>
-                <span class="badge" style="background: var(--bg-secondary);"><?= count($raceBets) ?> bets</span>
+                <span class="badge badge-neutral"><?= count($raceBets) ?> bets</span>
             </div>
         </div>
         <div class="card-body">
@@ -49,13 +49,13 @@ $bettingWindowHours = $settings['betting_window_hours'] ?? 48;
                             <?php endforeach; ?>
                         </div>
                         <?php if ($bet['points'] > 0): ?>
-                            <span class="badge" style="background: var(--f1-red); color: white;"><?= $bet['points'] ?> pts</span>
+                            <span class="badge badge-accent"><?= $bet['points'] ?> pts</span>
                         <?php endif; ?>
                         <?php if ($canDeleteBets): ?>
                             <form method="POST" style="display:inline">
                                 <?= csrfField() ?>
                                 <input type="hidden" name="bet_id" value="<?= escape($bet['id']) ?>">
-                                <button type="submit" name="delete_bet" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($bet['display_name'] ?: $bet['email']) ?>" title="<?= t('delete_notify_user') ?>">
+                                <button type="submit" name="delete_bet" class="btn btn-danger btn-sm btn-delete admin-icon-btn" data-name="<?= escape($bet['display_name'] ?: $bet['email']) ?>" title="<?= t('delete_notify_user') ?>">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

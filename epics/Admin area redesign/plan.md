@@ -297,6 +297,42 @@ consumes the same nav/stat-card CSS):
 - **Phase 5:** full `npm run test:e2e:test` pass; manual container-query visual pass per the plan's
   existing Phase 5 item.
 
+## Phase 3 — corrected during implementation (2026-07-26)
+
+Before writing code, three of this plan's own Phase 3 assumptions were re-checked directly against
+`Admin Settings.dc.html` (not just the README's prose) and found not to hold — same pattern as Phase
+2's own corrected decision 4 above. All three *shrink* Phase 3's scope rather than expand it:
+
+- **The 3-line stacked list-row primitive is not applied to any Core page in the mock.** It's only
+  actually built once (Dashboards → Keys & Rotation → Secrets rows), and the README frames it
+  explicitly as *"the template for any future dense data row"*, not something already applied to
+  Users/Invites/Bets/Races/Drivers — those stay single dense flex rows in the mock. Shipped: each Core
+  row stays a single flex row (reskinned colors/spacing/icon-buttons only), not restructured into
+  stacked lines.
+- **No Core page gets a per-tab `.admin-page-header`.** The mock shows exactly one global header
+  (`<h1><i class="fas fa-gear"></i> Administration</h1>`), which `public/admin.php:720` already
+  renders. Phase 2 added `.admin-page-header` to Dashboards tabs specifically because those had no
+  heading before — Core tabs already have the equivalent one level up. Not added.
+- **No KPI `.stat-card-grid` on any Core page in the mock** (Bets included — decision 6's "per-screen
+  audit" gate above resolves to "not derivable/not wanted", not "wait for a future phase"). Not built.
+
+Also resolved: the Settings testing-risk flagged above (*"if sections default closed,
+`12-email-delivery.spec.js` will fail"*) doesn't materialize — the mock has only 3 of 6 Settings groups
+collapsible (General, Homepage hero, Betting rules, default **closed**); Features, Ranking maintenance,
+and Email delivery render as static always-expanded section cards. `12-email-delivery.spec.js` needed
+no changes.
+
+One in-scope bugfix found while touching this file: `update_settings` was the only settings POST
+handler that didn't `header("Location: ...")` redirect after its `UPDATE` — it fell through and
+re-rendered using the `$settings` array fetched *before* the query ran, so the immediately-rendered
+page after Save showed stale field values. Fixed by re-calling `$settings = getSettings();` right
+after the `UPDATE` (`public/admin.php`) — required for the new sticky save bar to behave correctly,
+not a pre-existing behavior worth leaving in place once this exact code was being touched anyway.
+
+See `tests/e2e/admin/21-settings-form.spec.js` for the new dirty-bar/save/discard coverage (net-new,
+per the Testing approach section above) and [[project_admin_area_redesign_phase1]] (Claude memory) for
+the full shipped-file list.
+
 ## Deferred
 
 - Any KPI card whose number isn't already computable from data a page already fetches (decision 6) —

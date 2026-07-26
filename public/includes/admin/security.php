@@ -12,9 +12,9 @@
             <div class="card-body flex items-center justify-between">
                 <div>
                     <strong><?= escape($bucket['bucket_key']) ?></strong>
-                    <span class="badge" style="background: var(--bg-secondary); margin-left: 0.5rem;"><?= $bucket['scope'] === 'mfa' ? t('security_scope_mfa') : t('security_scope_login') ?></span>
+                    <span class="badge badge-neutral" style="margin-left: 0.5rem;"><?= $bucket['scope'] === 'mfa' ? t('security_scope_mfa') : t('security_scope_login') ?></span>
                     <?php if ($locked): ?>
-                        <span class="badge" style="background: #ef4444; color: white; margin-left: 0.5rem;"><?= t('security_locked') ?></span>
+                        <span class="badge badge-danger" style="margin-left: 0.5rem;"><?= t('security_locked') ?></span>
                     <?php endif; ?>
                     <br><small class="text-muted"><?= t('security_last_attempt') ?> <?= date('d M Y, H:i', strtotime($bucket['last_attempt'])) ?></small>
                 </div>
@@ -43,9 +43,9 @@
             <div class="card-body flex items-center justify-between">
                 <div>
                     <strong><?= escape($identifier) ?></strong>
-                    <span class="badge" style="background: var(--bg-secondary); margin-left: 0.5rem;"><?= $bucket['scope'] === 'mfa' ? t('security_scope_mfa') : t('security_scope_login') ?></span>
+                    <span class="badge badge-neutral" style="margin-left: 0.5rem;"><?= $bucket['scope'] === 'mfa' ? t('security_scope_mfa') : t('security_scope_login') ?></span>
                     <?php if ($locked): ?>
-                        <span class="badge" style="background: #ef4444; color: white; margin-left: 0.5rem;"><?= t('security_locked') ?></span>
+                        <span class="badge badge-danger" style="margin-left: 0.5rem;"><?= t('security_locked') ?></span>
                     <?php endif; ?>
                     <br><small class="text-muted"><?= t('security_last_attempt') ?> <?= date('d M Y, H:i', strtotime($bucket['last_attempt'])) ?></small>
                 </div>

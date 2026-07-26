@@ -8,7 +8,7 @@
                     <br><small class="text-muted"><?= escape($user['email']) ?></small>
                     <br><small class="text-muted"><?= t('last_seen') ?><?= $user['last_login'] ? date('d M Y, H:i', strtotime($user['last_login'])) : t('never') ?></small>
                 </div>
-                <span class="badge" style="background: <?= $user['role'] === 'admin' ? 'var(--f1-red)' : 'var(--bg-secondary)' ?>; color: <?= $user['role'] === 'admin' ? 'white' : 'var(--text-primary)' ?>;">
+                <span class="badge <?= $user['role'] === 'admin' ? 'badge-accent' : 'badge-neutral' ?>">
                     <?= escape($user['role']) ?>
                 </span>
                 <?php if ($user['stars'] > 0): ?>
@@ -32,14 +32,14 @@
                             <?= $user['role'] === 'admin' ? t('make_user') : t('make_admin') ?>
                         </button>
                     </form>
-                    <button type="button" class="btn btn-secondary btn-sm btn-reset-pwd" data-link="<?= escape($user['id']) ?>">
+                    <button type="button" class="btn btn-secondary btn-sm btn-reset-pwd admin-icon-btn" data-link="<?= escape($user['id']) ?>">
                         <i class="fas fa-key"></i>
                     </button>
                     <?php if (!empty($user['has_mfa'])): ?>
                         <form method="POST" style="display:inline">
                             <?= csrfField() ?>
                             <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
-                            <button type="submit" name="remove_user_mfa" class="btn btn-secondary btn-sm btn-remove-mfa" data-testid="admin-remove-mfa"
+                            <button type="submit" name="remove_user_mfa" class="btn btn-secondary btn-sm btn-remove-mfa admin-icon-btn" data-testid="admin-remove-mfa"
                                     title="<?= t('remove_mfa') ?>"
                                     data-title="<?= t('remove_mfa_confirm_title') ?>"
                                     data-body="<?= escape(sprintf(t('remove_mfa_confirm_body'), $user['display_name'] ?: $user['email'])) ?>"
@@ -51,7 +51,7 @@
                     <form method="POST" style="display:inline">
                         <?= csrfField() ?>
                         <input type="hidden" name="user_id" value="<?= escape($user['id']) ?>">
-                        <button type="submit" name="delete_user" class="btn btn-danger btn-sm btn-delete" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>">
+                        <button type="submit" name="delete_user" class="btn btn-danger btn-sm btn-delete admin-icon-btn" data-name="<?= escape($user['display_name'] ?: $user['email']) ?>">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>

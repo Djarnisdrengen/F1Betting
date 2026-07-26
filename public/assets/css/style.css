@@ -601,6 +601,77 @@ body.clubhouse .bet-item.my-bet {
     box-shadow: 0 8px 24px rgba(225, 6, 0, 0.15);
 }
 
+/* Admin Core-area data rows stay flat — no hover-lift (per Admin area redesign README) */
+.admin-tab-content .card:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Uniform 34x34 icon-only action button, used across Core admin row actions */
+.admin-icon-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+}
+
+/* Settings page: sticky dirty/save bar */
+.admin-savebar {
+    position: sticky;
+    top: 72px;
+    z-index: 20;
+    margin: 0 0 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--f1-red);
+    border-radius: var(--radius-lg);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+.admin-savebar-status { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-primary); font-weight: 600; }
+.admin-savebar-status .fa-circle-check { color: var(--status-success); }
+.admin-savebar-status .fa-circle { color: var(--f1-red); font-size: 8px; }
+.admin-savebar-dirty-only { display: none; align-items: center; gap: 8px; }
+.admin-savebar.dirty .admin-savebar-saved-only { display: none; }
+.admin-savebar.dirty .admin-savebar-dirty-only { display: flex; }
+
+/* Settings page: collapsible section cards */
+.admin-section-toggle {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+.admin-section-toggle .admin-section-chevron { color: var(--text-muted); }
+.admin-section-body { padding: 0 24px 20px; }
+.admin-section-body.hidden { display: none; }
+.admin-section-static-header {
+    padding: 20px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 15px;
+}
+.admin-section-static-body { padding: 12px 24px 20px; }
+
 
 .card-header {
     padding: 1.25rem;
@@ -686,6 +757,13 @@ body.clubhouse .bet-item.my-bet {
     background: #6b7280;
     color: white;
 }
+
+/* Semantic badge modifiers — Core admin rows (role/registered/expired/locked/scope badges) */
+.badge-accent  { background: var(--f1-red);        color: white; }
+.badge-success { background: var(--status-success); color: white; }
+.badge-danger  { background: var(--status-danger);  color: white; }
+.badge-warning { background: var(--status-warning); color: white; }
+.badge-neutral { background: var(--bg-secondary);   color: var(--text-primary); }
 
 /* Position Badges */
 .position-badge {

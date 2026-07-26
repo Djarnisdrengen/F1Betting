@@ -73,13 +73,13 @@
                     </div>
                     <div class="flex gap-1" style="flex-shrink:0;">
                         <a href="?tab=races&edit=<?= escape($race['id']) ?>#race-<?= escape($race['id']) ?>"
-                           class="btn btn-secondary btn-sm" title="<?= t('edit') ?>">
+                           class="btn btn-secondary btn-sm admin-icon-btn" title="<?= t('edit') ?>">
                             <i class="fas fa-edit"></i>
                         </a>
                         <form method="POST" style="display:inline">
                             <?= csrfField() ?>
                             <input type="hidden" name="race_id" value="<?= escape($race['id']) ?>">
-                            <button type="submit" name="delete_race" class="btn btn-danger btn-sm btn-delete"
+                            <button type="submit" name="delete_race" class="btn btn-danger btn-sm btn-delete admin-icon-btn"
                                     data-name="<?= escape($race['name']) ?>">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -191,7 +191,7 @@
                                 <?= csrfField() ?>
                                 <input type="hidden" name="race_id" value="<?= escape($race['id']) ?>">
                                 <button type="submit" name="reset_race_result"
-                                        class="btn btn-secondary btn-sm btn-reset-result"
+                                        class="btn btn-secondary btn-sm btn-reset-result admin-icon-btn"
                                         data-name="<?= escape($race['name']) ?>"
                                         title="<?= t('reset_result') ?>">
                                     <i class="fas fa-undo"></i>
@@ -201,7 +201,7 @@
                         <form method="POST" style="display:inline">
                             <?= csrfField() ?>
                             <input type="hidden" name="race_id" value="<?= escape($race['id']) ?>">
-                            <button type="submit" name="delete_race" class="btn btn-danger btn-sm btn-delete"
+                            <button type="submit" name="delete_race" class="btn btn-danger btn-sm btn-delete admin-icon-btn"
                                     data-name="<?= escape($race['name']) ?>">
                                 <i class="fas fa-trash"></i>
                             </button>

@@ -582,6 +582,7 @@ if (isset($_POST['update_settings'])) {
 
     $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ?, challenges_enabled = ? WHERE id = 1");
     $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize, $challengesEnabled]);
+    $settings = getSettings();
     $message = t('settings_saved');
 }
 
@@ -748,10 +749,14 @@ foreach ($tabIcons as $key => $icon) {
 renderAdminTabRow('core', $currentTab, $coreTabItems, t('admin'));
 
 $allowedTabs = ['races', 'drivers', 'users', 'bets', 'invites', 'security', 'logs', 'settings'];
+?>
+<div class="admin-tab-content">
+<?php
 if (in_array($currentTab, $allowedTabs)) {
     include __DIR__ . "/includes/admin/{$currentTab}.php";
 }
 ?>
+</div>
 </div>
 
 <script nonce="<?= $nonce ?>">

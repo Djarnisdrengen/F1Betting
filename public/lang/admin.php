@@ -72,6 +72,13 @@ return [
 
         // Settings
         'settings_saved'            => 'Indstillinger gemt!',
+        'settings_general_section' => 'Generelt',
+        'settings_hero_section'    => 'Forside Hero',
+        'settings_betting_rules_section' => 'Betting Regler',
+        'settings_all_saved'       => 'Alle ændringer gemt',
+        'settings_unsaved'         => 'Du har ugemte ændringer',
+        'discard'                  => 'Kassér',
+        'save_changes'             => 'Gem ændringer',
         'app_title_label'           => 'App Titel',
         'hero_title_en_label'       => 'Hero Titel (English)',
         'hero_title_da_label'       => 'Hero Titel (Dansk)',
@@ -544,6 +551,13 @@ return [
 
         // Settings
         'settings_saved'            => 'Settings saved!',
+        'settings_general_section' => 'General',
+        'settings_hero_section'    => 'Homepage Hero',
+        'settings_betting_rules_section' => 'Betting Rules',
+        'settings_all_saved'       => 'All changes saved',
+        'settings_unsaved'         => 'You have unsaved changes',
+        'discard'                  => 'Discard',
+        'save_changes'             => 'Save changes',
         'app_title_label'           => 'App Title',
         'hero_title_en_label'       => 'Hero Title (English)',
         'hero_title_da_label'       => 'Hero Title (Dansk)',
