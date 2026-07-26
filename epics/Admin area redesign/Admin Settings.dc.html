@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link rel="stylesheet" href="_ds/frederikssund-f1-klub-design-system-019e1669-9782-7201-b68a-8d12d6792455/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    a { color: var(--f1-red); }
+    a:hover { color: var(--f1-red-light); }
+    input[type="text"], input[type="number"], input[type="email"], textarea { font-family: var(--font-body); }
+    input[type="text"]:focus, input[type="number"]:focus, input[type="email"]:focus, textarea:focus {
+      outline: none; border-color: var(--f1-red) !important; box-shadow: 0 0 0 3px rgba(225,6,0,0.20);
+    }
+    ::-webkit-scrollbar { height: 6px; width: 8px; }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+    /* Admin nav — container-query tabs↔dropdown, per DS "Responsive navigation" card */
+    .admin-shell { container-type: inline-size; container-name: admin-vp; margin-bottom: 16px; }
+    .admin-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 14px; }
+    .admin-tab { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.9rem; color: var(--text-secondary); font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; white-space: nowrap; background: none; }
+    .admin-tab:hover { color: var(--text-primary); }
+    .admin-tab.active { color: var(--f1-red); border-bottom-color: var(--f1-red); }
+    .admin-tab .tab-count { background: var(--bg-hover); color: var(--text-muted); padding: 0 6px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; font-family: ui-monospace, monospace; }
+    .admin-tab.active .tab-count { background: var(--f1-red); color: #fff; }
+    .admin-dropdown { display: none; }
+    .admin-dropdown summary { list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-family: var(--font-display); font-weight: 700; color: var(--text-primary); }
+    .admin-dropdown summary::-webkit-details-marker { display: none; }
+    .admin-dropdown summary .label { display: flex; align-items: center; gap: 0.6rem; }
+    .admin-dropdown summary .chev { transition: transform 0.2s; color: var(--text-muted); }
+    .admin-dropdown[open] summary .chev { transform: rotate(180deg); }
+    .admin-dropdown .menu { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 4px; margin-top: 8px; display: flex; flex-direction: column; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+    .admin-dropdown .menu a { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0.85rem; color: var(--text-secondary); text-decoration: none; font-family: var(--font-display); font-weight: 600; font-size: 0.9rem; border-radius: 6px; cursor: pointer; }
+    .admin-dropdown .menu a .l { display: flex; align-items: center; gap: 0.65rem; }
+    .admin-dropdown .menu a:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .admin-dropdown .menu a.active { background: var(--bg-hover); color: var(--f1-red); }
+    .admin-dropdown .menu a .tab-count { background: var(--bg-card); color: var(--text-muted); padding: 1px 7px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; font-family: ui-monospace, monospace; }
+    .admin-dropdown .menu a.active .tab-count { background: var(--f1-red); color: #fff; }
+    @container admin-vp (max-width: 720px) {
+      .admin-tabs { display: none; }
+      .admin-dropdown { display: block; }
+    }
+  </style>
+</helmet>
+
+<div class="theme-dark" style="background:var(--bg-primary); color:var(--text-primary); min-height:100vh; font-family:var(--font-body); padding-bottom:64px;">
+
+  <div style="height:56px; padding:0 16px; background:var(--bg-secondary); border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:40;">
+    <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+      <div style="width:32px; height:32px; flex-shrink:0; border-radius:7px; background:var(--f1-red); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px; font-family:var(--font-display);">F1</div>
+      <div style="font-family:var(--font-display); font-weight:800; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Fr.sund F1 Klub <span style="color:var(--text-muted); font-weight:500; font-size:12px; margin-left:6px;">anno 1992</span></div>
+    </div>
+  </div>
+
+  <div style="padding:10px 16px; background:repeating-linear-gradient(135deg, #f5b400 0 18px, #1a1a1d 18px 36px); display:flex; justify-content:center;">
+    <div style="background:#f5b400; color:#1a1a1d; font-family:var(--font-display); font-weight:800; font-size:12px; letter-spacing:0.04em; padding:6px 14px; border-radius:4px; display:flex; align-items:center; gap:8px; text-align:center;">
+      <i class="fas fa-triangle-exclamation"></i> THIS IS A TEST WEBSITE
+    </div>
+  </div>
+
+  <div style="max-width:1200px; margin:0 auto; padding:24px 16px 0;">
+    <h1 style="font-family:var(--font-display); font-size:1.75rem; display:flex; align-items:center; gap:12px; margin:0 0 20px;">
+      <i class="fas fa-gear" style="color:var(--f1-red);"></i> Administration
+    </h1>
+
+    <!-- Primary section nav: desktop tabs, mobile <details> dropdown (container-query, no JS breakpoint) -->
+    <div class="admin-shell">
+      <details class="admin-dropdown" key="{{ primaryDropdownKey }}">
+        <summary><span class="label"><i class="{{ currentSectionIcon }}"></i>{{ currentSectionLabel }}</span><i class="fas fa-chevron-down chev"></i></summary>
+        <div class="menu">
+          <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="3">
+            <a onClick="{{ sec.onClick }}" class="{{ sec.menuClass }}"><span class="l"><i class="{{ sec.icon }}"></i>{{ sec.label }}</span></a>
+          </sc-for>
+        </div>
+      </details>
+      <div class="admin-tabs">
+        <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="3">
+          <a onClick="{{ sec.onClick }}" class="{{ sec.tabClass }}"><i class="{{ sec.icon }}"></i>{{ sec.label }}</a>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- Secondary (within-section) tab nav: same tabs↔dropdown pattern -->
+    <div class="admin-shell">
+      <details class="admin-dropdown" key="{{ secondaryDropdownKey }}">
+        <summary><span class="label"><i class="{{ currentTabIcon }}"></i>{{ currentTabLabel }}</span><i class="fas fa-chevron-down chev"></i></summary>
+        <div class="menu">
+          <sc-for list="{{ currentTabs }}" as="tab" hint-placeholder-count="6">
+            <a onClick="{{ tab.onClick }}" class="{{ tab.menuClass }}"><span class="l"><i class="{{ tab.icon }}"></i>{{ tab.label }}</span><sc-if value="{{ tab.badge }}"><span class="tab-count">{{ tab.badge }}</span></sc-if></a>
+          </sc-for>
+        </div>
+      </details>
+      <div class="admin-tabs">
+        <sc-for list="{{ currentTabs }}" as="tab" hint-placeholder-count="6">
+          <a onClick="{{ tab.onClick }}" class="{{ tab.tabClass }}"><i class="{{ tab.icon }}"></i>{{ tab.label }} <sc-if value="{{ tab.badge }}"><span class="tab-count">{{ tab.badge }}</span></sc-if></a>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- DASHBOARDS: Overview -->
+    <sc-if value="{{ pIsDashOverview }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-bottom:16px;">
+        <sc-for list="{{ overviewCards }}" as="c" hint-placeholder-count="4">
+          <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:18px 20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:10px; font-weight:700; font-size:14px;"><i class="{{ c.icon }}" style="color:var(--f1-red);"></i>{{ c.name }}</div>
+              <sc-if value="{{ c.badge }}"><span style="background:var(--f1-red); color:#fff; font-size:11px; font-weight:800; border-radius:999px; padding:2px 8px;">{{ c.badge }}</span></sc-if>
+            </div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:28px; margin-bottom:2px;">{{ c.big }} <span style="font-size:13px; font-weight:500; color:var(--text-muted);">{{ c.bigSub }}</span></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:13px; margin-top:8px;">
+              <span style="color:{{ c.statusColor }};">{{ c.status }}</span>
+              <span style="color:var(--text-muted);">Open →</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:rgba(225,6,0,0.08); border:1px solid rgba(225,6,0,0.35); border-radius:12px; padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:12px; font-weight:700; font-size:14px;"><i class="fas fa-triangle-exclamation" style="color:var(--f1-red);"></i> Action required</div>
+        <div style="font-size:13px; color:var(--text-secondary); flex:1; min-width:180px;">3 GitHub Actions workflows failing</div>
+        <span style="color:var(--f1-red-light); font-size:13px; font-weight:600;">Open →</span>
+      </div>
+    </sc-if>
+
+    <!-- DASHBOARDS: Keys & Rotation -->
+    <sc-if value="{{ pIsDashKeys }}" hint-placeholder-val="{{ false }}">
+      <h2 style="font-size:16px; margin:0 0 14px;">Keys &amp; Rotation — Test</h2>
+      <div style="background:rgba(225,6,0,0.08); border:1px solid rgba(225,6,0,0.35); border-radius:12px; padding:16px 20px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:10px; font-weight:700; font-size:14px;"><i class="fas fa-triangle-exclamation" style="color:var(--f1-red);"></i> Action required</div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:13px;"><i class="fas fa-circle-check" style="color:var(--status-success);"></i>Everything is healthy.</div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:20px;">
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px; display:flex; align-items:center; justify-content:center;">
+          <div style="width:96px; height:96px; border-radius:50%; border:6px solid var(--status-success); display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <div style="font-family:var(--font-display); font-weight:800; font-size:24px;">100</div>
+            <div style="font-size:9px; color:var(--text-muted); letter-spacing:0.05em;">HEALTH</div>
+          </div>
+        </div>
+        <sc-for list="{{ keyStats }}" as="k" hint-placeholder-count="6">
+          <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 18px;">
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">{{ k.label }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:22px; color:{{ k.color }};">{{ k.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:14px; display:flex; align-items:center; gap:10px;"><i class="fas fa-key" style="color:var(--f1-red);"></i>Access tokens</div>
+        <div style="display:flex; flex-direction:column; gap:10px; padding-top:12px; border-top:1px solid var(--border-color);">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fab fa-github" style="width:18px; font-size:16px; color:var(--text-secondary); flex-shrink:0;"></i>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">GitHub — fine-grained PAT</div>
+              <div style="font-size:12px; color:var(--text-muted);">Last rotated 26 Jul · F1 Admin</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <span style="font-size:12px; color:var(--status-success); font-weight:700;">expires in 158 days · HEALTHY</span>
+            <button style="height:32px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--f1-red-light); font-weight:700; font-size:12px; cursor:pointer; white-space:nowrap; flex-shrink:0;">Rotated — enter new date</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:6px; display:flex; align-items:center; gap:10px;"><i class="fas fa-shield-halved" style="color:var(--f1-red);"></i>Secrets &amp; passwords</div>
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">"Rotate now" generates a new value and writes it to the config file automatically. Every other secret is rotated through its real channel — this button just records that it happened.</div>
+        <sc-for list="{{ secretsList }}" as="sec" hint-placeholder-count="9">
+          <div style="display:flex; flex-direction:column; gap:10px; padding:16px 0; border-top:1px solid var(--border-color);">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <i class="{{ sec.icon }}" style="width:18px; color:var(--text-secondary); flex-shrink:0;"></i>
+              <div style="flex:1; min-width:0;">
+                <div style="font-family:var(--font-display); font-weight:700; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ sec.name }}</div>
+                <div style="font-size:11px; color:var(--text-muted);">F1 Admin</div>
+              </div>
+            </div>
+            <div style="height:6px; background:var(--bg-hover); border-radius:3px; overflow:hidden;">
+              <div style="height:100%; width:{{ sec.pct }}%; background:var(--f1-red);"></div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+              <span style="font-size:12px; color:var(--status-success); font-weight:700;">{{ sec.used }} / {{ sec.total }} days · OK</span>
+              <button style="height:32px; padding:0 14px; border-radius:8px; border:{{ sec.btnBorder }}; background:{{ sec.btnBg }}; color:{{ sec.btnColor }}; font-weight:700; font-size:12px; cursor:pointer; white-space:nowrap; flex-shrink:0;">{{ sec.btnLabel }}</button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:12px; display:flex; align-items:center; gap:10px;"><i class="fas fa-clock-rotate-left" style="color:var(--f1-red);"></i>Rotation history</div>
+        <div style="max-height:260px; overflow-y:auto;">
+          <sc-for list="{{ rotationHistory }}" as="r" hint-placeholder-count="8">
+            <div style="font-size:13px; padding:6px 0; border-top:1px solid var(--border-color); display:flex; gap:8px; flex-wrap:wrap;">
+              <span style="color:var(--text-muted);">{{ r.date }}</span>
+              <span style="font-weight:700;">{{ r.admin }}</span>
+              <span style="color:var(--text-secondary);">{{ r.action }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- DASHBOARDS: PaddockKB -->
+    <sc-if value="{{ pIsDashKB }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:16px;">
+        <sc-for list="{{ kbTop }}" as="k" hint-placeholder-count="2">
+          <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 18px;">
+            <div style="font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">{{ k.label }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:24px; margin-bottom:6px;">{{ k.value }}</div>
+            <div style="font-size:12px; color:{{ k.subColor }};">{{ k.sub }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <button style="height:44px; padding:0 20px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+        <i class="fas fa-rotate"></i> Run update now
+      </button>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:16px;">
+        <sc-for list="{{ kbStats }}" as="k" hint-placeholder-count="3">
+          <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 18px;">
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">{{ k.label }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:22px;">{{ k.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:14px; display:flex; align-items:center; gap:10px;"><i class="fas fa-layer-group" style="color:var(--f1-red);"></i>Content by category</div>
+        <sc-for list="{{ kbCategories }}" as="cat" hint-placeholder-count="5">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:12px;">
+            <div style="width:80px; flex-shrink:0; font-size:13px; font-weight:600;">{{ cat.name }}</div>
+            <div style="flex:1; height:8px; background:var(--bg-hover); border-radius:4px; overflow:hidden;"><div style="height:100%; width:{{ cat.pct }}%; background:var(--f1-red);"></div></div>
+            <div style="width:36px; text-align:right; font-weight:700; font-size:13px;">{{ cat.count }}</div>
+            <div style="width:8px; height:8px; border-radius:50%; background:{{ cat.dot }};"></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:12px; display:flex; align-items:center; gap:10px;"><i class="fas fa-list-check" style="color:var(--f1-red);"></i>Recent ingest runs</div>
+        <sc-for list="{{ ingestRuns }}" as="line" hint-placeholder-count="6">
+          <div style="font-size:13px; padding:8px 0; border-top:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <span>{{ line }}</span>
+            <span style="color:var(--status-success); font-weight:600; flex-shrink:0;"><i class="fas fa-circle-check"></i> Success</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- DASHBOARDS: Challenges -->
+    <sc-if value="{{ pIsDashChallenges }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:20px;">
+        <sc-for list="{{ challengeStats }}" as="k" hint-placeholder-count="4">
+          <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 18px;">
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">{{ k.label }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:22px; color:{{ k.color }};">{{ k.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:14px; display:flex; align-items:center; gap:10px;"><i class="fas fa-flag" style="color:var(--f1-red);"></i>Competitions</div>
+        <sc-for list="{{ competitions }}" as="c" hint-placeholder-count="3">
+          <div style="border:1px solid var(--border-color); border-radius:10px; padding:14px 16px; margin-bottom:12px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+            <div style="width:40px; height:40px; border-radius:8px; background:{{ c.bg }}; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="{{ c.icon }}"></i></div>
+            <div style="min-width:140px; flex-shrink:0;">
+              <div style="font-weight:700; font-size:14px;">{{ c.name }}</div>
+              <div style="font-size:12px; color:var(--text-muted);">{{ c.sub }}</div>
+            </div>
+            <div style="display:flex; gap:24px; margin-left:auto;">
+              <div style="text-align:center;"><div style="font-weight:800; font-size:16px;">{{ c.a }}</div><div style="font-size:11px; color:var(--text-muted);">{{ c.al }}</div></div>
+              <div style="text-align:center;"><div style="font-weight:800; font-size:16px;">{{ c.b }}</div><div style="font-size:11px; color:var(--text-muted);">{{ c.bl }}</div></div>
+              <div style="text-align:center;"><div style="font-weight:800; font-size:16px; color:var(--status-success);">{{ c.c }}</div><div style="font-size:11px; color:var(--text-muted);">{{ c.cl }}</div></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:14px; display:flex; align-items:center; gap:10px;"><i class="fas fa-filter" style="color:var(--f1-red);"></i>Visitor to member</div>
+        <sc-for list="{{ funnelRows }}" as="f" hint-placeholder-count="3">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:12px;">
+            <div style="width:170px; flex-shrink:0; font-size:13px;">{{ f.label }}</div>
+            <div style="flex:1; height:10px; background:var(--bg-hover); border-radius:5px; overflow:hidden;"><div style="height:100%; width:{{ f.pct }}%; background:var(--f1-red);"></div></div>
+            <div style="width:24px; text-align:right; font-weight:700; font-size:13px;">{{ f.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- DASHBOARDS: Actions -->
+    <sc-if value="{{ pIsDashActions }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:16px;">
+        <sc-for list="{{ actionsStats }}" as="k" hint-placeholder-count="4">
+          <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 18px;">
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">{{ k.label }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:22px; color:{{ k.color }};">{{ k.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 20px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="font-weight:700; font-size:14px;"><i class="fab fa-github" style="margin-right:8px; color:var(--text-secondary);"></i>Runs · last 12h</div>
+        <div style="display:flex; align-items:center; gap:10px;"><span style="background:var(--bg-hover); font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px;">12</span><i class="fas fa-chevron-down" style="color:var(--text-muted);"></i></div>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div style="font-weight:700; font-size:14px;">All workflows</div>
+          <span style="background:var(--bg-hover); font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px;">9</span>
+        </div>
+        <input type="text" placeholder="Filter workflows..." style="width:100%; height:40px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:13px;"/>
+      </div>
+    </sc-if>
+
+    <!-- CHALLENGES: Members -->
+    <sc-if value="{{ pIsChMembers }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:8px;">Full-membership requests</div>
+        <div style="color:var(--text-muted); font-size:13px;">No pending requests.</div>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:8px;">Converted guests</div>
+        <div style="color:var(--text-muted); font-size:13px;">No converted guests yet.</div>
+      </div>
+      <div style="font-weight:800; font-size:16px; margin-bottom:6px;">All participants</div>
+      <div style="color:var(--text-muted); font-size:13px; margin-bottom:14px;">2 participant(s) total.</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" checked="{{ selectAllMembers }}" onChange="{{ onToggleSelectAll }}"/>Select all</label>
+        <button style="height:36px; padding:0 16px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-weight:700; font-size:13px; cursor:pointer;">Delete selected</button>
+      </div>
+      <sc-for list="{{ membersList }}" as="m" hint-placeholder-count="2">
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 18px; margin-bottom:10px; display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+          <input type="checkbox" style="margin-top:3px;"/>
+          <div style="flex:1; min-width:200px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+              <span style="font-weight:700; font-size:14px;">{{ m.name }}</span>
+              <span style="background:var(--status-warning); color:#1a1a1d; font-size:10px; font-weight:800; padding:2px 8px; border-radius:6px;">{{ m.role }}</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted);">— · {{ m.locale }} · <span style="color:var(--status-success);">VERIFIED</span> · Created {{ m.created }} · Promotion requested: —</div>
+          </div>
+          <button style="height:34px; padding:0 14px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-weight:700; font-size:12px; cursor:pointer;"><i class="fas fa-trash"></i> Delete</button>
+        </div>
+      </sc-for>
+    </sc-if>
+
+    <!-- CHALLENGES: Rumor or Not -->
+    <sc-if value="{{ pIsChRumor }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; gap:8px;">
+          <button style="height:36px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--f1-red); color:#fff; font-weight:700; font-size:12px; cursor:pointer;">Published</button>
+          <button style="height:36px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-secondary); font-weight:700; font-size:12px; cursor:pointer;">Draft</button>
+        </div>
+        <button style="height:36px; padding:0 16px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-weight:700; font-size:12px; cursor:pointer;"><i class="fas fa-plus"></i> New rumor</button>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:8px 4px;">
+        <sc-for list="{{ rumorRows }}" as="row" hint-placeholder-count="5">
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; border-top:1px solid var(--border-color); flex-wrap:wrap;">
+            <input type="checkbox"/>
+            <div style="flex:1; min-width:160px; font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ row.title }}</div>
+            <span style="background:{{ row.badgeBg }}; color:{{ row.badgeColor }}; font-size:10px; font-weight:800; padding:2px 8px; border-radius:6px;">{{ row.badge }}</span>
+            <button style="height:30px; padding:0 12px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-weight:700; font-size:11px; cursor:pointer;">{{ row.action }}</button>
+            <button style="height:30px; padding:0 12px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-secondary); font-weight:700; font-size:11px; cursor:pointer;">Delete</button>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- CHALLENGES: Trivia -->
+    <sc-if value="{{ pIsChTrivia }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:center; justify-content:flex-end; margin-bottom:16px;">
+        <button style="height:36px; padding:0 16px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-weight:700; font-size:12px; cursor:pointer;"><i class="fas fa-plus"></i> New question</button>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:8px 4px;">
+        <sc-for list="{{ triviaRows }}" as="row" hint-placeholder-count="5">
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; border-top:1px solid var(--border-color); flex-wrap:wrap;">
+            <input type="checkbox"/>
+            <div style="flex:1; min-width:160px; font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ row.title }}</div>
+            <span style="background:{{ row.badgeBg }}; color:{{ row.badgeColor }}; font-size:10px; font-weight:800; padding:2px 8px; border-radius:6px;">{{ row.badge }}</span>
+            <button style="height:30px; padding:0 12px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-weight:700; font-size:11px; cursor:pointer;">{{ row.action }}</button>
+            <button style="height:30px; padding:0 12px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-secondary); font-weight:700; font-size:11px; cursor:pointer;">Delete</button>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- CHALLENGES: Duels -->
+    <sc-if value="{{ pIsChDuels }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:8px;">Quick Match Queue</div>
+        <div style="color:var(--text-muted); font-size:13px;">No one is waiting for an opponent right now.</div>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:14px;">Duel oversight</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+          <span style="font-size:13px; color:var(--text-secondary);">Sort:</span>
+          <button onClick="{{ onSortNewest }}" style="height:32px; padding:0 14px; border-radius:8px; border:none; background:{{ duelSortNewestBg }}; color:{{ duelSortNewestColor }}; font-weight:700; font-size:12px; cursor:pointer;">Newest first</button>
+          <button onClick="{{ onSortOldest }}" style="height:32px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:{{ duelSortOldestBg }}; color:{{ duelSortOldestColor }}; font-weight:700; font-size:12px; cursor:pointer;">Oldest first</button>
+        </div>
+        <div style="color:var(--text-muted); font-size:13px;">No duels yet.</div>
+      </div>
+    </sc-if>
+
+    <!-- CHALLENGES: Suppressions -->
+    <sc-if value="{{ pIsChSuppr }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--bg-card); border:1px solid rgba(225,6,0,0.4); border-radius:12px; padding:20px; box-shadow:0 0 20px rgba(225,6,0,0.08);">
+        <div style="font-weight:800; font-size:15px; margin-bottom:8px;">Opted-out emails</div>
+        <div style="color:var(--text-muted); font-size:13px; margin-bottom:14px;">0 email(s) on the suppression list.</div>
+        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+          <input type="email" placeholder="friend@example.com" style="flex:1; min-width:200px; height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+          <button style="height:44px; padding:0 20px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); font-weight:700; font-size:13px; cursor:pointer;">Add</button>
+        </div>
+        <div style="color:var(--text-muted); font-size:13px;">No suppressed emails yet.</div>
+      </div>
+    </sc-if>
+
+    <!-- CORE: Races -->
+    <sc-if value="{{ pIsCoreRaces }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 20px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+        <div style="font-weight:700; font-size:14px; color:var(--f1-red-light);"><i class="fas fa-circle-plus" style="margin-right:8px;"></i>Add Race</div>
+        <i class="fas fa-chevron-down" style="color:var(--text-muted);"></i>
+      </div>
+      <sc-for list="{{ racesList }}" as="r" hint-placeholder-count="6">
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 20px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-weight:700; font-size:14px;">{{ r.name }}</div>
+          <div style="display:flex; gap:8px;">
+            <button style="width:34px; height:34px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-secondary); cursor:pointer;"><i class="fas fa-pen"></i></button>
+            <button style="width:34px; height:34px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; cursor:pointer;"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      </sc-for>
+    </sc-if>
+
+    <!-- CORE: Drivers -->
+    <sc-if value="{{ pIsCoreDrivers }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 20px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+        <div style="font-weight:700; font-size:14px; color:var(--f1-red-light);"><i class="fas fa-circle-plus" style="margin-right:8px;"></i>Add Driver</div>
+        <i class="fas fa-chevron-down" style="color:var(--text-muted);"></i>
+      </div>
+      <sc-for list="{{ driversList }}" as="d" hint-placeholder-count="10">
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 20px; margin-bottom:10px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+          <div style="font-family:var(--font-display); font-weight:800; font-size:20px; color:var(--f1-red); width:48px; flex-shrink:0;">#{{ d.num }}</div>
+          <div style="flex:1; min-width:140px;">
+            <div style="font-weight:700; font-size:15px;">{{ d.name }}</div>
+            <div style="font-size:12px; color:var(--text-muted);">{{ d.team }}</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button style="width:34px; height:34px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-secondary); cursor:pointer;"><i class="fas fa-pen"></i></button>
+            <button style="width:34px; height:34px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; cursor:pointer;"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      </sc-for>
+    </sc-if>
+
+    <!-- CORE: Users -->
+    <sc-if value="{{ pIsCoreUsers }}" hint-placeholder-val="{{ false }}">
+      <sc-for list="{{ usersList }}" as="u" hint-placeholder-count="4">
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 20px; margin-bottom:10px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <div style="width:40px; height:40px; border-radius:50%; background:var(--f1-red); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0;">{{ u.initial }}</div>
+          <div style="flex:1; min-width:200px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px;">
+              <span style="font-weight:700; font-size:14px;">{{ u.name }}</span>
+              <span style="background:{{ u.roleBg }}; color:{{ u.roleColor }}; font-size:10px; font-weight:800; padding:2px 8px; border-radius:6px;">{{ u.role }}</span>
+              <sc-if value="{{ u.star }}"><span style="color:var(--gold);">★{{ u.star }}</span></sc-if>
+              <span style="color:var(--f1-red-light); font-weight:700; font-size:13px;">{{ u.pts }} pts</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted);">{{ u.email }} · Last seen: {{ u.lastSeen }}</div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <span style="background:{{ u.compBg }}; color:{{ u.compColor }}; font-size:11px; font-weight:800; padding:6px 12px; border-radius:8px;"><i class="{{ u.compIcon }}"></i> {{ u.compLabel }}</span>
+            <button style="height:32px; padding:0 12px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); font-weight:700; font-size:12px; cursor:pointer;">Make Admin</button>
+            <button style="width:32px; height:32px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-secondary); cursor:pointer;"><i class="fas fa-key"></i></button>
+            <button style="width:32px; height:32px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; cursor:pointer;"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      </sc-for>
+    </sc-if>
+
+    <!-- CORE: Invites -->
+    <sc-if value="{{ pIsCoreInvites }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:16px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:16px;">Invite new user</div>
+        <label style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Email</span>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <input type="email" placeholder="name@example.com" style="flex:1; min-width:200px; height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+            <button style="height:44px; padding:0 20px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><i class="fas fa-paper-plane"></i> Send invite</button>
+          </div>
+        </label>
+        <div style="font-size:12px; color:var(--text-muted);">Invite expires after 7 days. User will receive an email with a registration link.</div>
+      </div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">No invites yet</div>
+    </sc-if>
+
+    <!-- CORE: Bets -->
+    <sc-if value="{{ pIsCoreBets }}" hint-placeholder-val="{{ false }}">
+      <sc-for list="{{ betRaces }}" as="grp" hint-placeholder-count="5">
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; margin-bottom:16px; overflow:hidden;">
+          <div style="padding:14px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border-color);">
+            <div style="font-weight:800; font-size:15px;">{{ grp.race }}</div>
+            <span style="background:var(--bg-hover); font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">{{ grp.count }} BETS</span>
+          </div>
+          <sc-for list="{{ grp.bets }}" as="b" hint-placeholder-count="3">
+            <div style="padding:14px 20px; border-top:1px solid var(--border-color); display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+              <div style="width:32px; height:32px; border-radius:50%; background:var(--f1-red); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">{{ b.initial }}</div>
+              <div style="min-width:120px; flex-shrink:0;">
+                <div style="font-weight:700; font-size:13px; display:flex; align-items:center; gap:6px;">{{ b.user }} <sc-if value="{{ b.perfect }}"><span style="color:var(--gold);">★</span></sc-if></div>
+                <div style="font-size:11px; color:var(--text-muted);">26 Jul 10:25</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <span style="background:var(--bg-hover); font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px;">P1: {{ b.p1 }}</span>
+                <span style="background:var(--bg-hover); font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px;">P2: {{ b.p2 }}</span>
+                <span style="background:var(--bg-hover); font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px;">P3: {{ b.p3 }}</span>
+              </div>
+              <span style="margin-left:auto; background:var(--f1-red); color:#fff; font-weight:800; font-size:12px; padding:4px 10px; border-radius:999px;">{{ b.pts }} PTS</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </sc-if>
+
+    <!-- CORE: Security -->
+    <sc-if value="{{ pIsCoreSecurity }}" hint-placeholder-val="{{ false }}">
+      <div style="font-weight:800; font-size:15px; margin-bottom:10px; display:flex; align-items:center; gap:8px;"><i class="fas fa-diagram-project" style="color:var(--f1-red);"></i>By IP address (0)</div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:24px; text-align:center; color:var(--text-muted); font-size:13px; margin-bottom:20px;">No attempts in the last 15 minutes</div>
+      <div style="font-weight:800; font-size:15px; margin-bottom:10px; display:flex; align-items:center; gap:8px;"><i class="fas fa-user-lock" style="color:var(--f1-red);"></i>By account (0)</div>
+      <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:24px; text-align:center; color:var(--text-muted); font-size:13px;">No attempts in the last 15 minutes</div>
+    </sc-if>
+
+    <!-- CORE: Logs -->
+    <sc-if value="{{ pIsCoreLogs }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+        <sc-for list="{{ logTabs }}" as="t" hint-placeholder-count="4">
+          <button onClick="{{ t.onClick }}" style="height:34px; padding:0 14px; border-radius:8px; border:1px solid {{ t.borderColor }}; background:{{ t.bg }}; color:{{ t.color }}; font-weight:700; font-size:12px; cursor:pointer;">{{ t.label }}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ pLogsApp }}" hint-placeholder-val="{{ false }}">
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:16px 20px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <div style="font-weight:700; font-size:14px;">App</div>
+            <div style="font-size:12px; color:var(--text-muted);">87 KB</div>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono); word-break:break-all;">/var/www/helvegpovlsen.dk/hpovlsen.dk/public/logs/app.log</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Last updated: 26 Jul 2026, 10:45:52</div>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Showing the last 300 of up to 300 lines.</div>
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:14px; max-height:340px; overflow-y:auto; font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">
+          <sc-for list="{{ appLogLines }}" as="line" hint-placeholder-count="9">
+            <div style="word-break:break-all; padding:3px 0;">{{ line }}</div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ pLogsApp }}" hint-placeholder-val="{{ false }}" hint-negate="true">
+      </sc-if>
+      <div style="display:{{ logsEmptyDisplay }};">
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:24px; text-align:center; color:var(--text-muted); font-size:13px;">No entries loaded for this source in this preview.</div>
+      </div>
+    </sc-if>
+
+    <!-- CORE: Settings -->
+    <sc-if value="{{ pIsCoreSettings }}" hint-placeholder-val="{{ false }}">
+    <div style="position:sticky; top:56px; z-index:20; margin:0 0 20px; background:var(--bg-card); border:1px solid var(--f1-red); border-radius:12px; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; box-shadow:0 6px 20px rgba(0,0,0,0.35);">
+      <div style="display:flex; align-items:center; gap:10px; font-size:14px; color:var(--text-secondary);">
+        <sc-if value="{{ dirty }}" hint-placeholder-val="{{ false }}">
+          <i class="fas fa-circle" style="color:var(--f1-red); font-size:8px;"></i>
+          <span style="color:var(--text-primary); font-weight:600;">You have unsaved changes</span>
+        </sc-if>
+        <sc-if value="{{ notDirty }}" hint-placeholder-val="{{ true }}">
+          <i class="fas fa-circle-check" style="color:var(--status-success);"></i>
+          <span>All changes saved</span>
+        </sc-if>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button onClick="{{ onDiscard }}" style="height:40px; padding:0 18px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-secondary); font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer;" style-hover="background:var(--bg-hover); color:var(--text-primary);">Discard</button>
+        <button onClick="{{ onSave }}" style="height:40px; padding:0 22px; border-radius:8px; border:none; background:var(--f1-red); color:#fff; font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(225,6,0,0.30);" style-hover="background:var(--f1-red-light);">
+          <i class="fas fa-floppy-disk"></i> Save changes
+        </button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:16px;">
+      <button onClick="{{ onToggleGeneral }}" style="width:100%; background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:space-between; text-align:left; color:var(--text-primary);">
+        <span style="font-family:var(--font-display); font-weight:800; font-size:15px; display:flex; align-items:center; gap:10px; color:var(--text-primary);"><i class="fas fa-id-badge" style="color:var(--f1-red);"></i> General</span>
+        <i class="{{ generalChevron }}" style="color:var(--text-muted);"></i>
+      </button>
+      <div style="color:var(--text-muted); font-size:13px; margin:8px 0 16px;">Club name and founding year, shown in header and footer.</div>
+      <sc-if value="{{ generalOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;">
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">App title</span>
+          <input type="text" value="{{ appTitle }}" onChange="{{ onAppTitle }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Year</span>
+          <input type="text" value="{{ year }}" onChange="{{ onYear }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+      </div>
+      </sc-if>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:16px;">
+      <button onClick="{{ onToggleHero }}" style="width:100%; background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:space-between; text-align:left; color:var(--text-primary);">
+        <span style="font-family:var(--font-display); font-weight:800; font-size:15px; display:flex; align-items:center; gap:10px; color:var(--text-primary);"><i class="fas fa-house" style="color:var(--f1-red);"></i> Homepage hero</span>
+        <i class="{{ heroChevron }}" style="color:var(--text-muted);"></i>
+      </button>
+      <div style="color:var(--text-muted); font-size:13px; margin:8px 0 16px;">Title and subtext at the top of the homepage, in both languages.</div>
+      <sc-if value="{{ heroOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:8px 24px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); padding-bottom:4px; border-bottom:1px solid var(--border-color);">English</div>
+        <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); padding-bottom:4px; border-bottom:1px solid var(--border-color);">Dansk</div>
+
+        <label style="display:flex; flex-direction:column; gap:6px; margin-top:12px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Hero title</span>
+          <input type="text" value="{{ heroTitleEn }}" onChange="{{ onHeroTitleEn }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px; margin-top:12px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Hero title</span>
+          <input type="text" value="{{ heroTitleDa }}" onChange="{{ onHeroTitleDa }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Hero text</span>
+          <textarea rows="2" value="{{ heroTextEn }}" onChange="{{ onHeroTextEn }}" style="padding:12px 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px; resize:vertical;"></textarea>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Hero text</span>
+          <textarea rows="2" value="{{ heroTextDa }}" onChange="{{ onHeroTextDa }}" style="padding:12px 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px; resize:vertical;"></textarea>
+        </label>
+      </div>
+      </sc-if>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:16px;">
+      <button onClick="{{ onToggleBetting }}" style="width:100%; background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; justify-content:space-between; text-align:left; color:var(--text-primary);">
+        <span style="font-family:var(--font-display); font-weight:800; font-size:15px; display:flex; align-items:center; gap:10px; color:var(--text-primary);"><i class="fas fa-flag-checkered" style="color:var(--f1-red);"></i> Betting rules</span>
+        <i class="{{ bettingChevron }}" style="color:var(--text-muted);"></i>
+      </button>
+      <div style="color:var(--text-muted); font-size:13px; margin:8px 0 18px;">When betting opens, how many points correct predictions give, and the default stake.</div>
+      <sc-if value="{{ bettingOpen }}" hint-placeholder-val="{{ false }}">
+
+      <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid var(--border-color);">
+        <label style="display:flex; flex-direction:column; gap:6px; width:140px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;"><i class="fas fa-clock" style="margin-right:6px; color:var(--text-muted);"></i>Hours before race</span>
+          <input type="number" value="{{ bettingHours }}" onChange="{{ onBettingHours }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <div style="color:var(--text-muted); font-size:13px; padding-bottom:12px;">Betting opens {{ bettingHours }} hours before race start and closes at race start.</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:16px; margin-bottom:8px;">
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:20px; border-radius:5px; background:linear-gradient(135deg,#fbbf24,#d97706); color:#1a1a1d; font-family:var(--font-display); font-weight:800; font-size:11px; display:inline-flex; align-items:center; justify-content:center;">P1</span> Points</span>
+          <input type="number" value="{{ p1 }}" onChange="{{ onP1 }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:20px; border-radius:5px; background:linear-gradient(135deg,#9ca3af,#6b7280); color:#1a1a1d; font-family:var(--font-display); font-weight:800; font-size:11px; display:inline-flex; align-items:center; justify-content:center;">P2</span> Points</span>
+          <input type="number" value="{{ p2 }}" onChange="{{ onP2 }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:20px; border-radius:5px; background:linear-gradient(135deg,#cd7c2f,#a15c1d); color:#fff; font-family:var(--font-display); font-weight:800; font-size:11px; display:inline-flex; align-items:center; justify-content:center;">P3</span> Points</span>
+          <input type="number" value="{{ p3 }}" onChange="{{ onP3 }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:13px; color:var(--text-secondary); font-weight:600;">Wrong position</span>
+          <input type="number" value="{{ wrongPos }}" onChange="{{ onWrongPos }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+        </label>
+      </div>
+      <div style="color:var(--text-muted); font-size:12px; margin-bottom:18px; display:flex; align-items:center; gap:6px;"><i class="fas fa-circle-info"></i> "Wrong position" points are given when a driver is in the top 3, but in the wrong position.</div>
+
+      <label style="display:flex; flex-direction:column; gap:6px; width:200px;">
+        <span style="font-size:13px; color:var(--text-secondary); font-weight:600;"><i class="fas fa-ticket" style="margin-right:6px; color:var(--text-muted);"></i>Bet size</span>
+        <input type="number" value="{{ betSize }}" onChange="{{ onBetSize }}" style="height:44px; padding:0 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-size:14px;"/>
+      </label>
+      </sc-if>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:24px;">
+      <div style="font-family:var(--font-display); font-weight:800; font-size:15px; margin-bottom:2px; display:flex; align-items:center; gap:10px;"><i class="fas fa-sliders" style="color:var(--f1-red);"></i> Features</div>
+      <div style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">Turn visible features on/off without affecting their data.</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 0; border-top:1px solid var(--border-color); flex-wrap:wrap;">
+        <div>
+          <div style="font-size:14px; font-weight:600; color:var(--text-primary);">Status: {{ paddockStatus }}</div>
+          <div style="font-size:13px; color:var(--text-muted); margin-top:2px; max-width:56ch;">Hides navigation and the homepage hero for Paddock Challenges without turning the feature off — content, cron jobs and direct links still work.</div>
+        </div>
+        <button onClick="{{ onTogglePaddock }}" style="flex-shrink:0; height:40px; padding:0 18px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;" style-hover="background:var(--bg-hover);">
+          <i class="{{ paddockIcon }}"></i> {{ paddockLabel }}
+        </button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:16px;">
+      <div style="font-family:var(--font-display); font-weight:800; font-size:15px; margin-bottom:2px; display:flex; align-items:center; gap:10px;"><i class="fas fa-clock-rotate-left" style="color:var(--f1-red);"></i> Ranking maintenance</div>
+      <div style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">Should be run after finished races, to show ranking changes (▲/▼) on the leaderboard.</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 0; border-top:1px solid var(--border-color); flex-wrap:wrap;">
+        <div>
+          <div style="font-size:14px; font-weight:600; color:var(--text-primary);">Restore historical snapshots</div>
+          <div style="font-size:13px; color:var(--text-muted); margin-top:2px; max-width:56ch;">Runs for all finished races. Safe to run multiple times.</div>
+        </div>
+        <button style="flex-shrink:0; height:40px; padding:0 18px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;" style-hover="background:var(--bg-hover);">
+          <i class="fas fa-rotate"></i> Restore
+        </button>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:20px 24px; margin-bottom:24px;">
+      <div style="font-family:var(--font-display); font-weight:800; font-size:15px; margin-bottom:2px; display:flex; align-items:center; gap:10px;"><i class="fas fa-envelope" style="color:var(--f1-red);"></i> Email delivery (test environment)</div>
+      <div style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">On the test environment emails are captured by default. E2E tests turn capturing on during the run and off again afterwards.</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 0; border-top:1px solid var(--border-color); flex-wrap:wrap;">
+        <div>
+          <div style="font-size:14px; font-weight:600; color:var(--text-primary);">Status: Capturing <span style="color:var(--text-muted); font-weight:500;">(not sending)</span></div>
+          <div style="font-size:13px; color:var(--text-muted); margin-top:2px; max-width:56ch;">Switch to real sending if you want emails delivered.</div>
+        </div>
+        <button style="flex-shrink:0; height:40px; padding:0 18px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-primary); font-family:var(--font-display); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;" style-hover="background:var(--bg-hover);">
+          <i class="fas fa-envelope-open"></i> Turn on
+        </button>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="text-align:center; color:var(--text-muted); font-size:11px; padding:20px 0;">Fr.sund Formel 1 Klub · anno 1992 · v3.0.0</div>
+  </div>
+
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    section: 'dashboards',
+    dashTab: 'overview',
+    chTab: 'members',
+    coreTab: 'drivers',
+    logsTab: 'app',
+    duelSort: 'newest',
+    selectAllMembers: false,
+    appTitle: 'Fr.sund F1 Klub',
+    year: 'anno 1992',
+    heroTitleEn: 'Predict the podium',
+    heroTitleDa: 'Forudsig podiet',
+    heroTextEn: 'Predict the podium',
+    heroTextDa: 'Forudsig podiet',
+    bettingHours: 48,
+    p1: 25, p2: 18, p3: 15, wrongPos: 5,
+    betSize: 10,
+    showPaddock: true,
+    dirty: false,
+    generalOpen: false,
+    heroOpen: false,
+    bettingOpen: false,
+  };
+
+  set(field) { return (e) => this.setState({ [field]: e.target.value, dirty: true }); }
+
+  navigate(sectionId, tabKey, tabId) {
+    this.setState({ section: sectionId, [tabKey]: tabId });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const noop = () => {};
+
+    const navConfig = [
+      { id: 'dashboards', label: 'Dashboards', icon: 'fas fa-gauge-high', tabs: [
+        { id: 'overview', label: 'Overview', icon: 'fas fa-table-cells' },
+        { id: 'keys', label: 'Keys & Rotation', icon: 'fas fa-key' },
+        { id: 'kb', label: 'PaddockKB', icon: 'fas fa-book' },
+        { id: 'challenges', label: 'Challenges', icon: 'fas fa-trophy' },
+        { id: 'actions', label: 'Actions', icon: 'fab fa-github', badge: '3' },
+      ]},
+      { id: 'challenges', label: 'Paddock Challenges settings', icon: 'fas fa-user-check', tabs: [
+        { id: 'members', label: 'Members', icon: 'fas fa-user-check' },
+        { id: 'rumor', label: 'Rumor or Not', icon: 'fas fa-comment', badge: '107' },
+        { id: 'trivia', label: 'Trivia', icon: 'fas fa-question', badge: '107' },
+        { id: 'duels', label: 'Duels', icon: 'fas fa-bolt' },
+        { id: 'suppressions', label: 'Suppressions', icon: 'fas fa-ban' },
+      ]},
+      { id: 'core', label: 'Core settings', icon: 'fas fa-gear', tabs: [
+        { id: 'races', label: 'Races', icon: 'fas fa-flag', badge: '6' },
+        { id: 'drivers', label: 'Drivers', icon: 'fas fa-car', badge: '10' },
+        { id: 'users', label: 'Users', icon: 'fas fa-users', badge: '4' },
+        { id: 'invites', label: 'Invites', icon: 'fas fa-envelope' },
+        { id: 'bets', label: 'Bets', icon: 'fas fa-trophy', badge: '15' },
+        { id: 'security', label: 'Security', icon: 'fas fa-shield-halved' },
+        { id: 'logs', label: 'Logs', icon: 'fas fa-file-lines' },
+        { id: 'settings', label: 'Settings', icon: 'fas fa-gear' },
+      ]},
+    ];
+    const tabKeyOf = { dashboards: 'dashTab', challenges: 'chTab', core: 'coreTab' };
+
+    const sections = navConfig.map(sec => {
+      const active = s.section === sec.id;
+      const tabKey = tabKeyOf[sec.id];
+      const curTab = s[tabKey];
+      return {
+        id: sec.id, label: sec.label, icon: sec.icon,
+        tabClass: active ? 'admin-tab active' : 'admin-tab',
+        menuClass: active ? 'active' : '',
+        onClick: () => this.setState({ section: sec.id }),
+        tabs: sec.tabs.map(t => {
+          const tActive = active && curTab === t.id;
+          return {
+            id: t.id, label: t.label, icon: t.icon, badge: t.badge || '',
+            tabClass: tActive ? 'admin-tab active' : 'admin-tab',
+            menuClass: tActive ? 'active' : '',
+            active: tActive,
+            onClick: () => this.navigate(sec.id, tabKey, t.id),
+          };
+        }),
+      };
+    });
+    const currentSection = sections.find(x => x.id === s.section) || sections[0];
+    const currentTabs = currentSection.tabs;
+    const currentTabObj = currentTabs.find(t => t.active) || currentTabs[0];
+
+    const dt = s.dashTab, ct = s.chTab, co = s.coreTab, sc = s.section;
+    const pIsDashOverview = sc === 'dashboards' && dt === 'overview';
+    const pIsDashKeys = sc === 'dashboards' && dt === 'keys';
+    const pIsDashKB = sc === 'dashboards' && dt === 'kb';
+    const pIsDashChallenges = sc === 'dashboards' && dt === 'challenges';
+    const pIsDashActions = sc === 'dashboards' && dt === 'actions';
+    const pIsChMembers = sc === 'challenges' && ct === 'members';
+    const pIsChRumor = sc === 'challenges' && ct === 'rumor';
+    const pIsChTrivia = sc === 'challenges' && ct === 'trivia';
+    const pIsChDuels = sc === 'challenges' && ct === 'duels';
+    const pIsChSuppr = sc === 'challenges' && ct === 'suppressions';
+    const pIsCoreRaces = sc === 'core' && co === 'races';
+    const pIsCoreDrivers = sc === 'core' && co === 'drivers';
+    const pIsCoreUsers = sc === 'core' && co === 'users';
+    const pIsCoreInvites = sc === 'core' && co === 'invites';
+    const pIsCoreBets = sc === 'core' && co === 'bets';
+    const pIsCoreSecurity = sc === 'core' && co === 'security';
+    const pIsCoreLogs = sc === 'core' && co === 'logs';
+    const pIsCoreSettings = sc === 'core' && co === 'settings';
+    const pLogsApp = s.logsTab === 'app';
+
+    const overviewCards = [
+      { icon: 'fas fa-key', name: 'Keys & Rotation', big: '100', bigSub: 'health', status: 'all running', statusColor: 'var(--status-success)', badge: '' },
+      { icon: 'fab fa-github', name: 'Actions', big: '86%', bigSub: 'success (recent runs)', status: '3 workflows failing', statusColor: 'var(--f1-red)', badge: '3' },
+      { icon: 'fas fa-book', name: 'PaddockKB', big: 'Healthy', bigSub: '', status: 'all running', statusColor: 'var(--status-success)', badge: '' },
+      { icon: 'fas fa-trophy', name: 'Challenges', big: '0', bigSub: 'active players', status: 'all running', statusColor: 'var(--status-success)', badge: '' },
+    ];
+
+    const keyStats = [
+      { label: 'Expired tokens', value: '0', color: 'var(--f1-red)' },
+      { label: 'Expiring < 14 days', value: '0', color: 'var(--status-warning)' },
+      { label: 'Overdue secrets', value: '0', color: 'var(--f1-red)' },
+      { label: 'Last rotated', value: '26 Jul', color: 'var(--text-primary)' },
+      { label: 'Secrets in config', value: '9', color: 'var(--text-primary)' },
+      { label: 'Access tokens', value: '1', color: 'var(--text-primary)' },
+    ];
+
+    const secretsRaw = [
+      ['fas fa-database', 'DB_PASSWORD', 3, 90, 'record'],
+      ['fas fa-envelope', 'SMTP_PASSWORD', 0, 90, 'record'],
+      ['fas fa-paper-plane', 'RESEND_API_KEY', 2, 90, 'record'],
+      ['fas fa-key', 'PASSWORD_PEPPER', 2, 365, 'record'],
+      ['fas fa-shield-halved', 'MFA_KEY', 2, 365, 'record'],
+      ['fas fa-robot', 'Anthropic — paddock-challenges-simulation', 0, 90, 'record'],
+      ['fas fa-pen', 'INTEGRATION_SEED_TOKEN', 2, 180, 'rotate'],
+      ['fas fa-clock', 'CRON_SECRET', 0, 180, 'rotate'],
+      ['fas fa-comments', 'CHALLENGE_INVITE_SECRET', 0, 180, 'rotate'],
+    ];
+    const secretsList = secretsRaw.map(([icon, name, used, total, action]) => ({
+      icon, name, used, total, pct: Math.max(4, Math.round(used / total * 100)),
+      btnLabel: action === 'rotate' ? 'Rotate now' : 'Rotated — enter date',
+      btnBg: action === 'rotate' ? 'var(--f1-red)' : 'transparent',
+      btnColor: action === 'rotate' ? '#fff' : 'var(--text-primary)',
+      btnBorder: action === 'rotate' ? 'none' : '1px solid var(--border-color)',
+    }));
+
+    const rotationHistory = [
+      ['26 Jul 2026 10:24', 'F1 Admin', 'rotate_secret (cron_secret)'],
+      ['26 Jul 2026 10:24', 'F1 Admin', 'rotate_secret (challenge_invite_secret)'],
+      ['26 Jul 2026 10:24', 'F1 Admin', 'rotate_secret (challenge_invite_secret)'],
+      ['26 Jul 2026 10:24', 'F1 Admin', 'record_secret_rotation (smtp_password)'],
+      ['26 Jul 2026 10:24', 'F1 Admin', 'record_token_expiry (github_pat)'],
+      ['25 Jul 2026 22:32', 'F1 Admin', 'rotate_secret (cron_secret)'],
+      ['25 Jul 2026 22:32', 'F1 Admin', 'rotate_secret (challenge_invite_secret)'],
+      ['25 Jul 2026 22:32', 'F1 Admin', 'rotate_secret (challenge_invite_secret)'],
+    ].map(([date, admin, action]) => ({ date, admin, action }));
+
+    const kbTop = [
+      { label: 'Last update', value: '14h ago', sub: 'Success · 21s', subColor: 'var(--status-success)' },
+      { label: 'Next scheduled', value: 'in 7h', sub: 'Jul 26, 18:00 CET', subColor: 'var(--text-muted)' },
+    ];
+    const kbStats = [
+      { label: 'Total entries', value: '98' },
+      { label: 'Categories', value: '5' },
+      { label: 'Index size', value: '166 KB' },
+    ];
+    const kbCategories = [
+      { name: 'Analysis', count: 51, pct: 100, dot: 'var(--f1-red)' },
+      { name: 'Drivers', count: 22, pct: 43, dot: 'var(--status-success)' },
+      { name: 'Qualifying', count: 11, pct: 22, dot: 'var(--status-success)' },
+      { name: 'Races', count: 10, pct: 20, dot: 'var(--status-success)' },
+      { name: 'Sprint', count: 4, pct: 8, dot: 'var(--status-warning)' },
+    ];
+    const ingestRuns = [
+      'Jul 25, 20:57 CET Paddock Rumors — KB Update 21s',
+      'Jul 25, 18:02 CET Paddock Rumors — KB Update 13s',
+      'Jul 25, 16:56 CET Paddock Rumors — KB Update 16s',
+      'Jul 25, 15:52 CET Paddock Rumors — KB Update 15s',
+      'Jul 23, 15:15 CET Paddock Rumors — KB Update 19s',
+      'Jul 22, 21:02 CET Paddock Rumors — KB Update 22s',
+    ];
+
+    const challengeStats = [
+      { label: 'Active participants', value: '0', color: 'var(--text-primary)' },
+      { label: 'Plays (7d)', value: '0', color: 'var(--text-primary)' },
+      { label: 'New applications (7d)', value: '0', color: 'var(--text-primary)' },
+      { label: 'Participation rate', value: '0%', color: 'var(--status-success)' },
+    ];
+    const competitions = [
+      { icon: 'fas fa-hand-back-fist', bg: 'var(--f1-red)', name: 'Duels', sub: '1-vs-1 predictions', a: '0', al: 'players', b: '0', bl: 'plays (7d)', c: '0%', cl: 'resolved' },
+      { icon: 'fas fa-question', bg: 'var(--status-warning)', name: 'Rumor or Not', sub: 'true or rumor', a: '0', al: 'players', b: '0', bl: 'plays (7d)', c: '0%', cl: 'correct' },
+      { icon: 'fas fa-circle-half-stroke', bg: 'var(--status-success)', name: 'Weekly Trivia', sub: 'weekly · leaderboard', a: '0', al: 'players', b: '0', bl: 'plays (7d)', c: '0%', cl: 'correct' },
+    ];
+    const funnelRows = [
+      { label: 'Participated in a challenge', value: '0', pct: 100 },
+      { label: 'Registered as participant', value: '2', pct: 4 },
+      { label: 'Requested full membership', value: '0', pct: 0 },
+    ];
+    const actionsStats = [
+      { label: 'Workflows', value: '9', color: 'var(--text-primary)' },
+      { label: 'Runs · last 24h', value: '26', color: 'var(--text-primary)' },
+      { label: 'Success rate', value: '86%', color: 'var(--status-success)' },
+      { label: 'Failing now', value: '3', color: 'var(--f1-red)' },
+    ];
+
+    const membersList = [
+      { name: 'F1 Admin', role: 'CORE USER', locale: 'EN', created: '26 Jul 2026' },
+      { name: 'Alice', role: 'CORE USER', locale: 'DA', created: '26 Jul 2026' },
+    ];
+
+    const rumorRows = [1,2,3,4,5].map(n => ({
+      title: 'Rumor entry #' + n, badge: 'DRAFT', badgeBg: 'var(--bg-hover)', badgeColor: 'var(--text-secondary)', action: 'Publish',
+    }));
+    const triviaRows = [1,2,3,4,5].map(n => ({
+      title: 'Trivia question #' + n, badge: 'DRAFT', badgeBg: 'var(--bg-hover)', badgeColor: 'var(--text-secondary)', action: 'Publish',
+    }));
+
+    const driversRaw = [
+      [14, 'Fernando Alonso', 'Aston Martin'], [44, 'Lewis Hamilton', 'Mercedes'], [16, 'Charles Leclerc', 'Ferrari'],
+      [4, 'Lando Norris', 'McLaren'], [11, 'Sergio Perez', 'Red Bull'], [81, 'Oscar Piastri', 'McLaren'],
+      [63, 'George Russell', 'Mercedes'], [55, 'Carlos Sainz', 'Ferrari'], [18, 'Lance Stroll', 'Aston Martin'], [1, 'Max Verstappen', 'Red Bull'],
+    ];
+    const driversList = driversRaw.map(([num, name, team]) => ({ num, name, team }));
+    const racesList = [1, 2, 3, 4, 5, 6].map(n => ({ name: 'Race ' + n }));
+
+    const usersRaw = [
+      { name: 'Alice Refresh', email: 'alice@test.local', role: 'USER', star: 1, pts: 220, lastSeen: '26 Jul 2026, 10:25', inComp: true },
+      { name: 'Bob', email: 'bob@test.local', role: 'USER', star: 0, pts: 140, lastSeen: 'Never', inComp: true },
+      { name: 'Charlie', email: 'charlie@test.local', role: 'USER', star: 0, pts: 65, lastSeen: 'Never', inComp: true },
+      { name: 'F1 Admin', email: 'f1_admin@helvegpovlsen.dk', role: 'ADMIN', star: 1, pts: 58, lastSeen: '26 Jul 2026, 10:45', inComp: false },
+    ];
+    const usersList = usersRaw.map(u => ({
+      ...u, initial: u.name[0],
+      roleBg: u.role === 'ADMIN' ? 'var(--f1-red)' : 'var(--bg-hover)',
+      roleColor: u.role === 'ADMIN' ? '#fff' : 'var(--text-secondary)',
+      compBg: u.inComp ? 'var(--f1-red)' : 'var(--bg-hover)',
+      compColor: u.inComp ? '#fff' : 'var(--text-secondary)',
+      compIcon: u.inComp ? 'fas fa-circle-check' : 'fas fa-circle-xmark',
+      compLabel: u.inComp ? 'In Competition' : 'Not In Competition',
+    }));
+
+    const betRacesRaw = [
+      { race: 'Race 1', bets: [
+        { user: 'Alice Refresh', p1: 'Hamilton', p2: 'Russell', p3: 'Perez', pts: 43 },
+        { user: 'Charlie', p1: 'Russell', p2: 'Hamilton', p3: 'Verstappen', pts: 25 },
+        { user: 'Bob', p1: 'Hamilton', p2: 'Verstappen', p3: 'Russell', pts: 35 },
+      ]},
+      { race: 'Race 4', bets: [
+        { user: 'Bob', p1: 'Hamilton', p2: 'Leclerc', p3: 'Verstappen', pts: 35 },
+        { user: 'Alice Refresh', p1: 'Russell', p2: 'Verstappen', p3: 'Leclerc', pts: 33 },
+        { user: 'Charlie', p1: 'Verstappen', p2: 'Hamilton', p3: 'Russell', pts: 10 },
+      ]},
+      { race: 'Race 3', bets: [
+        { user: 'Bob', p1: 'Norris', p2: 'Alonso', p3: 'Piastri', pts: 35 },
+        { user: 'Charlie', p1: 'Piastri', p2: 'Norris', p3: 'Stroll', pts: 10 },
+        { user: 'Alice Refresh', p1: 'Norris', p2: 'Piastri', p3: 'Alonso', pts: 58, perfect: true },
+      ]},
+      { race: 'Race 5', bets: [
+        { user: 'Charlie', p1: 'Piastri', p2: 'Leclerc', p3: 'Perez', pts: 10 },
+        { user: 'Alice Refresh', p1: 'Perez', p2: 'Sainz', p3: 'Stroll', pts: 43 },
+        { user: 'Bob', p1: 'Leclerc', p2: 'Perez', p3: 'Sainz', pts: 10 },
+      ]},
+      { race: 'Race 2', bets: [
+        { user: 'Bob', p1: 'Leclerc', p2: 'Perez', p3: 'Sainz', pts: 25 },
+        { user: 'Charlie', p1: 'Sainz', p2: 'Norris', p3: 'Leclerc', pts: 10 },
+        { user: 'Alice Refresh', p1: 'Perez', p2: 'Leclerc', p3: 'Norris', pts: 43 },
+      ]},
+    ];
+    const betRaces = betRacesRaw.map(g => ({
+      race: g.race, count: g.bets.length,
+      bets: g.bets.map(b => ({ ...b, initial: b.user[0], perfect: !!b.perfect })),
+    }));
+
+    const appLogLines = [
+      '[2026-07-26 10:45:52] [LOGIN] method=password user=e7964a48-4e3d-11f1-be4e-0050569276b0',
+      '[2026-07-26 10:27:01] [LOGIN] method=password user=8945c217-4af4-4bd5-b994-35111d6d9220',
+      '[2026-07-26 10:26:24] [LOGIN] method=password user=b4d0ce83-87d1-473f-978f-edd1cf78bfa9',
+      '[2026-07-26 10:26:22] [LOGIN] method=password user=1ddd7682-1aee-4dda-ba58-c6c36174fa2a',
+      '[2026-07-26 10:26:20] [LOGIN] method=password user=92224b76-f51e-4b4d-9170-765123cd7ef1',
+      '[26-Jul-2026 10:26:19 Europe/Copenhagen] PHP Warning: Undefined array key "result_p1" in functions.php on line 161',
+      '[26-Jul-2026 10:26:18 Europe/Copenhagen] PHP Warning: Undefined array key "result_p1" in functions.php on line 161',
+      '[26-Jul-2026 10:26:17 Europe/Copenhagen] PHP Warning: Undefined array key "result_p1" in functions.php on line 161',
+      '[2026-07-26 10:26:12] [LOGIN] method=password user=e827bea5-be5f-4f90-bd6b-995d83a71921',
+    ];
+    const logTabsRaw = [
+      { id: 'app', label: 'App' }, { id: 'mail', label: 'Mail' },
+      { id: 'cronNotif', label: 'Cron: Notifications' }, { id: 'cronQuali', label: 'Cron: Qualifying' },
+    ];
+    const logTabs = logTabsRaw.map(t => {
+      const active = s.logsTab === t.id;
+      return {
+        ...t, active,
+        bg: active ? 'var(--f1-red)' : 'transparent',
+        color: active ? '#fff' : 'var(--text-secondary)',
+        borderColor: active ? 'var(--f1-red)' : 'var(--border-color)',
+        onClick: () => this.setState({ logsTab: t.id }),
+      };
+    });
+
+    return {
+      ...s,
+      noop,
+      sections,
+      currentTabs,
+      currentSectionIcon: currentSection.icon,
+      currentSectionLabel: currentSection.label,
+      currentTabIcon: currentTabObj ? currentTabObj.icon : '',
+      currentTabLabel: currentTabObj ? currentTabObj.label : '',
+      primaryDropdownKey: s.section,
+      secondaryDropdownKey: s.section + ':' + (currentTabObj ? currentTabObj.id : ''),
+      logsEmptyDisplay: pLogsApp ? 'none' : 'block',
+
+      pIsDashOverview, pIsDashKeys, pIsDashKB, pIsDashChallenges, pIsDashActions,
+      pIsChMembers, pIsChRumor, pIsChTrivia, pIsChDuels, pIsChSuppr,
+      pIsCoreRaces, pIsCoreDrivers, pIsCoreUsers, pIsCoreInvites, pIsCoreBets, pIsCoreSecurity, pIsCoreLogs, pIsCoreSettings,
+      pLogsApp,
+
+      overviewCards, keyStats, secretsList, rotationHistory,
+      kbTop, kbStats, kbCategories, ingestRuns,
+      challengeStats, competitions, funnelRows, actionsStats,
+      membersList, rumorRows, triviaRows, driversList, racesList, usersList, betRaces,
+      appLogLines, logTabs,
+
+      notDirty: !s.dirty,
+      paddockStatus: s.showPaddock ? 'Shown' : 'Hidden',
+      paddockIcon: s.showPaddock ? 'fas fa-eye-slash' : 'fas fa-eye',
+      paddockLabel: s.showPaddock ? 'Hide' : 'Show',
+      generalChevron: s.generalOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down',
+      heroChevron: s.heroOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down',
+      bettingChevron: s.bettingOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down',
+      onToggleGeneral: () => this.setState(st => ({ generalOpen: !st.generalOpen })),
+      onToggleHero: () => this.setState(st => ({ heroOpen: !st.heroOpen })),
+      onToggleBetting: () => this.setState(st => ({ bettingOpen: !st.bettingOpen })),
+      onAppTitle: this.set('appTitle'),
+      onYear: this.set('year'),
+      onHeroTitleEn: this.set('heroTitleEn'),
+      onHeroTitleDa: this.set('heroTitleDa'),
+      onHeroTextEn: this.set('heroTextEn'),
+      onHeroTextDa: this.set('heroTextDa'),
+      onBettingHours: this.set('bettingHours'),
+      onP1: this.set('p1'), onP2: this.set('p2'), onP3: this.set('p3'), onWrongPos: this.set('wrongPos'),
+      onBetSize: this.set('betSize'),
+      onTogglePaddock: () => this.setState(st => ({ showPaddock: !st.showPaddock, dirty: true })),
+      onSave: () => this.setState({ dirty: false }),
+      onDiscard: () => this.setState({ dirty: false }),
+
+      onToggleSelectAll: () => this.setState(st => ({ selectAllMembers: !st.selectAllMembers })),
+      onSortNewest: () => this.setState({ duelSort: 'newest' }),
+      onSortOldest: () => this.setState({ duelSort: 'oldest' }),
+      duelSortNewestBg: s.duelSort === 'newest' ? 'var(--f1-red)' : 'transparent',
+      duelSortNewestColor: s.duelSort === 'newest' ? '#fff' : 'var(--text-primary)',
+      duelSortOldestBg: s.duelSort === 'oldest' ? 'var(--f1-red)' : 'transparent',
+      duelSortOldestColor: s.duelSort === 'oldest' ? '#fff' : 'var(--text-primary)',
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -142,9 +142,30 @@ test.describe('Top bar — rules link (signed in)', { tag: '@appearance' }, () =
         await page.goto('/admin-dashboards.php');
         await expect(page.locator('[data-testid="rules-link"]')).toHaveCount(0);
     });
+});
 
-    test('bet modal: has its own rules link distinct from the (DOM-present but overlay-covered) header one', async ({ page }) => {
-        await page.goto('/bet.php');
+// bet.php requires a real ?race= id for an in_competition user — the admin account (used above
+// for the other signed-in rules-link checks) has in_competition=0 and would just bounce off
+// bet.php's not_in_competition redirect, so this test needs its own seeded user/race instead.
+test.describe('Top bar — rules link (bet modal)', { tag: '@appearance' }, () => {
+    const SEED_TOKEN = process.env.INTEGRATION_SEED_TOKEN;
+
+    test('bet modal: has its own rules link distinct from the (DOM-present but overlay-covered) header one', async ({ page, browser }) => {
+        const seedPage = await browser.newPage();
+        await seedPage.goto(
+            `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=seed_betting_race`
+        );
+        const seedData = JSON.parse(await seedPage.textContent('body'));
+        expect(seedData.ok).toBe(true);
+        await seedPage.close();
+
+        await page.goto('/login.php');
+        await page.fill('input[name="email"]',    seedData.email);
+        await page.fill('input[name="password"]', seedData.password);
+        await page.click('button[type="submit"]');
+        await page.waitForURL(/index\.php/, { timeout: 5000 });
+
+        await page.goto(`/bet.php?race=${seedData.raceId}`);
         // header.php still renders behind the full-screen modal overlay — two elements sharing
         // one data-testid here would make locators ambiguous (Playwright strict-mode violation),
         // so the modal link must use its own testid rather than "rules-link".
@@ -152,5 +173,11 @@ test.describe('Top bar — rules link (signed in)', { tag: '@appearance' }, () =
         const modalLink = page.locator('[data-testid="rules-link-bet"]');
         await expect(modalLink).toBeVisible();
         await expect(modalLink).toHaveAttribute('href', 'rules.php');
+
+        const cleanupPage = await browser.newPage();
+        await cleanupPage.goto(
+            `${process.env.BASE_URL}/tools/test-seed.php?token=${encodeURIComponent(SEED_TOKEN)}&action=cleanup_betting_race`
+        );
+        await cleanupPage.close();
     });
 });
