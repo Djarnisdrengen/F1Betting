@@ -7,7 +7,7 @@ const { test, expect } = require('../../fixtures');
 test.describe('Dashboards Challenges usage', { tag: '@admin' }, () => {
     test('KPI row and per-game cards render', async ({ page }) => {
         await page.goto('/admin-dashboards.php?tab=challenges');
-        await expect(page.locator('.gha-stat-value')).toHaveCount(4);
+        await expect(page.locator('.stat-card-value')).toHaveCount(4);
     });
 
     test('three competition cards render, one per game, each with its own metric label', async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe('Dashboards Challenges usage', { tag: '@admin' }, () => {
 
     test('funnel panel renders three steps in descending order', async ({ page }) => {
         await page.goto('/admin-dashboards.php?tab=challenges');
-        const rows = page.locator('.gha-panel').last().locator('div[style*="grid-template-columns:200px"]');
+        const rows = page.locator('.section-card').last().locator('div[style*="grid-template-columns:200px"]');
         await expect(rows).toHaveCount(3);
     });
 

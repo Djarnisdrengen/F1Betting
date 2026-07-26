@@ -621,15 +621,19 @@ include __DIR__ . '/includes/header.php';
     <div class="alert alert-danger"><?= escape($error) ?></div>
 <?php endif; ?>
 
-<nav class="admin-nav" aria-label="<?= t('admin_ch_title') ?>">
-    <?php foreach ($tabIcons as $key => $icon): ?>
-        <a href="?tab=<?= $key ?>" class="admin-nav-tab <?= $currentTab === $key ? 'active' : '' ?>">
-            <i class="fas fa-<?= $icon ?>"></i>
-            <span><?= t('admin_ch_nav_' . $key) ?></span>
-            <?php if (!empty($tabCounts[$key])): ?><span class="admin-nav-count"><?= $tabCounts[$key] ?></span><?php endif; ?>
-        </a>
-    <?php endforeach; ?>
-</nav>
+<?php
+$chTabItems = [];
+foreach ($tabIcons as $key => $icon) {
+    $chTabItems[] = [
+        'key'   => $key,
+        'href'  => '?tab=' . $key,
+        'icon'  => 'fas fa-' . $icon,
+        'label' => t('admin_ch_nav_' . $key),
+        'count' => $tabCounts[$key] ?? 0,
+    ];
+}
+renderAdminTabRow('challenges', $currentTab, $chTabItems, t('admin_ch_title'));
+?>
 
 <?php
 $allowedTabs = ['members', 'rumors', 'trivia', 'duels', 'suppressions'];

@@ -734,28 +734,24 @@ include __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <!-- Tabs -->
-<div class="admin-shell">
+<?php
+$coreTabItems = [];
+foreach ($tabIcons as $key => $icon) {
+    $coreTabItems[] = [
+        'key'   => $key,
+        'href'  => '?tab=' . $key,
+        'icon'  => 'fas fa-' . $icon,
+        'label' => t($key),
+        'count' => $tabCounts[$key] ?? 0,
+    ];
+}
+renderAdminTabRow('core', $currentTab, $coreTabItems, t('admin'));
 
-    <nav class="admin-nav" aria-label="<?= t('admin') ?>">
-        <?php foreach ($tabIcons as $key => $icon): ?>
-            <a href="?tab=<?= $key ?>" class="admin-nav-tab <?= $currentTab === $key ? 'active' : '' ?>">
-                <i class="fas fa-<?= $icon ?>"></i>
-                <span><?= t($key) ?></span>
-                <?php if (!empty($tabCounts[$key])): ?>
-                    <span class="admin-nav-count"><?= $tabCounts[$key] ?></span>
-                <?php endif; ?>
-            </a>
-        <?php endforeach; ?>
-    </nav>
-
-
-    <?php
-    $allowedTabs = ['races', 'drivers', 'users', 'bets', 'invites', 'security', 'logs', 'settings'];
-    if (in_array($currentTab, $allowedTabs)) {
-        include __DIR__ . "/includes/admin/{$currentTab}.php";
-    }
-    ?>
-</div>
+$allowedTabs = ['races', 'drivers', 'users', 'bets', 'invites', 'security', 'logs', 'settings'];
+if (in_array($currentTab, $allowedTabs)) {
+    include __DIR__ . "/includes/admin/{$currentTab}.php";
+}
+?>
 </div>
 
 <script nonce="<?= $nonce ?>">

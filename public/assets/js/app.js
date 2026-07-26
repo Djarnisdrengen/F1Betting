@@ -254,6 +254,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ── Admin nav dropdown (mobile) — close the <details> on link click ──────────
+    // The open/close mechanic itself is native <details>/<summary>, no JS needed. This
+    // just closes it before the click's navigation completes, so it doesn't sit visibly
+    // open during the page transition (same precedent as the hamburger drawer above).
+    document.querySelectorAll('.admin-dropdown .menu a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            const details = this.closest('.admin-dropdown');
+            if (details) details.open = false;
+        });
+    });
+
     // ── Admin Challenges bulk multiselect (rumors / trivia tabs) ─────────────────
     // Row checkboxes are wired to their per-tab bulk form via the HTML5 form= attribute,
     // so they submit together even though they live in separate row markup. Per group

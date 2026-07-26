@@ -11,7 +11,7 @@ const FIXTURE_QS = `e2e_token=${encodeURIComponent(SEED_TOKEN)}&e2e_gh_fixture=1
 test.describe('GitHub Actions Dashboard', { tag: '@admin' }, () => {
     test('summary stats match the fixture (workflows, 24h runs, success rate, failing now)', async ({ page }) => {
         await page.goto(`/admin-dashboards.php?tab=actions&${FIXTURE_QS}`);
-        const stats = page.locator('.gha-summary .gha-stat-value');
+        const stats = page.locator('.stat-card-grid .stat-card-value');
         await expect(stats.nth(0)).toHaveText('9');   // Workflows — static config, independent of fixture
         await expect(stats.nth(1)).toHaveText('8');   // Runs · last 24h
         await expect(stats.nth(2)).toHaveText('75%'); // Success rate
@@ -23,9 +23,9 @@ test.describe('GitHub Actions Dashboard', { tag: '@admin' }, () => {
         await page.goto(`/admin-dashboards.php?tab=actions&${FIXTURE_QS.replace('e2e_gh_fixture=1', 'e2e_gh_fixture=error')}`);
         // The <h1> is now the shared Dashboards area heading, not an Actions-specific one — the
         // active tab is what identifies this as the Actions tab post-reparenting.
-        await expect(page.locator('.admin-nav-tab.active')).toContainText('Actions');
+        await expect(page.locator('[data-testid="admin-tab"].active')).toContainText('Actions');
         await expect(page.locator('.gha-error-banner')).toBeVisible();
-        await expect(page.locator('.gha-stat-value').first()).toHaveText('9'); // static config still renders
+        await expect(page.locator('.stat-card-value').first()).toHaveText('9'); // static config still renders
     });
 
     test('filter narrows the workflow rail; no-match shows the empty state', async ({ page }) => {
@@ -94,7 +94,7 @@ test.describe('GitHub Actions Dashboard', { tag: '@admin' }, () => {
 
     test('language toggle switches dashboard chrome to English', async ({ page }) => {
         await page.goto(`/admin-dashboards.php?tab=actions&${FIXTURE_QS}`);
-        await expect(page.locator('.gha-stat-label').first()).toContainText('Workflows');
+        await expect(page.locator('.stat-card-label').first()).toContainText('Workflows');
         await page.goto(`/admin-dashboards.php?tab=actions&toggle_lang=1&${FIXTURE_QS}`);
         await expect(page.locator('.gha-runs-hint')).toHaveText(/Click a run to see its output|Klik på en kørsel/);
         // Whichever direction the shared test account's saved preference started in, the two

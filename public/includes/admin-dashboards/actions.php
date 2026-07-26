@@ -114,26 +114,28 @@ $fetchError = !empty($GLOBALS['ghFetchError']);
 
 <div class="gha-page">
 
-<div class="gha-summary">
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-diagram-project"></i> <?= t('admin_actions_workflows') ?></div>
-        <div class="gha-stat-value"><?= count($workflowConfig) ?></div>
+<div class="admin-page-header"><i class="fa-brands fa-github"></i><?= t('admin_actions_title') ?></div>
+
+<div class="stat-card-grid">
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-diagram-project"></i> <?= t('admin_actions_workflows') ?></div>
+        <div class="stat-card-value"><?= count($workflowConfig) ?></div>
     </div>
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-clock-rotate-left"></i> <?= t('admin_actions_runs24') ?></div>
-        <div class="gha-stat-value"><?= $totalRuns24 ?></div>
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-clock-rotate-left"></i> <?= t('admin_actions_runs24') ?></div>
+        <div class="stat-card-value"><?= $totalRuns24 ?></div>
     </div>
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-chart-line"></i> <?= t('admin_actions_success_rate') ?></div>
-        <div class="gha-stat-value success"><?= $successRate ?>%</div>
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-chart-line"></i> <?= t('admin_actions_success_rate') ?></div>
+        <div class="stat-card-value success"><?= $successRate ?>%</div>
     </div>
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-triangle-exclamation"></i> <?= t('admin_actions_failing_now') ?></div>
-        <div class="gha-stat-value <?= $failingNow > 0 ? 'danger' : 'success' ?>"><?= $failingNow ?></div>
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-triangle-exclamation"></i> <?= t('admin_actions_failing_now') ?></div>
+        <div class="stat-card-value <?= $failingNow > 0 ? 'danger' : 'success' ?>"><?= $failingNow ?></div>
     </div>
 </div>
 
-<section class="gha-panel" id="gha-12h-panel">
+<section class="section-card" id="gha-12h-panel">
     <div class="gha-panel-toggle collapsed" id="gha-12h-toggle">
         <div class="gha-panel-toggle-title">
             <i class="fas fa-clock-rotate-left" style="color:var(--f1-red)"></i>
@@ -205,7 +207,7 @@ $fetchError = !empty($GLOBALS['ghFetchError']);
         $failed = count(array_filter($selectedRuns, fn($r) => $r['status'] === 'failure'));
         $next = empty($selectedWf['manual']) ? ghNextFireDateTime($selectedWf['cron'], $nowUtc) : null;
         ?>
-        <section class="gha-detail-card">
+        <section class="section-card" style="padding:22px 24px;margin-bottom:16px">
             <div class="gha-detail-head">
                 <div class="gha-detail-icon"><i class="fas fa-<?= escape($selectedWf['icon']) ?>"></i></div>
                 <div class="gha-detail-title">
@@ -262,7 +264,7 @@ $fetchError = !empty($GLOBALS['ghFetchError']);
             </div>
         </section>
 
-        <section class="gha-runs-card">
+        <section class="section-card" style="margin-bottom:0">
             <div class="gha-runs-head">
                 <h3><?= t('admin_actions_last10') ?></h3>
                 <span class="gha-runs-hint"><?= t('admin_actions_click_hint') ?></span>
@@ -301,7 +303,7 @@ $fetchError = !empty($GLOBALS['ghFetchError']);
 <?php
 $scheduledIds = array_filter($order, fn($id) => empty($workflowConfig[$id]['manual']));
 ?>
-<section class="gha-panel gha-matrix-card" style="margin-top:18px">
+<section class="section-card gha-matrix-card" style="margin-top:18px">
     <div class="gha-matrix-header">
         <div class="gha-matrix-title"><i class="fas fa-calendar-week" style="color:var(--f1-red)"></i><h3><?= t('admin_actions_sched_title') ?> · <?= escape(GH_MONTHS[$lang][(int)$monthStart->format('n') - 1]) ?> <?= $monthStart->format('Y') ?></h3></div>
         <div class="gha-heat-legend">

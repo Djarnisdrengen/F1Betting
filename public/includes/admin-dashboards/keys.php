@@ -61,7 +61,7 @@ $today = date('Y-m-d');
 <?php endif; ?>
 
 <?php if ($rotatedFlash): ?>
-    <div class="gha-panel" id="nr-reveal-panel" data-item-key="<?= escape($rotatedFlash['itemKey']) ?>" style="padding:16px 18px;margin-bottom:18px;border:1px solid var(--f1-red)">
+    <div class="section-card" id="nr-reveal-panel" data-item-key="<?= escape($rotatedFlash['itemKey']) ?>" style="padding:16px 18px;margin-bottom:18px;border:1px solid var(--f1-red)">
         <div style="font-weight:800;font-size:14px;margin-bottom:6px">
             <i class="fas fa-triangle-exclamation" style="color:var(--f1-red);margin-right:7px"></i><?= escape(sprintf(t('admin_dash_nr_reveal_title'), $rotatedCfg['name'])) ?>
         </div>
@@ -82,7 +82,7 @@ $today = date('Y-m-d');
     </div>
 <?php endif; ?>
 
-<h2 style="font-size:16px;margin-bottom:16px"><?= escape(sprintf(t('admin_dash_nr_env_label'), $envLabel)) ?></h2>
+<div class="admin-page-header"><i class="fas fa-key"></i><?= escape(sprintf(t('admin_dash_nr_env_label'), $envLabel)) ?></div>
 
 <div class="dash-action-queue" style="border:1px solid rgba(225,6,0,0.45);background:linear-gradient(90deg,rgba(225,6,0,0.10),transparent 60%)">
     <div style="display:flex;align-items:center;justify-content:space-between">
@@ -110,17 +110,17 @@ $today = date('Y-m-d');
             </div>
         </div>
     </div>
-    <div class="gha-summary" style="grid-template-columns:repeat(3,1fr)">
-        <div class="gha-stat-card"><div class="gha-stat-label"><?= t('admin_dash_nr_kpi_expired') ?></div><div class="gha-stat-value danger"><?= $kpis['expiredTokens'] ?></div></div>
-        <div class="gha-stat-card"><div class="gha-stat-label"><?= t('admin_dash_nr_kpi_soon') ?></div><div class="gha-stat-value" style="color:var(--status-warning-light)"><?= $kpis['soonCount'] ?></div></div>
-        <div class="gha-stat-card"><div class="gha-stat-label"><?= t('admin_dash_nr_kpi_overdue') ?></div><div class="gha-stat-value danger"><?= $kpis['overdueSecrets'] ?></div></div>
-        <div class="gha-stat-card"><div class="gha-stat-label"><?= t('admin_dash_nr_kpi_last_rotation') ?></div><div class="gha-stat-value" style="font-size:16px"><?= $kpis['lastRotationDate'] ? escape(date('d M', strtotime($kpis['lastRotationDate']))) : t('admin_dash_nr_never') ?></div></div>
-        <div class="gha-stat-card"><div class="gha-stat-label"><?= t('admin_dash_nr_kpi_secret_count') ?></div><div class="gha-stat-value"><?= $kpis['secretCount'] ?></div></div>
-        <div class="gha-stat-card"><div class="gha-stat-label"><?= t('admin_dash_nr_kpi_token_count') ?></div><div class="gha-stat-value"><?= $kpis['tokenCount'] ?></div></div>
+    <div class="stat-card-grid">
+        <div class="stat-card"><div class="stat-card-label"><?= t('admin_dash_nr_kpi_expired') ?></div><div class="stat-card-value danger"><?= $kpis['expiredTokens'] ?></div></div>
+        <div class="stat-card"><div class="stat-card-label"><?= t('admin_dash_nr_kpi_soon') ?></div><div class="stat-card-value" style="color:var(--status-warning-light)"><?= $kpis['soonCount'] ?></div></div>
+        <div class="stat-card"><div class="stat-card-label"><?= t('admin_dash_nr_kpi_overdue') ?></div><div class="stat-card-value danger"><?= $kpis['overdueSecrets'] ?></div></div>
+        <div class="stat-card"><div class="stat-card-label"><?= t('admin_dash_nr_kpi_last_rotation') ?></div><div class="stat-card-value" style="font-size:16px"><?= $kpis['lastRotationDate'] ? escape(date('d M', strtotime($kpis['lastRotationDate']))) : t('admin_dash_nr_never') ?></div></div>
+        <div class="stat-card"><div class="stat-card-label"><?= t('admin_dash_nr_kpi_secret_count') ?></div><div class="stat-card-value"><?= $kpis['secretCount'] ?></div></div>
+        <div class="stat-card"><div class="stat-card-label"><?= t('admin_dash_nr_kpi_token_count') ?></div><div class="stat-card-value"><?= $kpis['tokenCount'] ?></div></div>
     </div>
 </div>
 
-<section class="gha-panel" style="padding:16px 18px;margin-bottom:18px">
+<section class="section-card" style="padding:16px 18px;margin-bottom:18px">
     <h3 style="margin:0 0 12px;font-size:15px"><i class="fas fa-plug" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_nr_tokens_title') ?></h3>
     <?php foreach ($tokens as $t): $meta = $tokenBadgeMeta[$t['badge']]; ?>
     <div data-item-key="<?= escape($t['key']) ?>" style="display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-color)">
@@ -164,7 +164,7 @@ $today = date('Y-m-d');
     <?php endforeach; ?>
 </section>
 
-<section class="gha-panel" style="padding:16px 18px;margin-bottom:18px">
+<section class="section-card" style="padding:16px 18px;margin-bottom:18px">
     <h3 style="margin:0 0 4px;font-size:15px"><i class="fas fa-file-shield" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_nr_secrets_title') ?></h3>
     <div style="font-size:12px;color:var(--text-muted);margin:0 0 12px"><?= t('admin_dash_nr_secrets_hint') ?></div>
     <?php foreach ($secrets as $s): $meta = $secretBadgeMeta[$s['badge']]; $barColor = $s['badge'] === 'over' ? '#ef4444' : ($s['badge'] === 'due' ? '#f59e0b' : '#10b981'); ?>
@@ -205,7 +205,7 @@ $today = date('Y-m-d');
     <?php endforeach; ?>
 </section>
 
-<section class="gha-panel" style="padding:16px 18px">
+<section class="section-card" style="padding:16px 18px">
     <h3 style="margin:0 0 12px;font-size:15px"><i class="fas fa-clock-rotate-left" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_nr_history_title') ?></h3>
     <?php if (empty($auditLog)): ?>
         <div class="gha-empty"><?= t('admin_dash_nr_history_empty') ?></div>

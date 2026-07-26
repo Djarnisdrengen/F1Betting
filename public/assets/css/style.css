@@ -1659,70 +1659,133 @@ body.light .logo-light { display: block; }
 }
 
 /* ============================================================
-   Admin area switcher — one level above the per-page tab row below;
-   toggles between admin.php and admin-challenges.php (two separate pages,
-   not tabs of one page — kept visually distinct from .admin-nav for that reason).
-   ============================================================ */
-.admin-area-nav {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border-color);
-}
-.admin-area-tab {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.admin-area-tab:hover {
-    color: var(--text-primary);
-    background: var(--bg-hover);
-}
-.admin-area-tab.active {
-    color: var(--f1-red);
-    border-color: var(--f1-red);
-    background: rgba(225, 6, 0, 0.1);
-}
-.admin-area-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 18px;
-    padding: 1px 6px;
-    border-radius: 999px;
-    background: var(--f1-red);
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 700;
-}
-
-/* ============================================================
-   Admin menu — tabs on desktop, dropdown on mobile
+   Admin nav — tabs on desktop (>=720px of the shell's own width), native
+   <details> dropdown on mobile. One shared pattern for both nav levels
+   (area switcher across admin.php/admin-challenges.php/admin-dashboards.php,
+   and each page's own per-tab row) via renderAdminTabRow() in
+   admin-area-nav.php — see epics/Admin area redesign/plan.md decisions 1/2.
+   Container query (not a viewport media query) because the shell's real
+   available width depends on where it's embedded, not the viewport.
    ============================================================ */
 .admin-shell {
     container-type: inline-size;
     container-name: admin-vp;
+    margin-bottom: 16px;
 }
 
-/* Scrollable pill nav — works at every viewport width */
+.admin-tabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 14px;
+}
+.admin-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    color: var(--text-secondary);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    background: none;
+    transition: color 0.15s, border-color 0.15s;
+}
+.admin-tab:hover {
+    color: var(--text-primary);
+}
+.admin-tab.active {
+    color: var(--f1-red);
+    border-bottom-color: var(--f1-red);
+}
+.admin-tab .tab-count {
+    background: var(--bg-hover);
+    color: var(--text-muted);
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+}
+.admin-tab.active .tab-count {
+    background: var(--f1-red);
+    color: #fff;
+}
+
+.admin-dropdown { display: none; }
+.admin-dropdown summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.admin-dropdown summary::-webkit-details-marker { display: none; }
+.admin-dropdown summary .label { display: flex; align-items: center; gap: 0.6rem; }
+.admin-dropdown summary .chev { transition: transform 0.2s; color: var(--text-muted); }
+.admin-dropdown[open] summary .chev { transform: rotate(180deg); }
+.admin-dropdown .menu {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 4px;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+.admin-dropdown .menu a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0.85rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 6px;
+}
+.admin-dropdown .menu a .l { display: flex; align-items: center; gap: 0.65rem; }
+.admin-dropdown .menu a:hover { background: var(--bg-hover); color: var(--text-primary); }
+.admin-dropdown .menu a.active { background: var(--bg-hover); color: var(--f1-red); }
+.admin-dropdown .menu a .tab-count {
+    background: var(--bg-card);
+    color: var(--text-muted);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+}
+.admin-dropdown .menu a.active .tab-count { background: var(--f1-red); color: #fff; }
+
+@container admin-vp (max-width: 720px) {
+    .admin-tabs { display: none; }
+    .admin-dropdown { display: block; }
+}
+
+/* Logs sub-tab pills (App/Mail/Cron) — a distinct third-level in-page switcher,
+   not part of the admin-shell/renderAdminTabRow() framework above; kept as its
+   own small pill style until Phase 3 of the admin redesign reaches logs.php. */
 .admin-nav {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-bottom: 20px;
 }
-
 .admin-nav-tab {
     display: flex;
     align-items: center;
@@ -1748,11 +1811,6 @@ body.light .logo-light { display: block; }
     color: var(--f1-red);
     background: var(--bg-hover);
     border-color: var(--f1-red);
-}
-.admin-nav-count {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-weight: 500;
 }
 .admin-user-card-body {
     display: flex;
@@ -3690,12 +3748,31 @@ body.font-system {
    narrower-than-the-original-1360px-design width instead of a page-specific wide container. */
 .gha-page { margin-top: 4px; }
 
-.gha-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
-.gha-stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 16px 18px; }
-.gha-stat-label { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 12.5px; font-weight: 600; margin-bottom: 8px; }
-.gha-stat-value { font-family: var(--font-display); font-weight: 800; font-size: 30px; }
-.gha-stat-value.success { color: var(--status-success-light); }
-.gha-stat-value.danger  { color: var(--status-danger-light); }
+/* ============================================================
+   Dashboards layout primitives — one canonical card/header set shared
+   by all five Dashboards tabs (was .gha-stat-card/.dash-status-card/
+   .gha-detail-card/.gha-runs-card, four near-duplicate wrapper classes
+   with the same chrome). See epics/Admin area redesign/plan.md decision 4.
+   ============================================================ */
+.admin-page-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+.admin-page-header i { color: var(--f1-red); }
+
+.stat-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 16px 18px; }
+.stat-card-label { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 12.5px; font-weight: 600; margin-bottom: 8px; }
+.stat-card-value { font-family: var(--font-display); font-weight: 800; font-size: 30px; }
+.stat-card-value.success { color: var(--status-success-light); }
+.stat-card-value.danger  { color: var(--status-danger-light); }
+
+.section-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 18px; }
 
 .gha-error-banner {
     display: flex; align-items: center; gap: 10px; background: rgba(239,68,68,0.08);
@@ -3709,7 +3786,6 @@ body.font-system {
     padding: 9px 14px; margin-bottom: 16px; font-size: 12px; color: var(--text-muted);
 }
 
-.gha-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 18px; }
 .gha-panel-toggle {
     display: flex; align-items: center; justify-content: space-between; padding: 15px 20px;
     border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s;
@@ -3778,7 +3854,6 @@ body.font-system {
 .gha-wf-row-last i { font-size: 10px; }
 .gha-wf-row-ago { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
 
-.gha-detail-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 16px; }
 .gha-detail-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
 .gha-detail-icon {
     width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--bg-secondary);
@@ -3811,7 +3886,6 @@ body.font-system {
 .gha-meta-value.label-mono { font-family: var(--font-mono); }
 .gha-meta-value .gha-meta-sub { color: var(--text-muted); font-weight: 400; }
 
-.gha-runs-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; }
 .gha-runs-head { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--border-color); }
 .gha-runs-head h3 { font-family: var(--font-display); font-weight: 800; font-size: 15px; }
 .gha-runs-hint { font-size: 12px; color: var(--text-muted); }
@@ -3882,8 +3956,8 @@ body.font-system {
 /* ============================================================
    Dashboards area — shared primitives for the newer tabs
    (PaddockKB, Nøgler & Rotation, Challenges usage, Oversigt).
-   Reuses .gha-summary/.gha-stat-card/.gha-panel/.gha-empty/.gha-pill
-   etc. directly (see epics/Admin settings and dashboards/plan.md) —
+   Reuses .stat-card-grid/.stat-card/.section-card/.gha-empty/.gha-pill
+   etc. directly (see epics/Admin area redesign/plan.md decision 4) —
    only genuinely new primitives (progress bars, KPI tiles) live here.
    ============================================================ */
 .dash-progress-track { height: 8px; border-radius: 4px; background: var(--bg-hover); overflow: hidden; }
@@ -3894,8 +3968,6 @@ body.font-system {
 .dash-cat-meta { display: flex; align-items: center; gap: 7px; justify-self: end; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
 .dash-fresh-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 
-.dash-status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
-.dash-status-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 14px 16px; }
 .dash-status-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
 .dash-status-value { font-family: var(--font-mono); font-size: 20px; color: var(--text-primary); margin-top: 6px; }
 .dash-status-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
@@ -3919,11 +3991,10 @@ body.font-system {
 .dash-tile-foot { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
 
 @media (max-width: 768px) {
-    .dash-status-grid, .dash-tile-grid { grid-template-columns: 1fr; }
+    .dash-tile-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
-    .gha-summary { grid-template-columns: repeat(2, 1fr); }
     .gha-master-detail { grid-template-columns: 1fr; }
     .gha-rail { position: static; }
     .gha-colheader.gha-cols-12h, .gha-run-row-12h { grid-template-columns: 1fr 90px 90px; }

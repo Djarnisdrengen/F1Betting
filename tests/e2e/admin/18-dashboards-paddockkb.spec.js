@@ -10,7 +10,7 @@ const FIXTURE_QS = `e2e_token=${encodeURIComponent(SEED_TOKEN)}&e2e_gh_fixture=1
 test.describe('Dashboards PaddockKB', { tag: '@admin' }, () => {
     test('KPI row renders real entry/category/index-size figures', async ({ page }) => {
         await page.goto('/admin-dashboards.php?tab=paddockkb');
-        await expect(page.locator('.gha-stat-value').first()).not.toBeEmpty();
+        await expect(page.locator('.stat-card-value').first()).not.toBeEmpty();
     });
 
     test('run log shows both success and failure outcomes, not filtered to successes only', async ({ page }) => {

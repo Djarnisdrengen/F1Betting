@@ -113,26 +113,28 @@ $funnelSteps = [
 ];
 ?>
 
-<div class="gha-summary" style="grid-template-columns:repeat(4,1fr)">
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-user-check"></i> <?= t('admin_dash_ch_kpi_active') ?></div>
-        <div class="gha-stat-value"><?= $activeParticipants ?></div>
+<div class="admin-page-header"><i class="fas fa-trophy"></i><?= t('admin_dash_tab_challenges') ?></div>
+
+<div class="stat-card-grid">
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-user-check"></i> <?= t('admin_dash_ch_kpi_active') ?></div>
+        <div class="stat-card-value"><?= $activeParticipants ?></div>
     </div>
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-gamepad"></i> <?= t('admin_dash_ch_kpi_plays7d') ?></div>
-        <div class="gha-stat-value"><?= $plays7d ?></div>
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-gamepad"></i> <?= t('admin_dash_ch_kpi_plays7d') ?></div>
+        <div class="stat-card-value"><?= $plays7d ?></div>
     </div>
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-envelope-open-text"></i> <?= t('admin_dash_ch_kpi_new_apps') ?></div>
-        <div class="gha-stat-value"><?= $newApplications7d ?></div>
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-envelope-open-text"></i> <?= t('admin_dash_ch_kpi_new_apps') ?></div>
+        <div class="stat-card-value"><?= $newApplications7d ?></div>
     </div>
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-chart-line"></i> <?= t('admin_dash_ch_kpi_rate') ?></div>
-        <div class="gha-stat-value success"><?= $participationRate ?>%</div>
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-chart-line"></i> <?= t('admin_dash_ch_kpi_rate') ?></div>
+        <div class="stat-card-value success"><?= $participationRate ?>%</div>
     </div>
 </div>
 
-<section class="gha-panel" style="padding:18px 20px;margin-bottom:18px">
+<section class="section-card" style="padding:18px 20px;margin-bottom:18px">
     <h3 style="margin:0 0 14px;font-size:15px"><i class="fas fa-flag-checkered" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_ch_competitions') ?></h3>
     <?php foreach ($games as $g): ?>
     <div style="border:1px solid var(--border-color);border-radius:11px;padding:14px 16px;margin-bottom:12px">
@@ -159,7 +161,7 @@ $funnelSteps = [
     <?php endforeach; ?>
 </section>
 
-<section class="gha-panel" style="padding:16px 18px">
+<section class="section-card" style="padding:16px 18px">
     <h3 style="margin:0 0 14px;font-size:15px"><i class="fas fa-filter" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_ch_funnel') ?></h3>
     <?php foreach ($funnelSteps as $f): ?>
     <div style="display:grid;grid-template-columns:200px 1fr auto;gap:12px;align-items:center;margin-bottom:10px">

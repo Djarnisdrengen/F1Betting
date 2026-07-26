@@ -65,6 +65,8 @@ $kbTriggerMsg = $_GET['kb_trigger'] ?? '';
     </div>
 <?php endif; ?>
 
+<div class="admin-page-header"><i class="fas fa-book-open"></i><?= t('admin_dash_tab_paddockkb') ?></div>
+
 <?php if ($kbReadError): ?>
 <div class="gha-error-banner">
     <i class="fas fa-triangle-exclamation"></i>
@@ -72,8 +74,8 @@ $kbTriggerMsg = $_GET['kb_trigger'] ?? '';
 </div>
 <?php endif; ?>
 
-<div class="dash-status-grid">
-    <div class="dash-status-card">
+<div class="stat-card-grid">
+    <div class="stat-card">
         <div class="dash-status-label"><?= t('admin_dash_kb_last_update') ?></div>
         <?php if ($lastRun): ?>
             <div class="dash-status-value"><?= escape($lastRun['ago']) ?></div>
@@ -85,7 +87,7 @@ $kbTriggerMsg = $_GET['kb_trigger'] ?? '';
             <div class="dash-status-sub"><?= t('admin_dash_kb_no_runs') ?></div>
         <?php endif; ?>
     </div>
-    <div class="dash-status-card">
+    <div class="stat-card">
         <div class="dash-status-label"><i class="fas fa-hourglass-half" style="margin-right:6px"></i><?= t('admin_dash_kb_next_scheduled') ?></div>
         <?php if ($nextRunDt): ?>
             <div class="dash-status-value"><?= escape(ghRelativeTime($nextRunDt, $nowUtc, $lang, true)) ?></div>
@@ -108,22 +110,22 @@ $kbTriggerMsg = $_GET['kb_trigger'] ?? '';
     <?php endif; ?>
 </form>
 
-<div class="gha-summary" style="grid-template-columns:repeat(3,1fr)">
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-database"></i> <?= t('admin_dash_kb_kpi_entries') ?></div>
-        <div class="gha-stat-value"><?= number_format($totalEntries, 0, ',', '.') ?></div>
+<div class="stat-card-grid">
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-database"></i> <?= t('admin_dash_kb_kpi_entries') ?></div>
+        <div class="stat-card-value"><?= number_format($totalEntries, 0, ',', '.') ?></div>
     </div>
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-layer-group"></i> <?= t('admin_dash_kb_kpi_categories') ?></div>
-        <div class="gha-stat-value"><?= count($categories) ?></div>
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-layer-group"></i> <?= t('admin_dash_kb_kpi_categories') ?></div>
+        <div class="stat-card-value"><?= count($categories) ?></div>
     </div>
-    <div class="gha-stat-card">
-        <div class="gha-stat-label"><i class="fas fa-hard-drive"></i> <?= t('admin_dash_kb_kpi_index_size') ?></div>
-        <div class="gha-stat-value"><?= escape($indexSize) ?></div>
+    <div class="stat-card">
+        <div class="stat-card-label"><i class="fas fa-hard-drive"></i> <?= t('admin_dash_kb_kpi_index_size') ?></div>
+        <div class="stat-card-value"><?= escape($indexSize) ?></div>
     </div>
 </div>
 
-<section class="gha-panel" style="padding:18px 20px;margin-bottom:18px">
+<section class="section-card" style="padding:18px 20px;margin-bottom:18px">
     <h3 style="margin:0 0 14px;font-size:15px"><i class="fas fa-layer-group" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_kb_categories') ?></h3>
     <?php if (empty($categories)): ?>
         <div class="gha-empty"><?= t('admin_dash_kb_no_runs') ?></div>
@@ -146,7 +148,7 @@ $kbTriggerMsg = $_GET['kb_trigger'] ?? '';
     <?php endforeach; endif; ?>
 </section>
 
-<section class="gha-panel">
+<section class="section-card">
     <div style="padding:15px 20px;border-bottom:1px solid var(--border-color)">
         <h3 style="margin:0;font-size:15px"><i class="fas fa-arrow-down-up-across-line" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_kb_recent_runs') ?></h3>
     </div>

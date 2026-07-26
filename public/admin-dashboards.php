@@ -100,19 +100,20 @@ include __DIR__ . '/includes/header.php';
 
 <?php renderAdminAreaNav('dashboards'); ?>
 
-<div class="admin-shell">
+<?php
+$dashTabItems = [];
+foreach ($tabDefs as $key => $def) {
+    $dashTabItems[] = [
+        'key'   => $key,
+        'href'  => '?tab=' . $key,
+        'icon'  => $def['icon'],
+        'label' => t($def['label']),
+    ];
+}
+renderAdminTabRow('dashboards', $currentTab, $dashTabItems, t('admin_area_dashboards'));
 
-    <nav class="admin-nav" aria-label="<?= t('admin_area_dashboards') ?>">
-        <?php foreach ($tabDefs as $key => $def): ?>
-            <a href="?tab=<?= $key ?>" class="admin-nav-tab <?= $currentTab === $key ? 'active' : '' ?>">
-                <i class="<?= $def['icon'] ?>"></i>
-                <span><?= t($def['label']) ?></span>
-            </a>
-        <?php endforeach; ?>
-    </nav>
-
-    <?php include __DIR__ . "/includes/admin-dashboards/{$currentTab}.php"; ?>
-</div>
+include __DIR__ . "/includes/admin-dashboards/{$currentTab}.php";
+?>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

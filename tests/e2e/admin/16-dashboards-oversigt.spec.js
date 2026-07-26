@@ -15,7 +15,7 @@ test.describe('Dashboards Oversigt', { tag: '@admin' }, () => {
         await page.goto('/admin-dashboards.php?tab=oversigt');
         await page.locator('.dash-tile', { hasText: 'PaddockKB' }).click();
         await expect(page).toHaveURL(/tab=paddockkb/);
-        await expect(page.locator('.admin-nav-tab.active')).toContainText('PaddockKB');
+        await expect(page.locator('[data-testid="admin-tab"].active')).toContainText('PaddockKB');
     });
 
     test('needs-attention strip renders without a fatal error', async ({ page }) => {

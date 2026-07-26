@@ -21,7 +21,7 @@ test.describe('Dashboards Nøgler & Rotation', { tag: '@admin' }, () => {
     test('health ring, KPI grid and action queue render', async ({ page }) => {
         await page.goto('/admin-dashboards.php?tab=keys');
         await expect(page.locator('.dash-health-score')).toBeVisible();
-        await expect(page.locator('.gha-stat-value')).toHaveCount(6);
+        await expect(page.locator('.stat-card-value')).toHaveCount(6);
     });
 
     test('the one real access token (GitHub) is listed, not three', async ({ page }) => {
@@ -151,7 +151,7 @@ test.describe('Dashboards Nøgler & Rotation', { tag: '@admin' }, () => {
 
     test('rotation history is visible and append-only (no edit/delete control)', async ({ page }) => {
         await page.goto('/admin-dashboards.php?tab=keys');
-        const history = page.locator('.gha-panel').last();
+        const history = page.locator('.section-card').last();
         await expect(history.locator('button', { hasText: /slet|delete|rediger|edit/i })).toHaveCount(0);
     });
 

@@ -50,6 +50,8 @@ if (!$kbSnapshot['healthy']) {
 }
 ?>
 
+<div class="admin-page-header"><i class="fas fa-table-cells-large"></i><?= t('admin_dash_tab_oversigt') ?></div>
+
 <div class="dash-tile-grid">
     <?php foreach ($tiles as $tile): ?>
     <a href="?tab=<?= $tile['tab'] ?>" class="dash-tile" style="text-decoration:none;color:inherit">
