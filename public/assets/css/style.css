@@ -689,8 +689,12 @@ body.clubhouse .bet-item.my-bet {
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color);
 }
-.admin-toggle-row-status { font-size: 0.875rem; color: var(--text-primary); }
+.admin-toggle-row-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.admin-toggle-row-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; max-width: 56ch; }
 .admin-toggle-btn { cursor: pointer; position: relative; }
 .admin-toggle-btn .admin-toggle-input {
     position: absolute;

@@ -123,17 +123,18 @@
     </div>
 
     <div class="section-card">
-        <div class="admin-section-static-header"><i class="fas fa-gamepad text-accent"></i> <?= t('challenges_visibility_section') ?></div>
+        <div class="admin-section-static-header"><i class="fas fa-sliders text-accent"></i> <?= t('features_section') ?></div>
         <div class="admin-section-static-body">
-            <p class="text-muted mb-2" style="font-size: 0.875rem;">
-                <?= t('challenges_visibility_desc') ?>
-            </p>
+            <p class="text-muted mb-2" style="font-size: 0.875rem;"><?= t('features_desc') ?></p>
             <div class="admin-toggle-row">
-                <div class="admin-toggle-row-status">
-                    <?= t('email_delivery_status') ?>:
-                    <strong data-testid="challenges-enabled-status">
-                        <?= !empty($settings['challenges_enabled']) ? t('challenges_status_on') : t('challenges_status_off') ?>
-                    </strong>
+                <div>
+                    <div class="admin-toggle-row-title">
+                        <?= t('email_delivery_status') ?>:
+                        <strong data-testid="challenges-enabled-status">
+                            <?= !empty($settings['challenges_enabled']) ? t('challenges_status_on') : t('challenges_status_off') ?>
+                        </strong>
+                    </div>
+                    <div class="admin-toggle-row-desc"><?= t('challenges_visibility_desc') ?></div>
                 </div>
                 <label class="btn btn-secondary admin-toggle-btn"
                        data-on-text="<?= escape(t('challenges_toggle_off')) ?>"
@@ -141,26 +142,13 @@
                        data-on-status="<?= escape(t('challenges_status_on')) ?>"
                        data-off-status="<?= escape(t('challenges_status_off')) ?>">
                     <input type="checkbox" name="challenges_enabled" value="1" class="admin-toggle-input" data-testid="challenges-enabled-toggle" <?= !empty($settings['challenges_enabled']) ? 'checked' : '' ?>>
-                    <i class="fas fa-toggle-<?= !empty($settings['challenges_enabled']) ? 'on' : 'off' ?>"></i>
+                    <i class="fas fa-<?= !empty($settings['challenges_enabled']) ? 'eye-slash' : 'eye' ?>"></i>
                     <span class="admin-toggle-btn-text"><?= !empty($settings['challenges_enabled']) ? t('challenges_toggle_off') : t('challenges_toggle_on') ?></span>
                 </label>
             </div>
         </div>
     </div>
 </form>
-
-<div class="section-card">
-    <div class="admin-section-static-header"><i class="fas fa-tools text-accent"></i> <?= t('backfill_snapshots_section') ?></div>
-    <div class="admin-section-static-body">
-        <p class="text-muted mb-2" style="font-size:0.875rem;"><?= t('backfill_snapshots_desc') ?></p>
-        <form method="POST">
-            <?= csrfField() ?>
-            <button type="submit" name="backfill_snapshots" class="btn btn-secondary">
-                <i class="fas fa-history"></i> <?= t('backfill_snapshots_btn') ?>
-            </button>
-        </form>
-    </div>
-</div>
 
 <?php
 // Email delivery toggle — only relevant on the test environment (SMTP_INTERCEPT on).
@@ -169,26 +157,52 @@ if (defined('SMTP_INTERCEPT') && SMTP_INTERCEPT):
     $emailLive = !emailIntercepted();
 ?>
 <div class="section-card">
-    <div class="admin-section-static-header"><i class="fas fa-envelope-open-text text-accent"></i> <?= t('email_delivery_section') ?></div>
+    <div class="admin-section-static-header"><i class="fas fa-envelope text-accent"></i> <?= t('email_delivery_section') ?></div>
     <div class="admin-section-static-body">
         <p class="text-muted mb-2" style="font-size:0.875rem;"><?= t('email_delivery_desc') ?></p>
-        <p class="mb-2">
-            <?= t('email_delivery_status') ?>:
-            <strong data-testid="email-delivery-status" style="color:<?= $emailLive ? 'var(--success,#3fb950)' : 'var(--text-secondary)' ?>;">
-                <?= $emailLive ? t('email_delivery_live') : t('email_delivery_intercept') ?>
-            </strong>
-        </p>
         <form method="POST">
             <?= csrfField() ?>
             <input type="hidden" name="toggle_smtp_live" value="1">
-            <button type="submit" class="btn btn-secondary" data-testid="email-delivery-toggle">
-                <i class="fas fa-toggle-<?= $emailLive ? 'on' : 'off' ?>"></i>
-                <?= $emailLive ? t('email_delivery_switch_intercept') : t('email_delivery_switch_live') ?>
-            </button>
+            <div class="admin-toggle-row">
+                <div>
+                    <div class="admin-toggle-row-title">
+                        <?= t('email_delivery_status') ?>:
+                        <strong data-testid="email-delivery-status">
+                            <?= $emailLive ? t('email_delivery_live') : t('email_delivery_intercept') ?>
+                        </strong>
+                    </div>
+                    <div class="admin-toggle-row-desc">
+                        <?= $emailLive ? t('email_delivery_row_desc_live') : t('email_delivery_row_desc_intercept') ?>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-secondary admin-toggle-btn" data-testid="email-delivery-toggle">
+                    <i class="fas fa-envelope<?= $emailLive ? '' : '-open' ?>"></i>
+                    <?= $emailLive ? t('email_delivery_switch_intercept') : t('email_delivery_switch_live') ?>
+                </button>
+            </div>
         </form>
     </div>
 </div>
 <?php endif; ?>
+
+<div class="section-card">
+    <div class="admin-section-static-header"><i class="fas fa-clock-rotate-left text-accent"></i> <?= t('backfill_snapshots_section') ?></div>
+    <div class="admin-section-static-body">
+        <p class="text-muted mb-2" style="font-size:0.875rem;"><?= t('backfill_snapshots_desc') ?></p>
+        <form method="POST">
+            <?= csrfField() ?>
+            <div class="admin-toggle-row">
+                <div>
+                    <div class="admin-toggle-row-title"><?= t('backfill_snapshots_title') ?></div>
+                    <div class="admin-toggle-row-desc"><?= t('backfill_snapshots_row_desc') ?></div>
+                </div>
+                <button type="submit" name="backfill_snapshots" class="btn btn-secondary admin-toggle-btn">
+                    <i class="fas fa-rotate"></i> <?= t('backfill_snapshots_btn') ?>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script nonce="<?= $nonce ?>">
 document.addEventListener('DOMContentLoaded', function () {
@@ -222,8 +236,8 @@ document.addEventListener('DOMContentLoaded', function () {
             var icon = challengesBtn.querySelector('i');
             var text = challengesBtn.querySelector('.admin-toggle-btn-text');
             var status = document.querySelector('[data-testid="challenges-enabled-status"]');
-            icon.classList.toggle('fa-toggle-on', checked);
-            icon.classList.toggle('fa-toggle-off', !checked);
+            icon.classList.toggle('fa-eye-slash', checked);
+            icon.classList.toggle('fa-eye', !checked);
             text.textContent = checked ? challengesBtn.dataset.onText : challengesBtn.dataset.offText;
             if (status) status.textContent = checked ? challengesBtn.dataset.onStatus : challengesBtn.dataset.offStatus;
         }
