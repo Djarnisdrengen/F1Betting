@@ -1882,6 +1882,163 @@ if (($_GET['action'] ?? '') === 'cleanup_hero_race') {
     exit;
 }
 
+// Action: get_settings_snapshot — read-only. Returns the current real values of the two
+// settings the Recap-carousel suite temporarily mutates (challenges_enabled, home_recap_count),
+// so its afterEach can restore exactly what was there before the test ran instead of assuming a
+// fixed baseline (e.g. hardcoding "restore to enabled=1") — this is a shared environment, real
+// usage can leave either setting at a non-default value between test runs, and clobbering it on
+// every deploy+verify cycle is exactly the bug this action exists to prevent.
+if (($_GET['action'] ?? '') === 'get_settings_snapshot') {
+    $row = $db->query("SELECT challenges_enabled, home_recap_count FROM settings WHERE id = 1")->fetch();
+    echo json_encode([
+        'ok' => true,
+        'challenges_enabled' => (int) ($row['challenges_enabled'] ?? 1),
+        'home_recap_count'   => (int) ($row['home_recap_count'] ?? 5),
+    ]);
+    exit;
+}
+
+// Action: set_challenges_enabled — flips settings.challenges_enabled, needed to exercise the
+// home hero's "Challenges disabled" fallback branch (recap carousel), which no fixture
+// previously had a way to reach — every existing home-hero e2e case runs with the real
+// default (enabled).
+if (($_GET['action'] ?? '') === 'set_challenges_enabled') {
+    $enabled = intval($_GET['enabled'] ?? 1) ? 1 : 0;
+    $db->prepare("UPDATE settings SET challenges_enabled = ? WHERE id = 1")->execute([$enabled]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: set_home_recap_count — directly sets settings.home_recap_count (clamped 3-10),
+// so e2e tests can verify the setting is wired end-to-end without needing to control how
+// many *real* completed races exist in this shared environment (which is always well above
+// the 3-10 range once a season is underway — see seed_recap_races' own comment).
+if (($_GET['action'] ?? '') === 'set_home_recap_count') {
+    $count = max(3, min(10, intval($_GET['count'] ?? 5)));
+    $db->prepare("UPDATE settings SET home_recap_count = ? WHERE id = 1")->execute([$count]);
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: seed_recap_races — N completed races ('E2E Recap Race 1'..N), most-recent-first
+// (Race 1 dated most recently), each with a distinct P1 winner rotated across 3 fixture
+// drivers so the home recap carousel's per-slide headline text differs between slides.
+// Idempotent (deletes any prior fixture races first). count defaults to 5, clamped 1-10.
+// Dated HOURS (not days) before "now" — starting just past the 8h "completed" cutoff and
+// stepping back from there — so these fixtures are always the *most recent* completed
+// races regardless of how much real season data coexists (real race dates are fixed
+// calendar days; these track wall-clock "now" at seed time, so they can never be beaten by
+// a static real date once "now" has moved even slightly past it).
+if (($_GET['action'] ?? '') === 'seed_recap_races') {
+    $count = max(1, min(10, intval($_GET['count'] ?? 5)));
+
+    $db->query("DELETE FROM races WHERE name LIKE 'E2E Recap Race %'");
+
+    // Ensure 3 fixture drivers exist — same find-or-create pattern as seed_score_race above.
+    $driverDefs = [['E2E Recap Driver A', 'E2E Team A'], ['E2E Recap Driver B', 'E2E Team B'], ['E2E Recap Driver C', 'E2E Team C']];
+    $driverIds = [];
+    foreach ($driverDefs as [$name, $team]) {
+        $stmt = $db->prepare("SELECT id FROM drivers WHERE name = ?");
+        $stmt->execute([$name]);
+        $row = $stmt->fetch();
+        if ($row) {
+            $driverIds[] = $row['id'];
+        } else {
+            $id = seed_uuid();
+            $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, ?, ?, ?)")
+               ->execute([$id, $name, $team, 90 + count($driverIds)]);
+            $driverIds[] = $id;
+        }
+    }
+
+    $raceIds = [];
+    for ($i = 0; $i < $count; $i++) {
+        $raceId    = seed_uuid();
+        $raceStamp = (new DateTime())->modify('-' . (9 + $i) . ' hours');
+        $db->prepare("
+            INSERT INTO races (id, name, location, race_date, race_time, bettingpool_size, result_p1, result_p2, result_p3)
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)
+        ")->execute([
+            $raceId, 'E2E Recap Race ' . ($i + 1), 'E2E Circuit ' . ($i + 1),
+            $raceStamp->format('Y-m-d'), $raceStamp->format('H:i:s'),
+            $driverIds[$i % 3], $driverIds[($i + 1) % 3], $driverIds[($i + 2) % 3],
+        ]);
+        $raceIds[] = $raceId;
+    }
+
+    echo json_encode(['ok' => true, 'count' => $count, 'race_ids' => $raceIds]);
+    exit;
+}
+
+// Action: cleanup_recap_races
+if (($_GET['action'] ?? '') === 'cleanup_recap_races') {
+    $db->query("DELETE FROM races WHERE name LIKE 'E2E Recap Race %'");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: seed_recap_bets — seeds bets against a recap-race fixture (from seed_recap_races)
+// engineered to produce a clear betting "surprise" per computeBettingUpset()
+// (public/includes/home-recap.php): the actual P1 winner is barely picked by anyone, while a
+// decoy driver — never on the podium — is what most bettors backed for the win instead. Reads
+// the race's own result_p1/p2/p3 as ground truth, so it works against any recap-race fixture.
+// Idempotent (deletes any prior fixture bets/users first).
+if (($_GET['action'] ?? '') === 'seed_recap_bets') {
+    $raceId = $_GET['race_id'] ?? '';
+    $stmt = $db->prepare("SELECT result_p1, result_p2, result_p3 FROM races WHERE id = ?");
+    $stmt->execute([$raceId]);
+    $race = $stmt->fetch();
+    if (!$race || !$race['result_p1'] || !$race['result_p2'] || !$race['result_p3']) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'race not found or not fully classified']);
+        exit;
+    }
+    [$p1, $p2, $p3] = [$race['result_p1'], $race['result_p2'], $race['result_p3']];
+
+    // Idempotent cleanup — scoped to this race's e2e bettor fixtures only.
+    $db->prepare("DELETE FROM bets WHERE race_id = ? AND user_id IN (SELECT id FROM users WHERE email LIKE 'e2e_recap_bettor_%@test.localhost')")
+       ->execute([$raceId]);
+    $db->query("DELETE FROM users WHERE email LIKE 'e2e_recap_bettor_%@test.localhost'");
+
+    // Decoy driver — never actually on the podium, same find-or-create pattern as the other
+    // recap-races fixture drivers just above.
+    $stmt = $db->prepare("SELECT id FROM drivers WHERE name = ?");
+    $stmt->execute(['E2E Recap Decoy Driver']);
+    $decoyRow = $stmt->fetch();
+    if ($decoyRow) {
+        $decoyId = $decoyRow['id'];
+    } else {
+        $decoyId = seed_uuid();
+        $db->prepare("INSERT INTO drivers (id, name, team, number) VALUES (?, 'E2E Recap Decoy Driver', 'E2E Team D', 93)")
+           ->execute([$decoyId]);
+    }
+
+    // 5 bettors: 4 back the decoy for the win (wrong — $p1 barely picked at all), 1 backs the
+    // actual result. All 5 correctly pick $p2/$p3 for P2/P3, so only $p1's pick count (1 of 5,
+    // well under half) stands out — a clean, deterministic "surprise".
+    $hash = hashPassword('E2ERecapBetPassword2026!');
+    for ($i = 1; $i <= 5; $i++) {
+        $userId = seed_uuid();
+        $db->prepare("INSERT INTO users (id, email, password, display_name, role, in_competition, points, stars) VALUES (?, ?, ?, ?, 'user', 1, 0, 0)")
+           ->execute([$userId, "e2e_recap_bettor_{$i}@test.localhost", $hash, "E2E Recap Bettor {$i}"]);
+        $betP1 = $i === 1 ? $p1 : $decoyId;
+        $db->prepare("INSERT INTO bets (id, user_id, race_id, p1, p2, p3, points, is_perfect) VALUES (?, ?, ?, ?, ?, ?, 0, 0)")
+           ->execute([seed_uuid(), $userId, $raceId, $betP1, $p2, $p3]);
+    }
+
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// Action: cleanup_recap_bets — removes bets/users created by seed_recap_bets (leaves the
+// decoy driver row, same convention as seed_recap_races' own fixture drivers).
+if (($_GET['action'] ?? '') === 'cleanup_recap_bets') {
+    $db->query("DELETE FROM bets WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'e2e_recap_bettor_%@test.localhost')");
+    $db->query("DELETE FROM users WHERE email LIKE 'e2e_recap_bettor_%@test.localhost'");
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
 // Action: cleanup_challenges — deletes all challenge data for e2e participants
 if (($_GET['action'] ?? '') === 'cleanup_challenges') {
     $db->query("DELETE FROM challenge_points WHERE participant_id IN (SELECT id FROM challenge_participants WHERE email LIKE '%@test.localhost')");

@@ -17,7 +17,7 @@
 - [Request Lifecycle](#request-lifecycle)
 - [Security Model](#security-model)
 - [Localisation & Theme](#localisation--theme)
-- [Home Page Hero (Paddock Challenges)](#home-page-hero-paddock-challenges)
+- [Home Page Hero (Paddock Challenges + Recap carousel)](#home-page-hero-paddock-challenges--recap-carousel)
 - [Admin — Paddock Challenges Control Room](#admin--paddock-challenges-control-room)
 
 ---
@@ -317,12 +317,13 @@ Strings are loaded from `public/lang/user.php`, `admin.php`, and `email.php` via
 
 ---
 
-## Home Page Hero (Paddock Challenges)
+## Home Page Hero (Paddock Challenges + Recap carousel)
 
-`public/index.php`'s hero is context-aware (Paddock Challenges epic, Phase 6, feature.md REQ-006/007, decision D9): it shows one of two mutually exclusive branches, chosen by `$showRaceHero = $heroRace ? isRaceHeroWindow($heroRace, $settings, $now) : false;`.
+`public/index.php`'s hero is context-aware (Paddock Challenges epic, Phase 6, feature.md REQ-006/007, decision D9): it shows one of three mutually exclusive branches, in priority order — `$showRaceHero = $heroRace ? isRaceHeroWindow($heroRace, $settings, $now) : false;`, then `$settings['challenges_enabled']`, then a recap fallback.
 
 - **Race hero** (`$showRaceHero === true`): the existing countdown/CTA hero, unchanged. A slim "Challenges" strip (`data-testid="challenges-strip"`) is added directly below it, linking to `challenges.php`.
-- **Challenges hero** (`$showRaceHero === false`, including whenever there's no upcoming race at all): "Paddock Challenges" title, a CP/Rank/Streak stat row for an active challenge identity, a "Play now" CTA, a next-race card, and a top-3 CP section linking to `challenges.php?section=board` (the leaderboard's home — `challenges-board.php` is now just a redirect stub for old links).
+- **Challenges hero** (`$showRaceHero === false` and `challenges_enabled`): "Paddock Challenges" title, a CP/Rank/Streak stat row for an active challenge identity, a "Play now" CTA, a next-race card, and a top-3 CP section linking to `challenges.php?section=board` (the leaderboard's home — `challenges-board.php` is now just a redirect stub for old links).
+- **Recap hero** (`$showRaceHero === false`, Challenges disabled, and at least one completed race exists): rotates the last `home_recap_count` completed races' podiums (admin setting, 3-10, default 5), most-recent-first, one per carousel slide (`data-testid="recap-hero"`). Only reachable when Challenges is turned off — with Challenges on, this branch never renders. Each slide adds a per-race "Insight" pulled from `getRecapHighlight()` (`public/includes/home-recap.php`): tries a paddock-rumors KB analysis headline, then race/sprint-doc highlight sentence, then a betting-pool upset derived from this app's own bets, then a qualifying-doc sentence as a last resort — see that file's header comment for why qualifying is tried last (risk of contradicting the already-shown race podium) and for the Danish-translation gating (`kbHighlightTranslationsDa()`; KB content is English-only, so a tier without a manual translation is skipped rather than shown untranslated to a `da` visitor). Autoplay every 6s, pauses on hover/focus, stops permanently on manual arrow/dot interaction (WCAG 2.2.2), and is skipped entirely under `prefers-reduced-motion`. Unit-tested in `tests/unit/home-recap-harness.php`; e2e in the "Recap carousel" block of `tests/e2e/challenges/49-home-hero.spec.js`.
 
 `isRaceHeroWindow(array $race, ?array $settings, ?DateTime $now): bool` (`public/includes/challenges.php`) is the pure boundary function: the race hero's window runs from `windowOpen − 24h` through `raceStart + 3h`, where `windowOpen = raceStart − betting_window_hours`. Exhaustively unit-tested in `tests/unit/hero-window-harness.php`; `tests/e2e/challenges/49-home-hero.spec.js` spot-checks the wiring end-to-end.
 

@@ -1221,6 +1221,10 @@ body.clubhouse .bet-item.my-bet {
 .gap-1 { gap: 0.5rem; }
 .gap-2 { gap: 1rem; }
 .hidden { display: none; }
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 
 @media (max-width: 768px) {
     .hero h1 {
@@ -2041,6 +2045,12 @@ body.light .hf-cta-primary {
 body.light .hf-cta-primary.hf-cta-primary--challenges {
     box-shadow: 0 4px 14px rgba(36,114,232,0.22);
 }
+body.light .hf-recap-arrow {
+    background: rgba(255,255,255,0.7); border-color: var(--border-color); color: var(--text-primary);
+}
+body.light .hf-recap-arrow:hover { background: rgba(255,255,255,0.9); }
+body.light .hf-recap-dot { background: var(--border-color); }
+body.light .hf-recap-dot.active { background: var(--f1-red); }
 body.light .hf-toc a.active::before { background: var(--f1-red); }
 body.light .hf-arena-base .hf-toc a.active::before { background: var(--f1-accent-challenges); }
 body.light [data-testid="duel-queued-msg"] { color: #000; }
@@ -2321,6 +2331,50 @@ body.light [data-testid="duel-queued-msg"] { color: #000; }
 }
 .hf-hero-meta .dot {
     width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted);
+}
+
+/* Recap carousel (home hero fallback) — horizontal padding on the carousel (not the arrows)
+   reserves room so slide text never sits under the arrow circles, whatever the content
+   height happens to be (arrows stay vertically centered on the whole carousel, not on any
+   one text line). */
+.hf-recap-carousel { position: relative; padding: 0 44px; }
+.hf-recap-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-color);
+    color: var(--text-primary); font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.15s;
+}
+.hf-recap-arrow:hover { background: rgba(0, 0, 0, 0.5); }
+.hf-recap-arrow-prev { left: 0; }
+.hf-recap-arrow-next { right: 0; }
+.hf-recap-dots { display: flex; gap: 7px; margin-top: 22px; }
+.hf-recap-dot {
+    width: 7px; height: 7px; border-radius: 50%; padding: 0; border: none;
+    background: var(--border-color); cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+}
+.hf-recap-dot.active { background: var(--f1-red-light); transform: scale(1.3); }
+
+/* Recap slide insight — the prominent element, between the winner headline and the podium
+   chips. Podium chips shrink to compact secondary detail underneath (scoped to .hf-recap-slide
+   only — .quali-row/.position-badge are shared classes used at full size elsewhere, e.g.
+   race.php's own qualifying/race result rows). */
+.hf-recap-insight { margin-top: 16px; padding-left: 16px; border-left: 3px solid var(--f1-accent-challenges-light); }
+.hf-recap-insight-label {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em;
+    color: var(--f1-accent-challenges-light); margin-bottom: 4px;
+}
+.hf-recap-insight-text { font-size: 19px; line-height: 1.4; color: var(--text-primary); font-weight: 600; max-width: 56ch; }
+.hf-recap-slide .hf-recap-podium { gap: 14px; margin-top: 10px; }
+.hf-recap-slide .hf-recap-podium .position-badge { width: 22px; height: 22px; font-size: 11px; border-radius: 6px; }
+.hf-recap-slide .hf-recap-podium .quali-item { font-size: 12.5px; color: var(--text-secondary); }
+
+@media (max-width: 768px) {
+    .hf-recap-carousel { padding: 0 34px; }
+    .hf-recap-arrow { width: 26px; height: 26px; font-size: 10px; }
+    .hf-recap-insight-text { font-size: 16.5px; }
 }
 
 /* Countdown */

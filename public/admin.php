@@ -579,9 +579,14 @@ if (isset($_POST['update_settings'])) {
     $bettingWindowHours = sanitizeInt($_POST['betting_window_hours'] ?? 48, 1, 168);
     $betSize = intval($_POST['bet_size'] ?? 10);
     $challengesEnabled = isset($_POST['challenges_enabled']) ? 1 : 0;
+    // Guarded (unlike betting_window_hours above): a bad/out-of-range input silently
+    // becoming array_slice(..., 0, false) would blank out the entire recap hero site-wide,
+    // not just leave one field at its old value — the failure mode here is worse than the
+    // existing sanitizeInt() callers', so it gets the explicit fallback they don't.
+    $homeRecapCount = sanitizeInt($_POST['home_recap_count'] ?? 5, 3, 10) ?: 5;
 
-    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ?, challenges_enabled = ? WHERE id = 1");
-    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize, $challengesEnabled]);
+    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ?, challenges_enabled = ?, home_recap_count = ? WHERE id = 1");
+    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize, $challengesEnabled, $homeRecapCount]);
     $settings = getSettings();
     $message = t('settings_saved');
 }

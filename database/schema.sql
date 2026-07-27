@@ -149,15 +149,16 @@ CREATE TABLE settings (
     bet_size INT DEFAULT 10,
     challenge_rumor_deck_size INT DEFAULT 3,
     challenge_invite_daily_cap INT NOT NULL DEFAULT 5,
-    challenges_enabled TINYINT(1) NOT NULL DEFAULT 1
+    challenges_enabled TINYINT(1) NOT NULL DEFAULT 1,
+    home_recap_count INT NOT NULL DEFAULT 5
 );
 
 -- Indsæt standard indstillinger
-INSERT INTO settings (id, app_title, app_year, hero_title_en, hero_title_da, hero_text_en, hero_text_da, points_p1, points_p2, points_p3, points_wrong_pos, betting_window_hours, bet_size, challenge_rumor_deck_size, challenge_invite_daily_cap, challenges_enabled) VALUES
+INSERT INTO settings (id, app_title, app_year, hero_title_en, hero_title_da, hero_text_en, hero_text_da, points_p1, points_p2, points_p3, points_wrong_pos, betting_window_hours, bet_size, challenge_rumor_deck_size, challenge_invite_daily_cap, challenges_enabled, home_recap_count) VALUES
 (1, 'F1 Betting', '2025', 'Predict the Podium', 'Forudsig Podiet',
 'Compete with friends by predicting top 3 for each Grand Prix. Earn points for correct predictions.',
 'Konkurrér med venner ved at forudsige top 3 for hvert Grand Prix. Optjen point for korrekte forudsigelser.',
-25, 18, 15, 5, 48, 10, 3, 5, 1);
+25, 18, 15, 5, 48, 10, 3, 5, 1, 5);
 
 -- Password reset tokens
 CREATE TABLE password_resets (

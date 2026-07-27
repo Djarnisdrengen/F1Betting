@@ -59,6 +59,14 @@
                     <textarea name="hero_text_da" class="form-input" rows="3"><?= escape($settings['hero_text_da']) ?></textarea>
                 </div>
             </div>
+
+            <h4 class="mb-1 mt-3"><i class="fas fa-images text-accent"></i> <?= t('home_recap_section') ?></h4>
+            <p class="text-muted mb-2" style="font-size: 0.875rem;"><?= t('home_recap_config') ?></p>
+            <div class="form-group mb-2" style="max-width: 200px;">
+                <label class="form-label"><?= t('home_recap_count_label') ?></label>
+                <input type="number" name="home_recap_count" class="form-input"
+                       value="<?= intval($settings['home_recap_count'] ?? 5) ?>" min="3" max="10">
+            </div>
         </div>
     </div>
 

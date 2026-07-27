@@ -81,3 +81,49 @@ test.describe('Settings form — sticky save bar', { tag: '@admin' }, () => {
         await expect(page.locator('input[name="app_title"]')).toHaveValue(originalAppTitle);
     });
 });
+
+// ─── home_recap_count (Real recap carousel epic) — persistence + server-side clamp ──────────
+test.describe('Settings form — home recap count', { tag: '@admin' }, () => {
+    let original;
+
+    test.beforeEach(async ({ page }) => {
+        await page.goto('/admin.php?tab=settings');
+        await page.click('[data-testid="settings-toggle-hero"]');
+        original = await page.inputValue('input[name="home_recap_count"]');
+    });
+
+    test.afterEach(async ({ page }) => {
+        await page.goto('/admin.php?tab=settings');
+        await page.click('[data-testid="settings-toggle-hero"]');
+        const current = await page.inputValue('input[name="home_recap_count"]');
+        if (current !== original) {
+            await page.fill('input[name="home_recap_count"]', original);
+            await page.click('[data-testid="settings-save-btn"]');
+        }
+    });
+
+    test('a value inside 3-10 persists across reload', async ({ page }) => {
+        await page.fill('input[name="home_recap_count"]', '7');
+        await page.click('[data-testid="settings-save-btn"]');
+        await expect(page).toHaveURL(/tab=settings/);
+
+        await page.click('[data-testid="settings-toggle-hero"]');
+        await expect(page.locator('input[name="home_recap_count"]')).toHaveValue('7');
+    });
+
+    // The HTML min/max attribute is decorative only (functions.php's sanitizeInt() is the
+    // real gate) — removing it here proves the *server* clamps 3-10, not just the browser's
+    // native number-input validity check silently blocking the submit before it ever posts.
+    test('an out-of-range value is clamped server-side, not just blocked client-side', async ({ page }) => {
+        const input = page.locator('input[name="home_recap_count"]');
+        await input.evaluate(el => el.removeAttribute('max'));
+        await input.fill('999');
+        await page.click('[data-testid="settings-save-btn"]');
+        await expect(page).toHaveURL(/tab=settings/);
+
+        await page.click('[data-testid="settings-toggle-hero"]');
+        const clamped = Number(await page.locator('input[name="home_recap_count"]').inputValue());
+        expect(clamped).toBeGreaterThanOrEqual(3);
+        expect(clamped).toBeLessThanOrEqual(10);
+    });
+});

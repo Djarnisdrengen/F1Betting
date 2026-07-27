@@ -94,6 +94,16 @@ return [
         'see_all'               => 'Se alle',
         'recent_results'        => 'Seneste Resultater',
         'status_done'           => 'Afsluttet',
+        'home_recap_won_line'   => '%s vandt i %s',
+        'home_recap_prev'       => 'Forrige resultat',
+        'home_recap_next'       => 'Næste resultat',
+        'home_recap_goto'       => 'Gå til resultat %d af %d',
+        'home_recap_aria_label' => 'Seneste resultater, karrusel',
+        'home_recap_insight_label' => 'Indsigt',
+        'home_recap_insight_label_qualifying' => 'Kvalifikation',
+        'home_recap_insight_label_sprint' => 'Sprint',
+        'home_recap_upset_surprise' => 'Kun %d ud af %d satsede på %s til podiet — han endte som P%d.',
+        'home_recap_upset_snub' => '%d ud af %d forventede %s på podiet — han missede det.',
         'rounds_played'         => 'Løb spillet',
 
         // Bet messages
@@ -604,6 +614,16 @@ return [
         'see_all'               => 'See all',
         'recent_results'        => 'Recent Results',
         'status_done'           => 'Done',
+        'home_recap_won_line'   => '%s won in %s',
+        'home_recap_prev'       => 'Previous result',
+        'home_recap_next'       => 'Next result',
+        'home_recap_goto'       => 'Go to result %d of %d',
+        'home_recap_aria_label' => 'Recent results, carousel',
+        'home_recap_insight_label' => 'Insight',
+        'home_recap_insight_label_qualifying' => 'Qualifying',
+        'home_recap_insight_label_sprint' => 'Sprint',
+        'home_recap_upset_surprise' => 'Only %d of %d backed %s for the podium — he finished P%d.',
+        'home_recap_upset_snub' => '%d of %d expected %s on the podium — he missed it.',
         'rounds_played'         => 'Rounds played',
 
         // Bet messages

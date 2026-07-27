@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/challenges.php';
+require_once __DIR__ . '/includes/home-recap.php';
 
 $db = getDB();
 $currentUser = getCurrentUser();
@@ -31,6 +32,13 @@ $racesCompleted  = count($completedRaces);
 $racesRemaining  = count($upcomingRaces);
 $recentResults   = array_slice(array_reverse($completedRaces), 0, 3);
 
+// Recap hero (home hero fallback: no race-hero window AND Challenges disabled) — rotates
+// the last N completed races' podiums, most-recent-first. N = home_recap_count (admin
+// setting, 3-10, default 5); naturally shrinks to whatever exists if fewer races are
+// completed, and is empty (→ no recap hero, current blank fallback) if none are.
+$homeRecapCount = max(3, min(10, intval($settings['home_recap_count'] ?? 5)));
+$recapRaces = array_slice(array_reverse($completedRaces), 0, $homeRecapCount);
+
 // Hero: derive from next upcoming race
 $heroRace = $upcomingRaces[0] ?? null;
 $heroCountdownTarget = null;
@@ -52,6 +60,10 @@ if ($heroRace) {
 // (windowOpen-24h through raceStart+3h); the Challenges hero shows the rest of the time,
 // and always when there's no upcoming race at all.
 $showRaceHero = $heroRace ? isRaceHeroWindow($heroRace, $settings, $now) : false;
+// Set true inside the recap-hero branch below — used to suppress the "Upcoming races" card
+// (which otherwise follows every hero variant and links to the next race) specifically when
+// the recap hero is what's showing.
+$isRecapHero = false;
 
 // My rank for home card
 $myRank       = null;
@@ -130,6 +142,41 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
     }
     $cls = 'hf-countdown' . ($extraClass ? ' ' . $extraClass : '');
     return '<div class="' . $cls . '" data-target="' . htmlspecialchars($target) . '">' . $cells . '</div>';
+}
+
+// Plain-text summary of a race's podium, for the recap carousel's aria-live announcer.
+function buildRecapAnnouncement(array $race, ?array $p1, ?array $p2, ?array $p3, ?string $highlightText = null): string {
+    $parts = [];
+    if ($p1) $parts[] = 'P1 ' . $p1['name'];
+    if ($p2) $parts[] = 'P2 ' . $p2['name'];
+    if ($p3) $parts[] = 'P3 ' . $p3['name'];
+    $summary = $race['name'] . ($parts ? ': ' . implode(', ', $parts) : '');
+    return $highlightText ? $summary . '. ' . $highlightText : $summary;
+}
+
+// Localizes a getRecapHighlight() result (public/includes/home-recap.php) into display text —
+// just the sentence itself, no label prefix (the caller renders "Indsigt"/"Insight" as its own
+// styled line in the pull-quote markup, not baked into this string). KB text is translated to
+// Danish via translateKbHighlight() when $lang is 'da'; getRecapHighlight() already guarantees a
+// translation exists for any 'kb' result it returns when called with the same $lang (untranslated
+// candidates are skipped there, never surfaced here) — the fallback to the English source is
+// just defense in depth, not an expected path. Betting-upset text is a fully localized t()
+// template already, no further translation needed.
+function buildRecapHighlightText(?array $highlight, array $driversById, string $lang): ?string {
+    if (!$highlight) return null;
+    if ($highlight['type'] === 'kb') {
+        return $lang === 'da' ? (translateKbHighlight($highlight['text']) ?? $highlight['text']) : $highlight['text'];
+    }
+    $driver = $driversById[$highlight['driver_id']] ?? null;
+    if (!$driver) return null;
+    $name = driverLastName($driver);
+    if ($highlight['type'] === 'surprise') {
+        return sprintf(t('home_recap_upset_surprise'), $highlight['count'], $highlight['total'], $name, $highlight['position']);
+    }
+    if ($highlight['type'] === 'snub') {
+        return sprintf(t('home_recap_upset_snub'), $highlight['count'], $highlight['total'], $name);
+    }
+    return null;
 }
 ?>
 
@@ -237,13 +284,80 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
         </div>
     </div>
 </section>
+<?php elseif (!empty($recapRaces)): ?>
+<!-- Recap hero (fallback: no race hero, Challenges disabled) — rotates the last N
+     completed races' podiums; see $recapRaces / $homeRecapCount above. -->
+<?php $isRecapHero = true; $kbKnowledgeBase = loadPaddockKb(); ?>
+<section class="hf-hero" data-testid="recap-hero">
+    <div class="hf-container">
+        <div class="hf-recap-carousel" data-testid="recap-carousel" role="region"
+             aria-roledescription="carousel" aria-label="<?= escape(t('home_recap_aria_label')) ?>">
+
+            <?php foreach ($recapRaces as $i => $race):
+                $p1 = $race['result_p1'] ? ($driversById[$race['result_p1']] ?? null) : null;
+                $p2 = $race['result_p2'] ? ($driversById[$race['result_p2']] ?? null) : null;
+                $p3 = $race['result_p3'] ? ($driversById[$race['result_p3']] ?? null) : null;
+                $highlight = getRecapHighlight($race, $betsByRace[$race['id']] ?? [], $driversById, $kbKnowledgeBase, $lang);
+                $highlightText = buildRecapHighlightText($highlight, $driversById, $lang);
+            ?>
+            <div class="hf-recap-slide<?= $i === 0 ? '' : ' hidden' ?> clickable-card"
+                 data-testid="recap-slide" data-index="<?= $i ?>"
+                 data-href="race.php?id=<?= escape($race['id']) ?>"
+                 data-announce="<?= escape(buildRecapAnnouncement($race, $p1, $p2, $p3, $highlightText)) ?>">
+                <span class="hf-hero-eyebrow"><?= t('recent_results') ?></span>
+                <h1 class="hf-hero-title">
+                    <?php if ($p1): ?>
+                        <?= sprintf(t('home_recap_won_line'), escape($p1['name']), escape($race['location'])) ?>
+                    <?php else: ?>
+                        <?= escape($race['name']) ?>
+                    <?php endif; ?>
+                </h1>
+                <?php if ($highlightText): ?>
+                <div class="hf-recap-insight" data-testid="recap-highlight">
+                    <div class="hf-recap-insight-label" data-testid="recap-highlight-label"><?= t(recapHighlightLabelKey($highlight)) ?></div>
+                    <div class="hf-recap-insight-text"><?= escape($highlightText) ?></div>
+                </div>
+                <?php endif; ?>
+                <?php if ($p2 || $p3): ?>
+                <div class="quali-row hf-recap-podium">
+                    <?php foreach ([2 => $p2, 3 => $p3] as $pos => $driver): if ($driver): ?>
+                        <div class="quali-item">
+                            <span class="position-badge position-<?= $pos ?>">P<?= $pos ?></span>
+                            <?= escape(driverLastName($driver)) ?>
+                            <span class="text-muted" style="font-size:0.8em;">&middot; <?= escape($driver['team']) ?></span>
+                        </div>
+                    <?php endif; endforeach; ?>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+
+            <?php if (count($recapRaces) > 1): ?>
+            <button type="button" class="hf-recap-arrow hf-recap-arrow-prev" data-testid="recap-prev"
+                    aria-label="<?= escape(t('home_recap_prev')) ?>"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+            <button type="button" class="hf-recap-arrow hf-recap-arrow-next" data-testid="recap-next"
+                    aria-label="<?= escape(t('home_recap_next')) ?>"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+            <div class="hf-recap-dots" data-testid="recap-dots">
+                <?php foreach ($recapRaces as $i => $race): ?>
+                    <button type="button" class="hf-recap-dot<?= $i === 0 ? ' active' : '' ?>"
+                            data-testid="recap-dot" data-index="<?= $i ?>"
+                            <?= $i === 0 ? 'aria-current="true"' : '' ?>
+                            aria-label="<?= escape(sprintf(t('home_recap_goto'), $i + 1, count($recapRaces))) ?>"></button>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+
+            <div class="sr-only" aria-live="polite" id="recap-live" data-testid="recap-live"></div>
+        </div>
+    </div>
+</section>
 <?php endif; ?>
 
 <div class="hf-container">
-    <?php if (!empty($upcomingRaces)): ?>
+    <?php if (!$isRecapHero && !empty($upcomingRaces)): ?>
         <?php $nextRace = $upcomingRaces[0]; $nextRaceStatus = getBettingStatus($nextRace, $settings); ?>
         <div class="hf-section-h" style="margin-top:20px;"><h2><?= t('upcoming_races') ?></h2><a href="races.php"><?= t('see_all') ?></a></div>
-        <div class="hf-racecard clickable-card" data-href="race.php?id=<?= escape($nextRace['id']) ?>">
+        <div class="hf-racecard clickable-card" data-testid="next-race-card" data-href="race.php?id=<?= escape($nextRace['id']) ?>">
             <div>
                 <div class="hf-racename"><?= escape($nextRace['name']) ?></div>
                 <div class="hf-racemeta"><?= escape($nextRace['location']) ?> &middot; <?= formatRaceDateTime($nextRace['race_date'], $nextRace['race_time']) ?></div>
@@ -462,6 +576,57 @@ function renderHfCountdown(string $target, array $labels, string $extraClass = '
     }
     seg.upcoming.addEventListener('click', function () { show('upcoming'); });
     seg.results.addEventListener('click',  function () { show('results'); });
+})();
+</script>
+
+<script nonce="<?= $nonce ?>">
+(function () {
+    var root = document.querySelector('.hf-recap-carousel');
+    if (!root) return;
+
+    var slides  = Array.prototype.slice.call(root.querySelectorAll('.hf-recap-slide'));
+    var dots    = Array.prototype.slice.call(root.querySelectorAll('.hf-recap-dot'));
+    var prevBtn = root.querySelector('.hf-recap-arrow-prev');
+    var nextBtn = root.querySelector('.hf-recap-arrow-next');
+    var live    = document.getElementById('recap-live');
+    if (slides.length < 2) return; // single race: nothing to rotate or control
+
+    var AUTO_MS = 6000;
+    var current = 0;
+    var timer = null;
+    var stopped = false; // manual nav permanently stops autoplay (WCAG 2.2.2)
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function show(i) {
+        current = (i + slides.length) % slides.length;
+        slides.forEach(function (s, idx) { s.classList.toggle('hidden', idx !== current); });
+        dots.forEach(function (d, idx) {
+            d.classList.toggle('active', idx === current);
+            if (idx === current) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
+        });
+        if (live) live.textContent = slides[current].dataset.announce || '';
+    }
+
+    function startAuto() {
+        if (reduceMotion || stopped || timer) return;
+        timer = setInterval(function () { show(current + 1); }, AUTO_MS);
+    }
+    function pauseAuto() { if (timer) { clearInterval(timer); timer = null; } }
+    function stopAuto()  { stopped = true; pauseAuto(); }
+
+    if (nextBtn) nextBtn.addEventListener('click', function () { show(current + 1); stopAuto(); });
+    if (prevBtn) prevBtn.addEventListener('click', function () { show(current - 1); stopAuto(); });
+    dots.forEach(function (d, idx) {
+        d.addEventListener('click', function () { show(idx); stopAuto(); });
+    });
+
+    // Hover/focus = temporary "give me a moment", not a stop signal — resumes on leave.
+    root.addEventListener('pointerenter', pauseAuto);
+    root.addEventListener('pointerleave', startAuto);
+    root.addEventListener('focusin', pauseAuto);
+    root.addEventListener('focusout', startAuto);
+
+    startAuto();
 })();
 </script>
 

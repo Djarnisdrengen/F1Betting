@@ -162,6 +162,36 @@ module.exports = {
     //   cases are hit by choosing the race offset relative to the (real) current time, not
     //   the other way around — see 49-home-hero.spec.js for the exact offsets used.
 
+    recapRaces: (params = {}) => call('seed_recap_races', params),
+    // params: { count? (int, default 5, clamped 1-10) } → { ok, count, race_ids }
+    //   count completed races ('E2E Recap Race 1'..N), most-recent-first (Race 1 = most
+    //   recent), each with a distinct P1 winner rotated across 3 fixture drivers so the
+    //   recap carousel's per-slide headline text differs between slides. Idempotent.
+
+    recapBets: (raceId) => call('seed_recap_bets', { race_id: raceId }),
+    // params: raceId (one of recapRaces()'s race_ids) → { ok }
+    //   5 bets against that race engineered for a clean betting "surprise" (getRecapHighlight()'s
+    //   fallback tier, public/includes/home-recap.php): 4 of 5 back a decoy driver — never on
+    //   the podium — for the win, 1 backs the actual result. Idempotent.
+
+    getSettingsSnapshot: () => call('get_settings_snapshot'),
+    // Read-only → { ok, challenges_enabled: 0|1, home_recap_count: int }. Call this in
+    // beforeEach BEFORE mutating either setting below, and restore the returned values in
+    // afterEach — never hardcode a "restore to X" value. This is a shared environment; its real
+    // settings can legitimately differ from the schema defaults between test runs, and
+    // clobbering them on every run is a real bug a deploy was once wrongly blamed for.
+
+    challengesEnabled: (enabled) => call('set_challenges_enabled', { enabled: enabled ? 1 : 0 }),
+    // Flips settings.challenges_enabled — needed to reach the home hero's "Challenges
+    // disabled" fallback branch (recap carousel). Restore via getSettingsSnapshot(), not a
+    // hardcoded value.
+
+    homeRecapCount: (count) => call('set_home_recap_count', { count }),
+    // Directly sets settings.home_recap_count (clamped 3-10) — lets a test prove the
+    // setting is wired end-to-end without needing to control real completed-race volume
+    // (always well above 3-10 once a season is underway). Restore via getSettingsSnapshot(),
+    // not a hardcoded value.
+
     convertedGuest: (params = {}) => call('seed_converted_guest', params),
     // params: { email?, display_name?, in_competition?, link_participant? (0 → users row only,
     //           an email-collision fixture for ADM-07) } → { ok, user_id, participant_id, email }
@@ -197,5 +227,7 @@ module.exports = {
         loginAttempts:  () => call('clear_login_attempts'),
         challenges:     () => call('cleanup_challenges'),
         heroRace:       () => call('cleanup_hero_race'),
+        recapRaces:     () => call('cleanup_recap_races'),
+        recapBets:      () => call('cleanup_recap_bets'),
     },
 };
