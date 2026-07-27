@@ -788,6 +788,78 @@ function sendDuelOutcomeEmails(PDO $db, array $duel, int $challengerScore, int $
     }
 }
 
+// ============================================
+// CONTENT ARCHIVAL (Real expiry & rotation for content-topup)
+// ============================================
+// Archives stale published content-topup output — a status flip to 'archived', never a row
+// delete, so challenge_answers/challenge_trivia_answers/challenge_points (none ON DELETE
+// CASCADEd by this) stay intact forever (REQ-601). See
+// epics/Real expiry & rotation for content-topup/feature-1-content-expiry-archival.md.
+if (!defined('RUMOR_STALE_WEEKS')) define('RUMOR_STALE_WEEKS', 6);
+if (!defined('RUMOR_MIN_LIVE'))    define('RUMOR_MIN_LIVE', 6);
+
+// Pure decision core (REQ-604/NFR-601), no DB access — the exact floor-guard arithmetic,
+// deliberately split out so it's covered by a fast, deterministic
+// tests/unit/content-archival-harness.php case instead of only being exercised indirectly
+// through archiveStaleContent()'s live queries.
+function rumorArchiveBudget(int $liveCount, int $floor): int {
+    return max(0, $liveCount - $floor);
+}
+
+// Thin DB orchestrator (REQ-605), called from cron/challenge_weekly.php (REQ-606) and from
+// test-seed.php's run_content_archival trigger. Trivia (REQ-603): eligible once its ISO week
+// is 2+ full weeks in the past — nextTriviaQuestion() already scopes serving to the *current*
+// ISO week only, so this can never touch anything currently playable. The "- 2" here is plain
+// integer arithmetic on YEARWEEK(...,3)'s YYYYWW encoding, not calendar-aware, but stays correct
+// across a year boundary because real ISO week numbers only run 1-53 — nowhere near large enough
+// for a same-year week minus 2 to ever collide with the wrong year's numbering (verified by hand
+// for both the "current week is 1 or 2" boundary cases). Rumor (REQ-604): archive oldest-first
+// (publish_date ASC, id ASC — same tie-break nextRumorItem() uses) among items older than
+// RUMOR_STALE_WEEKS, capped by rumorArchiveBudget() against the current published-and-in-window
+// count so the live deck is never dropped below RUMOR_MIN_LIVE.
+function archiveStaleContent(PDO $db): array {
+    $triviaStmt = $db->prepare("
+        UPDATE challenge_trivia_questions
+        SET status = 'archived'
+        WHERE status = 'published' AND YEARWEEK(publish_date, 3) <= YEARWEEK(CURDATE(), 3) - 2
+    ");
+    $triviaStmt->execute();
+    $triviaArchived = $triviaStmt->rowCount();
+
+    $liveCount = (int) $db->query("
+        SELECT COUNT(*) FROM challenge_items WHERE status = 'published' AND publish_date <= CURDATE()
+    ")->fetchColumn();
+    $budget = rumorArchiveBudget($liveCount, RUMOR_MIN_LIVE);
+    $guardBlocked = $budget <= 0;
+
+    $rumorArchived = 0;
+    if ($budget > 0) {
+        $staleStmt = $db->prepare("
+            SELECT id FROM challenge_items
+            WHERE status = 'published' AND publish_date <= DATE_SUB(CURDATE(), INTERVAL ? WEEK)
+            ORDER BY publish_date ASC, id ASC
+            LIMIT ?
+        ");
+        $staleStmt->bindValue(1, RUMOR_STALE_WEEKS, PDO::PARAM_INT);
+        $staleStmt->bindValue(2, $budget, PDO::PARAM_INT);
+        $staleStmt->execute();
+        $staleIds = $staleStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if ($staleIds) {
+            $ph = implode(',', array_fill(0, count($staleIds), '?'));
+            $archiveStmt = $db->prepare("UPDATE challenge_items SET status = 'archived' WHERE id IN ($ph)");
+            $archiveStmt->execute($staleIds);
+            $rumorArchived = $archiveStmt->rowCount();
+        }
+    }
+
+    return [
+        'trivia_archived'     => $triviaArchived,
+        'rumor_archived'      => $rumorArchived,
+        'rumor_guard_blocked' => $guardBlocked,
+    ];
+}
+
 function isRaceHeroWindow(array $race, array $settings = null, DateTime $now = null): bool {
     if ($now === null) {
         $now = new DateTime();

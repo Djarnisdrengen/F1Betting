@@ -80,4 +80,13 @@ $purgeStmt = $db->prepare("DELETE FROM challenge_participants WHERE status = 'pe
 $purgeStmt->execute();
 logMessage("Purged {$purgeStmt->rowCount()} abandoned pending participant(s).");
 
+// Content archival (REQ-606, Real expiry & rotation for content-topup epic) — runs after Perfect
+// Week + GDPR purge above, the natural moment right after the new Friday batch has gone live.
+$archivalSummary = archiveStaleContent($db);
+logMessage(
+    "Content archival: {$archivalSummary['trivia_archived']} trivia archived, "
+    . "{$archivalSummary['rumor_archived']} rumor archived, "
+    . 'rumor guard blocked: ' . ($archivalSummary['rumor_guard_blocked'] ? 'yes' : 'no') . '.'
+);
+
 logMessage("Weekly challenge cron complete.");

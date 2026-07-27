@@ -8,7 +8,10 @@
         <?= t('admin_ch_rumor_filter_draft') ?> (<?= (int) $rumorDraftCount ?>)
     </a>
     <a href="?tab=rumors&rumor_status=published" class="btn btn-sm <?= $rumorFilter === 'published' ? 'btn-primary' : 'btn-secondary' ?>">
-        <?= t('admin_ch_rumor_filter_published') ?> (<?= (int) ($rumorTotalCount - $rumorDraftCount) ?>)
+        <?= t('admin_ch_rumor_filter_published') ?> (<?= (int) ($rumorTotalCount - $rumorDraftCount - $rumorArchivedCount) ?>)
+    </a>
+    <a href="?tab=rumors&rumor_status=archived" class="btn btn-sm <?= $rumorFilter === 'archived' ? 'btn-primary' : 'btn-secondary' ?>">
+        <?= t('admin_ch_rumor_filter_archived') ?> (<?= (int) $rumorArchivedCount ?>)
     </a>
 </div>
 
@@ -98,6 +101,8 @@
     <span style="flex:1;"></span>
     <button type="submit" name="action" value="bulk_publish_rumor" class="btn btn-primary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_publish') ?></button>
     <button type="submit" name="action" value="bulk_unpublish_rumor" class="btn btn-secondary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_unpublish') ?></button>
+    <button type="submit" name="action" value="bulk_archive_rumor" class="btn btn-secondary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_archive') ?></button>
+    <button type="submit" name="action" value="bulk_restore_rumor" class="btn btn-secondary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_restore') ?></button>
     <button type="submit" name="action" value="bulk_delete_rumor" class="btn btn-danger btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_bulk_delete_confirm')) ?>" disabled><?= t('admin_ch_bulk_delete') ?></button>
 </form>
 <?php endif; ?>
@@ -122,8 +127,12 @@
             <div class="hf-racemeta">
                 <?= $item['is_real'] ? t('admin_ch_rumor_real') : t('admin_ch_rumor_rumor') ?>
                 · <?= escape($item['publish_date']) ?>
-                · <span class="hf-badge <?= $item['status'] === 'published' ? 'open' : 'soon' ?>">
-                      <?= $item['status'] === 'published' ? t('admin_ch_rumor_status_published') : t('admin_ch_rumor_status_draft') ?>
+                · <span class="hf-badge <?= match ($item['status']) { 'published' => 'open', 'archived' => 'done', default => 'soon' } ?>">
+                      <?= match ($item['status']) {
+                          'published' => t('admin_ch_rumor_status_published'),
+                          'archived'  => t('admin_ch_rumor_status_archived'),
+                          default     => t('admin_ch_rumor_status_draft'),
+                      } ?>
                   </span>
                 · <?= (int) $item['answer_count'] > 0
                         ? sprintf(t('admin_ch_answers_count'), (int) $item['answer_count'], (int) round($item['correct_count'] / $item['answer_count'] * 100))
@@ -138,10 +147,13 @@
                 <?= csrfField() ?>
                 <input type="hidden" name="item_id" value="<?= escape($item['id']) ?>">
                 <input type="hidden" name="rumor_status" value="<?= escape($rumorFilter) ?>">
-                <?php if ($item['status'] !== 'published'): ?>
+                <?php if ($item['status'] === 'draft'): ?>
                     <button type="submit" name="action" value="quick_publish_rumor_item" class="btn btn-primary btn-sm"><?= t('admin_ch_rumor_publish') ?></button>
-                <?php else: ?>
+                <?php elseif ($item['status'] === 'published'): ?>
                     <button type="submit" name="action" value="unpublish_rumor_item" class="btn btn-secondary btn-sm"><?= t('admin_ch_rumor_unpublish') ?></button>
+                    <button type="submit" name="action" value="archive_rumor_item" class="btn btn-secondary btn-sm"><?= t('admin_ch_rumor_archive') ?></button>
+                <?php else: ?>
+                    <button type="submit" name="action" value="restore_rumor_item" class="btn btn-secondary btn-sm"><?= t('admin_ch_rumor_restore') ?></button>
                 <?php endif; ?>
             </form>
 

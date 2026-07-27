@@ -1,0 +1,2 @@
+Out of the paddock challenges simulation/test that also executed the e2e tests we concluded that the approx 4 fails in the e2e test around content for rumors and trivia will always be there. You suggested to "build real expiry/rotation for content-topup output, rewrites those 4 tests to tolerate coexisting real content".
+

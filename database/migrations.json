@@ -28,6 +28,8 @@
     { "migration": "add_challenges.sql (invite guardrails)", "table": "settings", "columns": ["challenge_invite_daily_cap"] },
     { "migration": "add_admin_dashboards.sql", "table": "admin_secret_state" },
     { "migration": "add_admin_dashboards.sql", "table": "admin_audit_log" },
-    { "migration": "add_challenges_toggle.sql", "table": "settings", "columns": ["challenges_enabled"] }
+    { "migration": "add_challenges_toggle.sql", "table": "settings", "columns": ["challenges_enabled"] },
+    { "migration": "add_content_archival.sql", "table": "challenge_items", "columns": ["status"] },
+    { "migration": "add_content_archival.sql", "table": "challenge_trivia_questions", "columns": ["status"] }
   ]
 }

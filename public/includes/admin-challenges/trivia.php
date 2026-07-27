@@ -8,7 +8,10 @@
         <?= t('admin_ch_trivia_filter_draft') ?> (<?= (int) $triviaDraftCount ?>)
     </a>
     <a href="?tab=trivia&trivia_status=published" class="btn btn-sm <?= $triviaFilter === 'published' ? 'btn-primary' : 'btn-secondary' ?>">
-        <?= t('admin_ch_trivia_filter_published') ?> (<?= (int) ($triviaTotalCount - $triviaDraftCount) ?>)
+        <?= t('admin_ch_trivia_filter_published') ?> (<?= (int) ($triviaTotalCount - $triviaDraftCount - $triviaArchivedCount) ?>)
+    </a>
+    <a href="?tab=trivia&trivia_status=archived" class="btn btn-sm <?= $triviaFilter === 'archived' ? 'btn-primary' : 'btn-secondary' ?>">
+        <?= t('admin_ch_trivia_filter_archived') ?> (<?= (int) $triviaArchivedCount ?>)
     </a>
 </div>
 
@@ -113,6 +116,8 @@
     <span style="flex:1;"></span>
     <button type="submit" name="action" value="bulk_publish_trivia" class="btn btn-primary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_publish') ?></button>
     <button type="submit" name="action" value="bulk_unpublish_trivia" class="btn btn-secondary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_unpublish') ?></button>
+    <button type="submit" name="action" value="bulk_archive_trivia" class="btn btn-secondary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_archive') ?></button>
+    <button type="submit" name="action" value="bulk_restore_trivia" class="btn btn-secondary btn-sm" data-bulk-action disabled><?= t('admin_ch_bulk_restore') ?></button>
     <button type="submit" name="action" value="bulk_delete_trivia" class="btn btn-danger btn-sm" data-bulk-action data-confirm="<?= escape(t('admin_ch_bulk_delete_confirm')) ?>" disabled><?= t('admin_ch_bulk_delete') ?></button>
 </form>
 <?php endif; ?>
@@ -152,8 +157,12 @@
                 <div class="hf-racemeta">
                     <?= $q['topic'] !== '' ? escape($q['topic']) : '—' ?>
                     · <?= escape($q['publish_date']) ?>
-                    · <span class="hf-badge <?= $q['status'] === 'published' ? 'open' : 'soon' ?>">
-                          <?= $q['status'] === 'published' ? t('admin_ch_trivia_status_published') : t('admin_ch_trivia_status_draft') ?>
+                    · <span class="hf-badge <?= match ($q['status']) { 'published' => 'open', 'archived' => 'done', default => 'soon' } ?>">
+                          <?= match ($q['status']) {
+                              'published' => t('admin_ch_trivia_status_published'),
+                              'archived'  => t('admin_ch_trivia_status_archived'),
+                              default     => t('admin_ch_trivia_status_draft'),
+                          } ?>
                       </span>
                     · <?= (int) $q['answer_count'] > 0
                             ? sprintf(t('admin_ch_answers_count'), (int) $q['answer_count'], (int) round($q['correct_count'] / $q['answer_count'] * 100))
@@ -164,12 +173,26 @@
                 <a href="?tab=trivia&trivia_status=<?= escape($triviaFilter) ?>&edit=<?= escape($q['id']) ?>#trivia-<?= escape($q['id']) ?>"
                    class="btn btn-secondary btn-sm admin-icon-btn" title="<?= t('edit') ?>"><i class="fas fa-edit"></i></a>
 
-                <?php if ($q['status'] !== 'published'): ?>
+                <?php if ($q['status'] === 'draft'): ?>
                 <form method="POST" style="display:inline">
                     <?= csrfField() ?>
                     <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
                     <input type="hidden" name="trivia_status" value="<?= escape($triviaFilter) ?>">
                     <button type="submit" name="action" value="quick_publish_trivia_question" class="btn btn-primary btn-sm"><?= t('admin_ch_trivia_publish') ?></button>
+                </form>
+                <?php elseif ($q['status'] === 'published'): ?>
+                <form method="POST" style="display:inline">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
+                    <input type="hidden" name="trivia_status" value="<?= escape($triviaFilter) ?>">
+                    <button type="submit" name="action" value="archive_trivia_question" class="btn btn-secondary btn-sm"><?= t('admin_ch_trivia_archive') ?></button>
+                </form>
+                <?php else: ?>
+                <form method="POST" style="display:inline">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="question_id" value="<?= escape($q['id']) ?>">
+                    <input type="hidden" name="trivia_status" value="<?= escape($triviaFilter) ?>">
+                    <button type="submit" name="action" value="restore_trivia_question" class="btn btn-secondary btn-sm"><?= t('admin_ch_trivia_restore') ?></button>
                 </form>
                 <?php endif; ?>
 

@@ -1468,6 +1468,40 @@ if (($_GET['action'] ?? '') === 'seed_rumor_deck') {
     exit;
 }
 
+// Action: mark_rumor_deck_answered_except — records a challenge_answers row for a participant
+// against every currently published-and-in-window rumor item EXCEPT the given id, so a test's
+// queue for that participant is deterministically just the one target item, regardless of how
+// much real content-topup output coexists in the test DB (Real expiry & rotation epic, REQ-608
+// e2e rewrite — the fix for the "Publish makes X playable"/"answered item drops out of the
+// queue" tests losing their ORDER BY publish_date ASC tie-break to older real content). Direct
+// insert, not through awardChallengePoints() — this is a queue-shrinking fixture, not a real
+// play, so it deliberately doesn't touch the CP ledger.
+if (($_GET['action'] ?? '') === 'mark_rumor_deck_answered_except') {
+    $participantId = $_GET['participant_id'] ?? '';
+    $exceptId      = $_GET['except_item_id'] ?? '';
+    if (!$participantId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'participant_id required']);
+        exit;
+    }
+    $stmt = $db->prepare("
+        SELECT id, is_real FROM challenge_items
+        WHERE status = 'published' AND publish_date <= CURDATE() AND id != ?
+    ");
+    $stmt->execute([$exceptId]);
+    $marked = 0;
+    foreach ($stmt->fetchAll() as $row) {
+        $db->prepare("
+            INSERT INTO challenge_answers (id, participant_id, item_id, guess_real, correct)
+            VALUES (?, ?, ?, ?, 1)
+            ON DUPLICATE KEY UPDATE correct = VALUES(correct)
+        ")->execute([seed_uuid(), $participantId, $row['id'], $row['is_real']]);
+        $marked++;
+    }
+    echo json_encode(['ok' => true, 'marked' => $marked]);
+    exit;
+}
+
 // Action: seed_trivia_week — 6 published trivia questions publish-dated Mon-Sat of a chosen
 // ISO week (week_offset=0 current week, -1 previous week — cron idempotency tests). Optional
 // participant_id + correct (comma list of 0/1, one per day) also backdates that participant's
@@ -1513,6 +1547,45 @@ if (($_GET['action'] ?? '') === 'seed_trivia_week') {
     }
 
     echo json_encode(['ok' => true, 'question_ids' => $questionIds, 'iso_week' => $isoWeek]);
+    exit;
+}
+
+// Action: mark_trivia_week_answered_except — trivia counterpart to
+// mark_rumor_deck_answered_except: records a challenge_trivia_answers row for a participant
+// against every currently published trivia question in a given ISO week (week_offset=0 current
+// week [default], -1 previous week — same convention as seed_trivia_week, needed by the weekly
+// cron's Perfect Week tests, whose weekTotal must include any real content-topup output that
+// coexists alongside a test's own seeded questions) EXCEPT the given id (pass '' to mark every
+// question in the week — the cron tests don't need to exclude one), so a participant's answered
+// set is deterministic regardless of how much real content coexists.
+if (($_GET['action'] ?? '') === 'mark_trivia_week_answered_except') {
+    $participantId = $_GET['participant_id'] ?? '';
+    $exceptId      = $_GET['except_question_id'] ?? '';
+    $weekOffset    = intval($_GET['week_offset'] ?? 0);
+    if (!$participantId) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'participant_id required']);
+        exit;
+    }
+    $tz     = new DateTimeZone('Europe/Copenhagen');
+    $monday = (new DateTime('today', $tz))->modify('monday this week')->modify(($weekOffset * 7) . ' days');
+    $sunday = (clone $monday)->modify('+6 days');
+
+    $stmt = $db->prepare("
+        SELECT id, correct_option FROM challenge_trivia_questions
+        WHERE status = 'published' AND publish_date BETWEEN ? AND ? AND id != ?
+    ");
+    $stmt->execute([$monday->format('Y-m-d'), $sunday->format('Y-m-d'), $exceptId]);
+    $marked = 0;
+    foreach ($stmt->fetchAll() as $row) {
+        $db->prepare("
+            INSERT INTO challenge_trivia_answers (id, participant_id, question_id, chosen_option, correct)
+            VALUES (?, ?, ?, ?, 1)
+            ON DUPLICATE KEY UPDATE correct = VALUES(correct)
+        ")->execute([seed_uuid(), $participantId, $row['id'], $row['correct_option']]);
+        $marked++;
+    }
+    echo json_encode(['ok' => true, 'marked' => $marked]);
     exit;
 }
 
@@ -1855,6 +1928,61 @@ if (($_GET['action'] ?? '') === 'get_prefs') {
     $stmt->execute([$email]);
     $row = $stmt->fetch();
     echo json_encode($row ?: ['error' => 'user not found']);
+    exit;
+}
+
+// Action: seed_stale_content — published rumor items with a controlled age (weeks in the
+// past) and count, so archival-boundary tests (RUMOR_STALE_WEEKS/RUMOR_MIN_LIVE) don't depend
+// on whatever real content-topup output happens to exist in the test DB that week — same
+// source_ref='e2e-seed' marker as seed_rumor_deck, reaped by cleanup_challenges. Trivia's
+// equivalent fixture need is already covered by seed_trivia_week's week_offset param
+// (nextTriviaQuestion() scopes trivia to a specific ISO week, not a rolling age, so that's
+// already the natural knob for a "N weeks elapsed" trivia fixture — no separate branch here).
+if (($_GET['action'] ?? '') === 'seed_stale_content') {
+    $count       = max(0, intval($_GET['count'] ?? 1));
+    $ageWeeks    = intval($_GET['age_weeks'] ?? 8);
+    $publishDate = (new DateTime())->modify("-$ageWeeks weeks")->format('Y-m-d');
+
+    $itemIds = [];
+    for ($i = 0; $i < $count; $i++) {
+        $id = seed_uuid();
+        $db->prepare("
+            INSERT INTO challenge_items
+            (id, text_da, text_en, context_da, context_en, explain_da, explain_en, is_real, status, publish_date, source_ref)
+            VALUES (?, ?, ?, 'Test', 'Test', 'Test', 'Test', 1, 'published', ?, 'e2e-seed')
+        ")->execute([$id, "Stale rumor item #$i", "Stale rumor item #$i", $publishDate]);
+        $itemIds[] = $id;
+    }
+
+    echo json_encode(['ok' => true, 'item_ids' => $itemIds, 'publish_date' => $publishDate]);
+    exit;
+}
+
+// Action: get_rumor_item_status — returns status for one or more challenge_items ids (comma
+// list), for verifying archiveStaleContent()'s actual DB effect (e.g. confirming a status flip
+// lands as 'archived' rather than being silently truncated by a not-yet-applied enum migration)
+// without going through the admin UI. Also useful for Phase 4's archive/restore e2e cases.
+if (($_GET['action'] ?? '') === 'get_rumor_item_status') {
+    $ids = array_filter(explode(',', $_GET['ids'] ?? ''));
+    if (!$ids) {
+        echo json_encode(['ok' => true, 'statuses' => []]);
+        exit;
+    }
+    $ph = implode(',', array_fill(0, count($ids), '?'));
+    $stmt = $db->prepare("SELECT id, status FROM challenge_items WHERE id IN ($ph)");
+    $stmt->execute($ids);
+    echo json_encode(['ok' => true, 'statuses' => $stmt->fetchAll(PDO::FETCH_KEY_PAIR)]);
+    exit;
+}
+
+// Action: run_content_archival — invokes archiveStaleContent() (public/includes/challenges.php)
+// on demand, same convention as challenge_weekly.php's own ?score_week= override: a test-only
+// trigger so e2e specs and manual rollout verification don't have to wait for Monday's real
+// cron (public/cron/challenge_weekly.php calls the same function on the real schedule).
+if (($_GET['action'] ?? '') === 'run_content_archival') {
+    require_once __DIR__ . '/../includes/challenges.php';
+    $summary = archiveStaleContent($db);
+    echo json_encode(['ok' => true] + $summary);
     exit;
 }
 

@@ -6,6 +6,9 @@
 const { test, expect } = require('@playwright/test');
 const seed = require('../../helpers/seed');
 
+const BASE = () => process.env.BASE_URL;
+const tstEmail = (p) => `${p}_${Date.now()}_${Math.floor(Math.random() * 1e4)}@test.localhost`;
+
 test.describe('Rumor or Not', { tag: ['@challenges', '@mobile'] }, () => {
     // Deck items aren't participant-scoped (rollover reads the whole published table), so a
     // leftover item from one test would pollute the next fresh participant's queue — clean
@@ -48,10 +51,22 @@ test.describe('Rumor or Not', { tag: ['@challenges', '@mobile'] }, () => {
 
     // RUM-03: an answered item never reappears in the queue; deck end shows the done state,
     // and it stays done on a subsequent visit (not just immediately after the last card).
+    // Scoped to a known participant (REQ-608 e2e rewrite): the test DB can have real
+    // content-topup output coexisting (rotated by the archival engine, but never guaranteed
+    // empty), so "the deck is cleared" is only deterministic for a participant who has already
+    // answered every other currently published item — not for a global "nextRumorItem()
+    // returns null" check, which would fail whenever any other real content is live.
     test('answered item drops out of the queue and the deck-cleared state persists', async ({ page }) => {
-        await seed.rumorDeck({ real: [1] });
+        const { items } = await seed.rumorDeck({ real: [1] });
+        const targetId = items[0].id;
+
+        const { participant_id } = await seed.challengeParticipant({ email: tstEmail('rumor_done') });
+        const { token } = await seed.challengeAccessToken({ participant_id });
+        await seed.markRumorDeckAnsweredExcept({ participant_id, except_item_id: targetId });
+        await page.context().addCookies([{ name: 'ch_access', value: token, url: BASE() }]);
 
         await page.goto('/challenges.php?section=rumors');
+        await expect(page.getByTestId('rumor-card')).toBeVisible();
         await page.getByTestId('rumor-guess-real').click();
         await page.waitForURL(/section=rumors&revealed=/);
 

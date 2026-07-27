@@ -55,7 +55,7 @@ bin/
 └── cron-content-topup.yml      Friday 06:00 UTC — runs both bin/generate-*.js against BOTH test and live, auto-publishing a batch dated the upcoming Monday
 ```
 
-Schema: `database/schema.sql` lines 228–419 — `challenge_participants`, `challenge_points` (append-only CP ledger), `challenge_magic_links`, `challenge_access_tokens`, `challenge_invites`, `challenge_email_suppressions`, `challenge_items`, `challenge_answers`, `duels`, `duel_quickmatch`, `duel_predictions`, `challenge_trivia_questions`, `challenge_trivia_answers`.
+Schema: `database/schema.sql` lines 228–419 — `challenge_participants`, `challenge_points` (append-only CP ledger), `challenge_magic_links`, `challenge_access_tokens`, `challenge_invites`, `challenge_email_suppressions`, `challenge_items`, `challenge_answers`, `duels`, `duel_quickmatch`, `duel_predictions`, `challenge_trivia_questions`, `challenge_trivia_answers`. `database/add_content_archival.sql` (2026-07-27) adds `'archived'` to `challenge_items.status`/`challenge_trivia_questions.status` — see "Content expiry & archival" below.
 
 ---
 
@@ -104,7 +104,7 @@ Rumor-or-Not cards and Trivia questions are drafted by Claude, not written by ha
 
 Because the content ships unreviewed, the **quality gate is after the fact**: malformed Claude JSON is skipped per-item, but a factually-wrong rumor or a mis-keyed trivia answer reaches players until someone deletes it on `admin-challenges.php`. Spot-checking the live tabs periodically is the mitigation.
 
-**Content exhaustion — the failure mode to watch for.** The KB has under 100 docs, and each environment now draws from it independently (per-env state files). After a few months of sustained weekly runs an environment's unused pool runs out; that env's generator then hard-fails with `"Only N unused KB docs left, need M"` instead of silently generating less. **A failed matrix job in `cron-content-topup.yml` is the signal** (per environment — test and live exhaust separately) — check GitHub Actions. Fix by growing the `paddock-rumors/` KB (re-run its own `update-kb.js` pipeline) or, in future, allowing doc reuse after a cooldown (not implemented yet).
+**Content exhaustion — the failure mode to watch for.** The KB has under 100 docs, and each environment now draws from it independently (per-env state files). After a few months of sustained weekly runs an environment's unused pool runs out; that env's generator then hard-fails with `"Only N unused KB docs left, need M"` instead of silently generating less. **A failed matrix job in `cron-content-topup.yml` is one signal** (per environment — test and live exhaust separately) — check GitHub Actions. As of 2026-07-27 there's also a proactive one: the **Content Supply** panel on `admin-dashboards.php?tab=challenges` shows estimated weeks of KB runway remaining per generator per environment (see "Content expiry & archival" below) — no need to wait for a failed run to notice. Fix by growing the `paddock-rumors/` KB (re-run its own `update-kb.js` pipeline) or, in future, allowing doc reuse after a cooldown (not implemented yet).
 
 **Blind spot to know about:** `nextRumorItem()` / `nextTriviaQuestion()` (`challenges.php`) both return `null` cleanly when there's nothing left — the UI shows the same pleasant empty state whether a player has genuinely answered everything, or there was never any published content for the period. Trivia is the sharper case: `ch_all_caught_up` covers both "you finished this week's quiz" and "zero questions were published this week" with identical copy. A player screenshot alone can't tell you which — check the actual counts on `admin-challenges.php`.
 
@@ -112,14 +112,69 @@ Because the content ships unreviewed, the **quality gate is after the fact**: ma
 
 ---
 
+## Content expiry & archival — stale content rotates out automatically
+
+Added 2026-07-27 (`epics/Real expiry & rotation for content-topup/`). Since the content pipeline
+above never expired anything, `challenge_items`/`challenge_trivia_questions` grew unbounded —
+every Friday's batch stacked on top of the last, forever. Both tables' `status` enum gained a
+third value, `'archived'` (migration `database/add_content_archival.sql`), alongside
+`'draft'`/`'published'`. Archiving is a pure status flip — **never a row delete** — so
+`challenge_answers`/`challenge_trivia_answers`/`challenge_points` and all CP history stay intact
+forever regardless of archival, and the Perfect Week denominator can't be affected by it either.
+
+`archiveStaleContent($db)` (`public/includes/challenges.php`) runs every Monday from the existing
+`challenge_weekly.php` cron (`.github/workflows/cron-challenges.yml`), immediately after the
+Perfect Week bonus + GDPR purge — no new scheduled workflow:
+
+- **Trivia**: a question becomes eligible once its ISO week is 2+ full weeks in the past.
+  `nextTriviaQuestion()` already scopes serving to the *current* week only (see "Scoring" above),
+  so archiving an elapsed week can never remove anything still playable.
+- **Rumor**: an item becomes eligible past `RUMOR_STALE_WEEKS` (6, constant near the function) —
+  but archiving never drops the published-and-in-window count below `RUMOR_MIN_LIVE` (6). The
+  floor guard (`rumorArchiveBudget()`, pure/unit-tested) codifies in code what used to be a manual
+  "would this leave the live deck empty" check an admin had to remember to do by hand before ever
+  unpublishing anything. If the guard blocks a run, nothing is archived that run — surfaced as a
+  flag on the Content Supply panel below, never failed silently.
+
+**Manual admin control:** `admin-challenges.php`'s Rumors and Trivia tabs each gained an
+**Archive** action (per-row and bulk) and a **Restore** action (archived → draft, for a mistaken
+archive — not straight back to live, so it goes through Publish again for review), plus an
+"Archived" option on the existing All/Drafts/Published status filter.
+
+**Content Health visibility — `admin-dashboards.php?tab=challenges`.** A second panel, **Content
+Supply**, sits below the existing player-usage panel (`chGetContentHealthSnapshot()` in
+`challenges-usage-lib.php`): live/archived counts per game, the rumor guard-blocked flag, and two
+things that previously required checking GitHub Actions or running ad-hoc SQL by hand —
+
+- **Batch cadence**, test and live shown independently: last `cron-content-topup.yml` run's
+  status per environment, reusing the existing cached GitHub Actions run data
+  (`ghListWorkflowRunsMulti()` — no new API calls). Distinguishing test from live needs the
+  *job*-level result of the latest run (the workflow fans out into a job per generator per
+  environment), not just the run-level status, since a live-only failure must show as live
+  failing while test still shows healthy — this is why test currently shows OK and live shows
+  Failed on this panel: the pipeline has only ever actually run against test's schema (see
+  [Paddock Challenges Phase status] in project memory).
+- **KB runway**, per generator per environment: reads
+  `bin/state/{rumor,trivia}-generator-state.<env>.json` directly. These files are committed by
+  `cron-content-topup.yml` but live at the **repo root**, outside `public/` — `build-deploy/deploy.js`
+  was extended in this same epic to also upload them to `{remoteDir}/bin/state/` (same
+  non-web-accessible placement as `config.php`) specifically so this panel could read them; before
+  that change, the PHP process on the deployed server had no way to see this data at all. A
+  missing/malformed file degrades to "Unknown," never a fabricated number or a fatal error.
+
+See `docs/admin-dashboards.md` for the panel's own reference entry.
+
+---
+
 ## Regular admin duties (checklist)
 
 1. **No weekly publish step** — `cron-content-topup.yml` auto-publishes a fresh batch to both test and live every Friday, dated the upcoming Monday. Optional: **spot-check** the newly live items on `admin-challenges.php` (Rumors + Trivia tabs) and delete anything wrong, since content ships unreviewed.
-2. **Watch for `cron-content-topup.yml` failures** in GitHub Actions — that's both the KB-running-low signal (per environment) *and* the "no content got published this week" signal, not a UI symptom.
-3. **As requests come in:** Members tab — approve/reject promotion requests (guest → full member); toggle `in_competition` for converted guests. The tab also carries a **full participant roster** (all `challenge_participants`: guests, native-core, promoted) showing email / display name / language / status / created / promotion-requested, with per-row **Delete** and a multiselect **bulk delete** (`delete_participant` / `bulk_delete_participants`, same bulk wiring as the Rumors/Trivia tabs). Deleting a participant cascades its challenge data (CP ledger, answers, duels, tokens) but **never** removes a promoted member's linked core `users` account — the `core_user_id` FK is `ON DELETE SET NULL` on the users side, so only the challenge-side row goes. Use the core admin Users tab to remove an actual account.
-4. **As needed:** Suppressions tab — monitor/manage the email opt-out list (governs Duel "challenge a friend" invites).
-5. **Duels tab is oversight-only for resolution** — duels resolve themselves off race results, no admin action required to settle them. The list has a **created-date sort toggle** (`?duel_sort=newest|oldest`, newest default). The tab does allow **deleting** duels (per-row **Delete** + multiselect **bulk delete**, `delete_duel` / `bulk_delete_duels`) for cleanup of test/bad rows; a delete also removes that duel's awarded CP (`challenge_points` rows keyed `source_ref = "duel:<id>"`, both sides), the same cleanup `resetDuelsForRace()` does — the CP ledger has no FK to `duels`, so it must be cleared explicitly. Duel predictions cascade via their FK. Above that list, the same tab's **Quick Match Queue** panel shows everyone still waiting to be paired (not yet a `duels` row) — read-only, no delete action; a row badged "expired" (race already locked) means it will never pair on its own and is worth a manual look.
-6. **Emergency/manual top-up** outside the Friday schedule: run `bin/generate-rumor-items.js` / `generate-trivia-questions.js` locally (needs `ANTHROPIC_API_KEY`), or trigger `cron-content-topup.yml` manually via `workflow_dispatch`.
+2. **No weekly archival step either** — `challenge_weekly.php`'s Monday run also archives stale content automatically (see "Content expiry & archival" above). Only step in if the Content Supply panel flags the rumor guard as blocked (deck can't rotate safely) — that's a signal to generate more content sooner, not something to fix by hand.
+3. **Check `admin-dashboards.php?tab=challenges`'s Content Supply panel** first for batch cadence and KB runway — it's the proactive view. `cron-content-topup.yml` failures in GitHub Actions are still the underlying signal if you need the raw run history, but the panel surfaces the same "overdue batch" / "KB running low" states without checking Actions by hand.
+4. **As requests come in:** Members tab — approve/reject promotion requests (guest → full member); toggle `in_competition` for converted guests. The tab also carries a **full participant roster** (all `challenge_participants`: guests, native-core, promoted) showing email / display name / language / status / created / promotion-requested, with per-row **Delete** and a multiselect **bulk delete** (`delete_participant` / `bulk_delete_participants`, same bulk wiring as the Rumors/Trivia tabs). Deleting a participant cascades its challenge data (CP ledger, answers, duels, tokens) but **never** removes a promoted member's linked core `users` account — the `core_user_id` FK is `ON DELETE SET NULL` on the users side, so only the challenge-side row goes. Use the core admin Users tab to remove an actual account.
+5. **As needed:** Suppressions tab — monitor/manage the email opt-out list (governs Duel "challenge a friend" invites).
+6. **Duels tab is oversight-only for resolution** — duels resolve themselves off race results, no admin action required to settle them. The list has a **created-date sort toggle** (`?duel_sort=newest|oldest`, newest default). The tab does allow **deleting** duels (per-row **Delete** + multiselect **bulk delete**, `delete_duel` / `bulk_delete_duels`) for cleanup of test/bad rows; a delete also removes that duel's awarded CP (`challenge_points` rows keyed `source_ref = "duel:<id>"`, both sides), the same cleanup `resetDuelsForRace()` does — the CP ledger has no FK to `duels`, so it must be cleared explicitly. Duel predictions cascade via their FK. Above that list, the same tab's **Quick Match Queue** panel shows everyone still waiting to be paired (not yet a `duels` row) — read-only, no delete action; a row badged "expired" (race already locked) means it will never pair on its own and is worth a manual look.
+7. **Emergency/manual top-up** outside the Friday schedule: run `bin/generate-rumor-items.js` / `generate-trivia-questions.js` locally (needs `ANTHROPIC_API_KEY`), or trigger `cron-content-topup.yml` manually via `workflow_dispatch`.
 
 ---
 

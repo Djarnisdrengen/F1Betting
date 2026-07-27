@@ -319,7 +319,7 @@ CREATE TABLE IF NOT EXISTS challenge_items (
     explain_da TEXT NOT NULL,
     explain_en TEXT NOT NULL,
     is_real TINYINT(1) NOT NULL,
-    status ENUM('draft','published') NOT NULL DEFAULT 'draft',
+    status ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',
     publish_date DATE NULL,
     source_ref VARCHAR(255) NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -398,7 +398,7 @@ CREATE TABLE IF NOT EXISTS challenge_trivia_questions (
     topic VARCHAR(32) NOT NULL,
     explain_da TEXT NOT NULL,
     explain_en TEXT NOT NULL,
-    status ENUM('draft','published') NOT NULL DEFAULT 'draft',
+    status ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',
     publish_date DATE NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     KEY idx_status_date (status, publish_date)

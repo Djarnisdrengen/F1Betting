@@ -127,6 +127,19 @@ module.exports = {
     //   'e2e-seed'. Not participant-scoped — not swept by cleanup.challenges by participant,
     //   but topic='e2e-seed' IS the cleanup marker (the table has no source_ref column).
 
+    markRumorDeckAnsweredExcept: (params = {}) => call('mark_rumor_deck_answered_except', params),
+    // params: { participant_id, except_item_id } → { ok, marked }
+    //   Records a challenge_answers row for every currently published-and-in-window rumor item
+    //   EXCEPT except_item_id, so that participant's queue is deterministically just the one
+    //   target item regardless of how much real content-topup output coexists in the test DB
+    //   (Real expiry & rotation epic, REQ-608). Direct insert, no CP awarded.
+
+    markTriviaWeekAnsweredExcept: (params = {}) => call('mark_trivia_week_answered_except', params),
+    // params: { participant_id, except_question_id? (''/omit → mark every question in the week),
+    //           week_offset? (0=current ISO week [default], -1=previous week — cron tests) }
+    //   → { ok, marked }
+    //   Trivia counterpart to markRumorDeckAnsweredExcept.
+
     duelRace: (params = {}) => call('seed_duel_race', params),
     // params: { state?: 'open' (default, 2h future) | 'started' (10min past, no result yet —
     //           locked but unresolved, for DUEL-04/DUEL-05) } → { ok, race_id }

@@ -13,6 +13,7 @@
   - [No live environment toggle](#no-live-environment-toggle)
 - [PaddockKB](#paddockkb)
 - [Challenges usage](#challenges-usage)
+  - [Content Supply panel](#content-supply-panel)
 - [E2E fixture modes](#e2e-fixture-modes)
 
 ---
@@ -37,7 +38,7 @@ Dashboards has five section tabs, all served by `public/admin-dashboards.php?tab
 | `oversigt` (default) | `includes/admin-dashboards/oversigt.php` | Cross-cutting overview — composes the other four tabs' own snapshot functions |
 | `keys` | `includes/admin-dashboards/keys.php` + `nogler-rotation-lib.php` | Token/secret age tracking + rotation |
 | `paddockkb` | `includes/admin-dashboards/paddockkb.php` + `paddockkb-lib.php` | PaddockKB ingest health |
-| `challenges` | `includes/admin-dashboards/challenges.php` + `challenges-usage-lib.php` | Paddock Challenges usage analytics (read-only) |
+| `challenges` | `includes/admin-dashboards/challenges.php` + `challenges-usage-lib.php` | Paddock Challenges usage analytics + Content Supply (both read-only) |
 | `actions` | `includes/admin-dashboards/actions.php` (+ `actions-ajax.php`) | GitHub Actions ops dashboard (see `docs/github-actions.md`) |
 
 Full design/architecture history: `epics/Admin settings and dashboards/` (epic, 5 feature docs,
@@ -223,6 +224,40 @@ Per-game "completion %" is real-metric-per-game rather than one forced uniform l
 resolved rate (a genuine unresolved→resolved lifecycle), Rumor or Not/Trivia show correct-answer
 rate (their answers are scored the instant they're submitted, so a literal "completion %" would be
 trivially 100%). See `epics/Admin settings and dashboards/feature-5-challenges-usage-dashboard.md`.
+
+### Content Supply panel
+
+Added 2026-07-27 (`epics/Real expiry & rotation for content-topup/`) as a second panel on the same
+tab, below the usage panel above — not a new top-level tab. `chGetContentHealthSnapshot()`
+(`challenges-usage-lib.php`), still read-only, still no new schema:
+
+- **Live/archived counts** per game — the same predicates `nextRumorItem()`/`nextTriviaQuestion()`
+  use, so these can never disagree with `admin-challenges.php`'s own filtered counts.
+- **Rumor guard-blocked flag** — computed live via `rumorArchiveBudget()` (the same pure function
+  the Monday archival cron step uses), not a persisted "last run" flag, so it always reflects
+  "would a run right now be blocked" and can never go stale between Monday runs.
+- **Batch cadence**, test and live shown as two independent blocks — reuses the existing cached
+  GitHub Actions run data (`ghListWorkflowRunsMulti()`, no new API calls), but needed the *job*-level
+  result of `cron-content-topup.yml`'s latest completed run (not just the run-level status) to tell
+  "test ok, live failed" apart from "both failed," since the workflow fans out into a
+  job-per-(generator, environment) matrix. Jobs are matched by the `(test)`/`(live)` suffix GitHub
+  appends to a matrixed job's display name. Scoped to the single latest completed run, not a
+  multi-run scan — `ghListRunJobs()` already caches a completed run's jobs for 30 days.
+- **KB runway**, per generator per environment — reads
+  `bin/state/{rumor,trivia}-generator-state.<env>.json` off disk. These files are committed by
+  `cron-content-topup.yml` at the **repo root**, outside `public/`; `build-deploy/deploy.js` was
+  extended in this same epic to also upload `bin/state/*.json` to `{remoteDir}/bin/state/` (same
+  non-web-accessible placement as `config.php`, one level above the web root) — without that
+  change the deployed PHP process had no way to see this data at all. Degrades to "Unknown" on a
+  missing/malformed file (`parseGeneratorState()`/`computeKbRunway()` are pure and unit-tested for
+  exactly this — `tests/unit/content-health-harness.php`), never a fabricated number or a fatal.
+
+`chGetUsageSnapshot()`'s `flagCount` (feeding the Oversigt tile) now reflects real Content Supply
+flags — overdue batch, blocked archival, low KB runway — instead of the previous hardcoded `0`.
+
+See `epics/Real expiry & rotation for content-topup/feature-2-content-health-dashboard.md` and
+`docs/paddock-challenges-reference.md`'s "Content expiry & archival" section for the archival
+engine this panel reports on.
 
 ## E2E fixture modes
 

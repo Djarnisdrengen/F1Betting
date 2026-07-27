@@ -117,6 +117,18 @@ async function deploy() {
             process.stdout.write(`  ↑ config.shared.php\n`);
             await client.uploadFrom(sharedSrc, `${remoteDir}/config.shared.php`);
         }
+        // bin/state/*.json (content-topup generator KB-usage state, committed by
+        // cron-content-topup.yml) — deployed one level above public/, same non-web-accessible
+        // placement as config.php, so admin-dashboards' Content Health panel can read it
+        // (Real expiry & rotation epic, REQ-705). Not part of publicDir since bin/ also holds
+        // the Node generator scripts (NFR-101: those must never run on shared hosting) — only
+        // the state JSON needs to reach the server, so it's uploaded on its own, not via a
+        // blanket bin/ upload.
+        const binStateSrc = path.join(__dirname, "../bin/state");
+        if (fs.existsSync(binStateSrc)) {
+            await client.ensureDir(`${remoteDir}/bin/state`);
+            await uploadDir(client, binStateSrc, `${remoteDir}/bin/state`, []);
+        }
         console.log(`✅ Done! Uploaded to ${remoteDir}`);
     } catch (err) {
         console.error("❌ FTP Error:", err.message);

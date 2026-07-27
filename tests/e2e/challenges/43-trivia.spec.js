@@ -54,8 +54,17 @@ test.describe('Trivia', { tag: ['@challenges', '@mobile'] }, () => {
     // TRIV-01 (once-only): revisiting an answered question's reveal URL shows the original
     // result rather than re-prompting — DB-enforced UNIQUE(participant_id, question_id)
     // rejects a resubmission and the POST handler just redirects back to the same reveal.
+    // Scoped to a known participant (REQ-608-style fix): this test needs to revisit a SPECIFIC
+    // question_id, so it can't rely on anonymous play serving "whatever's next" — real
+    // content-topup output coexisting this ISO week could otherwise win the ordering tie-break
+    // and the click would answer a different question than question_ids[0].
     test('an answered question stays answered on revisit', async ({ page }) => {
         const { question_ids } = await seed.triviaWeek({ week_offset: 0 });
+
+        const { participant_id } = await seed.challengeParticipant({ email: tstEmail('trivia_revisit') });
+        const { token } = await seed.challengeAccessToken({ participant_id });
+        await seed.markTriviaWeekAnsweredExcept({ participant_id, except_question_id: question_ids[0] });
+        await page.context().addCookies([{ name: 'ch_access', value: token, url: BASE() }]);
 
         await page.goto('/challenges.php?section=trivia');
         await page.locator('[data-testid="trivia-option"][data-idx="0"]').click();
@@ -124,9 +133,15 @@ test.describe('Trivia weekly cron', { tag: '@challenges' }, () => {
 
     // TRIV-02: a participant who went 6/6 on the previous ISO week gets exactly one +20 CP
     // ledger entry when the cron runs — and a second run is a no-op (idempotent).
+    // The cron's Perfect Week check requires SUM(correct) to equal the week's FULL published
+    // count, not just this test's own 6 seeded questions — if real content-topup output also
+    // published a question that week, the naive fixture would silently no longer be "perfect"
+    // (REQ-608-style fix: mark any coexisting real questions correct too, so this participant's
+    // answered set matches the week's actual total regardless of what else is live).
     test('6/6 previous week awards Perfect Week once, a second run adds nothing', async ({ page }) => {
         const { participant_id } = await seed.challengeParticipant({ email: tstEmail('cron_perfect'), status: 'verified' });
         await seed.triviaWeek({ week_offset: -1, participant_id, correct: '1,1,1,1,1,1' });
+        await seed.markTriviaWeekAnsweredExcept({ participant_id, week_offset: -1 });
 
         await page.setExtraHTTPHeaders({ Authorization: `Bearer ${CRON_SECRET}` });
 
@@ -155,9 +170,12 @@ test.describe('Trivia weekly cron', { tag: '@challenges' }, () => {
     });
 
     // TRIV-03: an ISO week with no published questions is skipped outright — no award, no denial.
+    // Uses ?score_week= to point the cron at a week far enough in the past that no real
+    // content-topup batch could plausibly have published anything there (REQ-608-style fix) —
+    // "today minus 7 days" isn't reliably empty once real weekly batches have accumulated.
     test('an empty previous week is skipped, not evaluated', async ({ page }) => {
         await page.setExtraHTTPHeaders({ Authorization: `Bearer ${CRON_SECRET}` });
-        const res = await page.goto('/cron/challenge_weekly.php');
+        const res = await page.goto('/cron/challenge_weekly.php?score_week=2020-01-06');
         expect(res.status()).toBe(200);
         const text = await page.textContent('body');
         expect(text).toMatch(/no published questions, skipped/);

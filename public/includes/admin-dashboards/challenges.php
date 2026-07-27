@@ -111,6 +111,24 @@ $funnelSteps = [
     ['label' => t('admin_dash_ch_funnel_registered'), 'val' => $funnelRegistered, 'pct' => $funnelParticipated > 0 ? round($funnelRegistered / $funnelParticipated * 100) : 0],
     ['label' => t('admin_dash_ch_funnel_requested'), 'val' => $funnelRequestedMembership, 'pct' => $funnelParticipated > 0 ? round($funnelRequestedMembership / $funnelParticipated * 100) : 0],
 ];
+
+// ── Content Supply (Real expiry & rotation for content-topup, Feature 2) ──
+// Second panel on this same tab (plan.md decision 5) — not a new top-level tab.
+$health = chGetContentHealthSnapshot($db);
+
+function chCadenceBadgeMeta(string $status, bool $overdue): array {
+    if ($overdue) {
+        return ['label' => t('admin_dash_ch_cadence_overdue'), 'color' => '#ef4444'];
+    }
+    // Same hardcoded hex triad Nøgler & Rotation's own badges use (nogler-rotation-lib.php) —
+    // shared visual vocabulary for "ok/warn/bad" across the Dashboards area (plan.md decision 5).
+    return match ($status) {
+        'success'     => ['label' => t('admin_dash_ch_cadence_ok'), 'color' => '#10b981'],
+        'failure'     => ['label' => t('admin_dash_ch_cadence_failed'), 'color' => '#ef4444'],
+        'in_progress' => ['label' => t('admin_dash_ch_cadence_running'), 'color' => '#f59e0b'],
+        default       => ['label' => t('admin_dash_ch_cadence_unknown'), 'color' => '#8b8b96'],
+    };
+}
 ?>
 
 <div class="admin-page-header"><i class="fas fa-trophy"></i><?= t('admin_dash_tab_challenges') ?></div>
@@ -172,4 +190,66 @@ $funnelSteps = [
         <span class="label-mono" style="font-size:13px;color:var(--text-primary);width:64px;text-align:right"><?= $f['val'] ?></span>
     </div>
     <?php endforeach; ?>
+</section>
+
+<section class="section-card" style="padding:18px 20px;margin-top:18px">
+    <h3 style="margin:0 0 14px;font-size:15px"><i class="fas fa-box-archive" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_ch_supply_title') ?></h3>
+
+    <div class="stat-card-grid" style="margin-bottom:16px">
+        <div class="stat-card">
+            <div class="stat-card-label"><?= t('admin_dash_ch_supply_rumor') ?> · <?= t('admin_dash_ch_supply_live') ?></div>
+            <div class="stat-card-value"><?= $health['rumor']['live'] ?></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-label"><?= t('admin_dash_ch_supply_rumor') ?> · <?= t('admin_dash_ch_supply_archived') ?></div>
+            <div class="stat-card-value"><?= $health['rumor']['archived'] ?></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-label"><?= t('admin_dash_ch_supply_trivia') ?> · <?= t('admin_dash_ch_supply_live') ?></div>
+            <div class="stat-card-value"><?= $health['trivia']['live'] ?></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-label"><?= t('admin_dash_ch_supply_trivia') ?> · <?= t('admin_dash_ch_supply_archived') ?></div>
+            <div class="stat-card-value"><?= $health['trivia']['archived'] ?></div>
+        </div>
+    </div>
+
+    <?php if ($health['rumor']['guardBlocked']): ?>
+    <div class="alert alert-warning" style="margin-bottom:16px"><?= t('admin_dash_ch_supply_guard_blocked') ?></div>
+    <?php endif; ?>
+
+    <h4 style="margin:0 0 10px;font-size:13px;color:var(--text-muted);text-transform:uppercase"><?= t('admin_dash_ch_cadence_title') ?></h4>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <?php foreach (['test', 'live'] as $env): $c = $health['cadence'][$env]; $meta = chCadenceBadgeMeta($c['status'], $health['overdue'][$env]); ?>
+        <div style="border:1px solid var(--border-color);border-radius:11px;padding:12px 14px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="label-mono" style="font-size:12px;text-transform:uppercase"><?= strtoupper($env) ?></span>
+                <span class="label-badge" style="padding:3px 8px;border-radius:999px;background:<?= $meta['color'] ?>;color:#fff;font-size:11px"><?= $meta['label'] ?></span>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
+                <?= $c['lastRunAt']
+                    ? sprintf(t('admin_dash_ch_cadence_last_run'), ghRelativeTime(new DateTimeImmutable($c['lastRunAt']), new DateTimeImmutable('now', new DateTimeZone('UTC')), $lang))
+                    : t('admin_dash_ch_cadence_no_run') ?>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+
+    <h4 style="margin:0 0 10px;font-size:13px;color:var(--text-muted);text-transform:uppercase"><?= t('admin_dash_ch_kb_title') ?></h4>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <?php foreach (['rumor' => t('admin_dash_ch_supply_rumor'), 'trivia' => t('admin_dash_ch_supply_trivia')] as $generator => $generatorLabel): ?>
+        <div style="border:1px solid var(--border-color);border-radius:11px;padding:12px 14px">
+            <div style="font-weight:700;font-size:13px;margin-bottom:6px"><?= escape($generatorLabel) ?></div>
+            <?php foreach (['test', 'live'] as $env): $weeks = $health['kbRunway'][$generator][$env]; $low = $weeks !== null && $weeks < KB_RUNWAY_LOW_WEEKS; ?>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0">
+                <span class="label-mono" style="color:var(--text-muted)"><?= strtoupper($env) ?></span>
+                <span style="<?= $low ? 'color:var(--status-warning)' : '' ?>">
+                    <?= $weeks === null ? t('admin_dash_ch_kb_unknown') : sprintf(t('admin_dash_ch_kb_weeks'), round($weeks, 1)) ?>
+                    <?= $low ? ' · ' . t('admin_dash_ch_kb_low') : '' ?>
+                </span>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
 </section>

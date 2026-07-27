@@ -17,10 +17,10 @@ $currentUser = getCurrentUser();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
     $action = $_POST['action'] ?? '';
-    $rumorStatusFilter = in_array($_POST['rumor_status'] ?? '', ['all', 'draft', 'published'], true)
+    $rumorStatusFilter = in_array($_POST['rumor_status'] ?? '', ['all', 'draft', 'published', 'archived'], true)
         ? $_POST['rumor_status'] : 'all';
     // Carried through trivia / duel redirects so a POST returns to the same filtered/sorted view.
-    $triviaStatusFilter = in_array($_POST['trivia_status'] ?? '', ['all', 'draft', 'published'], true)
+    $triviaStatusFilter = in_array($_POST['trivia_status'] ?? '', ['all', 'draft', 'published', 'archived'], true)
         ? $_POST['trivia_status'] : 'all';
     $duelSort = in_array($_POST['duel_sort'] ?? '', ['newest', 'oldest'], true)
         ? $_POST['duel_sort'] : 'newest';
@@ -285,6 +285,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: admin-challenges.php?tab=rumors&rumor_status=' . $rumorStatusFilter);
         exit;
 
+    } elseif ($action === 'archive_rumor_item') {
+        // Manual archive (REQ-607) — same shape as unpublish, a plain status flip; never
+        // touches challenge_answers/challenge_points, so answer history and CP stay intact.
+        $itemId = sanitizeString($_POST['item_id'] ?? '');
+        $db->prepare("UPDATE challenge_items SET status = 'archived' WHERE id = ?")->execute([$itemId]);
+        $_SESSION['flash_success'] = t('admin_ch_rumor_archived');
+        header('Location: admin-challenges.php?tab=rumors&rumor_status=' . $rumorStatusFilter);
+        exit;
+
+    } elseif ($action === 'restore_rumor_item') {
+        // Reverses a mistaken archive (REQ-607) — back to draft for review, same as unpublish's
+        // target state, so a restored item goes through Publish again rather than going live
+        // immediately with whatever publish_date it had before archival.
+        $itemId = sanitizeString($_POST['item_id'] ?? '');
+        $db->prepare("UPDATE challenge_items SET status = 'draft' WHERE id = ?")->execute([$itemId]);
+        $_SESSION['flash_success'] = t('admin_ch_rumor_restored');
+        header('Location: admin-challenges.php?tab=rumors&rumor_status=' . $rumorStatusFilter);
+        exit;
+
     } elseif ($action === 'veto_rumor_draft') {
         $itemId = sanitizeString($_POST['item_id'] ?? '');
         $db->prepare("DELETE FROM challenge_items WHERE id = ? AND status = 'draft'")->execute([$itemId]);
@@ -377,6 +396,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: admin-challenges.php?tab=trivia&trivia_status=' . $triviaStatusFilter);
         exit;
 
+    } elseif ($action === 'archive_trivia_question') {
+        // Manual archive (REQ-607), rumor's counterpart above — never touches
+        // challenge_trivia_answers/challenge_points, answer history and CP stay intact.
+        $questionId = sanitizeString($_POST['question_id'] ?? '');
+        $db->prepare("UPDATE challenge_trivia_questions SET status = 'archived' WHERE id = ?")->execute([$questionId]);
+        $_SESSION['flash_success'] = t('admin_ch_trivia_archived');
+        header('Location: admin-challenges.php?tab=trivia&trivia_status=' . $triviaStatusFilter);
+        exit;
+
+    } elseif ($action === 'restore_trivia_question') {
+        // Reverses a mistaken archive (REQ-607) — back to draft for review before re-publishing.
+        $questionId = sanitizeString($_POST['question_id'] ?? '');
+        $db->prepare("UPDATE challenge_trivia_questions SET status = 'draft' WHERE id = ?")->execute([$questionId]);
+        $_SESSION['flash_success'] = t('admin_ch_trivia_restored');
+        header('Location: admin-challenges.php?tab=trivia&trivia_status=' . $triviaStatusFilter);
+        exit;
+
     } elseif ($action === 'delete_trivia_question') {
         // challenge_trivia_answers.question_id is ON DELETE CASCADE — no separate cleanup needed.
         $questionId = sanitizeString($_POST['question_id'] ?? '');
@@ -387,7 +423,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } elseif (in_array($action, [
         'bulk_publish_trivia', 'bulk_unpublish_trivia', 'bulk_delete_trivia',
+        'bulk_archive_trivia', 'bulk_restore_trivia',
         'bulk_publish_rumor',  'bulk_unpublish_rumor',  'bulk_delete_rumor',
+        'bulk_archive_rumor',  'bulk_restore_rumor',
     ], true)) {
         // Multiselect bulk update — row checkboxes post ids[] (associated to the per-tab bulk
         // form via the HTML5 form= attribute). Table name is a hardcoded literal per branch;
@@ -407,7 +445,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare("DELETE FROM $table WHERE id IN ($ph)");
                 $stmt->execute($ids);
             } else {
-                $status = str_starts_with($action, 'bulk_publish_') ? 'published' : 'draft';
+                // unpublish/restore both land back on 'draft' — restore is just unpublish's
+                // name from the archived side, same target state (REQ-607: reviewable, not
+                // straight back to live).
+                $status = str_starts_with($action, 'bulk_publish_') ? 'published'
+                    : (str_starts_with($action, 'bulk_archive_') ? 'archived' : 'draft');
                 if ($status === 'published') {
                     // Same backfill as the quick-publish handlers above — a NULL (rumor) or
                     // stale-week (trivia) publish_date would leave the bulk-published rows
@@ -496,10 +538,11 @@ switch ($currentTab) {
     case 'rumors':
         // Rumor or Not (REQ-502, extended) — full list by default so published items are no
         // longer invisible once reviewed; ?rumor_status= narrows to just drafts or published.
-        $rumorFilter = in_array($_GET['rumor_status'] ?? '', ['all', 'draft', 'published'], true)
+        $rumorFilter = in_array($_GET['rumor_status'] ?? '', ['all', 'draft', 'published', 'archived'], true)
             ? $_GET['rumor_status'] : 'all';
-        $rumorTotalCount = $tabCounts['rumors'];
-        $rumorDraftCount = (int) $db->query("SELECT COUNT(*) FROM challenge_items WHERE status = 'draft'")->fetchColumn();
+        $rumorTotalCount    = $tabCounts['rumors'];
+        $rumorDraftCount    = (int) $db->query("SELECT COUNT(*) FROM challenge_items WHERE status = 'draft'")->fetchColumn();
+        $rumorArchivedCount = (int) $db->query("SELECT COUNT(*) FROM challenge_items WHERE status = 'archived'")->fetchColumn();
         // answer_count/correct_count (REQ: per-item usage) come from a grouped subquery rather than
         // a plain JOIN so items with zero answers still appear (COALESCE'd to 0), not dropped.
         $rumorAnswerSql = "
@@ -523,10 +566,11 @@ switch ($currentTab) {
         // Trivia questions (REQ-503) — most recent publish date first, so this week's authoring
         // session (both drafts and already-published) sits at the top. ?trivia_status= narrows to
         // just drafts or published, mirroring the Rumors tab's filter.
-        $triviaFilter = in_array($_GET['trivia_status'] ?? '', ['all', 'draft', 'published'], true)
+        $triviaFilter = in_array($_GET['trivia_status'] ?? '', ['all', 'draft', 'published', 'archived'], true)
             ? $_GET['trivia_status'] : 'all';
-        $triviaTotalCount = $tabCounts['trivia'];
-        $triviaDraftCount = (int) $db->query("SELECT COUNT(*) FROM challenge_trivia_questions WHERE status = 'draft'")->fetchColumn();
+        $triviaTotalCount    = $tabCounts['trivia'];
+        $triviaDraftCount    = (int) $db->query("SELECT COUNT(*) FROM challenge_trivia_questions WHERE status = 'draft'")->fetchColumn();
+        $triviaArchivedCount = (int) $db->query("SELECT COUNT(*) FROM challenge_trivia_questions WHERE status = 'archived'")->fetchColumn();
         // answer_count/correct_count (REQ: per-item usage) come from a grouped subquery rather than
         // a plain JOIN so questions with zero answers still appear (COALESCE'd to 0), not dropped.
         $triviaAnswerSql = "

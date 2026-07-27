@@ -9,6 +9,7 @@ const seed = require('../../helpers/seed');
 const { assertDelivered } = require('../../helpers/email');
 
 const tstEmail = (p) => `${p}_${Date.now()}_${Math.floor(Math.random() * 1e4)}@test.localhost`;
+const BASE = () => process.env.BASE_URL;
 
 // .card.mb-1 is the per-item card; the section wrappers around it are .card.mb-3 (or plain
 // .card) and would also match hasText: email since the item card is their descendant. The
@@ -323,6 +324,12 @@ test.describe('Admin rumor drafts', { tag: '@challenges' }, () => {
     // Publish makes it immediately playable on the public page — the admin→player pipeline
     // this whole screen exists to feed. The item stays listed (full list, all statuses) but
     // its data-status flips, same convention as the trivia list below.
+    // Scoped assertion (REQ-608 e2e rewrite): the Publish action stamps publish_date as today,
+    // so real content-topup output published on an earlier date would win nextRumorItem()'s
+    // ORDER BY publish_date ASC tie-break and this item would never be "the" card shown. Instead
+    // of requiring it to literally be next, verify it's servable to a participant who has
+    // already answered everything else currently published — production code is untouched,
+    // only what the test looks for changes.
     test('Publish makes the item playable on the public page', async ({ page }) => {
         const { draft_item_id } = await seed.rumorDeck({ real: [] });
 
@@ -335,7 +342,12 @@ test.describe('Admin rumor drafts', { tag: '@challenges' }, () => {
         await page.waitForURL(/admin-challenges\.php/);
         await expect(draftCard(page, draft_item_id)).toHaveAttribute('data-status', 'published');
 
+        const { participant_id } = await seed.challengeParticipant({ email: tstEmail('rumor_publish') });
+        const { token } = await seed.challengeAccessToken({ participant_id });
+        await seed.markRumorDeckAnsweredExcept({ participant_id, except_item_id: draft_item_id });
+
         await page.context().clearCookies();
+        await page.context().addCookies([{ name: 'ch_access', value: token, url: BASE() }]);
         await page.goto('/challenges.php?section=rumors');
         await expect(page.getByTestId('rumor-card')).toContainText('Test draft item');
     });
@@ -406,6 +418,42 @@ test.describe('Admin rumor drafts', { tag: '@challenges' }, () => {
         await page.goto('/admin-challenges.php?tab=rumors&rumor_status=published');
         await expect(draftCard(page, draft_item_id)).toHaveAttribute('data-status', 'published');
     });
+
+    // REQ-607: Archive retires a published item without deleting it; Restore reverses a
+    // mistaken archive back to draft (not straight back to live) for review before republishing.
+    test('Archive retires a published item, Restore brings it back as draft', async ({ page }) => {
+        const { draft_item_id } = await seed.rumorDeck({ real: [] });
+
+        await page.goto('/admin-challenges.php?tab=rumors');
+        await draftCard(page, draft_item_id).locator('button[name="action"][value="quick_publish_rumor_item"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(draftCard(page, draft_item_id)).toHaveAttribute('data-status', 'published');
+
+        await draftCard(page, draft_item_id).locator('button[name="action"][value="archive_rumor_item"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(draftCard(page, draft_item_id)).toHaveAttribute('data-status', 'archived');
+
+        await draftCard(page, draft_item_id).locator('button[name="action"][value="restore_rumor_item"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(draftCard(page, draft_item_id)).toHaveAttribute('data-status', 'draft');
+    });
+
+    // The Archived status filter (REQ-607) mirrors the existing Drafts/Published filters.
+    test('Archived status filter shows only archived rows', async ({ page }) => {
+        const { draft_item_id } = await seed.rumorDeck({ real: [] });
+
+        await page.goto('/admin-challenges.php?tab=rumors');
+        await draftCard(page, draft_item_id).locator('button[name="action"][value="quick_publish_rumor_item"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+        await draftCard(page, draft_item_id).locator('button[name="action"][value="archive_rumor_item"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+
+        await page.goto('/admin-challenges.php?tab=rumors&rumor_status=archived');
+        await expect(draftCard(page, draft_item_id)).toHaveAttribute('data-status', 'archived');
+
+        await page.goto('/admin-challenges.php?tab=rumors&rumor_status=published');
+        await expect(draftCard(page, draft_item_id)).toHaveCount(0);
+    });
 });
 
 // ─── Rumor bulk multiselect (multi-update) ──────────────────────────────────────
@@ -445,6 +493,26 @@ test.describe('Admin rumor bulk actions', { tag: '@challenges' }, () => {
         await publishBtn.click();
         await page.waitForURL(/admin-challenges\.php/);
         for (const it of items) await expect(card(page, it.id)).toHaveAttribute('data-status', 'published');
+    });
+
+    // REQ-607 bulk variant of the single-row Archive/Restore test above.
+    test('bulk archive then bulk restore flips every selected item', async ({ page }) => {
+        const { items } = await seed.rumorDeck({ real: [1, 0, 1] }); // 3 published (+ 1 draft)
+        await page.goto('/admin-challenges.php?tab=rumors&rumor_status=all');
+
+        const archiveBtn = page.locator('#bulk-rumor button[value="bulk_archive_rumor"]');
+        const restoreBtn = page.locator('#bulk-rumor button[value="bulk_restore_rumor"]');
+        const boxFor = (id) => card(page, id).locator('input[name="ids[]"]');
+
+        for (const it of items) await boxFor(it.id).check();
+        await archiveBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+        for (const it of items) await expect(card(page, it.id)).toHaveAttribute('data-status', 'archived');
+
+        for (const it of items) await boxFor(it.id).check();
+        await restoreBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+        for (const it of items) await expect(card(page, it.id)).toHaveAttribute('data-status', 'draft');
     });
 
     // Bulk delete removes only the checked rows (native confirm — accept the dialog).
@@ -544,6 +612,10 @@ test.describe('Admin trivia authoring', { tag: '@challenges' }, () => {
 
     // Publish makes the question immediately playable on the public page — the admin→player
     // pipeline this screen exists to feed, mirroring the rumor-drafts Publish test above.
+    // Same scoped-assertion fix (REQ-608): real content-topup output published earlier in the
+    // current ISO week would otherwise win nextTriviaQuestion()'s ORDER BY publish_date ASC
+    // tie-break, so verify servability to a participant who's already answered every other
+    // question live this week instead of requiring it to literally be "the" card shown.
     test('Publish makes the question playable on the public page', async ({ page }) => {
         const text = `E2E trivia question ${Date.now()}`;
         await page.goto('/admin-challenges.php?tab=trivia');
@@ -551,9 +623,16 @@ test.describe('Admin trivia authoring', { tag: '@challenges' }, () => {
         await form.locator('button[name="action"][value="publish_trivia_question"]').click();
 
         await page.waitForURL(/admin-challenges\.php/);
-        await expect(questionCard(page, text)).toHaveAttribute('data-status', 'published');
+        const card = questionCard(page, text);
+        await expect(card).toHaveAttribute('data-status', 'published');
+        const questionId = await card.getAttribute('data-question-id');
+
+        const { participant_id } = await seed.challengeParticipant({ email: tstEmail('trivia_publish') });
+        const { token } = await seed.challengeAccessToken({ participant_id });
+        await seed.markTriviaWeekAnsweredExcept({ participant_id, except_question_id: questionId });
 
         await page.context().clearCookies();
+        await page.context().addCookies([{ name: 'ch_access', value: token, url: BASE() }]);
         await page.goto('/challenges.php?section=trivia');
         await expect(page.getByTestId('trivia-card')).toContainText(text);
     });
@@ -590,6 +669,42 @@ test.describe('Admin trivia authoring', { tag: '@challenges' }, () => {
         await confirmDeleteModal(page);
 
         await page.waitForURL(/admin-challenges\.php/);
+        await expect(questionCard(page, text)).toHaveCount(0);
+    });
+
+    // REQ-607: trivia counterpart to the rumor Archive/Restore test above.
+    test('Archive retires a published question, Restore brings it back as draft', async ({ page }) => {
+        const text = `E2E trivia question ${Date.now()}`;
+        await page.goto('/admin-challenges.php?tab=trivia');
+        const form = await fillNewQuestion(page, text);
+        await form.locator('button[name="action"][value="publish_trivia_question"]').click();
+
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(questionCard(page, text)).toHaveAttribute('data-status', 'published');
+
+        await questionCard(page, text).locator('button[name="action"][value="archive_trivia_question"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(questionCard(page, text)).toHaveAttribute('data-status', 'archived');
+
+        await questionCard(page, text).locator('button[name="action"][value="restore_trivia_question"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+        await expect(questionCard(page, text)).toHaveAttribute('data-status', 'draft');
+    });
+
+    // The Archived status filter (REQ-607) mirrors the existing Drafts/Published filters.
+    test('Archived status filter shows only archived questions', async ({ page }) => {
+        const text = `E2E trivia question ${Date.now()}`;
+        await page.goto('/admin-challenges.php?tab=trivia');
+        const form = await fillNewQuestion(page, text);
+        await form.locator('button[name="action"][value="publish_trivia_question"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+        await questionCard(page, text).locator('button[name="action"][value="archive_trivia_question"]').click();
+        await page.waitForURL(/admin-challenges\.php/);
+
+        await page.goto('/admin-challenges.php?tab=trivia&trivia_status=archived');
+        await expect(questionCard(page, text)).toHaveAttribute('data-status', 'archived');
+
+        await page.goto('/admin-challenges.php?tab=trivia&trivia_status=published');
         await expect(questionCard(page, text)).toHaveCount(0);
     });
 });
@@ -630,6 +745,26 @@ test.describe('Admin trivia bulk actions', { tag: '@challenges' }, () => {
         await publishBtn.click();
         await page.waitForURL(/admin-challenges\.php/);
         for (const id of question_ids) await expect(card(page, id)).toHaveAttribute('data-status', 'published');
+    });
+
+    // REQ-607 bulk variant of the single-row Archive/Restore test above.
+    test('bulk archive then bulk restore flips every selected question', async ({ page }) => {
+        const { question_ids } = await seed.triviaWeek(); // 6 published, topic e2e-seed
+        await page.goto('/admin-challenges.php?tab=trivia');
+
+        const archiveBtn = page.locator('#bulk-trivia button[value="bulk_archive_trivia"]');
+        const restoreBtn = page.locator('#bulk-trivia button[value="bulk_restore_trivia"]');
+        const boxFor = (id) => card(page, id).locator('input[name="ids[]"]');
+
+        for (const id of question_ids) await boxFor(id).check();
+        await archiveBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+        for (const id of question_ids) await expect(card(page, id)).toHaveAttribute('data-status', 'archived');
+
+        for (const id of question_ids) await boxFor(id).check();
+        await restoreBtn.click();
+        await page.waitForURL(/admin-challenges\.php/);
+        for (const id of question_ids) await expect(card(page, id)).toHaveAttribute('data-status', 'draft');
     });
 
     // Bulk delete removes only the checked questions (native confirm — accept the dialog).
