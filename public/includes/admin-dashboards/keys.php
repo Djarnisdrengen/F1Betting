@@ -101,8 +101,8 @@ $today = date('Y-m-d');
     </div>
 </div>
 
-<div style="display:grid;grid-template-columns:130px 1fr;gap:18px;align-items:center;margin-bottom:20px">
-    <div style="display:flex;justify-content:center">
+<div class="dash-kpi-row">
+    <div class="dash-kpi-ringwrap">
         <div class="dash-health-ring" style="background:conic-gradient(<?= $healthColor ?> <?= $kpis['health'] ?>%, var(--border-color) 0)">
             <div class="dash-health-ring-inner">
                 <span class="dash-health-score"><?= $kpis['health'] ?></span>
@@ -123,9 +123,9 @@ $today = date('Y-m-d');
 <section class="section-card" style="padding:16px 18px;margin-bottom:18px">
     <h3 style="margin:0 0 12px;font-size:15px"><i class="fas fa-plug" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_nr_tokens_title') ?></h3>
     <?php foreach ($tokens as $t): $meta = $tokenBadgeMeta[$t['badge']]; ?>
-    <div data-item-key="<?= escape($t['key']) ?>" style="display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-color)">
+    <div class="dash-token-row" data-item-key="<?= escape($t['key']) ?>">
         <i class="<?= $t['icon'] ?>" style="color:var(--text-secondary);font-size:17px;text-align:center"></i>
-        <div style="min-width:0">
+        <div class="dash-token-name">
             <div style="font-weight:700;font-size:13px"><?= escape($t['name']) ?></div>
             <div style="font-size:11px;color:var(--text-muted);margin-top:1px">
                 <?php if ($t['rotatedAt']): ?>
@@ -133,7 +133,7 @@ $today = date('Y-m-d');
                 <?php endif; ?>
             </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px">
+        <div class="dash-token-meta">
             <div style="display:flex;align-items:center;gap:9px">
                 <span class="label-mono" style="font-size:11px;color:var(--text-secondary)">
                     <?php if ($t['daysUntilExpiry'] === null): ?>
@@ -168,19 +168,19 @@ $today = date('Y-m-d');
     <h3 style="margin:0 0 4px;font-size:15px"><i class="fas fa-file-shield" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_nr_secrets_title') ?></h3>
     <div style="font-size:12px;color:var(--text-muted);margin:0 0 12px"><?= t('admin_dash_nr_secrets_hint') ?></div>
     <?php foreach ($secrets as $s): $meta = $secretBadgeMeta[$s['badge']]; $barColor = $s['badge'] === 'over' ? '#ef4444' : ($s['badge'] === 'due' ? '#f59e0b' : '#10b981'); ?>
-    <div data-item-key="<?= escape($s['key']) ?>" data-mode="<?= escape($s['mode']) ?>" style="display:grid;grid-template-columns:24px 1.4fr 1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-color)">
+    <div class="dash-secret-row" data-item-key="<?= escape($s['key']) ?>" data-mode="<?= escape($s['mode']) ?>">
         <i class="<?= $s['icon'] ?>" style="color:var(--text-muted);font-size:13px;text-align:center"></i>
-        <div style="min-width:0">
+        <div class="dash-secret-name">
             <div style="font-family:var(--font-mono);font-weight:700;font-size:13px"><?= escape($s['name']) ?></div>
             <div style="font-size:11px;color:var(--text-muted)"><?= $s['rotatedBy'] ? escape($s['rotatedBy']) : '' ?></div>
         </div>
-        <div>
+        <div class="dash-secret-progress">
             <div class="dash-progress-track"><div class="dash-progress-fill" style="width:<?= $s['progressPct'] ?>%;background:<?= $barColor ?>"></div></div>
             <div class="label-mono" style="font-size:10px;color:var(--text-muted);margin-top:4px">
                 <?= $s['ageDays'] === null ? t('admin_dash_nr_age_unknown') : escape(sprintf(t('admin_dash_nr_age_of_policy'), $s['ageDays'], $s['policyDays'])) ?>
             </div>
         </div>
-        <span class="label-badge" style="padding:3px 8px;border-radius:999px;background:<?= $meta['color'] ?>;color:#fff;font-size:11px;justify-self:end"><?= escape($meta['label']) ?></span>
+        <span class="label-badge" style="padding:3px 8px;border-radius:999px;background:<?= $meta['color'] ?>;color:#fff;font-size:11px"><?= escape($meta['label']) ?></span>
         <?php if ($s['mode'] === 'auto'): ?>
             <form method="POST" data-confirm-msg="<?= escape(t('admin_dash_nr_rotate_confirm')) ?>">
                 <?= csrfField() ?>

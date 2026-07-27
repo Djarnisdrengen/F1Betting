@@ -4145,6 +4145,39 @@ body.font-system {
 .dash-details summary { cursor: pointer; list-style: none; }
 .dash-details summary::-webkit-details-marker { display: none; }
 
+/* Token/secret rows: named grid-areas (not extra wrapper elements — Playwright specs
+   locate the action form/details as a direct child of [data-item-key], e.g.
+   `row.locator('> form')`, so the DOM depth must stay flat). Desktop keeps the
+   original single-row grid; mobile (below) remaps the same items into icon+name /
+   progress bar / badge+action lines instead of squeezing 5 fixed columns into one
+   unreadable sliver — see "Admin Settings (standalone).html" in
+   epics/Admin area redesign for the mobile reference. */
+.dash-token-row {
+    display: grid; grid-template-columns: 30px 1fr auto; grid-template-areas: "icon name meta";
+    gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color);
+}
+.dash-token-row > i { grid-area: icon; }
+.dash-token-name { grid-area: name; min-width: 0; }
+.dash-token-meta { grid-area: meta; display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+
+.dash-secret-row {
+    display: grid; grid-template-columns: 24px 1.4fr 1fr auto auto;
+    grid-template-areas: "icon name progress badge action";
+    gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gold);
+}
+.dash-secret-row > i { grid-area: icon; }
+.dash-secret-name { grid-area: name; min-width: 0; }
+.dash-secret-progress { grid-area: progress; }
+.dash-secret-row > .label-badge { grid-area: badge; justify-self: end; }
+.dash-secret-row > form, .dash-secret-row > details { grid-area: action; }
+
+/* Health ring + KPI stat-cards: desktop keeps the ring in its own fixed column next
+   to the auto-fit .stat-card-grid. Mobile (below) flattens .stat-card-grid via
+   display:contents and explicitly places all 7 boxes into a 2-column, 3-then-4-row
+   layout instead of one long single-column scroll. */
+.dash-kpi-row { display: grid; grid-template-columns: 130px 1fr; gap: 18px; align-items: center; margin-bottom: 20px; }
+.dash-kpi-ringwrap { display: flex; justify-content: center; }
+
 .dash-tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .dash-tile { cursor: pointer; border: 1px solid var(--border-color); border-radius: 13px; background: var(--bg-card); padding: 18px; display: flex; flex-direction: column; gap: 13px; transition: all 0.2s; }
 .dash-tile:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(225,6,0,0.15); border-color: var(--f1-red); }
@@ -4156,6 +4189,34 @@ body.font-system {
 
 @media (max-width: 768px) {
     .dash-tile-grid { grid-template-columns: 1fr; }
+
+    .dash-token-row {
+        grid-template-columns: auto 1fr;
+        grid-template-areas: "icon name" "meta meta";
+        row-gap: 10px;
+    }
+    .dash-token-meta { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+
+    .dash-secret-row {
+        grid-template-columns: auto 1fr;
+        grid-template-areas: "icon name" "progress progress" "badge action";
+        row-gap: 10px;
+    }
+    .dash-secret-row > .label-badge { justify-self: start; }
+    .dash-secret-row > form, .dash-secret-row > details { justify-self: end; }
+
+    .dash-kpi-row { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, auto); row-gap: 14px; }
+    .dash-kpi-row .stat-card-grid { display: contents; }
+    .dash-kpi-ringwrap {
+        grid-column: 1; grid-row: 1;
+        background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 16px;
+    }
+    .dash-kpi-row .stat-card-grid > .stat-card:nth-child(1) { grid-column: 1; grid-row: 2; }
+    .dash-kpi-row .stat-card-grid > .stat-card:nth-child(2) { grid-column: 1; grid-row: 3; }
+    .dash-kpi-row .stat-card-grid > .stat-card:nth-child(3) { grid-column: 2; grid-row: 1; }
+    .dash-kpi-row .stat-card-grid > .stat-card:nth-child(4) { grid-column: 2; grid-row: 2; }
+    .dash-kpi-row .stat-card-grid > .stat-card:nth-child(5) { grid-column: 2; grid-row: 3; }
+    .dash-kpi-row .stat-card-grid > .stat-card:nth-child(6) { grid-column: 2; grid-row: 4; }
 }
 
 @media (max-width: 768px) {

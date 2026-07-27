@@ -47,11 +47,25 @@ function nrSecretConfig(): array {
             'name' => 'MFA_KEY', 'configConst' => 'MFA_KEY', 'icon' => 'fas fa-shield-halved',
             'policyDays' => 365, 'mode' => 'record',
         ],
+        // Record-only, like RESEND_API_KEY above: an external provider credential — a dedicated
+        // Anthropic API key named "paddock-challenges-simulation" in the Anthropic console, used
+        // only by bin/simulate-challenges.js, and deliberately separate from the shared
+        // ANTHROPIC_API_KEY that cron-content-topup.yml / bin/generate-rumor-items.js /
+        // generate-trivia-questions.js use (see docs/paddock-challenges-reference.md). No
+        // configConst: unlike every other entry here, this credential is never loaded into
+        // config.php at all — it lives in build-deploy/.env locally (gitignored) and, if wired
+        // into CI, its own GitHub Actions secret. Still not a Token (nrTokenConfig()): Anthropic
+        // API keys carry no provider-set expiry date to record, so age-vs-policy (like
+        // RESEND_API_KEY) is the better fit than the Tokens section's expiry-countdown model.
+        'anthropic_simulation_key' => [
+            'name' => 'Anthropic — paddock-challenges-simulation', 'configConst' => null,
+            'icon' => 'fas fa-robot', 'policyDays' => 90, 'mode' => 'record',
+        ],
         // Auto-rotatable per Djarnis's explicit 2026-07-23 decision (not the original v1
         // default — see feature-3-nogler-rotation.md): rotating either of these breaks CI/cron
         // until the matching GitHub Actions secret (INTEGRATION_SEED_TOKEN_TEST /
         // CRON_SECRET[_TEST]) is updated to match — no user-facing lockout, unlike MFA_KEY/
-        // PASSWORD_PEPPER below, which stay record-only because rotating those invalidates
+        // PASSWORD_PEPPER above, which stay record-only because rotating those invalidates
         // every existing user's 2FA/password immediately.
         'integration_seed_token' => [
             'name' => 'INTEGRATION_SEED_TOKEN', 'configConst' => 'INTEGRATION_SEED_TOKEN', 'icon' => 'fas fa-vial',
@@ -66,20 +80,6 @@ function nrSecretConfig(): array {
         'challenge_invite_secret' => [
             'name' => 'CHALLENGE_INVITE_SECRET', 'configConst' => 'CHALLENGE_INVITE_SECRET', 'icon' => 'fas fa-comments',
             'policyDays' => 180, 'mode' => 'auto',
-        ],
-        // Record-only, like RESEND_API_KEY above: an external provider credential — a dedicated
-        // Anthropic API key named "paddock-challenges-simulation" in the Anthropic console, used
-        // only by bin/simulate-challenges.js, and deliberately separate from the shared
-        // ANTHROPIC_API_KEY that cron-content-topup.yml / bin/generate-rumor-items.js /
-        // generate-trivia-questions.js use (see docs/paddock-challenges-reference.md). No
-        // configConst: unlike every other entry here, this credential is never loaded into
-        // config.php at all — it lives in build-deploy/.env locally (gitignored) and, if wired
-        // into CI, its own GitHub Actions secret. Still not a Token (nrTokenConfig()): Anthropic
-        // API keys carry no provider-set expiry date to record, so age-vs-policy (like
-        // RESEND_API_KEY) is the better fit than the Tokens section's expiry-countdown model.
-        'anthropic_simulation_key' => [
-            'name' => 'Anthropic — paddock-challenges-simulation', 'configConst' => null,
-            'icon' => 'fas fa-robot', 'policyDays' => 90, 'mode' => 'record',
         ],
     ];
 }
