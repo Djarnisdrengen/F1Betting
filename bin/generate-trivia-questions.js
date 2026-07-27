@@ -23,6 +23,7 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../build-deploy/.env') });
 const { readPhpConfig } = require('../build-deploy/php-config');
+const { importWithRetry } = require('./lib/import-with-retry');
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5';
@@ -190,13 +191,15 @@ async function main() {
 
     const status = publish ? 'published' : 'draft';
     console.log(`📤 Importing ${items.length} ${status} question(s) to ${baseUrl} (${env}), publish_date ${publishDate}...`);
-    const res = await fetch(`${baseUrl}/tools/import-trivia-drafts.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ items, status }),
-    });
-    const body = await res.json();
-    if (!res.ok || !body.ok) {
+    let result;
+    try {
+        result = await importWithRetry(`${baseUrl}/tools/import-trivia-drafts.php`, token, { items, status });
+    } catch (e) {
+        console.error(`❌ Import failed after retries: ${e.message}`);
+        process.exit(1);
+    }
+    const body = result.body;
+    if (!result.ok) {
         console.error('❌ Import failed:', body);
         process.exit(1);
     }

@@ -182,6 +182,20 @@ no new secrets to add).
 
 **Timeout:** 25 minutes per job.
 
+**Import retry (added 2026-07-27):** the scheduled 2026-07-24 run drafted content successfully
+in both `rumors (live)` and `trivia (live)` but the import POST to
+`import-rumor-drafts.php`/`import-trivia-drafts.php` came back as an HTML page instead of JSON —
+this host's WAF is documented (`docs/cron-jobs.md`) to sometimes challenge non-browser traffic,
+and the leading theory is the four-job burst (test+live × rumors+trivia all firing within the
+same few seconds) tripped it; a manual re-run hitting only the two live jobs succeeded on the
+first attempt minutes later, consistent with a transient flake rather than a persistent block.
+Both generators now POST via `bin/lib/import-with-retry.js`, which retries up to 3 attempts
+(3s/6s backoff) on a network error or non-JSON response, but never retries a well-formed
+`{ ok: false }` (a real rejection — bad token/payload — that a retry wouldn't fix). This raises
+the odds a transient WAF hiccup self-heals within the same run instead of silently leaving that
+week's live content empty; it's not a confirmed fix for the WAF's root behavior. If a live job
+still fails after retries, that's a stronger signal to take to hosting support.
+
 ---
 
 ## Monthly Security Review Workflow
