@@ -81,7 +81,7 @@
                 <?= t('betting_window_config') ?>
             </p>
             <div class="grid grid-2 mb-2">
-                <div class="form-group">
+                <div class="form-group form-group-inline">
                     <label class="form-label"><?= t('hours_before_race') ?></label>
                     <input type="number" name="betting_window_hours" class="form-input" value="<?= intval($settings['betting_window_hours'] ?? 48) ?>" min="1" max="168">
                 </div>
@@ -97,19 +97,19 @@
                 <?= t('points_config') ?>
             </p>
             <div class="grid grid-4 mb-2">
-                <div class="form-group">
+                <div class="form-group form-group-inline">
                     <label class="form-label flex items-center gap-1"><span class="position-badge position-1">P1</span> <?= t('points_label_heading') ?></label>
                     <input type="number" name="points_p1" class="form-input" value="<?= intval($settings['points_p1'] ?? 25) ?>" min="0" max="100">
                 </div>
-                <div class="form-group">
+                <div class="form-group form-group-inline">
                     <label class="form-label flex items-center gap-1"><span class="position-badge position-2">P2</span> <?= t('points_label_heading') ?></label>
                     <input type="number" name="points_p2" class="form-input" value="<?= intval($settings['points_p2'] ?? 18) ?>" min="0" max="100">
                 </div>
-                <div class="form-group">
+                <div class="form-group form-group-inline">
                     <label class="form-label flex items-center gap-1"><span class="position-badge position-3">P3</span> <?= t('points_label_heading') ?></label>
                     <input type="number" name="points_p3" class="form-input" value="<?= intval($settings['points_p3'] ?? 15) ?>" min="0" max="100">
                 </div>
-                <div class="form-group">
+                <div class="form-group form-group-inline">
                     <label class="form-label"><?= t('wrong_position') ?></label>
                     <input type="number" name="points_wrong_pos" class="form-input" value="<?= intval($settings['points_wrong_pos'] ?? 5) ?>" min="0" max="100">
                 </div>
@@ -123,7 +123,7 @@
             <p class="text-muted mb-2" style="font-size: 0.875rem;">
                 <?= t('bet_size_desc') ?>
             </p>
-            <div class="form-group mb-2" style="max-width: 200px;">
+            <div class="form-group form-group-inline mb-2">
                 <label class="form-label"><?= t('bet_size_label') ?></label>
                 <input type="number" name="bet_size" class="form-input" value="<?= intval($settings['bet_size'] ?? 10) ?>" min="1" max="1000">
             </div>

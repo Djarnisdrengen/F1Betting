@@ -868,6 +868,22 @@ body.clubhouse .bet-item.my-bet {
 
 .form-input[disabled] { overflow: hidden; text-overflow: ellipsis; }
 
+/* Label + input on one row, narrow input (e.g. admin settings number fields) */
+.form-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-group-inline .form-label {
+    margin-bottom: 0;
+}
+
+.form-group-inline .form-input {
+    width: 70px;
+    flex: 0 0 auto;
+}
+
 .form-input:focus,
 .form-select:focus {
     outline: none;
