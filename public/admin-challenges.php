@@ -265,13 +265,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // publish_rumor_draft above, which is reachable only from inside the expanded edit
         // form and always carries the full field set). Posting just item_id through the
         // full-field UPDATE would blank out the item's text; this exists to avoid that.
-        // A NULL publish_date (e.g. a row imported before the generator/import endpoint set
-        // one) would leave the item published-but-invisible forever, since nextRumorItem()
-        // requires publish_date <= CURDATE() — backfill to today so Publish always means visible now.
+        // A NULL or future publish_date (e.g. a row imported before the generator/import
+        // endpoint set one, or content-topup's "upcoming Monday" stamp) would leave the item
+        // published-but-invisible until that date, since nextRumorItem() requires
+        // publish_date <= CURDATE() — backfill to today so Publish always means visible now.
         $itemId = sanitizeString($_POST['item_id'] ?? '');
         $db->prepare("
             UPDATE challenge_items
-            SET status = 'published', publish_date = COALESCE(publish_date, CURDATE())
+            SET status = 'published', publish_date = IF(publish_date IS NULL OR publish_date > CURDATE(), CURDATE(), publish_date)
             WHERE id = ?
         ")->execute([$itemId]);
         $_SESSION['flash_success'] = t('admin_ch_rumor_published');
@@ -451,12 +452,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $status = str_starts_with($action, 'bulk_publish_') ? 'published'
                     : (str_starts_with($action, 'bulk_archive_') ? 'archived' : 'draft');
                 if ($status === 'published') {
-                    // Same backfill as the quick-publish handlers above — a NULL (rumor) or
-                    // stale-week (trivia) publish_date would leave the bulk-published rows
-                    // invisible despite status='published'.
+                    // Same backfill as the quick-publish handlers above — a NULL or future
+                    // (rumor) / stale-week (trivia) publish_date would leave the bulk-published
+                    // rows invisible despite status='published'.
                     $dateFix = $isTrivia
                         ? "publish_date = IF(publish_date IS NULL OR YEARWEEK(publish_date, 3) != YEARWEEK(CURDATE(), 3), CURDATE(), publish_date)"
-                        : "publish_date = COALESCE(publish_date, CURDATE())";
+                        : "publish_date = IF(publish_date IS NULL OR publish_date > CURDATE(), CURDATE(), publish_date)";
                     $stmt = $db->prepare("UPDATE $table SET status = ?, $dateFix WHERE id IN ($ph)");
                 } else {
                     $stmt = $db->prepare("UPDATE $table SET status = ? WHERE id IN ($ph)");
