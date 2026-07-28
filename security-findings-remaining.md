@@ -5,6 +5,18 @@ Working file — the deferred items from the security review. F1–F5 (Critical/
 
 Severity: Medium / Low / Info. "Status" reflects what the F1–F5 work already changed incidentally.
 
+**Nightly scanner false positives (2026-07-28):** the nightly report showed 7 FAIL / 1 WARN on live
+(HSTS, CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy all "missing";
+`profile.php` change-password "reachable without a session"; login rate-limiting "not observed"). All
+were false positives from `tests/security/security.js` — Simply.com's edge WAF (blocks non-browser
+clients with 454/455, per `docs/gotchas.md`) intercepts some of the scanner's raw Node `https` requests
+on live and returns its own block page instead of proxying to PHP/Apache, and sections A/B/K didn't
+have the "was this even a PHP response" guard that sections C/D/E/I already had. Verified live with a
+real client (Playwright's `request` context, same requests) that every header is present and
+`profile.php` correctly 302s unauthenticated POSTs to `/login.php` — no application code was wrong.
+Fixed by adding an `isWafBlocked()` guard to `security.js` (sections A, B, and K's change-password +
+rate-limit checks) so WAF interception downgrades to `info`/skipped instead of a false `fail`/`warn`.
+
 ---
 
 ## F6 — Secrets & tokens transmitted in URL query strings — **Medium** — 🚧 In progress
@@ -82,6 +94,8 @@ is no per-account lockout, and the same IP bucket is shared with the MFA challen
   across `tests/e2e/auth/*.spec.js`, which share one CI runner IP). Fixed the "3 vs 5" comment drift.
 - **Effort:** medium. **Files:** `functions.php`, `login.php`, `mfa_challenge.php`, `webauthn.php`,
   `database/schema.sql`, `database/add_login_attempts_scope.sql`, `database/migrations.json`.
+- **Nightly scanner note (2026-07-28):** this fix is deployed and working — the nightly report's WARN on
+  this check was a WAF false positive, not a regression. See the intro note above.
 
 ## F8 — SMTP TLS certificate verification disabled — **Medium** — ✅ Fixed
 `public/includes/smtp.php:87-90`: `verify_peer=false`, `verify_peer_name=false`,

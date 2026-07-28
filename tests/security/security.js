@@ -123,6 +123,16 @@ function parseCookies(setCookieHeaders) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// Simply.com's edge WAF returns its own non-standard 454/455 status for requests it
+// flags as non-browser traffic (project memory: "Simply.com WAF blocks curl with
+// 454/455"; see docs/gotchas.md and tests/e2e/admin/20-dashboards-access.spec.js).
+// This scanner's raw Node `https` client hits that WAF on live for some requests —
+// sections C/D/E/I already treat a non-200/non-expected-redirect status as
+// inconclusive rather than a finding; this helper gives sections A/B/K the same guard.
+function isWafBlocked(res) {
+    return res.status === 454 || res.status === 455;
+}
+
 // ─── Progress spinner ──────────────────────────────────────────────────────────
 
 const FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -271,6 +281,10 @@ async function checkTransport() {
             info('A', 'Homepage redirect', `${BASE_URL} → HTTP ${rootRes.status} ${rootRes.headers.location || ''} — security headers checked on /index.php instead`);
         }
         const res = await request(`${BASE_URL}/index.php`);
+        if (isWafBlocked(res)) {
+            info('A', 'HSTS header', `HTTP ${res.status} — page not returned by PHP (WAF), check skipped`);
+            return;
+        }
         const hsts = res.headers['strict-transport-security'];
         if (!hsts) {
             fail('A', 'HSTS header present', 'Strict-Transport-Security header missing', 'CWE-319',
@@ -304,6 +318,10 @@ async function checkSecurityHeaders() {
         // Use index.php — a guaranteed PHP response. The bare root URL may return
         // a proxy-level redirect before PHP runs, carrying no PHP-set headers.
         const res = await request(`${BASE_URL}/index.php`);
+        if (isWafBlocked(res)) {
+            info('B', 'Security headers', `HTTP ${res.status} — page not returned by PHP (WAF), check skipped`);
+            return;
+        }
         headers = res.headers;
     } catch (e) {
         fail('B', 'Security headers', `Request failed: ${e.message}`); return;
@@ -980,11 +998,13 @@ async function checkApplicationHardening() {
         const wrongPwd  = 'WrongPwd_RateLimitTest_XYZ!';
         let rateLimited = false;
         let rateLimitStatus = 0;
+        let cleanReads = 0; // attempts that actually reached PHP (not WAF-blocked)
         for (let i = 0; i < 6; i++) {
             // 500 ms gap keeps us below LiteSpeed's flood-protection threshold so we
             // test our PHP rate-limiting code, not the web server's connection limiter.
             if (i > 0) await new Promise(r => setTimeout(r, 500));
             const pageRes = await request(`${BASE_URL}/login.php`);
+            if (isWafBlocked(pageRes)) continue; // WAF page carries no CSRF token — this attempt never reached PHP
             const csrf    = extractCsrfToken(pageRes.body);
             const cookies = parseCookies(pageRes.headers['set-cookie']);
             const res = await postForm(
@@ -992,6 +1012,8 @@ async function checkApplicationHardening() {
                 { email: fakeEmail, password: wrongPwd, csrf_token: csrf },
                 { headers: { Cookie: cookies } }
             );
+            if (isWafBlocked(res)) continue; // WAF blocked the POST before login.php's isRateLimited() ran
+            cleanReads++;
             // Only 429 (+ standard rate-limit headers) count as PHP-level blocking.
             // 400/503 come from LiteSpeed's own flood limiter and are not our code.
             if (res.status === 429 || res.headers['retry-after'] || res.headers['x-ratelimit-limit']) {
@@ -1000,10 +1022,12 @@ async function checkApplicationHardening() {
                 break;
             }
         }
-        if (rateLimited) {
+        if (!rateLimited && cleanReads === 0) {
+            info('K', 'Rate limiting: login', 'All attempts were WAF-blocked (HTTP 454/455) before reaching PHP — check inconclusive');
+        } else if (rateLimited) {
             pass('K', 'Rate limiting: login', `HTTP ${rateLimitStatus} after rapid attempts — server is rate limiting`);
         } else {
-            warn('K', 'Rate limiting: login', '6 rapid login attempts — no rate-limiting response observed', 'CWE-307',
+            warn('K', 'Rate limiting: login', `${cleanReads} rapid login attempt(s) reached PHP — no rate-limiting response observed`, 'CWE-307',
                 'Add rate limiting to login.php: DB-level counter per IP/email, fail2ban, or mod_evasive in .htaccess.');
         }
     } catch (e) {
@@ -1069,6 +1093,8 @@ async function checkApplicationHardening() {
             warn('K', 'Change password: requires auth',
                 `Redirects to "${loc}" but not login — auth guard may be missing`, 'CWE-306',
                 'Ensure requireLogin() is called at the top of profile.php before processing any POST.');
+        } else if (isWafBlocked(res)) {
+            info('K', 'Change password: requires auth', `HTTP ${res.status} — page not returned by PHP (WAF), check skipped`);
         } else {
             fail('K', 'Change password: requires auth',
                 `HTTP ${res.status} — endpoint reachable without a session`, 'CWE-306',
