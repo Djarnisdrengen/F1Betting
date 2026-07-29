@@ -528,11 +528,16 @@ switch ($currentTab) {
         // core_user_id is carried only to badge promoted/native rows — deleting a participant here
         // never removes a linked users account (the FK is ON DELETE SET NULL on the users side; we
         // delete the participant, not the user). Child challenge rows cascade via their own FKs.
+        // LEFT JOIN users for display fallback only — native rows carry email/display_name as NULL
+        // by design (identity lives on the linked users row), so the roster showed bare "—" for
+        // them. core_* columns are display-only; kind detection below still reads the raw cp.email.
         $allParticipants = $db->query("
-            SELECT id, email, display_name, language, status,
-                   created_at, promotion_requested_at, core_user_id
-            FROM challenge_participants
-            ORDER BY created_at DESC
+            SELECT cp.id, cp.email, cp.display_name, cp.language, cp.status,
+                   cp.created_at, cp.promotion_requested_at, cp.core_user_id,
+                   u.display_name AS core_display_name, u.email AS core_email
+            FROM challenge_participants cp
+            LEFT JOIN users u ON u.id = cp.core_user_id
+            ORDER BY cp.created_at DESC
         ")->fetchAll();
         break;
 

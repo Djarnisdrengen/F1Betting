@@ -102,7 +102,9 @@
     if (empty($p['email']))              { $kind = 'native';   $kindClass = 'soon'; }
     elseif (!empty($p['core_user_id']))  { $kind = 'promoted'; $kindClass = 'open'; }
     else                                 { $kind = 'guest';    $kindClass = 'soon'; }
-    $deleteName = $p['display_name'] ?: ($p['email'] ?: $p['id']);
+    $displayName = $p['display_name'] ?: $p['core_display_name'];
+    $displayEmail = $p['email'] ?: $p['core_email'];
+    $deleteName = $displayName ?: ($displayEmail ?: $p['id']);
 ?>
 <div class="hf-racefull" data-testid="participant-row"
      data-participant-id="<?= escape($p['id']) ?>" data-kind="<?= $kind ?>">
@@ -112,11 +114,11 @@
         </label>
         <div class="hf-racefull-info">
             <div class="hf-racename">
-                <?= escape($p['display_name'] ?: '—') ?>
+                <?= escape($displayName ?: '—') ?>
                 <span class="hf-badge <?= $kindClass ?>"><?= t('admin_ch_participant_badge_' . $kind) ?></span>
             </div>
             <div class="hf-racemeta">
-                <?= $p['email'] ? escape($p['email']) : '—' ?>
+                <?= $displayEmail ? escape($displayEmail) : '—' ?>
                 · <?= escape(strtoupper($p['language'])) ?>
                 · <span class="hf-badge <?= $p['status'] === 'verified' ? 'open' : 'soon' ?>"><?= t('admin_ch_status_' . $p['status']) ?></span>
                 · <?= t('admin_ch_participant_created') ?> <?= escape(date('d M Y', strtotime($p['created_at']))) ?>

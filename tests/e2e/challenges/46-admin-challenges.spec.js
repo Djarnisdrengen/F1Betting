@@ -289,6 +289,23 @@ test.describe('Admin participant roster & delete', { tag: '@challenges' }, () =>
 
         await expect(row(page, participant_id)).toHaveCount(0);
     });
+
+    // A native-core row (auto-created on first hub visit by an already-logged-in site user) has
+    // email/display_name NULL on the participant record itself — identity lives on the linked
+    // users row via core_user_id. The roster must fall back to that linked row for display
+    // instead of showing bare "—" placeholders.
+    test('a native core participant falls back to the linked user\'s name/email', async ({ page }) => {
+        const email = tstEmail('rost04');
+        const { user_id } = await seed.convertedGuest({ email, display_name: 'Native Fallback User', link_participant: 0 });
+        const { participant_id } = await seed.challengeParticipant({ email: '', core_user_id: user_id });
+
+        await page.goto('/admin-challenges.php?tab=members');
+        const r = row(page, participant_id);
+        await expect(r).toBeVisible();
+        await expect(r).toHaveAttribute('data-kind', 'native');
+        await expect(r).toContainText('Native Fallback User');
+        await expect(r).toContainText(email);
+    });
 });
 
 // ─── Rumor drafts (Phase 3, REQ-502) ────────────────────────────────────────────
