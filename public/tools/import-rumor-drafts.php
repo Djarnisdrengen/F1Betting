@@ -49,6 +49,11 @@ foreach ($items as $i => $item) {
         continue;
     }
 
+    // A per-item "draft" override lets the generator's pre-import review pass (fact-check +
+    // Danish translation quality, bin/lib/content-review.js) force one flagged row to stay a
+    // draft even when the batch overall is auto-publishing — never the other way round.
+    $rowStatus = (($item['status'] ?? null) === 'draft') ? 'draft' : $status;
+
     $id = generateUUID();
     $stmt->execute([
         $id,
@@ -59,7 +64,7 @@ foreach ($items as $i => $item) {
         trim($item['explain_da'] ?? ''),
         trim($item['explain_en'] ?? ''),
         $item['is_real'] ? 1 : 0,
-        $status,
+        $rowStatus,
         $item['source_ref'] ?? null,
         $item['publish_date'] ?? date('Y-m-d'),
     ]);

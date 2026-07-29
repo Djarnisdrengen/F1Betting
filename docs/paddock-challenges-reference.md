@@ -48,6 +48,7 @@ public/
 bin/
 ├── generate-rumor-items.js     drafts Rumor-or-Not cards from paddock-rumors KB, via Claude
 ├── generate-trivia-questions.js drafts Trivia questions from paddock-rumors KB, via Claude
+├── lib/content-review.js       pre-import fact-check + Danish-translation review pass (see below)
 └── state/{rumor,trivia}-generator-state.<env>.json   which KB docs are already used, per environment (committed back to repo)
 
 .github/workflows/
@@ -102,7 +103,24 @@ Rumor-or-Not cards and Trivia questions are drafted by Claude, not written by ha
 2. Monday 00:00 — the batch becomes player-visible on both environments (rumors once `publish_date <= today`; trivia enters its playable ISO week). No admin review or Publish click is involved. The `admin-challenges.php` Rumors/Trivia tabs (bulk publish/unpublish/delete, All/Drafts/Published filters, per-item answer count + correct-rate, etc.) remain for **manual correction** — e.g. deleting a bad auto-published item, or reviewing a `publish=false` preview run — but are no longer part of the routine weekly flow.
 3. Monday 05:00 UTC — `cron-challenges.yml` fires `challenge_weekly.php`: Perfect Week bonuses for the week that just ended, plus the GDPR purge.
 
-Because the content ships unreviewed, the **quality gate is after the fact**: malformed Claude JSON is skipped per-item, but a factually-wrong rumor or a mis-keyed trivia answer reaches players until someone deletes it on `admin-challenges.php`. Spot-checking the live tabs periodically is the mitigation.
+**Pre-import review pass.** After drafting, each card/question gets one more Claude call —
+`reviewDraft()` in `bin/lib/content-review.js` — that checks it against the exact rubric documented
+in the `f1-data-validation` and `motorsport-en-da-translator` skills: a fact-check against the same
+KB doc it was grounded on (for a fabricated rumor card, `is_real=false`, this checks
+`explain_da/explain_en` instead of `text_da/text_en`, since the claim itself is *supposed* to be
+false), and a Danish translation-quality check against the project's established glossary/register.
+A flagged item imports as `status='draft'` regardless of the batch's `--publish` flag (a per-item
+override in `import-{rumor,trivia}-drafts.php`, `item.status === 'draft'` beats the batch default —
+never the other way round), so it lands inert on `admin-challenges.php` for a human to fix or
+delete instead of shipping straight to players. The review call itself fails **open**: if it errors
+or returns unparsable JSON, the item ships as originally intended and a warning is logged — a
+reviewer hiccup must not silently mass-downgrade a whole Friday batch.
+
+This narrows the gap but doesn't close it: the check is doc-grounded only (catches Claude
+misreading/embellishing the KB doc it was given), not a live formula1.com/Jolpica cross-check — a
+bad or stale KB doc itself, or a fabricated rumor that coincidentally turns out true, still slips
+through. **Spot-checking the live tabs periodically (or running the `f1-data-validation` skill
+directly against recent content) remains the deeper mitigation.**
 
 **Content exhaustion — the failure mode to watch for.** The KB has under 100 docs, and each environment now draws from it independently (per-env state files). After a few months of sustained weekly runs an environment's unused pool runs out; that env's generator then hard-fails with `"Only N unused KB docs left, need M"` instead of silently generating less. **A failed matrix job in `cron-content-topup.yml` is one signal** (per environment — test and live exhaust separately) — check GitHub Actions. As of 2026-07-27 there's also a proactive one: the **Content Supply** panel on `admin-dashboards.php?tab=challenges` shows estimated weeks of KB runway remaining per generator per environment (see "Content expiry & archival" below) — no need to wait for a failed run to notice. Fix by growing the `paddock-rumors/` KB (re-run its own `update-kb.js` pipeline) or, in future, allowing doc reuse after a cooldown (not implemented yet).
 

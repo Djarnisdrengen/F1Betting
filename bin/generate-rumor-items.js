@@ -15,6 +15,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../build-deploy/.env') });
 const { readPhpConfig } = require('../build-deploy/php-config');
 const { importWithRetry } = require('./lib/import-with-retry');
+const { reviewDraft } = require('./lib/content-review');
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5';
@@ -170,10 +171,28 @@ async function main() {
     // skip and keep going, since items[] is only imported once at the very end of the loop.
     const items = [];
     let skipped = 0;
+    let flagged = 0;
+
+    // Runs the fact-check + Danish-translation review pass (bin/lib/content-review.js) on one
+    // drafted card and, if it fails, forces that single row to import as a draft regardless of
+    // this batch's overall --publish flag (see import-rumor-drafts.php's per-item status override).
+    async function applyReview(card, doc) {
+        const review = await reviewDraft(claude, { kind: 'rumor', item: card, doc });
+        if (review.reviewError) {
+            console.warn(`  ⚠️  review skipped (${doc.id}): ${review.reviewError}`);
+        } else if (!review.pass) {
+            card.status = 'draft';
+            flagged++;
+            console.warn(`  🚩 flagged for review (${doc.id}): ${review.issues.join('; ') || 'no detail'}`);
+        }
+    }
+
     for (const doc of realDocs) {
         console.log(`  real  ← ${doc.id}`);
         try {
-            items.push(await draftRealCard(doc));
+            const card = await draftRealCard(doc);
+            await applyReview(card, doc);
+            items.push(card);
             state.usedKbIds.push(doc.id);
         } catch (e) {
             console.warn(`  ⚠️  skipped: ${e.message.slice(0, 160)}`);
@@ -183,13 +202,16 @@ async function main() {
     for (const doc of rumorDocs) {
         console.log(`  rumor ← ${doc.id} (grounding only)`);
         try {
-            items.push(await draftRumorCard(doc));
+            const card = await draftRumorCard(doc);
+            await applyReview(card, doc);
+            items.push(card);
         } catch (e) {
             console.warn(`  ⚠️  skipped: ${e.message.slice(0, 160)}`);
             skipped++;
         }
     }
     if (skipped > 0) console.log(`⚠️  ${skipped} card(s) skipped due to parse/API errors.`);
+    if (flagged > 0) console.log(`🚩 ${flagged} card(s) flagged by review — imported as drafts pending manual check on admin-challenges.php.`);
 
     // Stamp every card with the upcoming Monday so the whole weekly batch appears together.
     for (const it of items) it.publish_date = publishDate;

@@ -24,6 +24,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../build-deploy/.env') });
 const { readPhpConfig } = require('../build-deploy/php-config');
 const { importWithRetry } = require('./lib/import-with-retry');
+const { reviewDraft } = require('./lib/content-review');
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5';
@@ -155,10 +156,29 @@ async function main() {
     // skip and keep going, since items[] is only imported once at the very end of the loop.
     const items = [];
     let skipped = 0;
+    let flagged = 0;
+
+    // Runs the fact-check + Danish-translation review pass (bin/lib/content-review.js) on one
+    // drafted question and, if it fails, forces that single row to import as a draft regardless
+    // of this batch's overall --publish flag (see import-trivia-drafts.php's per-item status
+    // override). Trivia has no is_real flag — every question is checked as a genuine factual claim.
+    async function applyReview(question, doc) {
+        const review = await reviewDraft(claude, { kind: 'trivia', item: question, doc });
+        if (review.reviewError) {
+            console.warn(`  ⚠️  review skipped (${doc.id}): ${review.reviewError}`);
+        } else if (!review.pass) {
+            question.status = 'draft';
+            flagged++;
+            console.warn(`  🚩 flagged for review (${doc.id}): ${review.issues.join('; ') || 'no detail'}`);
+        }
+    }
+
     for (const doc of docs) {
         console.log(`  question ← ${doc.id}`);
         try {
-            items.push(await draftQuestion(doc));
+            const question = await draftQuestion(doc);
+            await applyReview(question, doc);
+            items.push(question);
             state.usedKbIds.push(doc.id);
         } catch (e) {
             console.warn(`  ⚠️  skipped: ${e.message.slice(0, 160)}`);
@@ -166,6 +186,7 @@ async function main() {
         }
     }
     if (skipped > 0) console.log(`⚠️  ${skipped} question(s) skipped due to parse/API errors.`);
+    if (flagged > 0) console.log(`🚩 ${flagged} question(s) flagged by review — imported as drafts pending manual check on admin-challenges.php.`);
 
     // Stamp every item with the upcoming Monday so the batch is playable that whole ISO week.
     for (const it of items) it.publish_date = publishDate;

@@ -69,6 +69,20 @@ test.describe('Content auto-publish import', { tag: ['@challenges'] }, () => {
         await expect(page.getByTestId('rumor-card')).not.toContainText('Draft rumor DA');
     });
 
+    // The content-review pre-import gate (bin/lib/content-review.js) forces one flagged row to
+    // stay a draft by sending status:'draft' on that item even while the batch overall publishes —
+    // proves the override is per-row, not batch-wide (a sibling item without it still goes live).
+    test('a per-item draft override does not affect other published items in the same batch', async ({ page }) => {
+        const r = await importItems('import-rumor-drafts.php', [
+            { text_da: 'Flagged rumor DA', text_en: 'Flagged rumor EN', is_real: false, source_ref: 'e2e-seed', publish_date: today(), status: 'draft' },
+            { text_da: 'Clean rumor DA', text_en: 'Clean rumor EN', is_real: false, source_ref: 'e2e-seed', publish_date: today() },
+        ], 'published');
+        expect(r.inserted).toBe(2);
+
+        await page.goto('/challenges.php?section=rumors');
+        await expect(page.getByTestId('rumor-card')).not.toContainText('Flagged rumor DA');
+    });
+
     // A status='published' trivia question dated the current week's Monday is playable that week —
     // the generator stamps the upcoming Monday, which is the current week once it's live.
     test('published trivia import is playable in its Monday-stamped week', async ({ page }) => {
