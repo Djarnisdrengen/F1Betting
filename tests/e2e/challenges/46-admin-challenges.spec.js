@@ -306,6 +306,19 @@ test.describe('Admin participant roster & delete', { tag: '@challenges' }, () =>
         await expect(r).toContainText('Native Fallback User');
         await expect(r).toContainText(email);
     });
+
+    // A genuinely anonymous player (getOrCreateAnonymousParticipant() — no login, no email ever
+    // given) has email AND core_user_id both NULL, same as a native row's email column. It must
+    // NOT be badged "native"/Kernebruger (that implies an existing core-site member) — there is
+    // no linked account to fall back to, so it stays blank under its own "anonymous" kind.
+    test('a genuinely anonymous participant is badged anonymous, not native', async ({ page }) => {
+        const { participant_id } = await seed.challengeParticipant({ email: '', status: 'pending' });
+
+        await page.goto('/admin-challenges.php?tab=members');
+        const r = row(page, participant_id);
+        await expect(r).toBeVisible();
+        await expect(r).toHaveAttribute('data-kind', 'anonymous');
+    });
 });
 
 // ─── Rumor drafts (Phase 3, REQ-502) ────────────────────────────────────────────

@@ -97,11 +97,14 @@
 
 <?php foreach ($allParticipants as $p):
     // Row kind (independent of pending/verified status): native-core rows are auto-created
-    // on first hub visit (email NULL); a linked core_user_id with an email is a promoted
-    // full member; otherwise it's a plain guest.
-    if (empty($p['email']))              { $kind = 'native';   $kindClass = 'soon'; }
-    elseif (!empty($p['core_user_id']))  { $kind = 'promoted'; $kindClass = 'open'; }
-    else                                 { $kind = 'guest';    $kindClass = 'soon'; }
+    // on first hub visit (email NULL, core_user_id set); a linked core_user_id with an email
+    // is a promoted full member; email with no core_user_id is a plain guest; neither is a
+    // genuinely anonymous player (getOrCreateAnonymousParticipant()) — distinct from "native"
+    // even though both have email NULL, since anonymous rows were never linked to any account.
+    if (!empty($p['core_user_id']) && empty($p['email'])) { $kind = 'native';    $kindClass = 'soon'; }
+    elseif (!empty($p['core_user_id']))                   { $kind = 'promoted';  $kindClass = 'open'; }
+    elseif (!empty($p['email']))                          { $kind = 'guest';     $kindClass = 'soon'; }
+    else                                                   { $kind = 'anonymous'; $kindClass = 'soon'; }
     $displayName = $p['display_name'] ?: $p['core_display_name'];
     $displayEmail = $p['email'] ?: $p['core_email'];
     $deleteName = $displayName ?: ($displayEmail ?: $p['id']);
