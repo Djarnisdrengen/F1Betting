@@ -315,7 +315,7 @@ return [
         'ch_public_guest_banner' => 'Udfordr en ven til en duel, og kom altid tilbage — indtast bare samme email igen.',
         'ch_your_cp'            => 'Dine CP',
         'ch_rank'               => 'Plads',
-        'ch_streak'             => 'Ugers stime',
+        'ch_streak'             => 'Ugestribe',
         'ch_streak_explainer'   => 'Tæller uger i træk med mindst ét svar — rigtigt eller forkert tæller med.',
         'ch_play_now'           => 'Spil nu',
         'ch_not_open'           => 'Ikke åben',
@@ -343,7 +343,7 @@ return [
         'ch_duels_desc'         => 'Udfordr en anden spiller og forudsig top 3 til næste løb.',
         'ch_trivia_desc'        => 'Svar rigtigt på ugens multiple-choice spørgsmål om F1.',
         'ch_your_move'          => 'Din tur',
-        'ch_streak_line'        => '%d-ugers stime · hold den i live',
+        'ch_streak_line'        => '%d-ugers stribe · hold den i live',
         'ch_toast_cp'           => '+%d CP',
         'ch_toast_miss'         => 'Ingen point — videre',
         'ch_toast_duel_locked'  => 'Duel låst fast',
@@ -383,7 +383,7 @@ return [
         'ch_duel_search_placeholder' => 'Søg efter navn',
         'ch_duel_search'        => 'Søg',
         'ch_duel_challenge_button' => 'Udfordr',
-        'ch_duel_no_results'    => 'Ingen deltagere fundet.',
+        'ch_duel_no_results'    => 'Ingen deltagere fundet. Personen skal have besøgt Challenges mindst én gang, før du kan finde og udfordre dem.',
         'ch_accept_lock'        => 'Accepter og lås dit podie',
         'ch_locked_in'          => 'Låst fast',
         'ch_race_started'       => 'Løbet er startet',
@@ -411,7 +411,8 @@ return [
         'ch_join_success_check_email' => 'Tjek din email for et login-link (tjek også spam)',
         'ch_join_core_member_prompt' => 'Du har allerede en konto. Log ind for at få adgang til Paddock Challenges.',
         'ch_join_didnt_receive' => 'Modtog du ikke linket? Prøv igen.',
-        'rate_limited'          => 'For mange forsøg. Vent venligst og prøv igen senere.',
+        'ch_rate_limited'       => 'For mange forsøg. Vent venligst og prøv igen senere.',
+        'ch_enter_valid_email'  => 'Angiv en gyldig email-adresse',
 
         // Challenges — verify flow
         'ch_verify_title'       => 'Godkend din email',
@@ -500,9 +501,9 @@ return [
         'ch_rules_s4_p2'         => 'Dueller kræver en bekræftet email, så din modstander kan finde dig, og resultatet kan registreres.',
         'ch_rules_s4_p3'         => 'Lås dit P1/P2/P3 fast inden løbet starter. +5 CP for hver kører på den præcist rigtige plads, +2 CP for en kører der er med i top 3, men på forkert plads.',
         'ch_rules_s4_p4'         => 'Højeste score vinder: 15 CP til vinderen, 5 CP til taberen — eller 10 CP hver ved uafgjort. Har en af jer ikke låst et valg, annulleres duellen, og ingen får point.',
-        'ch_rules_s5_title'      => 'CP, stimer og ranglisten',
+        'ch_rules_s5_title'      => 'CP, striber og ranglisten',
         'ch_rules_s5_p1'         => 'Alle rigtige svar og duel-resultater lægges til din samlede CP — den nulstilles aldrig.',
-        'ch_rules_s5_p2'         => 'Spil mindst ét spil om ugen for at holde din stime i live. Springer du en hel uge over, starter stimen forfra.',
+        'ch_rules_s5_p2'         => 'Spil mindst ét spil om ugen for at holde din stribe i live. Springer du en hel uge over, starter striben forfra.',
         'ch_rules_s5_p3'         => 'Den offentlige rangliste sorterer alle — gæster og fulde medlemmer — efter samlet CP. Ved uafgjort vinder den der har været med længst.',
         'ch_rules_s6_title'      => 'Paddock Challenges og puljen',
         'ch_rules_s6_p1'         => 'Challenge Points er ære og status, ikke kontanter — det er en helt separat rangliste fra selve podie-bettingen og dens pengepulje.',
@@ -512,14 +513,7 @@ return [
         'ch_rules_s7_p2'         => 'Dit login-link og din adgang er personlig — del dem ikke, ellers kan andre samle CP eller låse valg i dit navn.',
 
         // Shared auth messages
-        'go_to_login'           => 'Gå til login',
         'back_home'             => 'Tilbage til forsiden',
-        'enter_valid_email'     => 'Angiv en gyldig email-adresse',
-        'password_reset_done'   => 'Din adgangskode er nulstillet',
-        'passwords_no_match'    => 'Adgangskoderne stemmer ikke overens',
-        'new_password'          => 'Ny adgangskode',
-        'confirm_password'      => 'Bekræft adgangskode',
-        'token_invalid_expired' => 'Dette link er ugyldigt eller udløbet',
     ],
     'en' => [
         // Test-environment banner
@@ -903,7 +897,7 @@ return [
         'ch_duel_search_placeholder' => 'Search by name',
         'ch_duel_search'        => 'Search',
         'ch_duel_challenge_button' => 'Challenge',
-        'ch_duel_no_results'    => 'No participants found.',
+        'ch_duel_no_results'    => 'No participants found. The person needs to have visited Challenges at least once before you can find and challenge them.',
         'ch_accept_lock'        => 'Accept & lock your podium',
         'ch_locked_in'          => 'Locked in',
         'ch_race_started'       => 'Race started',
@@ -931,7 +925,8 @@ return [
         'ch_join_success_check_email' => 'Check your email for a login link (check spam too)',
         'ch_join_core_member_prompt' => 'You already have an account. Log in to access Paddock Challenges.',
         'ch_join_didnt_receive' => 'Didn\'t receive the link? Try again.',
-        'rate_limited'          => 'Too many attempts. Please wait and try again later.',
+        'ch_rate_limited'       => 'Too many attempts. Please wait and try again later.',
+        'ch_enter_valid_email'  => 'Please enter a valid email address',
 
         // Challenges — verify flow
         'ch_verify_title'       => 'Verify your email',
@@ -1032,13 +1027,6 @@ return [
         'ch_rules_s7_p2'         => "Your login link and access are personal — don't share them, or someone else could rack up CP or lock in picks under your name.",
 
         // Shared auth messages
-        'go_to_login'           => 'Go to login',
         'back_home'             => 'Back to home',
-        'enter_valid_email'     => 'Please enter a valid email address',
-        'password_reset_done'   => 'Your password has been reset',
-        'passwords_no_match'    => 'Passwords do not match',
-        'new_password'          => 'New password',
-        'confirm_password'      => 'Confirm password',
-        'token_invalid_expired' => 'This link is invalid or expired',
     ],
 ];

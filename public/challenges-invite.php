@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     [$itemIds, $score] = playedSet($db, $participant['id'], $game);
 
     if (!$friendEmail) {
-        $error = t('enter_valid_email');
+        $error = t('ch_enter_valid_email');
     } elseif (empty($itemIds)) {
         $error = t('ch_invite_nothing_played');
     } else {
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$participant['email']) {
             if (!$ownEmail) {
-                $error = t('enter_valid_email');
+                $error = t('ch_enter_valid_email');
             } else {
                 // Owner-confirm email is rate-limited independently under scope 'magic'
                 // (REQ-809) — this is the owner's own action, visible to them, and decoupled
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($ownerRateLimited) {
                     header('Retry-After: 900');
-                    $error = t('rate_limited');
+                    $error = t('ch_rate_limited');
                 } else {
                     // Guard: an email that is a core account, or already another participant, is never
                     // (re)claimed here (REQ-111). The response stays identical (NFR-106) either way.

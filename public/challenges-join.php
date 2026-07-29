@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($rateLimited) {
         header('Retry-After: 900');
-        $error = t('rate_limited');
+        $error = t('ch_rate_limited');
     } elseif ($email) {
         $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$email]);
@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = t('ch_join_success_check_email');
         }
     } else {
-        $error = t('enter_valid_email');
+        $error = t('ch_enter_valid_email');
     }
 }
 
