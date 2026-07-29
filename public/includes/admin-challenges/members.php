@@ -121,9 +121,10 @@
                 <span class="hf-badge <?= $kindClass ?>"><?= t('admin_ch_participant_badge_' . $kind) ?></span>
             </div>
             <div class="hf-racemeta">
-                <?= $displayEmail ? escape($displayEmail) : '—' ?>
-                · <?= escape(strtoupper($p['language'])) ?>
-                · <span class="hf-badge <?= $p['status'] === 'verified' ? 'open' : 'soon' ?>"><?= t('admin_ch_status_' . $p['status']) ?></span>
+                <?= t('admin_ch_participant_email') ?> <?= $displayEmail ? escape($displayEmail) : '—' ?>
+                · <?= t('admin_ch_participant_language') ?> <?= escape(strtoupper($p['language'])) ?>
+                · <?= t('admin_ch_participant_status') ?>
+                   <span class="hf-badge <?= $p['status'] === 'verified' ? 'open' : 'soon' ?>"><?= t('admin_ch_status_' . $p['status']) ?></span>
                 · <?= t('admin_ch_participant_created') ?> <?= escape(date('d M Y', strtotime($p['created_at']))) ?>
                 · <?= t('admin_ch_participant_promo_requested') ?>
                    <?= $p['promotion_requested_at'] ? escape(date('d M Y', strtotime($p['promotion_requested_at']))) : '—' ?>
