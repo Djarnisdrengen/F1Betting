@@ -123,6 +123,12 @@ test.describe('Recap carousel', { tag: ['@challenges', '@mobile'] }, () => {
     });
 
     test('default count (5) → 5 slides, only the first visible, 5 dots, first marked current', async ({ page }) => {
+        // Pin the setting rather than assuming the shared test DB's current admin-configured
+        // value happens to equal the schema default (5) — real admin usage on this shared
+        // environment can legitimately leave it at another value between runs (see this
+        // describe block's own header comment), which previously made this specific test
+        // (unlike its siblings, which all explicitly seed their count) flaky.
+        await seed.homeRecapCount(5);
         await seed.recapRaces({ count: 5 });
 
         await page.goto('/');
