@@ -57,7 +57,8 @@ if (php_sapi_name() === 'cli') {
 }
 
 if (!$tokenValid) {
-    logMessage("Unauthorized access. Exiting.");
+    $source = getTestSourceLabel();
+    logMessage("Unauthorized access. Exiting." . ($source ? " (source: $source)" : ""));
     exit(1);
 }
 
