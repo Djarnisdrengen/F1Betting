@@ -691,13 +691,14 @@ switch ($currentTab) {
         $usersById = array_column($db->query("SELECT id, email, display_name FROM users")->fetchAll(), null, 'id');
         break;
     case 'logs':
-        // The 4 file logs the app writes to (config.shared.php). Rotated at 200KB by
+        // The 5 file logs the app writes to (config.shared.php). Rotated at 200KB by
         // logToFile(), so reading the whole current file and tailing it is cheap.
         $logFiles = [
-            'app'                => ['label' => t('logs_app'),                'path' => APP_LOG_FILE],
-            'mail'               => ['label' => t('logs_mail'),               'path' => MAIL_LOG_FILE],
-            'cron_notifications' => ['label' => t('logs_cron_notifications'), 'path' => CRON_NOTIFICATIONS_LOG_FILE],
-            'cron_qualifying'    => ['label' => t('logs_cron_qualifying'),    'path' => CRON_QUALIFYING_LOG_FILE],
+            'app'                 => ['label' => t('logs_app'),                 'path' => APP_LOG_FILE],
+            'mail'                => ['label' => t('logs_mail'),                'path' => MAIL_LOG_FILE],
+            'cron_notifications'  => ['label' => t('logs_cron_notifications'),  'path' => CRON_NOTIFICATIONS_LOG_FILE],
+            'cron_qualifying'     => ['label' => t('logs_cron_qualifying'),     'path' => CRON_QUALIFYING_LOG_FILE],
+            'warm_actions_cache'  => ['label' => t('logs_warm_actions_cache'),  'path' => WARM_ACTIONS_CACHE_LOG_FILE],
         ];
         foreach ($logFiles as &$lf) {
             $lf['exists'] = file_exists($lf['path']);
