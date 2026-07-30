@@ -145,10 +145,13 @@ return [
         'logs_mail'                 => 'Mail',
         'logs_cron_notifications'   => 'Cron: Notifikationer',
         'logs_cron_qualifying'      => 'Cron: Kvalifikation',
+        'logs_warm_actions_cache'   => 'Cron: Actions-cache',
         'logs_last_modified'        => 'Sidst opdateret:',
         'logs_not_found'            => 'Ingen logfil endnu — der er ikke skrevet noget til den.',
         'logs_empty'                => 'Logfilen er tom.',
         'logs_showing_last'         => 'Viser de seneste %d af op til %d linjer.',
+        'logs_copy'                 => 'Kopiér log',
+        'logs_copied'               => 'Kopieret!',
 
         // Admin area switcher (admin.php <-> admin-challenges.php <-> admin-dashboards.php)
         'admin_page_title'           => 'Administration',
@@ -677,10 +680,13 @@ return [
         'logs_mail'                 => 'Mail',
         'logs_cron_notifications'   => 'Cron: Notifications',
         'logs_cron_qualifying'      => 'Cron: Qualifying',
+        'logs_warm_actions_cache'   => 'Cron: Actions cache',
         'logs_last_modified'        => 'Last updated:',
         'logs_not_found'            => 'No log file yet — nothing has been written to it.',
         'logs_empty'                => 'The log file is empty.',
         'logs_showing_last'         => 'Showing the last %d of up to %d lines.',
+        'logs_copy'                 => 'Copy log',
+        'logs_copied'               => 'Copied!',
 
         // Admin area switcher (admin.php <-> admin-challenges.php <-> admin-dashboards.php)
         'admin_page_title'           => 'Administration',

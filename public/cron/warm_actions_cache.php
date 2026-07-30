@@ -23,7 +23,8 @@ function logMessage($message) {
 
 $bearer = getBearerToken();
 if ($bearer === null || !hash_equals(CRON_SECRET, $bearer)) {
-    logMessage("Unauthorized access. Exiting.");
+    $source = getTestSourceLabel();
+    logMessage("Unauthorized access. Exiting." . ($source ? " (source: $source)" : ""));
     exit(1);
 }
 

@@ -14,6 +14,7 @@ define('APP_LOG_FILE',                __DIR__ . '/public/logs/app.log');
 define('MAIL_LOG_FILE',               __DIR__ . '/public/logs/mail.log');
 define('CRON_NOTIFICATIONS_LOG_FILE', __DIR__ . '/public/logs/cron_notifications.log');
 define('CRON_QUALIFYING_LOG_FILE',    __DIR__ . '/public/logs/cron_qualifying.log');
+define('WARM_ACTIONS_CACHE_LOG_FILE', __DIR__ . '/public/logs/warm_actions_cache.log');
 
 // ── APP VERSION ───────────────────────────────────────────────────────
 define('APP_VERSION', 'v3.0.0');

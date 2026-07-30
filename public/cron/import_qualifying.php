@@ -72,7 +72,8 @@ if (php_sapi_name() === 'cli') {
 // CRON_SECRET is ALWAYS required. Test mode only swaps the API for stub data; it must never
 // bypass authentication (previously `?test=true` alone skipped the token check entirely).
 if (!$tokenValid) {
-    logMessage("[ERROR] Unauthorized access. Exiting.");
+    $source = getTestSourceLabel();
+    logMessage("[ERROR] Unauthorized access. Exiting." . ($source ? " (source: $source)" : ""));
     exit(1);
 }
 

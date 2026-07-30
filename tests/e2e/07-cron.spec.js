@@ -21,12 +21,14 @@ test.describe("Cron jobs", { tag: "@cron" }, () => {
         });
 
         test("unauthorized without a token (bare request)", async ({ page }) => {
+            await page.setExtraHTTPHeaders({ "X-Test-Source": "e2e" });
             await page.goto("/cron/import_qualifying.php");
             const text = await page.textContent("body");
             expect(text).toContain("Unauthorized access");
         });
 
         test("test mode alone does NOT bypass the cron token", async ({ page }) => {
+            await page.setExtraHTTPHeaders({ "X-Test-Source": "e2e" });
             await page.goto("/cron/import_qualifying.php?test=true");
             const text = await page.textContent("body");
             expect(text).toContain("Unauthorized access");
@@ -45,6 +47,7 @@ test.describe("Cron jobs", { tag: "@cron" }, () => {
 
     test.describe("notifications — access control", () => {
         test("unauthorized without token", async ({ page }) => {
+            await page.setExtraHTTPHeaders({ "X-Test-Source": "e2e" });
             await page.goto("/cron/notifications.php");
             const text = await page.textContent("body");
             expect(text).toContain("Unauthorized access");
@@ -66,6 +69,7 @@ test.describe("Cron jobs", { tag: "@cron" }, () => {
 
     test.describe("warm actions cache — access control", () => {
         test("unauthorized without token", async ({ page }) => {
+            await page.setExtraHTTPHeaders({ "X-Test-Source": "e2e" });
             await page.goto("/cron/warm_actions_cache.php");
             const text = await page.textContent("body");
             expect(text).toContain("Unauthorized access");

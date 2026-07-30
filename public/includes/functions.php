@@ -473,6 +473,15 @@ function getBearerToken(): ?string {
     return substr($header, 7);
 }
 
+// Cron endpoints' "unauthorized" negative-path E2E tests (tests/e2e/07-cron.spec.js) hit
+// these scripts with no valid token on purpose, to prove the auth gate rejects them — that's
+// expected traffic, not a real intrusion attempt, but it looks identical to one in the cron
+// logs. The E2E requests send this header purely so the log line can say so; it has no
+// bearing on the auth check itself.
+function getTestSourceLabel(): ?string {
+    return ($_SERVER['HTTP_X_TEST_SOURCE'] ?? null) === 'e2e' ? 'e2e test' : null;
+}
+
 // ── Rate limiting ──────────────────────────────────────────────────────────────
 // Sliding 15-minute window, checked both per-IP (catches broad abuse from one
 // address) and per-account (catches a distributed attack on one victim regardless
