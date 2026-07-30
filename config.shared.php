@@ -2,6 +2,13 @@
 // Shared configuration — included at the end of config.test.php and config.live.php.
 // Do not require this file directly; it depends on constants defined by the calling file.
 
+// Guards against double-inclusion (e.g. an ad hoc script requiring this file, or a config
+// file, more than once in the same process) — without it, re-running this file redeclares
+// every constant/function here and fatals on the second sanitizeString() declaration.
+if (defined('APP_LOG_FILE')) {
+    return;
+}
+
 // ── LOGGING ───────────────────────────────────────────────────────────
 define('APP_LOG_FILE',                __DIR__ . '/public/logs/app.log');
 define('MAIL_LOG_FILE',               __DIR__ . '/public/logs/mail.log');
@@ -25,7 +32,9 @@ ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.use_strict_mode', 1);
 ini_set('session.use_only_cookies', 1);
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Security headers on every PHP response (including redirects).
 // mod_headers in .htaccess is Apache-only and silently ignored on nginx/OpenResty.
