@@ -31,10 +31,33 @@ function formatLogSize($bytes) {
 <?php elseif (empty($logLines)): ?>
     <div class="card"><div class="card-body text-center text-muted"><?= t('logs_empty') ?></div></div>
 <?php else: ?>
-    <p class="text-muted mb-1"><?= sprintf(t('logs_showing_last'), count($logLines), $logTailLines) ?></p>
-    <pre style="background:var(--bg-card);border:1px solid var(--border-soft);border-radius:10px;padding:1rem;max-height:70vh;overflow:auto;font-family:var(--font-mono);font-size:0.8rem;line-height:1.5;white-space:pre-wrap;word-break:break-all;"><?php
+    <div class="flex items-center justify-between mb-1" style="flex-wrap:wrap;gap:0.5rem;">
+        <p class="text-muted mb-0"><?= sprintf(t('logs_showing_last'), count($logLines), $logTailLines) ?></p>
+        <button type="button" class="btn btn-secondary btn-sm log-copy-btn" data-log-target="log-content">
+            <i class="fas fa-copy"></i> <?= t('logs_copy') ?>
+            <span class="log-copy-btn-copied" hidden><?= t('logs_copied') ?></span>
+        </button>
+    </div>
+    <pre id="log-content" style="background:var(--bg-card);border:1px solid var(--border-soft);border-radius:10px;padding:1rem;max-height:70vh;overflow:auto;font-family:var(--font-mono);font-size:0.8rem;line-height:1.5;white-space:pre-wrap;word-break:break-all;"><?php
         foreach ($logLines as $line) {
             echo escape($line) . "\n";
         }
     ?></pre>
 <?php endif; ?>
+
+<script nonce="<?= $nonce ?>">
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.log-copy-btn').forEach(function (button) {
+        button.addEventListener('click', function() {
+            var target = document.getElementById(button.getAttribute('data-log-target'));
+            if (!target || !navigator.clipboard || !navigator.clipboard.writeText) return;
+            navigator.clipboard.writeText(target.textContent).then(function() {
+                var copied = button.querySelector('.log-copy-btn-copied');
+                if (!copied) return;
+                copied.hidden = false;
+                setTimeout(function() { copied.hidden = true; }, 2000);
+            });
+        });
+    });
+});
+</script>

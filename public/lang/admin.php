@@ -146,6 +146,8 @@ return [
         'logs_not_found'            => 'Ingen logfil endnu — der er ikke skrevet noget til den.',
         'logs_empty'                => 'Logfilen er tom.',
         'logs_showing_last'         => 'Viser de seneste %d af op til %d linjer.',
+        'logs_copy'                 => 'Kopiér log',
+        'logs_copied'               => 'Kopieret!',
 
         // Admin area switcher (admin.php <-> admin-challenges.php <-> admin-dashboards.php)
         'admin_page_title'           => 'Administration',
@@ -675,6 +677,8 @@ return [
         'logs_not_found'            => 'No log file yet — nothing has been written to it.',
         'logs_empty'                => 'The log file is empty.',
         'logs_showing_last'         => 'Showing the last %d of up to %d lines.',
+        'logs_copy'                 => 'Copy log',
+        'logs_copied'               => 'Copied!',
 
         // Admin area switcher (admin.php <-> admin-challenges.php <-> admin-dashboards.php)
         'admin_page_title'           => 'Administration',
