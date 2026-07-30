@@ -31,6 +31,7 @@
     { "migration": "add_challenges_toggle.sql", "table": "settings", "columns": ["challenges_enabled"] },
     { "migration": "add_content_archival.sql", "table": "challenge_items", "columns": ["status"] },
     { "migration": "add_content_archival.sql", "table": "challenge_trivia_questions", "columns": ["status"] },
-    { "migration": "add_home_recap_count.sql", "table": "settings", "columns": ["home_recap_count"] }
+    { "migration": "add_home_recap_count.sql", "table": "settings", "columns": ["home_recap_count"] },
+    { "migration": "add_content_batch_size.sql", "table": "settings", "columns": ["rumor_batch_size", "trivia_batch_size"] }
   ]
 }

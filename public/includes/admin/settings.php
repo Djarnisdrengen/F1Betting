@@ -67,6 +67,21 @@
                 <input type="number" name="home_recap_count" class="form-input"
                        value="<?= intval($settings['home_recap_count'] ?? 5) ?>" min="3" max="10">
             </div>
+
+            <h4 class="mb-1 mt-3"><i class="fas fa-arrows-rotate text-accent"></i> <?= t('content_batch_section') ?></h4>
+            <p class="text-muted mb-2" style="font-size: 0.875rem;"><?= t('content_batch_config') ?></p>
+            <div class="grid grid-2 mb-2">
+                <div class="form-group" style="max-width: 200px;">
+                    <label class="form-label"><?= t('rumor_batch_size_label') ?></label>
+                    <input type="number" name="rumor_batch_size" class="form-input"
+                           value="<?= intval($settings['rumor_batch_size'] ?? 6) ?>" min="1" max="20">
+                </div>
+                <div class="form-group" style="max-width: 200px;">
+                    <label class="form-label"><?= t('trivia_batch_size_label') ?></label>
+                    <input type="number" name="trivia_batch_size" class="form-input"
+                           value="<?= intval($settings['trivia_batch_size'] ?? 6) ?>" min="1" max="20">
+                </div>
+            </div>
         </div>
     </div>
 

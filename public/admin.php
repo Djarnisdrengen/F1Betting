@@ -584,9 +584,14 @@ if (isset($_POST['update_settings'])) {
     // not just leave one field at its old value — the failure mode here is worse than the
     // existing sanitizeInt() callers', so it gets the explicit fallback they don't.
     $homeRecapCount = sanitizeInt($_POST['home_recap_count'] ?? 5, 3, 10) ?: 5;
+    // Same explicit-fallback treatment as home_recap_count above: a bad input silently zeroing
+    // out the weekly content-topup batch size would starve players of new content, not just
+    // leave one field stale.
+    $rumorBatchSize = sanitizeInt($_POST['rumor_batch_size'] ?? 6, 1, 20) ?: 6;
+    $triviaBatchSize = sanitizeInt($_POST['trivia_batch_size'] ?? 6, 1, 20) ?: 6;
 
-    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ?, challenges_enabled = ?, home_recap_count = ? WHERE id = 1");
-    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize, $challengesEnabled, $homeRecapCount]);
+    $stmt = $db->prepare("UPDATE settings SET app_title = ?, app_year = ?, hero_title_en = ?, hero_title_da = ?, hero_text_en = ?, hero_text_da = ?, points_p1 = ?, points_p2 = ?, points_p3 = ?, points_wrong_pos = ?, betting_window_hours = ?, bet_size = ?, challenges_enabled = ?, home_recap_count = ?, rumor_batch_size = ?, trivia_batch_size = ? WHERE id = 1");
+    $stmt->execute([$appTitle, $appYear, $heroTitleEn, $heroTitleDa, $heroTextEn, $heroTextDa, $pointsP1, $pointsP2, $pointsP3, $pointsWrongPos, $bettingWindowHours, $betSize, $challengesEnabled, $homeRecapCount, $rumorBatchSize, $triviaBatchSize]);
     $settings = getSettings();
     $message = t('settings_saved');
 }

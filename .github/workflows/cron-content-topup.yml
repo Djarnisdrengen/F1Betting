@@ -22,6 +22,14 @@
 # or an off rumor reaches players with no gate). A manual workflow_dispatch can still target a
 # single environment, choose count/target, and set publish=false for a drafts-only preview run.
 #
+# Batch size (items per competition) is admin-configurable per environment — Settings tab,
+# "Weekly Content Batch Size" (rumor_batch_size/trivia_batch_size in the `settings` table).
+# Since this workflow has no direct DB access, each rumors/trivia×env job fetches its own
+# environment's value over HTTP from public/tools/get-content-batch-size.php (same Bearer-token
+# auth as the import endpoints below) right before generating. A manual workflow_dispatch `count`
+# input still overrides this and skips the fetch entirely; leaving it blank (the schedule always
+# does) uses the admin-configured value, falling back to 6 if the fetch itself fails.
+#
 # Rumors and Trivia run as separate parallel jobs, and each fans out over the environment matrix,
 # so a scheduled run is up to four jobs (test/live × rumors/trivia). Each job commits its OWN
 # per-environment KB-usage state right after its generator succeeds — test and live track usage
@@ -53,9 +61,9 @@ on:
         type: choice
         options: ['test', 'live']
       count:
-        description: 'Items to generate per competition'
+        description: 'Override items per competition (leave blank to use each env''s admin-configured Weekly Content Batch Size setting)'
         required: false
-        default: '6'
+        default: ''
       target:
         description: 'Which generator(s) to run'
         required: false
@@ -101,7 +109,9 @@ jobs:
             echo "target=both" >> "$GITHUB_OUTPUT"
             echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
-          echo "count=${IN_COUNT:-6}" >> "$GITHUB_OUTPUT"
+          # Empty means "no manual override" — each rumors/trivia×env job resolves its own count
+          # from that environment's admin-configured setting instead (see header comment above).
+          echo "count=$IN_COUNT" >> "$GITHUB_OUTPUT"
 
   rumors:
     needs: resolve
@@ -129,12 +139,36 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      # Resolves this job's item count: the manual override wins if given (needs.resolve.outputs.count
+      # non-empty), otherwise fetches this environment's admin-configured rumor_batch_size from
+      # Settings via get-content-batch-size.php, falling back to 6 if that call fails for any
+      # reason (endpoint down, network blip) — a fetch failure must never fail the whole batch.
+      - name: Determine rumor batch size
+        id: batch
+        env:
+          SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          OVERRIDE: ${{ needs.resolve.outputs.count }}
+        run: |
+          if [ -n "$OVERRIDE" ]; then
+            echo "using manual override: $OVERRIDE"
+            echo "count=$OVERRIDE" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          COUNT=$(curl -sf -H "Authorization: Bearer $INTEGRATION_SEED_TOKEN" "$SITE_URL/tools/get-content-batch-size.php" | jq -r '.rumor_batch_size // empty')
+          if [ -z "$COUNT" ]; then
+            echo "::warning::could not fetch rumor_batch_size from $SITE_URL — falling back to 6"
+            COUNT=6
+          fi
+          echo "resolved count: $COUNT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
       - name: Generate rumor cards
         env:
           SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
           INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node bin/generate-rumor-items.js --env=${{ matrix.environment }} --count=${{ needs.resolve.outputs.count }} ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
+        run: node bin/generate-rumor-items.js --env=${{ matrix.environment }} --count=${{ steps.batch.outputs.count }} ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
 
       # KB usage state (bin/state/rumor-generator-state.<env>.json) tracks which docs have already
       # been drawn for a real-fact card on this environment — committed here (not in a later shared
@@ -193,12 +227,34 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      # Same resolution logic as the rumors job's "Determine rumor batch size" step — see its
+      # comment for why a fetch failure falls back to 6 instead of failing the run.
+      - name: Determine trivia batch size
+        id: batch
+        env:
+          SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          OVERRIDE: ${{ needs.resolve.outputs.count }}
+        run: |
+          if [ -n "$OVERRIDE" ]; then
+            echo "using manual override: $OVERRIDE"
+            echo "count=$OVERRIDE" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          COUNT=$(curl -sf -H "Authorization: Bearer $INTEGRATION_SEED_TOKEN" "$SITE_URL/tools/get-content-batch-size.php" | jq -r '.trivia_batch_size // empty')
+          if [ -z "$COUNT" ]; then
+            echo "::warning::could not fetch trivia_batch_size from $SITE_URL — falling back to 6"
+            COUNT=6
+          fi
+          echo "resolved count: $COUNT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
       - name: Generate trivia questions
         env:
           SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
           INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node bin/generate-trivia-questions.js --env=${{ matrix.environment }} --count=${{ needs.resolve.outputs.count }} ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
+        run: node bin/generate-trivia-questions.js --env=${{ matrix.environment }} --count=${{ steps.batch.outputs.count }} ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
 
       # Same reasoning as the rumors job's state-commit step above — kept independent so this
       # job's progress isn't lost if another job fails/times out.

@@ -34,7 +34,7 @@ function chGetUsageSnapshot(PDO $db): array {
 // See epics/Real expiry & rotation for content-topup/feature-2-content-health-dashboard.md.
 if (!defined('KB_RUNWAY_LOW_WEEKS'))        define('KB_RUNWAY_LOW_WEEKS', 4);
 if (!defined('CONTENT_TOPUP_OVERDUE_HOURS')) define('CONTENT_TOPUP_OVERDUE_HOURS', 7 * 24 + 6); // 1 week + 6h grace
-if (!defined('KB_WEEKLY_DRAW_RATE'))        define('KB_WEEKLY_DRAW_RATE', 6.0); // ~6 items/batch, both generators
+if (!defined('KB_WEEKLY_DRAW_RATE'))        define('KB_WEEKLY_DRAW_RATE', 6.0); // fallback when the actual per-env setting isn't known (see chGetContentHealthSnapshot())
 
 // Pure (NFR-703) — takes an already-read string (or null, simulating file_get_contents()
 // returning false), never touches the filesystem itself. Returns ['usedCount' => int] or null
@@ -161,12 +161,25 @@ function chGetContentHealthSnapshot(PDO $db): array {
     $cadence = chContentTopupCadence();
     $overdue = ['test' => chIsCadenceOverdue($cadence['test']), 'live' => chIsCadenceOverdue($cadence['live'])];
 
+    // Draw rate per generator: use this environment's own admin-configured batch size
+    // (Settings tab, "Weekly Content Batch Size") for the column matching where this page is
+    // actually running — this process only has a live DB connection to its own environment's
+    // `settings` row, never the other one's, so the *other* env's column still falls back to
+    // KB_WEEKLY_DRAW_RATE's historical assumption rather than a value we can't actually see.
+    $settings  = getSettings();
+    $ownEnv    = (defined('APP_ENV') && APP_ENV === 'live') ? 'live' : 'test';
+    $drawRates = [
+        'rumor'  => [$ownEnv => (float) ($settings['rumor_batch_size'] ?? KB_WEEKLY_DRAW_RATE)],
+        'trivia' => [$ownEnv => (float) ($settings['trivia_batch_size'] ?? KB_WEEKLY_DRAW_RATE)],
+    ];
+
     $kbTotal  = chReadKbTotalDocs();
     $kbRunway = [];
     $lowKbRunway = false;
     foreach (['rumor', 'trivia'] as $generator) {
         foreach (['test', 'live'] as $env) {
-            $weeks = $kbTotal === null ? null : computeKbRunway(chReadGeneratorState($generator, $env), $kbTotal, KB_WEEKLY_DRAW_RATE);
+            $rate  = $drawRates[$generator][$env] ?? KB_WEEKLY_DRAW_RATE;
+            $weeks = $kbTotal === null ? null : computeKbRunway(chReadGeneratorState($generator, $env), $kbTotal, $rate);
             $kbRunway[$generator][$env] = $weeks;
             if ($weeks !== null && $weeks < KB_RUNWAY_LOW_WEEKS) {
                 $lowKbRunway = true;

@@ -127,3 +127,53 @@ test.describe('Settings form — home recap count', { tag: '@admin' }, () => {
         expect(clamped).toBeLessThanOrEqual(10);
     });
 });
+
+// ─── rumor_batch_size / trivia_batch_size (Weekly Content Batch Size) — persistence + clamp ──
+test.describe('Settings form — content batch size', { tag: '@admin' }, () => {
+    let originalRumor, originalTrivia;
+
+    test.beforeEach(async ({ page }) => {
+        await page.goto('/admin.php?tab=settings');
+        await page.click('[data-testid="settings-toggle-hero"]');
+        originalRumor = await page.inputValue('input[name="rumor_batch_size"]');
+        originalTrivia = await page.inputValue('input[name="trivia_batch_size"]');
+    });
+
+    test.afterEach(async ({ page }) => {
+        await page.goto('/admin.php?tab=settings');
+        await page.click('[data-testid="settings-toggle-hero"]');
+        const currentRumor = await page.inputValue('input[name="rumor_batch_size"]');
+        const currentTrivia = await page.inputValue('input[name="trivia_batch_size"]');
+        if (currentRumor !== originalRumor || currentTrivia !== originalTrivia) {
+            await page.fill('input[name="rumor_batch_size"]', originalRumor);
+            await page.fill('input[name="trivia_batch_size"]', originalTrivia);
+            await page.click('[data-testid="settings-save-btn"]');
+        }
+    });
+
+    test('rumor and trivia batch sizes persist independently across reload', async ({ page }) => {
+        await page.fill('input[name="rumor_batch_size"]', '9');
+        await page.fill('input[name="trivia_batch_size"]', '4');
+        await page.click('[data-testid="settings-save-btn"]');
+        await expect(page).toHaveURL(/tab=settings/);
+
+        await page.click('[data-testid="settings-toggle-hero"]');
+        await expect(page.locator('input[name="rumor_batch_size"]')).toHaveValue('9');
+        await expect(page.locator('input[name="trivia_batch_size"]')).toHaveValue('4');
+    });
+
+    // Same reasoning as home_recap_count's clamp test above — min/max is decorative,
+    // sanitizeInt() in admin.php's update_settings handler is the real gate (1-20).
+    test('an out-of-range value is clamped server-side, not just blocked client-side', async ({ page }) => {
+        const input = page.locator('input[name="rumor_batch_size"]');
+        await input.evaluate(el => el.removeAttribute('max'));
+        await input.fill('999');
+        await page.click('[data-testid="settings-save-btn"]');
+        await expect(page).toHaveURL(/tab=settings/);
+
+        await page.click('[data-testid="settings-toggle-hero"]');
+        const clamped = Number(await page.locator('input[name="rumor_batch_size"]').inputValue());
+        expect(clamped).toBeGreaterThanOrEqual(1);
+        expect(clamped).toBeLessThanOrEqual(20);
+    });
+});
