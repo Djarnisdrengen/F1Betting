@@ -49,7 +49,7 @@ if (php_sapi_name() !== 'cli') {
 }
 
 // Always log entering test mode or live mode
-logMessage("[DEBUG] Script running in " . ($TEST_MODE ? "TEST MODE" : "LIVE MODE"));
+logMessage("[INFO] Script running in " . ($TEST_MODE ? "TEST MODE" : "LIVE MODE"));
 
 //***************************************** */
 // Cron token validation
@@ -69,8 +69,6 @@ if (php_sapi_name() === 'cli') {
         || (isset($_GET['token']) && hash_equals(CRON_SECRET, $_GET['token']));
 }
 
-logMessage("[DEBUG] Cron token validation: " . ($tokenValid ? "VALID" : "INVALID"));
-
 // CRON_SECRET is ALWAYS required. Test mode only swaps the API for stub data; it must never
 // bypass authentication (previously `?test=true` alone skipped the token check entirely).
 if (!$tokenValid) {
@@ -82,7 +80,6 @@ if (!$tokenValid) {
 // Time window validation: only run 06-23
 //***************************************** */
 $hour = (int)date('H');
-logMessage("[DEBUG] Current hour: $hour");
 
 if (!$TEST_MODE && ($hour < 6 || $hour > 23)) {
     logMessage("[INFO] Outside allowed time window (06:00-23:59). Exiting.");
@@ -93,13 +90,12 @@ if (!$TEST_MODE && ($hour < 6 || $hour > 23)) {
 // Database connection
 //***************************************** */
 $db = getDB();
-logMessage("[DEBUG] Database connection established");
 
 //***************************************** */
 // Main import logic
 //***************************************** */
 $currentYear = date('Y');
-logMessage("[DEBUG] Fetching qualifying results for season $currentYear...");
+logMessage("[INFO] Fetching qualifying results for season $currentYear...");
 
 // Fetch data from API or stub
 if ($TEST_MODE) {
@@ -136,10 +132,9 @@ foreach ($races as $raceData) {
         continue;
     }
 
-    // Find the race in DB
+    // Find the race in DB (logs the specific reason itself if it can't be used)
     $race = findRace($db, $raceName, $raceDate);
     if (!$race) {
-        logMessage("[INFO] Race not found in database or already has qualifying results.");
         continue;
     }
 
@@ -202,12 +197,8 @@ logMessage("Total races updated: $importedCount");
 function fetchF1Api($endpoint) {
     global $TEST_MODE;
 
-    logMessage("[DEBUG] fetchF1Api called with endpoint: $endpoint, TEST_MODE=" . ($TEST_MODE ? "true" : "false"));
-
     // Test mode: return stub data
     if ($TEST_MODE) {
-        logMessage("[DEBUG] Returning stub data for endpoint: $endpoint");
-
         return [
             'MRData' => [
                 'RaceTable' => [
@@ -263,7 +254,6 @@ function fetchF1Api($endpoint) {
 
     do {
         $url = F1_API_BASE . $endpoint . '.json?limit=' . $pageLimit . '&offset=' . $offset;
-        logMessage("[DEBUG] Fetching URL: $url");
 
         $response = @file_get_contents($url, false, $context);
         if ($response === false) {
@@ -279,7 +269,6 @@ function fetchF1Api($endpoint) {
 
         $total     = (int)($page['MRData']['total']  ?? 0);
         $pageRaces = $page['MRData']['RaceTable']['Races'] ?? [];
-        logMessage("[DEBUG] Page offset=$offset: got " . count($pageRaces) . " races, total=$total");
 
         // Merge races — a race at a page boundary may have its QualifyingResults split
         foreach ($pageRaces as $race) {
@@ -302,7 +291,7 @@ function fetchF1Api($endpoint) {
     $data = $page; // reuse last page as envelope
     $data['MRData']['RaceTable']['Races'] = array_values($allRaces);
 
-    logMessage("[DEBUG] Pagination complete: " . count($allRaces) . " races total");
+    logMessage("[INFO] Pagination complete: " . count($allRaces) . " races total");
     return $data;
 }
 
@@ -311,8 +300,6 @@ function fetchF1Api($endpoint) {
 // Helper functions with added debug logging
 //***************************************** */
 function findDriverId($db, $driverCode, $driverName, $permanentNumber) {
-    logMessage("[DEBUG] Searching for driver: Name='$driverName', Code='$driverCode', Number='$permanentNumber'");
-
     $nameParts = explode(' ', $driverName);
     $lastName = end($nameParts);
 
@@ -321,7 +308,6 @@ function findDriverId($db, $driverCode, $driverName, $permanentNumber) {
     $driver = $stmt->fetch();
 
     if ($driver) {
-        logMessage("[DEBUG] Found driver by last name: $driverName -> ID {$driver['id']}");
         return $driver['id'];
     }
 
@@ -331,7 +317,6 @@ function findDriverId($db, $driverCode, $driverName, $permanentNumber) {
         $driver = $stmt->fetch();
 
         if ($driver) {
-            logMessage("[DEBUG] Found driver by number: $driverName (#$permanentNumber) -> ID {$driver['id']}");
             return $driver['id'];
         }
     }
@@ -340,30 +325,37 @@ function findDriverId($db, $driverCode, $driverName, $permanentNumber) {
     return null;
 }
 
+// Looks up the race for $raceDate and returns it only if it's still awaiting qualifying
+// results. If it can't be used, logs exactly which of the two distinct situations applies
+// (no matching race at all vs. a matching race that already has quali results) and returns null.
 function findRace($db, $raceName, $raceDate) {
-    logMessage("[DEBUG] Searching for race: Name='$raceName', Date='$raceDate'");
-
-    $stmt = $db->prepare("SELECT * FROM races WHERE race_date = ? AND (quali_p1 IS NULL OR quali_p1 = '')");
+    // Prefer a race still missing quali results over one that already has them,
+    // so a stale duplicate row can't hide the race we actually need to update.
+    $stmt = $db->prepare("
+        SELECT * FROM races WHERE race_date = ?
+        ORDER BY (quali_p1 IS NULL OR quali_p1 = '') DESC LIMIT 1
+    ");
     $stmt->execute([$raceDate]);
     $race = $stmt->fetch();
 
-    if ($race) {
-        logMessage("[DEBUG] Race found by exact date: {$race['name']} (ID {$race['id']})");
-        return $race;
+    if (!$race) {
+        $stmt = $db->prepare("
+            SELECT * FROM races
+            WHERE race_date BETWEEN DATE_SUB(?, INTERVAL 1 DAY) AND DATE_ADD(?, INTERVAL 1 DAY)
+            ORDER BY (quali_p1 IS NULL OR quali_p1 = '') DESC LIMIT 1
+        ");
+        $stmt->execute([$raceDate, $raceDate]);
+        $race = $stmt->fetch();
     }
 
-    $stmt = $db->prepare("
-        SELECT * FROM races 
-        WHERE race_date BETWEEN DATE_SUB(?, INTERVAL 1 DAY) AND DATE_ADD(?, INTERVAL 1 DAY)
-        AND (quali_p1 IS NULL OR quali_p1 = '')
-    ");
-    $stmt->execute([$raceDate, $raceDate]);
-    $race = $stmt->fetch();
+    if (!$race) {
+        logMessage("[INFO] Race not found in database: $raceName ($raceDate). Skipping.");
+        return null;
+    }
 
-    if ($race) {
-        logMessage("[DEBUG] Race found by date range: {$race['name']} (ID {$race['id']})");
-    } else {
-        logMessage("[DEBUG] Race not found in DB for date $raceDate: $raceName (skipped)");
+    if (!empty($race['quali_p1'])) {
+        logMessage("[INFO] Race already has qualifying results: {$race['name']} (ID {$race['id']}). Skipping.");
+        return null;
     }
 
     return $race;
