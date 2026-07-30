@@ -158,7 +158,7 @@ function getBettingStatus($race, $settings = null) {
     $bettingOpens = clone $raceDateTime;
     $bettingOpens->modify("-{$bettingWindowHours} hours");
     
-    if ($race['result_p1']) {
+    if (!empty($race['result_p1'])) {
         return ['status' => 'completed', 'label' => t('race_completed'), 'class' => 'status-completed'];
     }
     if ($now < $bettingOpens) {
