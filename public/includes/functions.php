@@ -185,7 +185,9 @@ function getSettings() {
         'points_p3' => 15,
         'points_wrong_pos' => 5,
         'betting_window_hours' => 48,
-        'challenges_enabled' => 1
+        'challenges_enabled' => 1,
+        'rumor_batch_size' => 6,
+        'trivia_batch_size' => 6
     ];
 }
 

@@ -125,11 +125,19 @@ deliberately reverses the older "drafts on test only, human publishes" posture; 
 that content quality goes out ungated (a single malformed Claude response is still skipped, but a
 wrong trivia answer or an off rumor reaches players with no human check).
 **Can also be triggered:** manually via the Actions tab → "Run workflow", with `environment`
-(test/live, default test — the *schedule* always does both), `count`, `target`
-(`both`/`rumors`/`trivia`, default `both`), and `publish` (`true`/`false`, default `true`) inputs.
-Set `publish=false` for a drafts-only preview run you review on `admin-challenges.php`; use
-`target` to re-run just one generator (e.g. after the other already succeeded but this one hit
-the job timeout).
+(test/live, default test — the *schedule* always does both), `count` (optional override, blank by
+default), `target` (`both`/`rumors`/`trivia`, default `both`), and `publish` (`true`/`false`,
+default `true`) inputs. Set `publish=false` for a drafts-only preview run you review on
+`admin-challenges.php`; use `target` to re-run just one generator (e.g. after the other already
+succeeded but this one hit the job timeout).
+
+**Batch size** (items per competition) defaults to the admin-configured `rumor_batch_size`/
+`trivia_batch_size` settings (`admin.php?tab=settings` → Recap Carousel section → "Weekly Content
+Batch Size", default 6 each) — per environment, since test and live are separate databases. The
+workflow has no direct DB access, so each rumors/trivia×env job fetches its own environment's
+value over HTTP from `public/tools/get-content-batch-size.php` (Bearer-token auth) right before
+generating, falling back to `6` if that fetch fails. Filling in the manual `count` input overrides
+this and skips the fetch entirely for that one run.
 
 Runs `bin/generate-rumor-items.js` and `bin/generate-trivia-questions.js`, which call the
 Anthropic API to draft Rumor or Not items and Trivia questions from

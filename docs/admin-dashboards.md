@@ -251,6 +251,10 @@ tab, below the usage panel above — not a new top-level tab. `chGetContentHealt
   change the deployed PHP process had no way to see this data at all. Degrades to "Unknown" on a
   missing/malformed file (`parseGeneratorState()`/`computeKbRunway()` are pure and unit-tested for
   exactly this — `tests/unit/content-health-harness.php`), never a fabricated number or a fatal.
+  The draw rate is the admin-configured `rumor_batch_size`/`trivia_batch_size` (Settings tab —
+  see `docs/paddock-challenges-reference.md`) for this environment's own column only; the other
+  environment's column falls back to the historical 6/week assumption since this page's DB
+  connection can't see the other env's `settings` row.
 
 `chGetUsageSnapshot()`'s `flagCount` (feeding the Oversigt tile) now reflects real Content Supply
 flags — overdue batch, blocked archival, low KB runway — instead of the previous hardcoded `0`.
