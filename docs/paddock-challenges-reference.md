@@ -141,7 +141,7 @@ bad or stale KB doc itself, or a fabricated rumor that coincidentally turns out 
 through. **Spot-checking the live tabs periodically (or running the `f1-data-validation` skill
 directly against recent content) remains the deeper mitigation.**
 
-**Content exhaustion — the failure mode to watch for.** The KB has under 100 docs, and each environment now draws from it independently (per-env state files). After a few months of sustained weekly runs an environment's unused pool runs out; that env's generator then hard-fails with `"Only N unused KB docs left, need M"` instead of silently generating less. **A failed matrix job in `cron-content-topup.yml` is one signal** (per environment — test and live exhaust separately) — check GitHub Actions. As of 2026-07-27 there's also a proactive one: the **Content Supply** panel on `admin-dashboards.php?tab=challenges` shows estimated weeks of KB runway remaining per generator per environment (see "Content expiry & archival" below) — no need to wait for a failed run to notice. Fix by growing the `paddock-rumors/` KB (re-run its own `update-kb.js` pipeline) or, in future, allowing doc reuse after a cooldown (not implemented yet).
+**Content exhaustion — the failure mode to watch for.** The KB has under 100 docs, and each environment now draws from it independently (per-env state files). After a few months of sustained weekly runs an environment's unused pool runs out; that env's generator then hard-fails with `"Only N unused KB docs left, need M"` instead of silently generating less. **A failed matrix job in `cron-content-topup.yml` is one signal** (per environment — test and live exhaust separately) — check GitHub Actions. As of 2026-07-27 there's also a proactive one: the **Content Supply** panel on `admin-dashboards.php?tab=challenges` shows estimated weeks of KB runway remaining per generator for this environment (see "Content expiry & archival" below) — no need to wait for a failed run to notice, and check both hosts separately since each only ever shows its own. Fix by growing the `paddock-rumors/` KB (re-run its own `update-kb.js` pipeline) or, in future, allowing doc reuse after a cooldown (not implemented yet).
 
 **Blind spot to know about:** `nextRumorItem()` / `nextTriviaQuestion()` (`challenges.php`) both return `null` cleanly when there's nothing left — the UI shows the same pleasant empty state whether a player has genuinely answered everything, or there was never any published content for the period. Trivia is the sharper case: `ch_all_caught_up` covers both "you finished this week's quiz" and "zero questions were published this week" with identical copy. A player screenshot alone can't tell you which — check the actual counts on `admin-challenges.php`.
 
@@ -183,28 +183,30 @@ Supply**, sits below the existing player-usage panel (`chGetContentHealthSnapsho
 `challenges-usage-lib.php`): live/archived counts per game, the rumor guard-blocked flag, and two
 things that previously required checking GitHub Actions or running ad-hoc SQL by hand —
 
-- **Batch cadence**, test and live shown independently: last `cron-content-topup.yml` run's
-  status per environment, reusing the existing cached GitHub Actions run data
-  (`ghListWorkflowRunsMulti()` — no new API calls). Distinguishing test from live needs the
-  *job*-level result of the latest run (the workflow fans out into a job per generator per
-  environment), not just the run-level status, since a live-only failure must show as live
-  failing while test still shows healthy — this is why test currently shows OK and live shows
-  Failed on this panel: the pipeline has only ever actually run against test's schema (see
-  [Paddock Challenges Phase status] in project memory).
-- **KB runway**, per generator per environment: reads
-  `bin/state/{rumor,trivia}-generator-state.<env>.json` directly. These files are committed by
-  `cron-content-topup.yml` but live at the **repo root**, outside `public/` — `build-deploy/deploy.js`
-  was extended in this same epic to also upload them to `{remoteDir}/bin/state/` (same
-  non-web-accessible placement as `config.php`) specifically so this panel could read them; before
-  that change, the PHP process on the deployed server had no way to see this data at all. A
-  missing/malformed file degrades to "Unknown," never a fabricated number or a fatal error. The
-  weekly draw rate used for the estimate is the admin-configured `rumor_batch_size`/
-  `trivia_batch_size` (see "Batch size" above) for **this environment's own column only** — the
-  page's PHP process has a live DB connection to just the environment it's running on (`APP_ENV`),
-  never the other one's `settings` row, so the *other* environment's column still falls back to
-  the historical assumption of 6/week rather than a value this process can't actually see.
+- **Batch cadence**, this environment only (cross-environment cleanup, 2026-07-31 — this panel
+  used to show test and live side by side, the one exception to the rest of the admin area's
+  single-environment rule): last `cron-content-topup.yml` run's status for this instance's own
+  `APP_ENV`, reusing the existing cached GitHub Actions run data (`ghListWorkflowRunsMulti()` — no
+  new API calls). Needs the *job*-level result of the latest run (the workflow fans out into a job
+  per generator per environment), not just the run-level status, since this environment's own
+  failure/success must never be conflated with the other's — only the job(s) matching this
+  environment's `(test)`/`(live)` name suffix are ever read.
+- **KB runway**, one row per generator, this environment only: reads
+  `bin/state/{rumor,trivia}-generator-state.<env>.json` for this instance's own `<env>` — the
+  other environment's file is never opened. These files are committed by `cron-content-topup.yml`
+  but live at the **repo root**, outside `public/` — `build-deploy/deploy.js` was extended in the
+  content-topup epic to also upload them to `{remoteDir}/bin/state/` (same non-web-accessible
+  placement as `config.php`) specifically so this panel could read them; before that change, the
+  PHP process on the deployed server had no way to see this data at all. A missing/malformed file
+  degrades to "Unknown," never a fabricated number or a fatal error. The weekly draw rate used for
+  the estimate is the admin-configured `rumor_batch_size`/`trivia_batch_size` (see "Batch size"
+  above) for this environment's own setting.
+- The panel header carries a single "Test"/"Live" indicator (same `$envLabel` convention as Nøgler
+  & Rotation) so which environment the numbers reflect is still explicit.
 
-See `docs/admin-dashboards.md` for the panel's own reference entry.
+See `docs/admin-dashboards.md` for the panel's own reference entry, including why the GitHub
+Actions dashboard itself was deliberately left showing both environments' job data (shared CI/CD
+ops view, not per-environment app state — a scoping decision, not an oversight).
 
 ---
 

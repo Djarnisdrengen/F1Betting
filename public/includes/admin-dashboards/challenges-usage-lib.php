@@ -80,19 +80,34 @@ function chReadKbTotalDocs(): ?int {
     return is_array($data) ? count($data) : null;
 }
 
-// Batch cadence per environment (REQ-704) — reuses the existing GH Actions run cache
+// Batch cadence for this environment only (REQ-704) — reuses the existing GH Actions run cache
 // (ghListWorkflowRunsMulti(), warmed every 5 minutes by cron/warm_actions_cache.php — NFR-701,
 // no new GitHub API calls on a normal page load). cron-content-topup.yml fans out into a
-// job-per-(generator, environment) matrix on every scheduled run, so distinguishing test vs
-// live cadence needs the *job* list of the latest completed run, not just its run-level status
-// — a run-level view can't tell "test ok, live failed" from "both failed" (NFR-702's per-
-// environment distinctness). Job names carry the matrix suffix "(test)"/"(live)" (GitHub's own
-// naming convention for a matrixed job). Scoped to the single latest completed run only, not a
-// multi-run scan — ghListRunJobs() caches a completed run's jobs for 30 days, so in steady
-// state this is a local cache read, not a live API call.
-function chContentTopupCadence(): array {
+// job-per-(generator, environment) matrix on every scheduled run, so telling this environment's
+// cadence apart from the other's needs the *job* list of the latest completed run, not just its
+// run-level status — a run-level view can't tell "this env ok, other failed" from "both failed."
+// Job names carry the matrix suffix "(test)"/"(live)" (GitHub's own naming convention for a
+// matrixed job) — only the suffix matching this instance's own APP_ENV is read; the other
+// environment's jobs in the same run are never inspected. Scoped to the single latest completed
+// run only, not a multi-run scan — ghListRunJobs() caches a completed run's jobs for 30 days, so
+// in steady state this is a local cache read, not a live API call.
+// Pure — isolates the one part of chContentTopupCadence() worth unit-testing without a live
+// GitHub API/cache dependency: given a completed run's job list, does the "($env)" suffix match
+// pick out only that environment's jobs, and does the worst-of-3 status aggregation hold. Returns
+// null (not "unknown") when no job in this run matches $env, so the caller can tell "no data for
+// this env" apart from a real status.
+function chAggregateEnvCadenceStatus(array $jobs, string $env): ?string {
+    $envJobs = array_values(array_filter($jobs, fn($j) => str_contains($j['name'] ?? '', "($env)")));
+    if (!$envJobs) {
+        return null;
+    }
+    $statuses = array_map('ghNormalizeRunStatus', $envJobs);
+    return in_array('failure', $statuses, true) ? 'failure'
+        : (in_array('in_progress', $statuses, true) ? 'in_progress' : 'success');
+}
+
+function chContentTopupCadence(string $env): array {
     $unknown = ['status' => 'unknown', 'lastRunAt' => null];
-    $result  = ['test' => $unknown, 'live' => $unknown];
 
     $runs = ghListWorkflowRunsMulti(['cron-content-topup.yml'], 5)['cron-content-topup.yml'] ?? [];
     $latest = null;
@@ -103,22 +118,13 @@ function chContentTopupCadence(): array {
         }
     }
     if (!$latest) {
-        return $result;
+        return $unknown;
     }
 
     $lastRunAt = $latest['run_started_at'] ?? $latest['created_at'] ?? null;
     $jobs = ghListRunJobs((int) $latest['id'], true);
-    foreach (['test', 'live'] as $env) {
-        $envJobs = array_values(array_filter($jobs, fn($j) => str_contains($j['name'] ?? '', "($env)")));
-        if (!$envJobs) {
-            continue;
-        }
-        $statuses = array_map('ghNormalizeRunStatus', $envJobs);
-        $status = in_array('failure', $statuses, true) ? 'failure'
-            : (in_array('in_progress', $statuses, true) ? 'in_progress' : 'success');
-        $result[$env] = ['status' => $status, 'lastRunAt' => $lastRunAt];
-    }
-    return $result;
+    $status = chAggregateEnvCadenceStatus($jobs, $env);
+    return $status === null ? $unknown : ['status' => $status, 'lastRunAt' => $lastRunAt];
 }
 
 // "Overdue" (REQ-704) — no run recorded at all, or the most recent one for this environment is
@@ -158,41 +164,39 @@ function chGetContentHealthSnapshot(PDO $db): array {
     // can never disagree with what the cron would actually do.
     $rumorGuardBlocked = rumorArchiveBudget($rumorLive, RUMOR_MIN_LIVE) <= 0;
 
-    $cadence = chContentTopupCadence();
-    $overdue = ['test' => chIsCadenceOverdue($cadence['test']), 'live' => chIsCadenceOverdue($cadence['live'])];
+    $ownEnv  = (defined('APP_ENV') && APP_ENV === 'live') ? 'live' : 'test';
+    $cadence = chContentTopupCadence($ownEnv);
+    $overdue = chIsCadenceOverdue($cadence);
 
     // Draw rate per generator: use this environment's own admin-configured batch size
-    // (Settings tab, "Weekly Content Batch Size") for the column matching where this page is
-    // actually running — this process only has a live DB connection to its own environment's
-    // `settings` row, never the other one's, so the *other* env's column still falls back to
-    // KB_WEEKLY_DRAW_RATE's historical assumption rather than a value we can't actually see.
+    // (Settings tab, "Weekly Content Batch Size") — this process only has a live DB connection
+    // to its own environment's `settings` row, and the other environment's data is never read
+    // at all, so there's no "other env" column to derive a rate for anymore.
     $settings  = getSettings();
-    $ownEnv    = (defined('APP_ENV') && APP_ENV === 'live') ? 'live' : 'test';
     $drawRates = [
-        'rumor'  => [$ownEnv => (float) ($settings['rumor_batch_size'] ?? KB_WEEKLY_DRAW_RATE)],
-        'trivia' => [$ownEnv => (float) ($settings['trivia_batch_size'] ?? KB_WEEKLY_DRAW_RATE)],
+        'rumor'  => (float) ($settings['rumor_batch_size'] ?? KB_WEEKLY_DRAW_RATE),
+        'trivia' => (float) ($settings['trivia_batch_size'] ?? KB_WEEKLY_DRAW_RATE),
     ];
 
     $kbTotal  = chReadKbTotalDocs();
     $kbRunway = [];
     $lowKbRunway = false;
     foreach (['rumor', 'trivia'] as $generator) {
-        foreach (['test', 'live'] as $env) {
-            $rate  = $drawRates[$generator][$env] ?? KB_WEEKLY_DRAW_RATE;
-            $weeks = $kbTotal === null ? null : computeKbRunway(chReadGeneratorState($generator, $env), $kbTotal, $rate);
-            $kbRunway[$generator][$env] = $weeks;
-            if ($weeks !== null && $weeks < KB_RUNWAY_LOW_WEEKS) {
-                $lowKbRunway = true;
-            }
+        $rate  = $drawRates[$generator];
+        $weeks = $kbTotal === null ? null : computeKbRunway(chReadGeneratorState($generator, $ownEnv), $kbTotal, $rate);
+        $kbRunway[$generator] = $weeks;
+        if ($weeks !== null && $weeks < KB_RUNWAY_LOW_WEEKS) {
+            $lowKbRunway = true;
         }
     }
 
     return [
         'rumor'    => ['live' => $rumorLive, 'archived' => $rumorArchived, 'guardBlocked' => $rumorGuardBlocked],
         'trivia'   => ['live' => $triviaLive, 'archived' => $triviaArchived],
+        'env'      => $ownEnv,
         'cadence'  => $cadence,
         'overdue'  => $overdue,
         'kbRunway' => $kbRunway,
-        'flagCount' => (int) $rumorGuardBlocked + (int) $overdue['test'] + (int) $overdue['live'] + (int) $lowKbRunway,
+        'flagCount' => (int) $rumorGuardBlocked + (int) $overdue + (int) $lowKbRunway,
     ];
 }

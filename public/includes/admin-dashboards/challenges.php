@@ -116,6 +116,8 @@ $funnelSteps = [
 // Second panel on this same tab (plan.md decision 5) — not a new top-level tab.
 $health = chGetContentHealthSnapshot($db);
 
+$envLabel = (defined('APP_ENV') && APP_ENV === 'live') ? 'Live' : 'Test';
+
 function chCadenceBadgeMeta(string $status, bool $overdue): array {
     if ($overdue) {
         return ['label' => t('admin_dash_ch_cadence_overdue'), 'color' => '#ef4444'];
@@ -193,7 +195,10 @@ function chCadenceBadgeMeta(string $status, bool $overdue): array {
 </section>
 
 <section class="section-card" style="padding:18px 20px;margin-top:18px">
-    <h3 style="margin:0 0 14px;font-size:15px"><i class="fas fa-box-archive" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_ch_supply_title') ?></h3>
+    <h3 style="margin:0 0 14px;font-size:15px;display:flex;align-items:center;justify-content:space-between">
+    <span><i class="fas fa-box-archive" style="color:var(--f1-red);margin-right:7px"></i><?= t('admin_dash_ch_supply_title') ?></span>
+    <span class="label-mono" style="font-size:11px;color:var(--text-muted)"><?= escape($envLabel) ?></span>
+</h3>
 
     <div class="stat-card-grid" style="margin-bottom:16px">
         <div class="stat-card">
@@ -219,36 +224,27 @@ function chCadenceBadgeMeta(string $status, bool $overdue): array {
     <?php endif; ?>
 
     <h4 style="margin:0 0 10px;font-size:13px;color:var(--text-muted);text-transform:uppercase"><?= t('admin_dash_ch_cadence_title') ?></h4>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <?php foreach (['test', 'live'] as $env): $c = $health['cadence'][$env]; $meta = chCadenceBadgeMeta($c['status'], $health['overdue'][$env]); ?>
-        <div style="border:1px solid var(--border-color);border-radius:11px;padding:12px 14px">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-                <span class="label-mono" style="font-size:12px;text-transform:uppercase"><?= strtoupper($env) ?></span>
-                <span class="label-badge" style="padding:3px 8px;border-radius:999px;background:<?= $meta['color'] ?>;color:#fff;font-size:11px"><?= $meta['label'] ?></span>
-            </div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
-                <?= $c['lastRunAt']
-                    ? sprintf(t('admin_dash_ch_cadence_last_run'), ghRelativeTime(new DateTimeImmutable($c['lastRunAt']), new DateTimeImmutable('now', new DateTimeZone('UTC')), $lang))
-                    : t('admin_dash_ch_cadence_no_run') ?>
-            </div>
+    <?php $meta = chCadenceBadgeMeta($health['cadence']['status'], $health['overdue']); ?>
+    <div style="border:1px solid var(--border-color);border-radius:11px;padding:12px 14px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="label-badge" style="padding:3px 8px;border-radius:999px;background:<?= $meta['color'] ?>;color:#fff;font-size:11px"><?= $meta['label'] ?></span>
         </div>
-        <?php endforeach; ?>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
+            <?= $health['cadence']['lastRunAt']
+                ? sprintf(t('admin_dash_ch_cadence_last_run'), ghRelativeTime(new DateTimeImmutable($health['cadence']['lastRunAt']), new DateTimeImmutable('now', new DateTimeZone('UTC')), $lang))
+                : t('admin_dash_ch_cadence_no_run') ?>
+        </div>
     </div>
 
     <h4 style="margin:0 0 10px;font-size:13px;color:var(--text-muted);text-transform:uppercase"><?= t('admin_dash_ch_kb_title') ?></h4>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <?php foreach (['rumor' => t('admin_dash_ch_supply_rumor'), 'trivia' => t('admin_dash_ch_supply_trivia')] as $generator => $generatorLabel): ?>
+        <?php foreach (['rumor' => t('admin_dash_ch_supply_rumor'), 'trivia' => t('admin_dash_ch_supply_trivia')] as $generator => $generatorLabel): $weeks = $health['kbRunway'][$generator]; $low = $weeks !== null && $weeks < KB_RUNWAY_LOW_WEEKS; ?>
         <div style="border:1px solid var(--border-color);border-radius:11px;padding:12px 14px">
             <div style="font-weight:700;font-size:13px;margin-bottom:6px"><?= escape($generatorLabel) ?></div>
-            <?php foreach (['test', 'live'] as $env): $weeks = $health['kbRunway'][$generator][$env]; $low = $weeks !== null && $weeks < KB_RUNWAY_LOW_WEEKS; ?>
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0">
-                <span class="label-mono" style="color:var(--text-muted)"><?= strtoupper($env) ?></span>
-                <span style="<?= $low ? 'color:var(--status-warning)' : '' ?>">
-                    <?= $weeks === null ? t('admin_dash_ch_kb_unknown') : sprintf(t('admin_dash_ch_kb_weeks'), round($weeks, 1)) ?>
-                    <?= $low ? ' · ' . t('admin_dash_ch_kb_low') : '' ?>
-                </span>
-            </div>
-            <?php endforeach; ?>
+            <span style="font-size:12px;<?= $low ? 'color:var(--status-warning)' : '' ?>">
+                <?= $weeks === null ? t('admin_dash_ch_kb_unknown') : sprintf(t('admin_dash_ch_kb_weeks'), round($weeks, 1)) ?>
+                <?= $low ? ' · ' . t('admin_dash_ch_kb_low') : '' ?>
+            </span>
         </div>
         <?php endforeach; ?>
     </div>

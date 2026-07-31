@@ -92,29 +92,28 @@ test.describe('Dashboards Challenges — Content Supply panel', { tag: '@admin' 
         await expect(page.locator('.alert-warning')).toHaveCount(0);
     });
 
-    // REQ-704: test and live cadence render as two distinct, independently-labeled blocks —
-    // real values (ok/failed/overdue/unknown) depend on actual GH Actions run history, which
-    // this suite doesn't control, so this checks structural independence, not specific states.
-    test('batch cadence shows test and live as two distinct blocks', async ({ page }) => {
+    // REQ-704 (revised, cross-environment cleanup): this dashboard shows only its own running
+    // environment's cadence — no other-environment block anywhere on the page. The panel header
+    // carries a single "Test"/"Live" indicator (matching Nøgler & Rotation's $envLabel
+    // convention); e2e always runs against DEPLOY_ENV=test, so it always reads "Test" here.
+    test('batch cadence shows this environment only, not a test/live pair', async ({ page }) => {
         await page.goto('/admin-dashboards.php?tab=challenges');
-        // "TEST"/"LIVE" also appear in the KB runway section below (REQ-705, same span.label-mono
-        // convention) — .first() here just proves at least one of each renders in the cadence
-        // block; the KB-runway-specific test below covers the full expected count.
-        await expect(page.getByText('TEST', { exact: true }).first()).toBeVisible();
-        await expect(page.getByText('LIVE', { exact: true }).first()).toBeVisible();
+        await expect(page.getByText('Test', { exact: true })).toHaveCount(1);
+        await expect(page.getByText('Live', { exact: true })).toHaveCount(0);
     });
 
-    // REQ-705: KB runway renders one row per generator per environment (2 generators × 2 envs).
-    test('KB runway shows both generators for both environments', async ({ page }) => {
+    // REQ-705 (revised): KB runway renders one row per generator (not per generator per
+    // environment) — 2 generators, no env split.
+    test('KB runway shows one row per generator, not per environment', async ({ page }) => {
         await page.goto('/admin-dashboards.php?tab=challenges');
         // "Rumor or Not" also appears in the competitions card and this panel's own live/archived
         // stat labels above — .first() just proves the KB runway heading renders at all.
         await expect(page.getByText('Rumor or Not').first()).toBeVisible();
         await expect(page.getByText('Trivia').first()).toBeVisible();
-        // 2 generator blocks × 2 env rows each = 4 TEST/LIVE labels in the KB runway section
-        // alone, plus the 2 from the cadence section above — 6 total on the page.
+        // No per-row env labels remain in the KB runway section — only the one panel-header
+        // indicator (checked above) identifies the environment.
         const envLabels = page.locator('span.label-mono').filter({ hasText: /^(TEST|LIVE)$/ });
-        await expect(envLabels).toHaveCount(6);
+        await expect(envLabels).toHaveCount(0);
     });
 
     // REQ-706: still no writes anywhere on this page, including the new panel.

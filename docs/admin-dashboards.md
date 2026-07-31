@@ -236,15 +236,20 @@ tab, below the usage panel above — not a new top-level tab. `chGetContentHealt
 - **Rumor guard-blocked flag** — computed live via `rumorArchiveBudget()` (the same pure function
   the Monday archival cron step uses), not a persisted "last run" flag, so it always reflects
   "would a run right now be blocked" and can never go stale between Monday runs.
-- **Batch cadence**, test and live shown as two independent blocks — reuses the existing cached
-  GitHub Actions run data (`ghListWorkflowRunsMulti()`, no new API calls), but needed the *job*-level
-  result of `cron-content-topup.yml`'s latest completed run (not just the run-level status) to tell
-  "test ok, live failed" apart from "both failed," since the workflow fans out into a
-  job-per-(generator, environment) matrix. Jobs are matched by the `(test)`/`(live)` suffix GitHub
-  appends to a matrixed job's display name. Scoped to the single latest completed run, not a
-  multi-run scan — `ghListRunJobs()` already caches a completed run's jobs for 30 days.
-- **KB runway**, per generator per environment — reads
-  `bin/state/{rumor,trivia}-generator-state.<env>.json` off disk. These files are committed by
+- **Batch cadence**, this environment only (cross-environment cleanup, 2026-07-31 — see "No live
+  environment toggle" above; this panel used to show both test and live side by side and was the
+  one real exception to that rule) — reuses the existing cached GitHub Actions run data
+  (`ghListWorkflowRunsMulti()`, no new API calls), but needed the *job*-level result of
+  `cron-content-topup.yml`'s latest completed run (not just the run-level status), since the
+  workflow fans out into a job-per-(generator, environment) matrix and only this instance's own
+  `APP_ENV` suffix (`(test)`/`(live)`, GitHub's own naming convention for a matrixed job) is ever
+  read — the other environment's jobs in the same run are never inspected. The matching/aggregation
+  step is isolated into the pure `chAggregateEnvCadenceStatus()` and unit-tested independent of the
+  GitHub API — `tests/unit/content-health-harness.php`. Scoped to the single latest completed run,
+  not a multi-run scan — `ghListRunJobs()` already caches a completed run's jobs for 30 days.
+- **KB runway**, one row per generator for this environment only — reads
+  `bin/state/{rumor,trivia}-generator-state.<env>.json` off disk, `<env>` fixed to this instance's
+  own `APP_ENV`; the other environment's state file is never opened. These files are committed by
   `cron-content-topup.yml` at the **repo root**, outside `public/`; `build-deploy/deploy.js` was
   extended in this same epic to also upload `bin/state/*.json` to `{remoteDir}/bin/state/` (same
   non-web-accessible placement as `config.php`, one level above the web root) — without that
@@ -252,9 +257,19 @@ tab, below the usage panel above — not a new top-level tab. `chGetContentHealt
   missing/malformed file (`parseGeneratorState()`/`computeKbRunway()` are pure and unit-tested for
   exactly this — `tests/unit/content-health-harness.php`), never a fabricated number or a fatal.
   The draw rate is the admin-configured `rumor_batch_size`/`trivia_batch_size` (Settings tab —
-  see `docs/paddock-challenges-reference.md`) for this environment's own column only; the other
-  environment's column falls back to the historical 6/week assumption since this page's DB
-  connection can't see the other env's `settings` row.
+  see `docs/paddock-challenges-reference.md`) for this environment's own setting only.
+- **Panel header env indicator** — a single "Test"/"Live" label next to the panel title, the same
+  `$envLabel` convention `keys.php` uses for Nøgler & Rotation's own chrome, so the one environment
+  this data reflects is still explicit even without a second column to contrast it against.
+
+The GitHub Actions dashboard itself (`actions.php`/`actions-dashboard.php`, and PaddockKB's reuse
+of it) was deliberately **not** brought in line with this — it's a shared CI/CD ops view over one
+GitHub Actions pipeline, not per-environment app state, so a matrixed run's `(test)`/`(live)` job
+rows still render as-is (e.g. "did the live cron job fail?" stays visible while looking at the
+dashboard from test). Non-matrixed workflows (nightly tests, nightly backup, monthly security
+review, `kb-update`) have no env concept to filter on regardless. Decided explicitly, not an
+oversight — see the Content Supply panel above for the one place this admin area actually did
+have real cross-environment display to remove.
 
 `chGetUsageSnapshot()`'s `flagCount` (feeding the Oversigt tile) now reflects real Content Supply
 flags — overdue batch, blocked archival, low KB runway — instead of the previous hardcoded `0`.

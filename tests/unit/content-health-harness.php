@@ -11,6 +11,7 @@ if (php_sapi_name() !== 'cli') {
     exit(1);
 }
 
+require __DIR__ . '/../../public/includes/actions-dashboard.php'; // ghNormalizeRunStatus() only
 require __DIR__ . '/../../public/includes/admin-dashboards/challenges-usage-lib.php';
 
 $fails = 0;
@@ -47,6 +48,36 @@ check(
 check(
     'zero used → full runway',
     computeKbRunway(['usedCount' => 0], 60, 6.0) === 10.0
+);
+
+// ── chAggregateEnvCadenceStatus() ── (cross-environment cleanup: only this env's jobs are ever
+// read out of a matrixed run's job list — never the other environment's, even though both are
+// present in the same $jobs array)
+$mixedJobs = [
+    ['name' => 'rumors (test)',  'status' => 'completed', 'conclusion' => 'success'],
+    ['name' => 'trivia (test)',  'status' => 'completed', 'conclusion' => 'success'],
+    ['name' => 'rumors (live)',  'status' => 'completed', 'conclusion' => 'failure'],
+    ['name' => 'trivia (live)',  'status' => 'completed', 'conclusion' => 'failure'],
+];
+check(
+    'picks only this env\'s jobs: test succeeds while live fails in the same run',
+    chAggregateEnvCadenceStatus($mixedJobs, 'test') === 'success'
+);
+check(
+    'picks only this env\'s jobs: live fails while test succeeds in the same run',
+    chAggregateEnvCadenceStatus($mixedJobs, 'live') === 'failure'
+);
+check(
+    'no jobs at all for this env in the run → null (not a fabricated status)',
+    chAggregateEnvCadenceStatus($mixedJobs, 'test') !== null
+        && chAggregateEnvCadenceStatus([], 'test') === null
+);
+check(
+    'one env job in_progress, none failed → in_progress (worst-of wins)',
+    chAggregateEnvCadenceStatus([
+        ['name' => 'rumors (test)', 'status' => 'in_progress', 'conclusion' => null],
+        ['name' => 'trivia (test)', 'status' => 'completed', 'conclusion' => 'success'],
+    ], 'test') === 'in_progress'
 );
 
 if ($fails > 0) {
