@@ -30,6 +30,17 @@
 # input still overrides this and skips the fetch entirely; leaving it blank (the schedule always
 # does) uses the admin-configured value, falling back to 6 if the fetch itself fails.
 #
+# Before calling Claude, each rumors/trivia×env job first tries to draw its batch from the
+# existing draft backlog (status='draft' rows left over from old preview runs) via
+# public/tools/promote-content-drafts.php, oldest first, stamped with the same upcoming-Monday
+# publish_date the fresh-generated siblings get — so promoted items land in the same weekly
+# batch, indistinguishable from freshly drafted ones, at the normal cadence. Only the shortfall
+# (batch size minus however many were promoted) still calls Claude; if the backlog covers the
+# whole batch, generation is skipped for that job entirely. This step is skipped on a
+# publish=false dry-run (it must never touch real drafts) and never touches
+# bin/state/{rumor,trivia}-generator-state.<env>.json — that only tracks which knowledge-base
+# docs have been drawn for generation, unrelated to which existing rows get published.
+#
 # Rumors and Trivia run as separate parallel jobs, and each fans out over the environment matrix,
 # so a scheduled run is up to four jobs (test/live × rumors/trivia). Each job commits its OWN
 # per-environment KB-usage state right after its generator succeeds — test and live track usage
@@ -163,12 +174,42 @@ jobs:
           echo "resolved count: $COUNT"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
+      # Draws down the existing draft backlog (leftover from old preview runs) before spending
+      # any Claude calls — gated to publish=true only, since a publish=false dry-run exists
+      # specifically to preview without touching real content. Promoted rows get stamped with
+      # the same "upcoming Monday" publish_date the fresh-generated siblings below will use, so
+      # they land in the batch indistinguishably and at the same weekly pace as always.
+      - name: Promote rumors from draft backlog
+        id: promote
+        if: needs.resolve.outputs.publish == 'true'
+        env:
+          SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          COUNT: ${{ steps.batch.outputs.count }}
+        run: |
+          RESPONSE=$(curl -sf -H "Authorization: Bearer $INTEGRATION_SEED_TOKEN" -H "Content-Type: application/json" \
+            -d "{\"type\":\"rumor\",\"count\":$COUNT}" "$SITE_URL/tools/promote-content-drafts.php") || RESPONSE=""
+          PROMOTED=$(echo "$RESPONSE" | jq -r '.promoted // empty')
+          if [ -z "$PROMOTED" ]; then
+            echo "::warning::could not promote from draft backlog — proceeding with full fresh generation"
+            PROMOTED=0
+          fi
+          echo "promoted $PROMOTED rumor draft(s) from backlog: $RESPONSE"
+          echo "promoted=$PROMOTED" >> "$GITHUB_OUTPUT"
+
       - name: Generate rumor cards
         env:
           SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
           INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node bin/generate-rumor-items.js --env=${{ matrix.environment }} --count=${{ steps.batch.outputs.count }} ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
+          PROMOTED: ${{ steps.promote.outputs.promoted }}
+        run: |
+          REMAINING=$(( ${{ steps.batch.outputs.count }} - ${PROMOTED:-0} ))
+          if [ "$REMAINING" -le 0 ]; then
+            echo "draft backlog covered the full batch (${{ steps.batch.outputs.count }} promoted) — skipping generation"
+            exit 0
+          fi
+          node bin/generate-rumor-items.js --env=${{ matrix.environment }} --count=$REMAINING ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
 
       # KB usage state (bin/state/rumor-generator-state.<env>.json) tracks which docs have already
       # been drawn for a real-fact card on this environment — committed here (not in a later shared
@@ -249,12 +290,39 @@ jobs:
           echo "resolved count: $COUNT"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
+      # Same reasoning as the rumors job's "Promote rumors from draft backlog" step above —
+      # draws down the existing trivia draft backlog before spending any Claude calls.
+      - name: Promote trivia from draft backlog
+        id: promote
+        if: needs.resolve.outputs.publish == 'true'
+        env:
+          SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
+          INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
+          COUNT: ${{ steps.batch.outputs.count }}
+        run: |
+          RESPONSE=$(curl -sf -H "Authorization: Bearer $INTEGRATION_SEED_TOKEN" -H "Content-Type: application/json" \
+            -d "{\"type\":\"trivia\",\"count\":$COUNT}" "$SITE_URL/tools/promote-content-drafts.php") || RESPONSE=""
+          PROMOTED=$(echo "$RESPONSE" | jq -r '.promoted // empty')
+          if [ -z "$PROMOTED" ]; then
+            echo "::warning::could not promote from draft backlog — proceeding with full fresh generation"
+            PROMOTED=0
+          fi
+          echo "promoted $PROMOTED trivia draft(s) from backlog: $RESPONSE"
+          echo "promoted=$PROMOTED" >> "$GITHUB_OUTPUT"
+
       - name: Generate trivia questions
         env:
           SITE_URL: ${{ matrix.environment == 'live' && vars.BASE_URL_LIVE || vars.BASE_URL_TEST }}
           INTEGRATION_SEED_TOKEN: ${{ matrix.environment == 'live' && secrets.INTEGRATION_SEED_TOKEN || secrets.INTEGRATION_SEED_TOKEN_TEST }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node bin/generate-trivia-questions.js --env=${{ matrix.environment }} --count=${{ steps.batch.outputs.count }} ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
+          PROMOTED: ${{ steps.promote.outputs.promoted }}
+        run: |
+          REMAINING=$(( ${{ steps.batch.outputs.count }} - ${PROMOTED:-0} ))
+          if [ "$REMAINING" -le 0 ]; then
+            echo "draft backlog covered the full batch (${{ steps.batch.outputs.count }} promoted) — skipping generation"
+            exit 0
+          fi
+          node bin/generate-trivia-questions.js --env=${{ matrix.environment }} --count=$REMAINING ${{ needs.resolve.outputs.publish == 'true' && '--publish' || '' }}
 
       # Same reasoning as the rumors job's state-commit step above — kept independent so this
       # job's progress isn't lost if another job fails/times out.

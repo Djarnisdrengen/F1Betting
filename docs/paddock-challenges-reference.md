@@ -40,6 +40,8 @@ public/
 ├── cron/challenge_weekly.php   Monday cron: Perfect Week bonus + GDPR purge
 ├── tools/import-rumor-drafts.php    HTTP import endpoint (Bearer token), called by bin/generate-rumor-items.js
 ├── tools/import-trivia-drafts.php   HTTP import endpoint (Bearer token), called by bin/generate-trivia-questions.js
+├── tools/get-content-batch-size.php     read-only: admin-configured rumor_batch_size/trivia_batch_size
+├── tools/promote-content-drafts.php     promotes oldest drafts to published (backlog-first, see below)
 └── includes/
     ├── challenges.php          all shared model/helper functions (scoring, streak, CP, duel pairing/resolution)
     └── admin-challenges/{members,rumors,trivia,duels,suppressions}.php   per-tab admin partials
@@ -98,6 +100,21 @@ Rumor-or-Not cards and Trivia questions are drafted by Claude, not written by ha
 **Schedule:** `.github/workflows/cron-content-topup.yml`, Fridays 06:00 UTC, **targeting both test and live** and **auto-publishing** (a deliberate product decision — a fully unattended weekly content drop, reversing the old drafts-on-test-only posture). Stamping the batch with the upcoming Monday means it goes live Monday 00:00 and, for trivia, is playable that whole ISO week. Rumors and Trivia generate as separate parallel GitHub Actions jobs, each fanning out over a test/live matrix (`fail-fast: false`), so one failing/timing out doesn't discard another's progress; because the jobs push their per-env KB-usage state to the same branch at once, each commit step rebase-and-retries (up to 8×) so a later pusher isn't lost to a non-fast-forward rejection (that state is the only thing stopping a doc being redrawn — the import is a plain INSERT, and a redraw now means duplicate *published* content). Job-level concurrency groups (`content-topup-<env>-<generator>`) keep a manual dispatch from overlapping the Friday schedule on the same env+generator. A manual `workflow_dispatch` can target a single `environment`, `target` (`both`/`rumors`/`trivia`, useful for re-running just one generator after a partial failure), `publish` (`false` for a drafts-only preview you review by hand), and optionally `count` to override the batch size for that one run.
 
 **Batch size — admin-configurable, per environment, per game.** How many items each generator drafts per Friday run is no longer hardcoded — it's the `rumor_batch_size`/`trivia_batch_size` columns on the `settings` table (`database/add_content_batch_size.sql`), editable on `admin.php?tab=settings` → Recap Carousel section → "Weekly Content Batch Size" (default 6 each, same as the old hardcoded value). Since test and live are separate databases, this setting is naturally per-environment — no cross-environment coordination needed. The workflow itself has no DB access, so each rumors/trivia×env job fetches its own environment's value over HTTP from `public/tools/get-content-batch-size.php` (Bearer-token auth, same `INTEGRATION_SEED_TOKEN` already trusted for the import endpoints below — this just adds a read) immediately before generating, falling back to `6` if that fetch fails for any reason. A manual `workflow_dispatch` `count` input still overrides this and skips the fetch entirely — leave it blank (the schedule always does) to use the admin-configured value.
+
+**Draft backlog is drawn down first, before any Claude call.** Both environments carry a
+sizeable backlog of unused `status='draft'` rows — leftovers from old `publish=false` preview
+runs and the pre-automation "drafts on test, human publishes" era. Each rumors/trivia×env job
+now calls `public/tools/promote-content-drafts.php` (same Bearer auth as the endpoints above)
+*before* generating: it promotes up to `batch_size` of the oldest existing drafts to
+`published`, stamped with the same upcoming-Monday `publish_date` a freshly-drafted item would
+get, so promoted rows land in the same weekly batch indistinguishably. Only the shortfall
+(`batch_size` minus however many were promoted) still calls Claude — if the backlog alone
+covers the full batch, generation is skipped for that job that week. This is gated to
+`publish=true` runs only (a `publish=false` preview run never touches real drafts) and never
+touches `bin/state/{rumor,trivia}-generator-state.<env>.json`, since that file tracks which
+*knowledge-base docs* have been drawn for generation — orthogonal to which existing rows get
+published. Practically: this paces out the existing backlog at the normal weekly cadence
+instead of it sitting inert, and defers KB exhaustion (see below) for as long as backlog lasts.
 
 **Publishing (now fully automated — no weekly human step):**
 
