@@ -1759,5 +1759,44 @@
     "source_url": "https://en.wikipedia.org/wiki/2026_Hungarian_Grand_Prix",
     "updated_at": "2026-07-26T17:06:35.303Z",
     "content_hash": "dcff79ebbfd61964"
+  },
+  {
+    "id": "sprint-2026-r12-zandvoort",
+    "title": "Dutch Grand Prix 2026 — Sprint Race",
+    "content": "Season 2026, Round 12 Sprint: Dutch Grand Prix. George Russell claimed sprint qualifying pole position at Circuit Park Zandvoort for the 2026 Dutch Grand Prix, with Lando Norris of McLaren alongside him on the front row and Charles Leclerc of Ferrari third. Russell converted pole into sprint race victory, holding position throughout to take maximum points. Leclerc advanced one place from third to second, while Norris dropped one position to complete the podium. Andrea Kimi Antonelli gained one place from fifth to fourth for Mercedes, and Oscar Piastri slipped one position to fifth for McLaren. The most notable mover was Fernando Alonso of Aston Martin, who recovered four places from twenty-second to eighteenth. Conversely, Nico Hülkenberg of Audi suffered the largest regression, falling eight places from fourteenth to finish lapped in twenty-second. The largely processional nature of the sprint, with minimal position changes across the top ten, indicates that Circuit Park Zandvoort's narrow layout strongly rewards qualifying pace and clean air, suggesting tyre degradation management and grid position will be critical factors in the Grand Prix.",
+    "tags": {
+      "season": 2026,
+      "type": "sprint",
+      "round": 12,
+      "circuit": "circuit-park-zandvoort",
+      "sprint_winner": "george-russell",
+      "drivers_classified": [
+        "george-russell",
+        "charles-leclerc",
+        "lando-norris",
+        "andrea-kimi-antonelli",
+        "oscar-piastri",
+        "max-verstappen",
+        "lewis-hamilton",
+        "pierre-gasly",
+        "gabriel-bortoleto",
+        "arvid-lindblad",
+        "liam-lawson",
+        "franco-colapinto",
+        "yuki-tsunoda",
+        "esteban-ocon",
+        "oliver-bearman",
+        "alexander-albon",
+        "lance-stroll",
+        "fernando-alonso",
+        "valtteri-bottas",
+        "carlos-sainz",
+        "sergio-p-rez",
+        "nico-h-lkenberg"
+      ]
+    },
+    "source_url": null,
+    "updated_at": "2026-08-22T12:53:00.425Z",
+    "content_hash": "c43f431603f5a113"
   }
 ]
