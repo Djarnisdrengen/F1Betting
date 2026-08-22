@@ -1798,5 +1798,20 @@
     "source_url": null,
     "updated_at": "2026-08-22T12:53:00.425Z",
     "content_hash": "c43f431603f5a113"
+  },
+  {
+    "id": "quali-2026-r12-zandvoort",
+    "title": "Dutch Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 12 Qualifying: Dutch Grand Prix. Lando Norris claimed pole position for the Dutch Grand Prix at Circuit Park Zandvoort, setting a Q3 lap of 1:11.163 for McLaren. George Russell qualified second for Mercedes, 0.102 seconds adrift, with teammate Andrea Kimi Antonelli third at 1:11.296, giving Mercedes a strong front-row presence. Oscar Piastri slotted into fourth for McLaren at 1:11.305, separated from Antonelli by just 0.009 seconds, while Lewis Hamilton completed the top five for Ferrari at 1:11.494, 0.331 seconds off pole.\n\nA notable result is Max Verstappen qualifying only seventh for Red Bull at 1:11.618, a significant underperformance at a circuit where the team has historically been dominant. Gabriel Bortoleto reached Q3 in ninth for Audi, a strong showing for the manufacturer. Carlos Sainz was eliminated in Q1 for Williams, as were both Aston Martin drivers, Fernando Alonso and Lance Stroll. The Cadillac F1 Team pair of Valtteri Bottas and Sergio Pérez filled the final two positions.\n\nThe qualifying order indicates McLaren and Mercedes hold the strongest race pace, with Ferrari competitive in the second tier. Red Bull's pace deficit raises questions about their strategic options from row four.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 12,
+      "circuit": "circuit-park-zandvoort",
+      "pole_driver": "lando-norris"
+    },
+    "source_url": null,
+    "updated_at": "2026-08-22T16:15:18.738Z",
+    "content_hash": "5be49695809d9765"
   }
 ]
