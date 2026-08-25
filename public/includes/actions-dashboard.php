@@ -230,6 +230,10 @@ const GH_WEEKDAY_PLURAL = [
     'da' => ['Søndage','Mandage','Tirsdage','Onsdage','Torsdage','Fredage','Lørdage'],
     'en' => ['Sundays','Mondays','Tuesdays','Wednesdays','Thursdays','Fridays','Saturdays'],
 ];
+const GH_WEEKDAY_SINGULAR = [ // index 0=Sun..6=Sat
+    'da' => ['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'],
+    'en' => ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+];
 
 function ghFormatCetFull(DateTimeImmutable $utc, string $lang): string {
     $cet = $utc->setTimezone(ghCetTz());
@@ -287,17 +291,28 @@ function ghScheduleHumanText(array $wf, DateTimeImmutable $nowUtc, string $lang)
         $label = ghUtcHourMinToCetLabel((int)$hourF, (int)$minF, $nowUtc);
         return sprintf(t('admin_actions_monthly', $lang), $label);
     }
-    // quali-import's shape: every-N-minutes within an hour range, one weekday. Shown in UTC
-    // (matching docs/github-actions.md's own wording for this exact job) rather than CET —
-    // a wide UTC window can cross the CET day boundary, which would need day-wrap handling
-    // for little reader benefit over "it's literally the cron's own UTC window".
+    // quali-import's shape: every-N-minutes within an hour range, one weekday. The UTC window
+    // (e.g. 06:00–23:55 Saturdays) can cross the CET/CEST day boundary once converted — the last
+    // ~2h of the UTC window then land in CET on the following calendar day, so the end label
+    // needs its own (possibly rolled-over) weekday rather than reusing the start's.
     if (str_starts_with($minF, '*/') && str_contains($hourF, '-') && $isPlain($dowF)) {
-        $wd = GH_WEEKDAY_PLURAL[$lang][(int)$dowF % 7];
         [$loH, $hiH] = explode('-', $hourF);
         $step = substr($minF, 2);
+        $dow = (int)$dowF % 7;
+        $startLabel = ghUtcHourMinToCetLabel((int)$loH, 0, $nowUtc);
+        $endLabel   = ghUtcHourMinToCetLabel((int)$hiH, 55, $nowUtc);
+        $wraps      = $endLabel < $startLabel; // zero-padded "H:i" strings sort chronologically
+        $startWd = GH_WEEKDAY_SINGULAR[$lang][$dow];
+        if ($wraps) {
+            $endWd = GH_WEEKDAY_SINGULAR[$lang][($dow + 1) % 7];
+            return sprintf(
+                $lang === 'da' ? 'Hvert %d. min, %s %s – %s %s' : 'Every %d min, %s %s – %s %s',
+                (int)$step, $startWd, $startLabel, $endWd, $endLabel
+            );
+        }
         return sprintf(
-            $lang === 'da' ? 'Hvert %d. min, %s %s:00–%s:55 UTC' : 'Every %d min, %s %s:00–%s:55 UTC',
-            (int)$step, $wd, str_pad($loH, 2, '0', STR_PAD_LEFT), str_pad($hiH, 2, '0', STR_PAD_LEFT)
+            $lang === 'da' ? 'Hvert %d. min, %s %s–%s' : 'Every %d min, %s %s–%s',
+            (int)$step, $startWd, $startLabel, $endLabel
         );
     }
 

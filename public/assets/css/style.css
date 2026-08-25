@@ -4131,6 +4131,26 @@ body.font-system {
 .gha-matrix-note { font-size: 11px; color: var(--text-muted); margin-top: 12px; }
 .gha-matrix-note i { margin-right: 6px; }
 
+.gha-matrix-cell[data-cell-kind], .gha-collision-cell[data-cell-kind] { cursor: pointer; }
+.gha-matrix-cell[data-cell-kind]:focus-visible, .gha-collision-cell[data-cell-kind]:focus-visible { outline: 2px solid var(--f1-red); outline-offset: 1px; }
+
+/* Kørselsplan cell detail modal — same overlay/content/buttons template as #delete-modal (app.js) */
+#gha-cell-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; }
+#gha-cell-modal[hidden] { display: none; }
+#gha-cell-modal .modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); }
+#gha-cell-modal .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-card); padding: 1.75rem; border-radius: 12px; min-width: 300px; max-width: 440px; border: 1px solid var(--border-color); }
+#gha-cell-modal h3 { margin: 0 0 4px 0; font-family: var(--font-display); }
+#gha-cell-modal .gha-cell-modal-meta { margin: 0 0 14px 0; font-size: 0.8rem; color: var(--text-secondary); }
+#gha-cell-modal .gha-cell-modal-meta .count-badge { display: inline-block; margin-left: 2px; background: rgba(225, 6, 0, 0.16); color: var(--f1-red); font-weight: 700; font-size: 0.7rem; padding: 1px 7px; border-radius: 999px; }
+#gha-cell-modal .gha-cell-modal-list { margin: 0 0 18px; padding: 0; list-style: none; max-height: 280px; overflow-y: auto; }
+#gha-cell-modal .gha-cell-modal-list--chips { display: flex; flex-wrap: wrap; gap: 5px; }
+#gha-cell-modal .gha-cell-modal-list--chips li { font-family: var(--font-mono); font-size: 0.75rem; font-variant-numeric: tabular-nums; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 6px; border-radius: 5px; }
+#gha-cell-modal .gha-cell-modal-list--rows li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; }
+#gha-cell-modal .gha-cell-modal-list--rows li:last-child { border-bottom: none; }
+#gha-cell-modal .gha-cell-modal-row-time { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-primary); flex-shrink: 0; }
+#gha-cell-modal .gha-cell-modal-row-names { color: var(--text-secondary); text-align: right; }
+#gha-cell-modal .modal-buttons { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
 .gha-empty { padding: 22px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
 /* ============================================================

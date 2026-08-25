@@ -34,7 +34,7 @@ include __DIR__ . '/includes/header.php';
 
 <div class="hf-container">
     <header class="hf-pageh">
-        <div class="crumb"><?= t('leaderboard') ?> &middot; <?= t('season') ?> <?= escape($settings['app_year']) ?></div>
+        <div class="crumb"><?= t('leaderboard') ?> &middot; <?= t('season') ?></div>
         <h1><?= t('leaderboard') ?></h1>
     </header>
 

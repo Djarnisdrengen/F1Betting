@@ -343,18 +343,33 @@ $scheduledIds = array_filter($order, fn($id) => empty($workflowConfig[$id]['manu
                         $dayDt = $monthStart->setDate((int)$monthStart->format('Y'), (int)$monthStart->format('n'), $d);
                         $isWeekend = in_array((int)$dayDt->format('w'), [0, 6], true);
                         $strong = $schedule['collisions'][$d];
-                        $title = '';
+                        $collisionRows = [];
+                        $collisionAriaLabel = '';
                         if (!empty($strong)) {
-                            $bits = [];
                             foreach ($strong as $hm => $names) {
                                 [$h, $m] = explode(':', $hm);
                                 $cetLabel = ghUtcHourMinToCetLabel((int)$h, (int)$m, $dayDt);
-                                $bits[] = "$cetLabel — " . implode(', ', $names) . ' (' . count($names) . ')';
+                                $collisionRows[] = ['time' => $cetLabel, 'names' => implode(', ', $names), 'count' => count($names)];
                             }
-                            $title = implode('  ·  ', $bits);
+                            // UTC-day bucket order wraps at the CET/CEST offset — sort by CET time for a naturally-readable list
+                            usort($collisionRows, fn($a, $b) => $a['time'] <=> $b['time']);
+                            $collisionAriaLabel = implode('  ·  ', array_map(
+                                fn($r) => "{$r['time']} — {$r['names']} ({$r['count']})",
+                                $collisionRows
+                            ));
                         }
+                        $collisionDateLabel = $d . '. ' . GH_MONTHS[$lang][(int)$monthStart->format('n') - 1] . ' ' . $monthStart->format('Y');
                     ?>
-                    <div class="gha-collision-cell" title="<?= escape($title) ?>" style="background:<?= !empty($strong) ? 'rgba(225,6,0,0.92)' : ($isWeekend ? 'rgba(225,6,0,0.06)' : 'transparent') ?>">
+                    <div class="gha-collision-cell" style="background:<?= !empty($strong) ? 'rgba(225,6,0,0.92)' : ($isWeekend ? 'rgba(225,6,0,0.06)' : 'transparent') ?>"
+                        <?php if (!empty($strong)): ?>
+                        tabindex="0" role="button"
+                        aria-label="<?= escape($collisionAriaLabel) ?>"
+                        data-cell-kind="collision"
+                        data-cell-title="<?= escape(t('admin_actions_collisions')) ?>"
+                        data-cell-date="<?= escape($collisionDateLabel) ?>"
+                        data-cell-rows="<?= escape(json_encode($collisionRows)) ?>"
+                        <?php endif; ?>
+                    >
                         <?php if (!empty($strong)): ?><i class="fas fa-triangle-exclamation"></i><?php endif; ?>
                     </div>
                     <?php endfor; ?>
@@ -384,10 +399,25 @@ $scheduledIds = array_filter($order, fn($id) => empty($workflowConfig[$id]['manu
                         $isToday = $dayDt->format('Y-m-d') === $nowUtc->setTimezone(ghCetTz())->format('Y-m-d');
                         $bg = $count > 0 ? "rgba(225,6,0,$opacity)" : ($isWeekend ? 'rgba(225,6,0,0.04)' : 'var(--bg-secondary)');
                         $border = $isToday ? 'var(--text-primary)' : ($count > 0 ? 'rgba(225,6,0,' . min(1, $opacity + 0.2) . ')' : 'var(--border-color)');
-                        $cellTitle = $wf['name'] . ' · ' . $d . '. ' . GH_MONTHS[$lang][(int)$monthStart->format('n') - 1]
-                            . ($count > 0 ? ' · ' . implode('/', array_map(fn($t) => ghUtcHourMinToCetLabel((int)explode(':', $t)[0], (int)explode(':', $t)[1], $dayDt), $times)) . " · {$count}×" : ($lang === 'da' ? ' · kører ikke' : ' · no run'));
+                        $cetTimes = array_map(fn($t) => ghUtcHourMinToCetLabel((int)explode(':', $t)[0], (int)explode(':', $t)[1], $dayDt), $times);
+                        sort($cetTimes); // UTC-day bucket order wraps at CET/CEST offset (e.g. 02:01…23:01/00:01/01:01) — sort for a naturally-readable list
+                        $cellDateLabel = $d . '. ' . GH_MONTHS[$lang][(int)$monthStart->format('n') - 1] . ' ' . $monthStart->format('Y');
+                        $cellAriaLabel = $count > 0
+                            ? $wf['name'] . ' · ' . $cellDateLabel . ' · ' . implode('/', $cetTimes) . " · {$count}×"
+                            : '';
                     ?>
-                    <div class="gha-matrix-cell" title="<?= escape($cellTitle) ?>" style="background:<?= $bg ?>;border-color:<?= $border ?>"></div>
+                    <div class="gha-matrix-cell" style="background:<?= $bg ?>;border-color:<?= $border ?>"
+                        <?php if ($count > 0): ?>
+                        tabindex="0" role="button"
+                        aria-label="<?= escape($cellAriaLabel) ?>"
+                        data-cell-kind="run"
+                        data-cell-title="<?= escape($wf['name']) ?>"
+                        data-cell-date="<?= escape($cellDateLabel) ?>"
+                        data-cell-cadence="<?= escape($timeLabel) ?>"
+                        data-cell-count="<?= $count ?>"
+                        data-cell-times="<?= escape(json_encode($cetTimes)) ?>"
+                        <?php endif; ?>
+                    ></div>
                     <?php endfor; ?>
                 </div>
             </a>
@@ -397,6 +427,18 @@ $scheduledIds = array_filter($order, fn($id) => empty($workflowConfig[$id]['manu
         </div>
     </div>
 </section>
+
+<div id="gha-cell-modal" hidden>
+    <div class="modal-overlay"></div>
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="gha-cell-modal-title">
+        <h3 id="gha-cell-modal-title"></h3>
+        <p id="gha-cell-modal-meta" class="gha-cell-modal-meta"></p>
+        <ul id="gha-cell-modal-list" class="gha-cell-modal-list"></ul>
+        <div class="modal-buttons">
+            <button type="button" class="btn btn-secondary gha-cell-modal-close"><?= t('close') ?></button>
+        </div>
+    </div>
+</div>
 
 </div><!-- /.gha-page -->
 
@@ -486,6 +528,90 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // Kørselsplan cell detail modal — click/keyboard alternative to the native
+    // title="" tooltip on schedule matrix + collision cells (unreadable for
+    // cells with many run times, and title="" isn't reachable by keyboard).
+    var cellModal = document.getElementById('gha-cell-modal');
+    if (cellModal) {
+        var cellModalTitle = document.getElementById('gha-cell-modal-title');
+        var cellModalMeta = document.getElementById('gha-cell-modal-meta');
+        var cellModalList = document.getElementById('gha-cell-modal-list');
+        var lastCellTrigger = null;
+
+        function openCellModal(cell) {
+            cellModalList.innerHTML = '';
+            cellModalList.className = 'gha-cell-modal-list';
+            cellModalMeta.innerHTML = '';
+
+            if (cell.dataset.cellKind === 'run') {
+                cellModalTitle.textContent = cell.dataset.cellTitle;
+                cellModalMeta.appendChild(document.createTextNode(cell.dataset.cellDate + ' · ' + cell.dataset.cellCadence + ' '));
+                var badge = document.createElement('span');
+                badge.className = 'count-badge';
+                badge.textContent = cell.dataset.cellCount + '×';
+                cellModalMeta.appendChild(badge);
+
+                cellModalList.classList.add('gha-cell-modal-list--chips');
+                JSON.parse(cell.dataset.cellTimes).forEach(function (time) {
+                    var li = document.createElement('li');
+                    li.textContent = time;
+                    cellModalList.appendChild(li);
+                });
+            } else if (cell.dataset.cellKind === 'collision') {
+                cellModalTitle.textContent = cell.dataset.cellTitle;
+                cellModalMeta.textContent = cell.dataset.cellDate;
+
+                cellModalList.classList.add('gha-cell-modal-list--rows');
+                JSON.parse(cell.dataset.cellRows).forEach(function (row) {
+                    var li = document.createElement('li');
+                    var time = document.createElement('span');
+                    time.className = 'gha-cell-modal-row-time';
+                    time.textContent = row.time;
+                    var names = document.createElement('span');
+                    names.className = 'gha-cell-modal-row-names';
+                    names.textContent = row.names + ' (' + row.count + ')';
+                    li.appendChild(time);
+                    li.appendChild(names);
+                    cellModalList.appendChild(li);
+                });
+            }
+
+            lastCellTrigger = cell;
+            cellModal.hidden = false;
+            cellModal.querySelector('.gha-cell-modal-close').focus();
+        }
+
+        function closeCellModal() {
+            cellModal.hidden = true;
+            if (lastCellTrigger) lastCellTrigger.focus();
+            lastCellTrigger = null;
+        }
+
+        document.querySelectorAll('[data-cell-kind]').forEach(function (cell) {
+            cell.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openCellModal(cell);
+            });
+            cell.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openCellModal(cell);
+                }
+            });
+        });
+
+        cellModal.addEventListener('click', function (e) {
+            if (e.target.closest('.gha-cell-modal-close') || e.target.classList.contains('modal-overlay')) {
+                closeCellModal();
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !cellModal.hidden) closeCellModal();
+        });
+    }
 
     function escapeHtml(s) {
         var div = document.createElement('div');
