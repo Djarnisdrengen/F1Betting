@@ -1865,5 +1865,20 @@
     "source_url": null,
     "updated_at": "2026-08-23T16:33:20.685Z",
     "content_hash": "ff48bc99e31ec80e"
+  },
+  {
+    "id": "quali-2026-r13-autodromo-nazionale-di-monza",
+    "title": "Italian Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 13 Qualifying: Italian Grand Prix. Pierre Gasly took pole position for the Italian Grand Prix at Autodromo Nazionale di Monza, setting a Q3 lap of 1:21.786 for Alpine F1 Team. George Russell qualified second for Mercedes just 0.060 seconds behind, with Oscar Piastri third for McLaren at 1:21.966, a gap of 0.180 seconds to pole. Charles Leclerc and Lewis Hamilton completed the top five for Ferrari, separated by only 0.007 seconds at 1:22.004 and 1:22.011 respectively, placing both Ferraris 0.218 and 0.225 seconds off pole.\n\nGasly's pole is a notable result, representing Alpine F1 Team's strongest qualifying performance in recent seasons and suggesting the car carried meaningful straight-line speed advantage at Monza's power-sensitive layout. Max Verstappen could manage only sixth for Red Bull, while Andrea Kimi Antonelli qualified seventh, outpacing teammate Russell through Q2 before fading slightly in Q3. Lando Norris finished ninth despite McLaren's strong mid-session pace, a relative underperformance. Arvid Lindblad reached Q3 for RB F1 Team in tenth, a positive result for the team. Both Aston Martin drivers, Fernando Alonso and Lance Stroll, were eliminated in Q1 with notably large deficits, suggesting significant pace difficulties at this circuit.\n\nThe qualifying order indicates Alpine and Mercedes hold a genuine straight-line pace advantage, with Ferrari and Red Bull likely more competitive over race distance given tyre and energy management characteristics.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 13,
+      "circuit": "autodromo-nazionale-di-monza",
+      "pole_driver": "pierre-gasly"
+    },
+    "source_url": null,
+    "updated_at": "2026-09-05T19:47:14.376Z",
+    "content_hash": "7c47aef8540fb29b"
   }
 ]
