@@ -40,7 +40,7 @@
   {
     "id": "driver-russell-2026",
     "title": "George Russell — 2026 Season Form",
-    "content": "Season 2026 driver form — George Russell (Mercedes). George Russell sits second in the 2026 Formula One Drivers' Championship with 183 points from 12 races entered. He has taken two victories and six podium finishes across the season, with the Australian Grand Prix stand-out as a wire-to-wire win from pole position and the Austrian Grand Prix representing an equally dominant pole-to-victory conversion. Russell's grid-versus-finish record is mixed: when starting from the front row he has generally delivered strong results, though the pattern is not uniformly positive. Several races saw him lose positions relative to his starting slot, most notably in Monaco, where he dropped six places to finish twelfth. Reliability has been a notable weakness, with two mechanical retirements recorded — at the Canadian Grand Prix from pole and at the Belgian Grand Prix from third on the grid — both resulting in zero points and materially affecting his championship margin. Those DNFs appear unrelated in cause based on available data. Mercedes has provided Russell with consistent front-row opportunities, reflecting competitive machinery across multiple circuit configurations throughout the opening portion of the season.",
+    "content": "Season 2026 driver form — George Russell (Mercedes). George Russell sits second in the 2026 Formula One Drivers' Championship with 201 points across 13 rounds, trailing the championship leader by a margin that keeps the title fight active. Russell has taken two victories and seven podiums in total, with his Australian Grand Prix win from pole in the season opener representing an early statement result, later reinforced by his victory at the Austrian Grand Prix. The grid-to-finish delta is mixed: Russell has converted front-row starts effectively on several occasions but has also lost ground in races such as Monaco and Hungary, and the two retirements have materially skewed his averages. His average finishing position of 3.64 across completed and non-completed races reflects that underlying consistency, though two DNFs — at the Canadian and Belgian Grands Prix, both from competitive grid positions — point to a recurring mechanical fragility rather than isolated incidents. Mercedes has demonstrated pace capable of challenging for wins, but the reliability failures have interrupted what might otherwise be a more commanding championship position.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -48,13 +48,13 @@
       "team": "mercedes"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:30:42.728Z",
-    "content_hash": "8729cc792ee4ad0a"
+    "updated_at": "2026-09-06T22:01:17.197Z",
+    "content_hash": "b74b7e6b9cae255d"
   },
   {
     "id": "driver-antonelli-2026",
     "title": "Andrea Kimi Antonelli — 2026 Season Form",
-    "content": "Season 2026 driver form — Andrea Kimi Antonelli (Mercedes). Andrea Kimi Antonelli leads the 2026 Formula One Drivers' Championship with 242 points after 12 rounds, holding a commanding position at the head of the standings. The Mercedes driver has accumulated six victories and ten podium finishes across the season, with a particularly dominant mid-season run of five consecutive wins spanning the Chinese, Japanese, Miami, Canadian, and Monaco Grands Prix representing the clearest standout sequence of the campaign.\n\nThe grid-versus-finish record is broadly neutral to marginally positive, though two notable exceptions disrupt an otherwise strong picture: a retirement from 16th at the Barcelona Grand Prix and a 15th-place finish from pole at the British Grand Prix each produced substantial position losses. Excluding those anomalies, Antonelli has consistently converted front-row starts into podium results.\n\nReliability has been largely sound, with one confirmed DNF recorded at Barcelona. No mechanical pattern is yet established across the remaining eleven classified finishes.\n\nWithin Mercedes, Antonelli operates as the clear team leader, with the constructor evidently structuring race strategy around his championship campaign.",
+    "content": "Season 2026 driver form — Andrea Kimi Antonelli (Mercedes). Andrea Kimi Antonelli leads the 2026 Formula One Drivers' Championship with 267 points after 13 rounds, holding a commanding position at the head of the standings. The Italian driver has accumulated seven victories and eleven podium finishes across the season, with a particularly dominant mid-season stretch that included consecutive wins at the Chinese, Japanese, Miami, Canadian, and Monaco Grands Prix. His average finishing position of 2.67 across classified results underscores consistent front-running pace throughout the campaign.\n\nGrid-to-finish analysis presents a mixed picture. In the majority of races where Antonelli started from pole or near the front, he converted those positions efficiently. However, two notable exceptions stand out: a retirement at the Barcelona Grand Prix from third on the grid, and a 15th-place finish from pole at the British Grand Prix, representing significant position losses on both occasions.\n\nAntonelli has recorded one DNF, the Barcelona retirement, which appears to be an isolated mechanical incident rather than a recurring reliability pattern. Mercedes have otherwise demonstrated strong mechanical dependability across the season, supporting Antonelli's title challenge effectively.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -62,13 +62,13 @@
       "team": "mercedes"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:30:35.371Z",
-    "content_hash": "0844803b542eed41"
+    "updated_at": "2026-09-06T22:01:09.862Z",
+    "content_hash": "1409fab95b59721d"
   },
   {
     "id": "driver-leclerc-2026",
     "title": "Charles Leclerc — 2026 Season Form",
-    "content": "Season 2026 driver form — Charles Leclerc (Ferrari). Charles Leclerc sits fifth in the 2026 Formula One Drivers' Championship with 155 points from 12 races entered. He has secured one victory and four podium finishes across the season, with his standout result being the British Grand Prix win from second on the grid, representing his sole race win to date.\n\nThe grid-versus-finish trend is mixed. Leclerc has posted positive deltas in several rounds — most notably gaining four places in Canada — but has suffered significant position losses in others, including a six-place drop in Austria and a five-place drop in Miami. Across the eleven rounds where grid position data is available, his average grid delta is marginally negative, indicating a slight net tendency to lose positions during races.\n\nReliability has been a concern, with two retirements recorded — Monaco and Barcelona — both classified as mechanical or incident-related DNFs occurring in consecutive rounds, suggesting a concentrated period of difficulty rather than a sustained pattern.\n\nFerrari's broader 2026 package has shown competitive one-lap pace, placing Leclerc regularly inside the top four on the grid, though race execution and mechanical consistency have periodically undermined conversion of qualifying performance into results.",
+    "content": "Season 2026 driver form — Charles Leclerc (Ferrari). Charles Leclerc sits fifth in the 2026 Drivers' Championship with 155 points from 13 races entered. He has recorded one victory and four podium finishes across the season, with his standout result being a lights-to-flag win at the British Grand Prix from second on the grid. His grid-to-finish average delta of −0.3 positions classifies him marginally as a net position loser overall, though this figure is substantially skewed by several anomalous weekends; in cleaner races he has consistently converted front-row and second-row starts into top-five finishes, reflected in an average race finish of 4.2. Reliability has been a recurring concern, with three DNFs recorded at Monaco, Barcelona, and Monza — the latter two occurring in consecutive European rounds, suggesting a possible mechanical pattern under investigation. Ferrari's 2026 package has demonstrated competitive one-lap pace, but conversion of that pace into race results has been inconsistent, contributing to Charles Leclerc's deficit relative to the championship leaders.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -76,13 +76,13 @@
       "team": "ferrari"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:31:17.930Z",
-    "content_hash": "a893af78e0e4b43b"
+    "updated_at": "2026-09-06T22:01:54.533Z",
+    "content_hash": "f1aeead9dbf42b6a"
   },
   {
     "id": "driver-hamilton-2026",
     "title": "Lewis Hamilton — 2026 Season Form",
-    "content": "Season 2026 driver form — Lewis Hamilton (Ferrari). Lewis Hamilton sits third in the 2026 Formula One Drivers' Championship with 183 points from 12 races, trailing the top two but maintaining a consistent scoring record throughout the campaign. Hamilton has secured one victory and five podium finishes across those rounds, with the Barcelona Grand Prix representing the standout result — a controlled conversion from second on the grid to a race win. His grid-to-finish trend is broadly positive; across the eleven rounds where grid data is available, Hamilton has more frequently improved his position than lost it, with notable gains of three places in Australia and Canada. The sole negative delta occurred in Austria, where he dropped two positions from third to fifth. Reliability has been flawless, with zero DNFs recorded across all twelve rounds, reflecting strong mechanical dependability from Ferrari. Hamilton's average finishing position of 3.75 underlines consistent front-running pace. Ferrari's 2026 package has provided competitive machinery capable of both pole-adjacent qualifying and race-day position gains.",
+    "content": "Season 2026 driver form — Lewis Hamilton (Ferrari). Lewis Hamilton sits third in the 2026 Drivers' Championship with 191 points from 13 races, trailing the top two by a margin that keeps the title mathematically alive. He has recorded one victory and five podium finishes across the season. The standout result is his Barcelona Grand Prix win from second on the grid, complemented by consecutive second-place finishes at the Canadian and Monaco Grands Prix that represented his strongest run of form. On the grid-versus-finish trend, Hamilton is a net position gainer across most events; excluding the Italian Grand Prix where grid position data is unavailable, positive deltas appear in seven of the remaining twelve rounds, with only the Austrian Grand Prix producing a meaningful regression of two places. The sole negative result by delta was Austria, where he fell from third to fifth. Reliability has been exemplary: Lewis Hamilton has recorded zero retirements across all 13 rounds, completing every race distance. Within Ferrari, Hamilton's average finishing position of 3.92 reflects consistent top-five execution, situating him as the team's primary points contributor at this stage of the season.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -90,13 +90,13 @@
       "team": "ferrari"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:30:59.906Z",
-    "content_hash": "21a78d3637dae80c"
+    "updated_at": "2026-09-06T22:01:31.977Z",
+    "content_hash": "c06394c0f9fb1090"
   },
   {
     "id": "driver-norris-2026",
     "title": "Lando Norris — 2026 Season Form",
-    "content": "Season 2026 driver form — Lando Norris (McLaren). Lando Norris sits fourth in the 2026 Formula One Drivers' Championship with 159 points accumulated across 12 race entries. He has taken two victories and four podiums in total, with the Hungarian Grand Prix representing a controlled pole-to-win conversion and the Dutch Grand Prix serving as a further victory. His average finishing position among classified results stands at 3.89, and across the races where grid position is recorded, Norris has generally been a marginal net gainer, recovering positions in Belgium (+6) and performing consistently near his starting slot elsewhere. However, reliability has significantly disrupted his campaign: three DNFs have been recorded, comprising a pre-race non-start in China, a retirement in Canada, and a retirement in Monaco, collectively costing substantial points at a critical phase of the season. The Monaco and Canadian retirements occurring in consecutive rounds suggests a period of particular mechanical or operational difficulty for the McLaren team. McLaren otherwise remains competitive enough to support race victories and regular top-five finishes.",
+    "content": "Season 2026 driver form — Lando Norris (McLaren). Lando Norris sits fourth in the 2026 Drivers' Championship with 171 points from 13 races entered. He has taken two victories and four podiums across the campaign, with consecutive wins at the Hungarian and Dutch Grands Prix representing the standout sequence of his season to date. When excluding the three reliability-affected and non-start events, Norris has demonstrated a consistent ability to gain or hold positions on race day; across completed races where grid data is available, he is broadly a net position gainer, most notably recovering six places from thirteenth at the Belgian Grand Prix. However, the aggregate average finish of 3.9 is distorted by three retirements — a DNS in China, a retirement in Canada, and a retirement in Monaco — which collectively returned zero points and reveal an irregular but notable reliability pattern concentrated in the mid-season period. Within McLaren, the car has shown genuine race-pace competitiveness, particularly on circuits favoring medium-to-high-speed characteristics.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -104,13 +104,13 @@
       "team": "mclaren"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:31:07.257Z",
-    "content_hash": "28b5f6a39ae59be5"
+    "updated_at": "2026-09-06T22:01:39.457Z",
+    "content_hash": "cffe02d4297d00c0"
   },
   {
     "id": "driver-max_verstappen-2026",
     "title": "Max Verstappen — 2026 Season Form",
-    "content": "Season 2026 driver form — Max Verstappen (Red Bull). Max Verstappen sits sixth in the 2026 Drivers' Championship with 112 points across 12 rounds, having yet to record a race victory. He has accumulated four podiums, with second-place finishes at the Austrian and Hungarian Grands Prix representing his strongest results of the campaign to date. Across classified finishes, his average finishing position of 4.13 reflects genuine pace when the car reaches the flag. The average grid delta of +2.75 positions indicates that, on balance, Max Verstappen gains places through races, with the Australian Grand Prix — where he advanced 14 positions from twentieth to sixth — a notable example. However, this aggregate masks significant volatility, including a twenty-place loss in Monaco. Reliability has been a defining concern: four retirements from 12 entries represent a 33% non-finish rate, with failures occurring at the Chinese, Monaco, British, and Dutch Grands Prix. Red Bull's mechanical fragility has materially cost Max Verstappen in the championship standings, keeping him well off the points lead despite competitive underlying performance.",
+    "content": "Season 2026 driver form — Max Verstappen (Red Bull). Through thirteen rounds of the 2026 Formula One World Championship, Max Verstappen sits sixth in the Drivers' standings with 127 points. He has recorded no victories this season, though five podium finishes represent a consistent upper-order presence when results have materialised. The Austrian Grand Prix and Hungarian Grand Prix — both second-place finishes yielding 18 points each — stand as his strongest individual results to date.\n\nThe grid-versus-finish trend is sharply mixed. Verstappen has demonstrated strong recovery pace on occasion, most notably gaining 14 positions from 20th in Australia, yet four retirements have each produced severe position losses, distorting any meaningful average delta. His four DNFs — at the Chinese, Monaco, British, and Dutch Grands Prix — represent a significant reliability concern, with retirements distributed across multiple circuits rather than clustering around a single track type or condition, suggesting a systemic rather than circuit-specific issue.\n\nRed Bull's broader package has shown mid-field qualifying pace in several rounds, with Verstappen rarely starting from the front row, which amplifies the impact of each mechanical failure on his championship total.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -118,13 +118,13 @@
       "team": "red-bull"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:31:25.130Z",
-    "content_hash": "292a199c25bfa6bc"
+    "updated_at": "2026-09-06T22:02:02.351Z",
+    "content_hash": "a2a2a22e65f3b795"
   },
   {
     "id": "driver-bearman-2026",
     "title": "Oliver Bearman — 2026 Season Form",
-    "content": "Season 2026 driver form — Oliver Bearman (Haas F1 Team). Oliver Bearman sits 13th in the 2026 Drivers' Championship with 18 points accumulated across 12 race entries for the Haas F1 Team. He has recorded no wins or podiums to date, with his most notable result being a fifth-place finish at the Chinese Grand Prix in Round 2, which remains his season-best classification. The grid-versus-finish trend is marginally positive overall, with an average delta of +2 positions gained per race; however, this figure is heavily skewed by strong early-season performances in Australia and China, where he advanced five places in each contest. From Round 6 onward, Bearman has largely failed to replicate that upward trajectory. Reliability has been a significant concern, with nine DNFs recorded in twelve starts — a rate that has materially suppressed his points return and championship standing. The pattern of retirements is distributed across the second half of the calendar, compounding the issue. The Haas F1 Team has provided Bearman with machinery that has struggled for consistent competitiveness throughout the campaign.",
+    "content": "Season 2026 driver form — Oliver Bearman (Haas F1 Team). Oliver Bearman sits 13th in the 2026 Drivers' Championship with 18 points accumulated across 13 race entries. He has recorded no wins or podiums this season. The standout results came early: a seventh-place finish from 12th on the grid at the Australian Grand Prix and a fifth-place finish from 10th at the Chinese Grand Prix, the latter representing his season-high points haul of 10. Since Round 2, Oliver Bearman has not scored more than a single point in any individual race. The grid-versus-finish trend is mixed; Oliver Bearman gained positions in the opening two rounds and at Canada, but has predominantly lost or held ground from Round 6 onward, reflecting a deteriorating competitive window as the season has progressed. Reliability has been a significant concern, with nine DNFs or lapped retirements recorded across 13 rounds — a rate that has materially suppressed his points total. Haas F1 Team's broader car performance appears to have regressed relative to the midfield, contextualising both the qualifying positions and race-day struggles.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -132,13 +132,13 @@
       "team": "haas-f1-team"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:32:17.544Z",
-    "content_hash": "02bdd3b8c0735f4d"
+    "updated_at": "2026-09-06T22:03:04.125Z",
+    "content_hash": "22029a25b4586a18"
   },
   {
     "id": "driver-arvid_lindblad-2026",
     "title": "Arvid Lindblad — 2026 Season Form",
-    "content": "Season 2026 driver form — Arvid Lindblad (RB F1 Team). Arvid Lindblad sits eleventh in the 2026 Formula One Drivers' Championship with 23 points accumulated across twelve race entries for the RB F1 Team. He has recorded no wins or podiums to date, with his strongest results being seventh-place finishes at Monaco and Silverstone, each returning six points. The Monaco result stands out as his most effective in grid-conversion terms, having advanced eight positions from fifteenth on the grid. Across completed races where grid data is available, Lindblad averages a modest gain of one position from grid to finish, indicating a broadly neutral but occasionally positive race-day performance. Reliability has been a significant concern: eight of his twelve entries have resulted in either a DNF, a did-not-start, or a lapped classification, with the Canadian Grand Prix producing a did-not-start from ninth on the grid. The frequency of lapped finishes suggests the RB F1 Team's 2026 machinery is operating with a consistent pace deficit relative to the midfield frontrunners.",
+    "content": "Season 2026 driver form — Arvid Lindblad (RB F1 Team). Arvid Lindblad sits eleventh in the 2026 Formula One Drivers' Championship with 29 points from 13 race entries, representing a mid-table position for the RB F1 Team. Lindblad has recorded no wins or podiums to date; his standout result is a sixth-place finish at the Monaco Grand Prix, where he advanced nine positions from fifteenth on the grid, accounting for eight of his first 29 championship points. The grid-to-finish trend is mixed: Lindblad has demonstrated the ability to gain places in certain events, particularly street circuits, but has also surrendered positions in several rounds, including a two-place loss at the Belgian Grand Prix and a four-place loss in Japan. Reliability has been a significant concern, with eight classified DNFs or non-finishes across 13 entries, including a did-not-start in Canada, suggesting recurring mechanical or operational issues affecting race completion. The RB F1 Team occupies the lower-midfield tier, providing Lindblad a competitive baseline but one with evident consistency challenges through the opening half of the season.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -146,13 +146,13 @@
       "team": "rb-f1-team"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:32:03.014Z",
-    "content_hash": "64bd06888cfab866"
+    "updated_at": "2026-09-06T22:02:47.557Z",
+    "content_hash": "40424ea0c36a6e29"
   },
   {
     "id": "driver-bortoleto-2026",
     "title": "Gabriel Bortoleto — 2026 Season Form",
-    "content": "Season 2026 driver form — Gabriel Bortoleto (Audi). Gabriel Bortoleto sits 14th in the 2026 Formula 1 Drivers' Championship with 10 points accumulated across 12 race entries. The Brazilian has recorded no wins and no podiums to date, with his most notable results being back-to-back eighth-place finishes at the British Grand Prix and Belgian Grand Prix, which together account for all of his points scored. Across completed races, Bortoleto has averaged a modest grid delta of approximately +1 position, indicating a marginal net gainer tendency overall; however, this figure masks considerable variability, ranging from a nine-place gain in Miami to a five-place loss in China. Reliability has been a significant concern, with eight DNFs or non-finishes recorded in 12 entries, including a did-not-start at the Chinese Grand Prix and multiple lapped classifications suggesting mechanical or competitive attrition. This pattern points to persistent underlying issues within the Audi package. The team, in its debut season under the Audi works banner, is still establishing its operational and technical baseline across all departments.",
+    "content": "Season 2026 driver form — Gabriel Bortoleto (Audi). Gabriel Bortoleto sits 14th in the 2026 Formula 1 Drivers' Championship with 10 points from 13 race entries. The Brazilian has yet to record a win or podium this season, with his most competitive results being back-to-back eighth-place finishes at the British Grand Prix and Belgian Grand Prix, each yielding four points. Those two rounds represent his scoring ceiling to date.\n\nThe grid-to-finish delta across completed races is mixed. Bortoleto has gained positions in several events — most notably nine places at Miami — but has also lost ground on multiple occasions, including four-place drops at the Japanese and Dutch Grands Prix, indicating inconsistency in race execution or car performance relative to qualifying pace.\n\nReliability has been a significant concern. Gabriel Bortoleto has recorded eight DNFs or equivalent non-finishes across 13 entries, including a did-not-start at the Chinese Grand Prix, pointing to a persistent mechanical fragility pattern.\n\nAudi, in its early works programme, continues to develop its power unit and chassis package, providing broader context for the team's competitive deficit and Bortoleto's recurring retirements.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -160,13 +160,13 @@
       "team": "audi"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:32:24.805Z",
-    "content_hash": "6e785770762c53ba"
+    "updated_at": "2026-09-06T22:03:18.563Z",
+    "content_hash": "76ac7b4607b97cd8"
   },
   {
     "id": "driver-gasly-2026",
     "title": "Pierre Gasly — 2026 Season Form",
-    "content": "Season 2026 driver form — Pierre Gasly (Alpine F1 Team). Pierre Gasly sits tenth in the 2026 Formula 1 Drivers' Championship with 44 points accumulated across 12 rounds. He has recorded no victories this season but has secured one podium — a third-place finish at the Monaco Grand Prix in Round 6, which remains his standout result and single largest points haul of 15 in any one weekend. On grid-versus-finish differential, Gasly has generally been a net position gainer, averaging plus 2.2 places across completed races, with notable advances of six or seven positions at Canada, Monaco, and Barcelona offset by a sharp 12-place loss at Miami and minor losses in Austria and Belgium. Reliability has been a significant concern: the data records seven DNFs or lapped/retirement events among 12 entries, including a mechanical retirement at Miami, indicating a recurring pattern of race-distance attrition rather than isolated incidents. Alpine F1 Team has shown intermittent single-lap competitiveness but has struggled to convert qualifying pace into clean, full-distance finishes consistently throughout the campaign.",
+    "content": "Season 2026 driver form — Pierre Gasly (Alpine F1 Team). Pierre Gasly sits tenth in the 2026 Formula 1 Drivers' Championship with 41 points from 13 races entered. He has recorded no wins or podiums this season, with his strongest individual result being a sixth-place finish at the Chinese Grand Prix, which remains his sole points haul above six in a single event. Regarding grid-versus-finish trajectory, Pierre Gasly has been a net position gainer across the majority of rounds, posting positive deltas in seven of the twelve races where grid data is available, including a seven-place gain at the Barcelona Grand Prix. However, the pattern is inconsistent, with notable regressions in Miami and Austria. Reliability has been a significant concern: Pierre Gasly has recorded seven DNFs across 13 rounds, a rate that has materially suppressed his points total and championship standing. Retirements have not clustered around a single identifiable cause based on available data. Within Alpine F1 Team, these mechanical or race-ending incidents represent a systemic challenge affecting the team's overall competitive output in 2026.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -174,8 +174,8 @@
       "team": "alpine-f1-team"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:31:55.023Z",
-    "content_hash": "5846a785b14dff6f"
+    "updated_at": "2026-09-06T22:02:32.917Z",
+    "content_hash": "19114f05f33741a9"
   },
   {
     "id": "race-2026-r02-shanghai",
@@ -218,7 +218,7 @@
   {
     "id": "driver-lawson-2026",
     "title": "Liam Lawson — 2026 Season Form",
-    "content": "Season 2026 driver form — Liam Lawson (RB F1 Team). Liam Lawson sits ninth in the 2026 Formula 1 Drivers' Championship with 49 points accumulated across 12 rounds. He has recorded no wins or podiums to date, with a sixth-place finish at the Monaco Grand Prix and a matching result at the British Grand Prix representing his strongest individual performances of the season so far.\n\nThe grid-versus-finish delta is mixed. Lawson has demonstrated the ability to recover positions — most notably gaining seven places in China and five in both Japan and Canada — but has also surrendered ground in Australia (−5) and Miami (−9), producing an inconsistent overall trend with no calculated season average available due to a missing grid position at Zandvoort.\n\nReliability has been a significant concern. Lawson has recorded six DNFs or lapped finishes across 12 races, with retirements and being lapped recurring throughout the campaign, suggesting both mechanical and pace-related deficits.\n\nLawson competed primarily under the RB F1 Team banner, with the Dutch Grand Prix entry listed under Red Bull, reflecting the parent organisation's driver deployment arrangements within the broader Red Bull programme.",
+    "content": "Season 2026 driver form — Liam Lawson (RB F1 Team). Liam Lawson sits ninth in the 2026 Drivers' Championship with 51 points accumulated across 13 rounds, recording no wins or podiums to date. His best result is a fifth-place finish at the Monaco Grand Prix, which represents his closest approach to the podium this season and his most significant points haul in a single race. Grid-to-finish performance has been mixed: Lawson has gained positions on seven occasions, most notably a seven-place gain in China, but has also lost ground in four rounds, including a nine-place deficit in Miami. The overall trend is marginally positive, though inconsistency limits a clear pattern. Reliability is a significant concern, with six DNF or lapped-and-classified retirements across 13 races suggesting mechanical or operational fragility is costing points on a recurring basis, most acutely at Miami where he retired outright. Notably, Lawson's team affiliation shifted from RB F1 Team to Red Bull from Round 12 onward, a contextual factor that may influence car characteristics and resource allocation in subsequent analysis.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -226,8 +226,8 @@
       "team": "rb-f1-team"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:31:47.454Z",
-    "content_hash": "5e24f38d19b696bc"
+    "updated_at": "2026-09-06T22:02:25.344Z",
+    "content_hash": "b117d1bcff227949"
   },
   {
     "id": "race-2026-r03-suzuka",
@@ -270,7 +270,7 @@
   {
     "id": "driver-piastri-2026",
     "title": "Oscar Piastri — 2026 Season Form",
-    "content": "Season 2026 driver form — Oscar Piastri (McLaren). Oscar Piastri sits seventh in the 2026 Drivers' Championship with 104 points from 12 rounds, yet to record a race victory. He has accumulated two podiums: a second-place finish at the Japanese Grand Prix and third at the Miami Grand Prix, the latter representing his strongest result given he gained four positions from seventh on the grid. When races have run to completion without incident, Oscar Piastri has demonstrated a consistent ability to advance through the field, posting positive grid deltas at Japan, Miami, Monaco, Barcelona, Austria, and Belgium. However, reliability has heavily distorted his overall picture. Oscar Piastri has recorded four DNFs or non-starts: two did-not-starts in Australia and China, a retirement in Hungary, and a lapped finish in Canada — a pattern that has cost him substantial points across early and mid-season rounds. His average finish of 5.13 across completed entries reflects competitive underlying pace. Within McLaren, these reliability incidents have widened the gap to his teammate and suppressed what would otherwise represent a stronger championship standing.",
+    "content": "Season 2026 driver form — Oscar Piastri (McLaren). Oscar Piastri sits seventh in the 2026 Drivers' Championship with 116 points from 13 races entered. He has recorded no wins this season but has taken two podiums: a second place at the Japanese Grand Prix and a third at the Miami Grand Prix, with the Japanese result representing his strongest individual performance to date.\n\nThe grid-versus-finish picture is heavily distorted by reliability issues. In races where Oscar Piastri has completed the full distance, he has generally gained positions — finishing fourth from seventh at Monaco and Austria, and fifth from seventh at Barcelona — demonstrating consistent pace through the field on clean weekends. However, four DNFs, including two did-not-starts in Australia and China and a retirement from third on the grid in Hungary, have suppressed his championship standing considerably.\n\nReliability is the defining thread of Oscar Piastri's 2026 campaign. The four non-finishes span the opening two rounds and recur intermittently, suggesting no single resolved fault. McLaren as a constructor are managing similar disruptions across their operation, providing broader team context for the pattern observed.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -278,8 +278,8 @@
       "team": "mclaren"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:31:33.048Z",
-    "content_hash": "8c4a1c568bc8b7dd"
+    "updated_at": "2026-09-06T22:02:10.050Z",
+    "content_hash": "00e539eb30160fe7"
   },
   {
     "id": "race-2026-r04-miami-autodrome",
@@ -729,7 +729,7 @@
   {
     "id": "driver-colapinto-2026",
     "title": "Franco Colapinto — 2026 Season Form",
-    "content": "Season 2026 driver form — Franco Colapinto (Alpine F1 Team). Franco Colapinto sits 12th in the 2026 Formula 1 Drivers' Championship with 19 points accumulated across 12 race entries with the Alpine F1 Team. He has recorded no wins or podiums to date, though his best result — sixth place at the Canadian Grand Prix — represents his points ceiling so far and came alongside a four-position gain from the grid. The British Grand Prix also stands out, where Colapinto recovered ten positions from 19th on the grid to finish ninth. Overall, he trends as a net position gainer, averaging an improvement of approximately 2.2 places relative to his starting grid slot across completed events.\n\nReliability has been a significant concern, with seven of twelve entries classified as lapped or otherwise compromised, though no DNFs in the mechanical retirement sense are explicitly recorded; the frequency of lapped finishes nonetheless reflects consistent pace deficits. Qualifying performance has been inconsistent, with Colapinto regularly starting from the mid-to-rear grid, compounding the challenge of extracting results from a midfield-competitive Alpine F1 Team package.",
+    "content": "Season 2026 driver form — Franco Colapinto (Alpine F1 Team). Franco Colapinto sits 12th in the 2026 Formula One Drivers' Championship with 21 points accumulated across 13 rounds for the Alpine F1 Team. He has recorded no wins and no podium finishes to date. The standout result of his season came at the Canadian Grand Prix, where he converted a 10th-place grid slot into a sixth-place finish, earning eight points — his single largest points haul of the year. The British Grand Prix also produced a notable recovery, with Colapinto advancing ten positions from 19th on the grid to ninth at the flag. Grid-to-finish performance has been inconsistent; while several races show marginal gains, negative deltas at the Japanese and Hungarian Grands Prix indicate occasional regression through the field. A meaningful reliability concern is evident, with seven classified DNFs or lapped finishes recorded across 13 entries, suggesting the Alpine F1 Team's package has struggled with mechanical durability or competitive pace throughout the campaign. Alpine remains a midfield constructor, and Colapinto's points return reflects both the car's limitations and isolated competitive windows.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -737,13 +737,13 @@
       "team": "alpine-f1-team"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:32:10.655Z",
-    "content_hash": "8ade02028c36c5f2"
+    "updated_at": "2026-09-06T22:02:56.104Z",
+    "content_hash": "e8e3b8d3898844fc"
   },
   {
     "id": "driver-hadjar-2026",
     "title": "Isack Hadjar — 2026 Season Form",
-    "content": "Season 2026 driver form — Isack Hadjar (Red Bull). Isack Hadjar sits eighth in the 2026 Formula One Drivers' Championship with 68 points accumulated across eleven race entries. He has recorded no wins and no podiums to date, though his fourth-place finish at the Monaco Grand Prix represents his strongest classified result of the season. Across completed races, Hadjar has demonstrated a consistent tendency to gain positions from his starting grid slot, posting a positive average grid delta of approximately 2.43 places. The Belgian Grand Prix was the most notable example of this pattern, where he advanced fifteen positions from twenty-first on the grid to finish sixth. Reliability has been a significant concern, with four retirements representing a high attrition rate; the Australian Grand Prix retirement from third on the grid was particularly costly in terms of lost points. The Miami Grand Prix produced a further zero-point outcome. Hadjar competes for Red Bull, where internal performance benchmarks against the senior programme add additional context to his developmental trajectory within the team.",
+    "content": "Season 2026 driver form — Isack Hadjar (Red Bull). Isack Hadjar sits eighth in the 2026 Formula One Drivers' Championship with 71 points accumulated across eleven races. He has recorded no victories to date but has taken one podium, a third-place finish at the Monaco Grand Prix, which represents his standout result of the campaign. Across completed races, Isack Hadjar has demonstrated a consistent net-positive grid-to-finish trend, averaging a gain of 2.57 positions per race. The Belgian Grand Prix provides the clearest illustration of this quality, where he advanced fifteen places from twenty-first on the grid to finish sixth. Reliability has been a material concern, with four retirements recorded — at the Australian, Miami, and two further events — representing a DNF rate that has cost him significant championship points, most notably a retirement from third on the grid in Australia. When classified, his average finish stands at 6.57. Isack Hadjar operates within the Red Bull Racing team alongside a more experienced stablemate, competing with factory-specification machinery throughout the season.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -751,13 +751,13 @@
       "team": "red-bull"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:31:39.489Z",
-    "content_hash": "ebb9b6e5e42f8215"
+    "updated_at": "2026-09-06T22:02:17.460Z",
+    "content_hash": "4282fa96fa8cbe03"
   },
   {
     "id": "driver-sainz-2026",
     "title": "Carlos Sainz — 2026 Season Form",
-    "content": "Season 2026 driver form — Carlos Sainz (Williams). Through twelve rounds of the 2026 Formula One World Championship, Carlos Sainz sits sixteenth in the Drivers' standings with six points scored. He has recorded no wins and no podiums across the campaign, with his best results being three ninth-place finishes at the Chinese, Miami, and Canadian Grands Prix, the Chinese result representing his single standout performance after starting seventeenth. Carlos Sainz has been a net position gainer overall, averaging an improvement of approximately 2.67 places from grid to finish across completed races; however, this figure is skewed by the earlier rounds, as more recent events have seen him lose ground, including a four-place loss in Monaco and three-place losses in both Austria and Britain. Reliability has been a significant concern, with two classified retirements and multiple lapped finishes contributing to a DNF count of nine across the season. Within the Williams team, this pattern reflects broader mechanical and competitive difficulties that have constrained points-scoring opportunities throughout the year.",
+    "content": "Season 2026 driver form — Carlos Sainz (Williams). Carlos Sainz sits 16th in the 2026 Drivers' Championship with six points accumulated across 13 race entries, recording no wins or podiums to date. His best results have been three ninth-place finishes, achieved at the Chinese, Miami, and Canadian Grands Prix, each contributing two points. The grid-to-finish trend is mixed: early rounds showed meaningful forward progress — notably an eight-place gain in China and six-place gains in Australia and Canada — however, from Round 6 onward the pattern deteriorated, with several races producing net losses relative to grid position, including a four-place loss in Monaco and three-place losses in Austria and Britain. Reliability represents the most significant concern, with nine DNFs or lapped retirements across the 13 rounds, indicating a persistent mechanical or race-completion issue rather than isolated incidents. Williams continues to operate as a midfield-to-lower-midfield constructor in 2026, and Sainz's results broadly reflect the machinery's competitive limitations throughout this period.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -765,13 +765,13 @@
       "team": "williams"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:32:39.880Z",
-    "content_hash": "a3ce36f843c35bd1"
+    "updated_at": "2026-09-06T22:03:35.520Z",
+    "content_hash": "72631b1b79f81169"
   },
   {
     "id": "driver-ocon-2026",
     "title": "Esteban Ocon — 2026 Season Form",
-    "content": "Season 2026 driver form — Esteban Ocon (Haas F1 Team). Esteban Ocon sits 18th in the 2026 Formula One Drivers' Championship with 3 points accumulated across 12 race entries, recording no wins or podiums. His most notable result remains the Monaco Grand Prix, where he advanced eight positions from 17th on the grid to finish ninth, accounting for two of his three total championship points. The Japanese Grand Prix produced his only other scoring finish, a tenth-place result from 12th on the grid worth one point.\n\nAcross completed races, Ocon averages a grid-position gain of approximately 3.25 places, suggesting a consistent ability to advance through the field racewise; however, the Monaco result skews this figure, and several rounds have seen him lose positions or finish lapped. Reliability has been a significant concern, with eight DNFs or lapped classifications from 12 entries, including a retirement at the Dutch Grand Prix from an unrecorded grid position.\n\nWithin the Haas F1 Team context, Ocon's results reflect a package that has struggled for outright pace in 2026, regularly qualifying in the 13th–17th range and limiting opportunities to score points consistently.",
+    "content": "Season 2026 driver form — Esteban Ocon (Haas F1 Team). Esteban Ocon sits 18th in the 2026 Formula 1 Drivers' Championship with 3 points accumulated across 13 race entries, recording no wins or podiums. His most notable result is a ninth-place finish at the Monaco Grand Prix, a race in which he advanced eight positions from his starting grid slot of 17th. The only other points-scoring finish was 10th at the Japanese Grand Prix, where he gained two positions from grid.\n\nAcross completed races where grid data is available, Ocon has posted a positive average grid delta of approximately 3.25 places; however, this figure is skewed by the Monaco outlier, and a recurring pattern of losses — including minus-four at the Dutch Grand Prix — indicates inconsistency. A retirement at Zandvoort contributed to a broader reliability concern, with nine DNFs or lapped results recorded across the season and no mechanical pattern yet publicly documented. Within the Haas F1 Team, Ocon has consistently qualified in the 12th-to-17th range, reflecting the car's midfield-to-lower competitive positioning in 2026.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -779,13 +779,13 @@
       "team": "haas-f1-team"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:32:55.974Z",
-    "content_hash": "85c0745578955163"
+    "updated_at": "2026-09-06T22:03:51.371Z",
+    "content_hash": "c113ae3381cd693c"
   },
   {
     "id": "driver-albon-2026",
     "title": "Alexander Albon — 2026 Season Form",
-    "content": "Season 2026 driver form — Alexander Albon (Williams). Alexander Albon sits 17th in the 2026 Formula One Drivers' Championship with five points accumulated across twelve race entries. He has recorded no wins and no podiums this season, with his standout result being an eighth-place finish at the Monaco Grand Prix, which yielded four of his five championship points. His only other points-scoring finish came at the Miami Grand Prix, where he converted a 15th grid slot into tenth place.\n\nAcross classified starts where grid position data is available, Alexander Albon has averaged a positive grid-to-finish delta of approximately 2.67 places, indicating a marginal tendency to gain positions during races. However, this metric is significantly distorted by an exceptionally poor reliability record. Of twelve race entries, nine have resulted in a failure to finish or classification as lapped or a non-starter, including two confirmed retirements, one did-not-start at the Chinese Grand Prix, and multiple lapped finishes. Mechanical and incident-related attrition has been a consistent theme throughout the campaign. Williams continues to operate at the lower end of the constructors' standings, providing limited competitive infrastructure to support Alexander Albon's individual performances.",
+    "content": "Season 2026 driver form — Alexander Albon (Williams). Alexander Albon sits 17th in the 2026 Formula One Drivers' Championship with 5 points accumulated across 13 race entries. He has recorded no wins or podiums this season. His strongest result came at the Monaco Grand Prix, where he converted an 11th-place grid slot into an 8th-place finish to claim 4 points, and at Miami he collected 1 point finishing 10th from 15th on the grid. Overall, Alexander Albon has demonstrated a modest positive grid-to-finish trend, averaging a gain of approximately 2.67 positions per completed race, suggesting he extracts more from races than qualifying. However, reliability has severely undermined his season: 10 of 13 entries have ended outside normal classified finishes, encompassing retirements, lapped results, and one did-not-start at the Chinese Grand Prix. This DNF rate of roughly 77% represents a critical concern. Williams, operating as a midfield-to-lower-midfield constructor in 2026, has provided Alexander Albon limited machinery capable of consistent points-scoring opportunities.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -793,13 +793,13 @@
       "team": "williams"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:32:47.760Z",
-    "content_hash": "2c1782d966e8b074"
+    "updated_at": "2026-09-06T22:03:43.062Z",
+    "content_hash": "c930ccdb1d3b2cd3"
   },
   {
     "id": "driver-hulkenberg-2026",
     "title": "Nico Hülkenberg — 2026 Season Form",
-    "content": "Season 2026 driver form — Nico Hülkenberg (Audi). Nico Hülkenberg sits 15th in the 2026 Drivers' Championship with 6 points accumulated across 12 race entries. He has recorded no wins or podiums this season, with his strongest result being a ninth-place finish at the Hungarian Grand Prix, which contributed 2 points, followed by an eighth-place finish at the Dutch Grand Prix worth 4 points — the only scoring results of his campaign to date. His grid-to-finish delta across completed races averages just +0.33 positions gained, indicating he is largely neutral in terms of position change from qualifying to flag, neither a consistent gainer nor a significant loser on average. However, reliability has been a severe and defining problem: Nico Hülkenberg has recorded 9 DNFs from 12 entries, including retirements, a did-not-start in Australia, and multiple lapped finishes that signal underlying pace and mechanical deficits. This pattern points to systemic issues rather than isolated incidents. Audi, in its rebranded factory entry capacity, continues to face a difficult integration phase, with the reliability data reflecting the broader development challenges confronting the programme.",
+    "content": "Season 2026 driver form — Nico Hülkenberg (Audi). Nico Hülkenberg sits 15th in the 2026 Drivers' Championship with 6 points accumulated across 13 race entries. He has recorded no wins or podiums to date, with his strongest result being an eighth-place finish at the Dutch Grand Prix — his sole points-scoring appearance alongside a ninth at the Hungarian Grand Prix, which together account for all 6 of his points. The grid-versus-finish trend is notably negative across much of the season; several retirements from competitive grid positions, including an 11-place loss at both the Australian and Barcelona Grands Prix, have suppressed his overall average, though a modest positive delta at Zandvoort and Hungary indicates some capacity to gain positions in cleaner races. Reliability has been a severe drag on Hülkenberg's campaign, with 9 DNFs or non-starts from 13 entries — a rate that has fundamentally limited his points accumulation. This pattern reflects ongoing mechanical fragility within Audi's first full works season, as the manufacturer continues its competitive development phase under its new Formula 1 programme.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -807,8 +807,8 @@
       "team": "audi"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:32:32.796Z",
-    "content_hash": "935aaddb04d36df7"
+    "updated_at": "2026-09-06T22:03:28.197Z",
+    "content_hash": "a5761ea6810a19b5"
   },
   {
     "id": "driver-bottas-2026",
@@ -855,7 +855,7 @@
   {
     "id": "driver-alonso-2026",
     "title": "Fernando Alonso — 2026 Season Form",
-    "content": "Season 2026 driver form — Fernando Alonso (Aston Martin). Fernando Alonso sits 19th in the 2026 Drivers' Championship with 3 points from 12 races entered, recording no wins or podiums across the campaign. His sole points finishes are a tenth place at Monaco (1 point) and a ninth at the Dutch Grand Prix (2 points), with Monaco representing the season's standout result given he started from 21st on the grid. Across completed races, Fernando Alonso averages a grid-position gain of approximately 11 places per race, classifying him as a consistent net gainer; however, this metric is heavily distorted by frequent retirements and lapped finishes that inflate apparent progress. Reliability has been a defining concern, with 11 DNFs or non-classified finishes in 12 rounds — a near-total mechanical or race-ending attrition rate suggesting a systematic issue with the Aston Martin package rather than isolated incidents. Aston Martin has struggled comprehensively with pace and durability across the 2026 regulations cycle, consistently qualifying at the rear of the field and failing to sustain race distance.",
+    "content": "Season 2026 driver form — Fernando Alonso (Aston Martin). Fernando Alonso sits 19th in the 2026 Drivers' Championship with 3 points from 13 races entered, recording no wins and no podiums across the campaign. His sole scoring finishes are a tenth place at the Monaco Grand Prix, worth 1 point, and a ninth place at the Dutch Grand Prix, worth 2 points; Monaco represents his standout result, where he advanced eleven positions from 21st on the grid to the points. On grid-to-finish movement, Alonso is broadly a positions gainer, averaging approximately +3.4 places across completed races, though this figure is heavily flattered by the Monaco and Dutch results and masks persistent mid-to-rear-field finishes. Reliability has been a severe liability: Fernando Alonso has accumulated 12 DNFs in 13 race entries, a rate that has effectively undermined any points accumulation. Retirements have occurred across circuit types with no single apparent mechanical pattern discernible from available data. Aston Martin as a constructor is clearly operating at the lower end of the competitive order in 2026, regularly qualifying in the high teens to low twenties.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -863,8 +863,8 @@
       "team": "aston-martin"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:33:04.204Z",
-    "content_hash": "cd26a726d5b5e2b7"
+    "updated_at": "2026-09-06T22:03:59.667Z",
+    "content_hash": "3751f40568e89f56"
   },
   {
     "id": "analysis-2026-r05-f1tech-f1tech-how-did-mercedes-upgrade-its-field-leading-",
@@ -1855,7 +1855,7 @@
   {
     "id": "driver-tsunoda-2026",
     "title": "Yuki Tsunoda — 2026 Season Form",
-    "content": "Season 2026 driver form — Yuki Tsunoda (RB F1 Team). Yuki Tsunoda sits 20th in the 2026 Formula One Drivers' Championship with zero points accumulated across one race entered to date. Tsunoda has secured no wins or podiums in the current campaign, with his sole classified result being an 11th-place finish at the Dutch Grand Prix, where he was lapped and therefore outside the points. No grid position data is available for that round, meaning a meaningful grid-versus-finish delta cannot yet be calculated. Separately, Tsunoda carries one DNF against his name in 2026, though with only a single race weekend on record, it is premature to identify a reliability pattern beyond noting the retirement occurred. Tsunoda continues to represent the RB F1 Team, the Faenza-based Red Bull junior outfit, which itself remains at the lower end of the constructors' standings at this early stage of the season. The dataset will require further rounds before substantive performance trends can be established.",
+    "content": "Season 2026 driver form — Yuki Tsunoda (RB F1 Team). Yuki Tsunoda sits 20th in the 2026 Formula One Drivers' Championship with 1 point accumulated across two race entries. He has recorded no wins or podiums to date, with his most notable result being a tenth-place finish at the Italian Grand Prix, which yielded his sole championship point of the season. Across the two rounds sampled, Tsunoda has posted an average finishing position of tenth. Grid-to-finish delta data is partially available: at the Dutch Grand Prix he started 12th and finished 11th, representing a marginal one-place loss, while qualifying data for the Italian Grand Prix is absent, precluding a complete trend assessment. Tsunoda has registered one DNF this season, though the available data does not indicate a recurring mechanical or incident pattern given the limited race sample. Tsunoda competes for the RB F1 Team, the junior Red Bull motorsport program, which contextualises his midfield operational environment and the constraints of its car's competitive ceiling.",
     "tags": {
       "season": 2026,
       "type": "driver",
@@ -1863,8 +1863,8 @@
       "team": "rb-f1-team"
     },
     "source_url": null,
-    "updated_at": "2026-08-23T16:33:20.685Z",
-    "content_hash": "ff48bc99e31ec80e"
+    "updated_at": "2026-09-06T22:04:09.445Z",
+    "content_hash": "a185c1fc8ebf710e"
   },
   {
     "id": "quali-2026-r13-autodromo-nazionale-di-monza",
@@ -1880,5 +1880,43 @@
     "source_url": null,
     "updated_at": "2026-09-05T19:47:14.376Z",
     "content_hash": "7c47aef8540fb29b"
+  },
+  {
+    "id": "race-2026-r13-autodromo-nazionale-di-monza",
+    "title": "Italian Grand Prix 2026 — Race Result & Analysis",
+    "content": "Season 2026, Round 13: Italian Grand Prix. Andrea Kimi Antonelli won the 2026 Italian Grand Prix at Autodromo Nazionale di Monza, completing the race in 1:51:15.281 and delivering a Mercedes one-two finish with George Russell 3.857 seconds behind. Max Verstappen claimed third for Red Bull, a further 14.718 seconds adrift. Lando Norris and Oscar Piastri completed the top five for McLaren, while Lewis Hamilton brought his Ferrari home sixth. Pierre Gasly delivered a strong result for Alpine F1 Team in seventh, recovering from pole position despite ultimately losing the lead. Arvid Lindblad finished eighth for RB F1 Team, followed by Alpine's Franco Colapinto ninth and Yuki Tsunoda tenth, also for RB F1 Team. Grid position data was unavailable, so field-wide position changes cannot be quantified.\n\nPierre Gasly took pole position with a 1:21.786 lap, representing a notable qualifying performance for Alpine F1 Team, though he was unable to convert it into a race win. No fastest lap data was available. Pit stop data was not provided, preventing analysis of stop counts or service times.\n\nThe most significant retirement was Charles Leclerc, who exited on lap one, costing Ferrari heavily at their home circuit. Fernando Alonso retired on lap 23 and Lance Stroll on lap 26, leaving Aston Martin without points. Esteban Ocon, Alexander Albon, Sergio Pérez, and Valtteri Bottas were all lapped.\n\nIn the championship, Antonelli extended his lead to 267 points, now 66 clear of Russell. Hamilton remains third on 191, while Leclerc's zero-point retirement allowed Verstappen to close to within 28 points of Hamilton. No position changes occurred in the standings.",
+    "tags": {
+      "season": 2026,
+      "type": "race",
+      "round": 13,
+      "circuit": "autodromo-nazionale-di-monza",
+      "drivers_classified": [
+        "andrea-kimi-antonelli",
+        "george-russell",
+        "max-verstappen",
+        "lando-norris",
+        "oscar-piastri",
+        "lewis-hamilton",
+        "pierre-gasly",
+        "arvid-lindblad",
+        "franco-colapinto",
+        "yuki-tsunoda",
+        "gabriel-bortoleto",
+        "nico-h-lkenberg",
+        "carlos-sainz",
+        "liam-lawson",
+        "oliver-bearman",
+        "esteban-ocon",
+        "alexander-albon",
+        "sergio-p-rez",
+        "valtteri-bottas",
+        "lance-stroll",
+        "fernando-alonso",
+        "charles-leclerc"
+      ]
+    },
+    "source_url": "https://en.wikipedia.org/wiki/2026_Italian_Grand_Prix",
+    "updated_at": "2026-09-06T22:00:51.161Z",
+    "content_hash": "ba50068a61814089"
   }
 ]
