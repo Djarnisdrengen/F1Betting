@@ -22,6 +22,22 @@ Work on exactly one of these repos per session.
 
 ---
 
+## Phase-plan compaction reminder
+
+When implementing from a `PLAN.md` with multiple phases, in a single long-running
+session (not the fresh-subagent-per-phase pattern):
+
+- Before starting work on any phase after the first, stop and tell the user:
+  "Before Phase <N>, consider running `/compact` to reset context — the last
+  phase likely left a lot of tool output behind." Then wait for their reply
+  before proceeding.
+- Skip this on Phase 1, right after a session start, or right after a manual
+  `/compact` or `/clear` — don't nag if context is already small.
+- This is a reminder only — I cannot run `/compact` myself. If the user says
+  to proceed without compacting, do so without asking again this session.
+
+---
+
 ## What this project is
 
 Formula 1 prediction game. Players pick top-3 podium finishers before each race. Points awarded per position, with bonus pool payouts for perfect predictions.
