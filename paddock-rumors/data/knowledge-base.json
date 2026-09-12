@@ -1918,5 +1918,20 @@
     "source_url": "https://en.wikipedia.org/wiki/2026_Italian_Grand_Prix",
     "updated_at": "2026-09-06T22:00:51.161Z",
     "content_hash": "ba50068a61814089"
+  },
+  {
+    "id": "quali-2026-r14-madring",
+    "title": "Spanish Grand Prix 2026 — Qualifying",
+    "content": "Season 2026, Round 14 Qualifying: Spanish Grand Prix. Lando Norris claimed pole position for the Spanish Grand Prix at Madring, setting a Q3 lap time of 1:31.824 for McLaren. Andrea Kimi Antonelli qualified second for Mercedes just 0.011 seconds behind, representing an exceptionally narrow margin that effectively separates the two on timing alone. Max Verstappen placed third for Red Bull at 1:31.964, 0.140 seconds off pole, with Lewis Hamilton and Charles Leclerc locking out fourth and fifth for Ferrari on near-identical times of 1:32.013 and 1:32.019 respectively. George Russell qualified sixth for Mercedes, while Oscar Piastri's seventh place represents a notable underperformance relative to his McLaren teammate, with a gap of 0.470 seconds between them in Q3. Liam Lawson was a creditable eighth for Red Bull. Franco Colapinto produced a strong result in ninth for Alpine F1 Team, and Arvid Lindblad rounded out the top ten for RB F1 Team. Carlos Sainz and Fernando Alonso were eliminated in Q1, a significant result given Williams and Aston Martin's recent form. The tight clustering of lap times across the top six suggests multiple teams hold competitive race pace at Madring, with McLaren, Mercedes, Red Bull, and Ferrari all capable of challenging for victory depending on strategy and tyre management.",
+    "tags": {
+      "season": 2026,
+      "type": "qualifying",
+      "round": 14,
+      "circuit": "madring",
+      "pole_driver": "lando-norris"
+    },
+    "source_url": null,
+    "updated_at": "2026-09-12T19:59:26.436Z",
+    "content_hash": "64270986c6ebec5d"
   }
 ]
