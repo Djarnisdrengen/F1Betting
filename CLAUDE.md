@@ -4,6 +4,40 @@ This file is injected into Claude Code conversations. Keep it **small** — deta
 
 ---
 
+## ⚠️ Project identity — read first
+
+**This repo is F1Betting / Paddock Picks** — `~/github/formula-1.dk`, GitHub `Djarnisdrengen/formula-1.dk`,
+domains **formula-1.dk** (live) and **hpovlsen.dk** (test).
+
+It has a **sibling project that is NOT this one**: Robinsonklubben (`~/github/robinsonklubben.dk`,
+domain robinsonklubben.dk) — a trip expense-sharing app. The two are structural near-twins (both
+vanilla PHP + MySQL, both with `public/profile.php`, an admin area, `docs/{architecture,patterns,
+gotchas}.md`, `build-deploy/`, `tests/e2e/`, `config.test.php`/`config.live.php`), so **file paths
+alone never tell you which project you are in.**
+
+**If Robinsonklubben files or an additional working directory are visible in this session, STOP and
+tell Djarnis before planning or editing anything.** In 2026-09 a full 375-line implementation plan
+was written against the wrong repo this way; it was factually accurate and still completely wrong.
+Work on exactly one of these repos per session.
+
+---
+
+## Phase-plan compaction reminder
+
+When implementing from a `PLAN.md` with multiple phases, in a single long-running
+session (not the fresh-subagent-per-phase pattern):
+
+- Before starting work on any phase after the first, stop and tell the user:
+  "Before Phase <N>, consider running `/compact` to reset context — the last
+  phase likely left a lot of tool output behind." Then wait for their reply
+  before proceeding.
+- Skip this on Phase 1, right after a session start, or right after a manual
+  `/compact` or `/clear` — don't nag if context is already small.
+- This is a reminder only — I cannot run `/compact` myself. If the user says
+  to proceed without compacting, do so without asking again this session.
+
+---
+
 ## What this project is
 
 Formula 1 prediction game. Players pick top-3 podium finishers before each race. Points awarded per position, with bonus pool payouts for perfect predictions.

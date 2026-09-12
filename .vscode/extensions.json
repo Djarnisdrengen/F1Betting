@@ -1,0 +1,29 @@
+{
+	// Extensions this project actually uses. See CLAUDE.md for the stack.
+	// Deliberately excludes PowerShell, Azure Repos and the Python extensions:
+	// they may be installed, but nothing in this repo uses them (the only
+	// Python here is the ggshield virtualenv in .venv/).
+	"recommendations": [
+		// Claude Code
+		"anthropic.claude-code",
+
+		// PHP — 610 files, procedural, no framework
+		"bmewburn.vscode-intelephense-client",
+		"junstyle.php-cs-fixer",
+
+		// MySQL — database/schema.sql
+		"mtxr.sqltools",
+		"mtxr.sqltools-driver-mysql",
+
+		// Playwright — tests/e2e/
+		"ms-playwright.playwright",
+
+		// GitHub — .github/workflows/
+		"github.vscode-github-actions",
+		"github.vscode-pull-request-github",
+
+		// Docs — docs/, epics/
+		"davidanson.vscode-markdownlint",
+		"wayou.vscode-todo-highlight"
+	]
+}

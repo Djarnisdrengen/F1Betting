@@ -2,7 +2,8 @@
 
 # IDE and editors
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 
 # Ignore todolist configuration files
 .todolistrc

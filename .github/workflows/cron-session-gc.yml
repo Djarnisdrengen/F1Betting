@@ -1,0 +1,57 @@
+name: Cron — Session GC
+
+# Deletes expired rows from the DB-backed sessions table (public/includes/session-handler.php).
+# DB-backed sessions don't get cleaned up by PHP's own probabilistic session.gc, so this cron is
+# the actual cleanup path — see public/cron/session_gc.php. Hourly is plenty; session rows are
+# small and this isn't latency-sensitive.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  trigger-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Session GC (live)
+        env:
+          BASE_URL: ${{ vars.BASE_URL_LIVE }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL + '/cron/session_gc.php';
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Session GC complete')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "
+
+  trigger-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Session GC (test)
+        env:
+          BASE_URL: ${{ vars.BASE_URL_TEST }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET_TEST }}
+        run: |
+          node -e "
+            const url = process.env.BASE_URL + '/cron/session_gc.php';
+            fetch(url, { headers: { Authorization: 'Bearer ' + process.env.CRON_SECRET } })
+              .then(async r => {
+                const text = await r.text();
+                console.log(text);
+                if (!r.ok || !text.includes('Session GC complete')) {
+                  console.error('Unexpected response (HTTP ' + r.status + ')');
+                  process.exit(1);
+                }
+              })
+              .catch(e => { console.error(e); process.exit(1); });
+          "

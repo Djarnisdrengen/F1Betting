@@ -15,6 +15,7 @@ define('MAIL_LOG_FILE',               __DIR__ . '/public/logs/mail.log');
 define('CRON_NOTIFICATIONS_LOG_FILE', __DIR__ . '/public/logs/cron_notifications.log');
 define('CRON_QUALIFYING_LOG_FILE',    __DIR__ . '/public/logs/cron_qualifying.log');
 define('WARM_ACTIONS_CACHE_LOG_FILE', __DIR__ . '/public/logs/warm_actions_cache.log');
+define('SESSION_GC_LOG_FILE',         __DIR__ . '/public/logs/session_gc.log');
 
 // ── APP VERSION ───────────────────────────────────────────────────────
 define('APP_VERSION', 'v3.0.0');
@@ -33,7 +34,12 @@ ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.use_strict_mode', 1);
 ini_set('session.use_only_cookies', 1);
+// 43200 = SESSION_ABSOLUTE_TIMEOUT (public/includes/functions.php) — duplicated as a
+// literal here because functions.php hasn't loaded yet at this point in the bootstrap.
+ini_set('session.gc_maxlifetime', 43200);
 if (session_status() === PHP_SESSION_NONE) {
+    require_once __DIR__ . '/public/includes/session-handler.php';
+    session_set_save_handler(new DbSessionHandler(), true);
     session_start();
 }
 

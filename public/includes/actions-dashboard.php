@@ -7,7 +7,7 @@
 // handoff's illustrative mock table, which drifted from what's actually configured).
 
 define('GH_REPO_OWNER', 'Djarnisdrengen');
-define('GH_REPO_NAME',  'F1Betting');
+define('GH_REPO_NAME',  'formula-1.dk');
 define('GH_CACHE_DIR',  __DIR__ . '/../cache/github-actions');
 // Kept warm by cron/warm_actions_cache.php every 5 minutes (cron-warm-actions-cache.yml) — 360s
 // comfortably outlasts a 5-minute schedule even with GitHub Actions' scheduling jitter, so a
@@ -398,7 +398,7 @@ function ghFixtureData(): array {
 
 function ghApiCurlGet(string $url): ?array {
     $headers = [
-        'User-Agent: F1Betting-ActionsDashboard',
+        'User-Agent: formula-1.dk-ActionsDashboard',
         'Accept: application/vnd.github+json',
         'X-GitHub-Api-Version: 2022-11-28',
     ];
@@ -457,7 +457,7 @@ function ghCached(string $cacheKey, int $ttlSeconds, callable $fetch): ?array {
 function ghApiCurlGetBatch(array $urls): array {
     if (empty($urls)) return [];
     $headers = [
-        'User-Agent: F1Betting-ActionsDashboard',
+        'User-Agent: formula-1.dk-ActionsDashboard',
         'Accept: application/vnd.github+json',
         'X-GitHub-Api-Version: 2022-11-28',
     ];
@@ -632,7 +632,7 @@ function ghTriggerWorkflowDispatch(string $file, string $ref = 'main'): array {
         GH_REPO_OWNER, GH_REPO_NAME, rawurlencode($file)
     );
     $headers = [
-        'User-Agent: F1Betting-ActionsDashboard',
+        'User-Agent: formula-1.dk-ActionsDashboard',
         'Accept: application/vnd.github+json',
         'X-GitHub-Api-Version: 2022-11-28',
         'Authorization: Bearer ' . GITHUB_TOKEN,

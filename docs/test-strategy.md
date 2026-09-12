@@ -1,4 +1,4 @@
-# Test Strategy & Architecture — F1Betting
+# Test Strategy & Architecture — formula-1.dk
 
 ## Contents
 

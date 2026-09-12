@@ -49,7 +49,7 @@ function httpGet(url, cookieStr) {
             path:     parsed.pathname + parsed.search,
             method:   "GET",
             headers: {
-                "User-Agent": "F1Betting-Smoke/1.0",
+                "User-Agent": "formula-1.dk-Smoke/1.0",
                 ...(cookieStr ? { Cookie: cookieStr } : {}),
             },
         }, (res) => {
@@ -76,7 +76,7 @@ function httpPost(url, fields, cookieStr) {
             path:     parsed.pathname,
             method:   "POST",
             headers: {
-                "User-Agent":      "F1Betting-Smoke/1.0",
+                "User-Agent":      "formula-1.dk-Smoke/1.0",
                 "Content-Type":    "application/x-www-form-urlencoded",
                 "Content-Length":  Buffer.byteLength(body),
                 ...(cookieStr ? { Cookie: cookieStr } : {}),

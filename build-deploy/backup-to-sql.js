@@ -81,7 +81,7 @@ function main() {
     }
 
     const lines = [];
-    lines.push("-- F1Betting DB restore");
+    lines.push("-- formula-1.dk DB restore");
     lines.push(`-- Source: ${resolvedInput}`);
     lines.push(`-- Timestamp: ${backup.timestamp ?? "unknown"}`);
     lines.push("");

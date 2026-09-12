@@ -245,7 +245,7 @@ function fetchF1Api($endpoint) {
     $context = stream_context_create([
         'http' => [
             'timeout' => F1_API_TIMEOUT,
-            'header' => "User-Agent: F1Betting/1.0\r\n"
+            'header' => "User-Agent: formula-1.dk/1.0\r\n"
         ]
     ]);
 

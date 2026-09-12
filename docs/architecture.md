@@ -25,7 +25,7 @@
 ## Repository Layout
 
 ```
-F1Betting/
+formula-1.dk/
 ├── config.example.php          Template — copy to config.test.php + config.live.php
 ├── config.shared.php           Shared bootstrap included by both config files
 ├── config.test.php             Test-env config (gitignored, local + server)
@@ -236,7 +236,7 @@ require_once __DIR__ . '/config.shared.php';
 - Log file paths (relative to repo root)
 - F1 API base URL and timeout
 - Sets PHP ini: timezone, error display, session hardening (secure, httponly, samesite=Lax, strict mode)
-- Starts the session
+- Registers the DB-backed session handler (`public/includes/session-handler.php`, `sessions` table) and starts the session — see gotcha "DB-backed sessions" in `docs/gotchas.md`
 - Sets security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
 - `require_once` functions.php
 

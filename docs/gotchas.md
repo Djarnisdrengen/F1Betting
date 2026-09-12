@@ -26,6 +26,7 @@
 - [22. A stray test race can hijack `getNextDuelRace()` for every duels user](#22-a-stray-test-race-can-hijack-getnextduelrace-for-every-duels-user)
 - [23. sync:live also wipes challenge_participants — there's no live copy to restore it from](#23-synclive-also-wipes-challenge_participants--theres-no-live-copy-to-restore-it-from)
 - [24. A hand-built POST to a bulk-delete/bulk-update handler needs `ids[]`, not repeated `ids`](#24-a-hand-built-post-to-a-bulk-deletebulk-update-handler-needs-ids-not-repeated-ids)
+- [25. Sessions are DB-backed, not PHP's default file sessions](#25-sessions-are-db-backed-not-phps-default-file-sessions)
 
 ---
 
@@ -266,3 +267,16 @@ If you're testing Paddock Challenges and your participants vanish after a `sync:
 `admin-challenges.php`'s bulk actions (`bulk_delete_rumor`, `bulk_delete_trivia`, `bulk_delete_participants`, `bulk_delete_duels`, ...) all read `(array) ($_POST['ids'] ?? [])`. When a real `<form>` submits checkboxes named `ids[]`, PHP already builds `$_POST['ids']` as an array and this works exactly as it looks. But a script POSTing by hand (`curl`, `fetch`, a Node `URLSearchParams`/manual body) that sends the field as plain repeated `ids=x&ids=y&ids=z` — no brackets — gets a very different, silent result: PHP's form parser only treats a field as an array when the *name itself* carries `[]` (or an explicit index like `ids[0]`). Repeated bare `ids=` keys just overwrite each other, so `$_POST['ids']` ends up a single scalar string — whichever value happened to land last — and `(array) $scalar` then wraps *that one value* in a one-element array. The handler runs successfully (200/302, no error, `admin_ch_bulk_updated` flash message and everything), it just silently only touched one row instead of all of them.
 
 Caught while cleaning up after `bin/simulate-challenges.js` (see `docs/paddock-challenges-reference.md`): a hand-rolled cleanup POST looked like it worked (redirect, no error) but a follow-up count showed only 1 of 52 rumor items and 1 of 54 trivia items were actually gone. Fix: build the body with bracket notation per id — `ids%5B%5D=<id1>&ids%5B%5D=<id2>&...` (`%5B%5D` is `[]` URL-encoded) — and always verify a bulk operation's actual effect afterward (a count before/after, not just the HTTP status), the same way you'd want a bulk migration verified.
+
+---
+
+## 25. Sessions are DB-backed, not PHP's default file sessions
+
+`config.shared.php` registers `DbSessionHandler` (`public/includes/session-handler.php`) via `session_set_save_handler()` **before** its `session_start()` call, storing session rows in the `sessions` table instead of local disk. This replaced plain file sessions after live reports (2026-09) of getting logged out every few minutes on formula-1.dk during a single tab of manual refreshing — a pattern that ruled out the app's own idle/absolute timeout (`SESSION_IDLE_TIMEOUT`/`SESSION_ABSOLUTE_TIMEOUT`, `functions.php`) since refreshing resets `last_activity` every time. Nothing in this repo ever set `session.save_path` or `session.gc_maxlifetime`, so file-session lifetime was entirely up to Simply.com's hosting — plausibly not shared correctly if requests land on more than one app server. MySQL is the one backend already trusted as shared state across however many servers exist, so sessions moved there.
+
+Consequences to know about:
+
+- The handler opens its **own** PDO connection (not `getDB()`) because `config.shared.php` registers it before `functions.php` (where `getDB()` lives) is required — one extra MySQL connection per request, accepted as a small cost.
+- Cleanup is **not** PHP's per-request probabilistic `session.gc` (unreliable by design, and part of what got us here) — it's the dedicated `public/cron/session_gc.php` cron (hourly, `.github/workflows/cron-session-gc.yml`), which deletes rows past `SESSION_ABSOLUTE_TIMEOUT`.
+- `sessions` is a normal migration-gated table (`database/add_sessions.sql`, registered in `database/migrations.json`) — forgetting to run it on an environment fails loud via the deploy schema check (gotcha #18), not silently.
+- `public/paddock-rumors/query.php` used to call a bare `session_start()` of its own before `config.php` was even required — that started a session under PHP's *default* file handler before `DbSessionHandler` got registered, silently defeating this fix for that one endpoint (and was already logging harmless-but-noisy "session already active" warnings). Removed; that page now gets its session from `config.php`'s chain like every other page. If you add a new entry point, don't call `session_start()` yourself — `require config.php` and let `config.shared.php` do it.
