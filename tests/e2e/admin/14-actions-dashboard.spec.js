@@ -58,7 +58,11 @@ test.describe('GitHub Actions Dashboard', { tag: '@admin' }, () => {
 
     test('selecting a workflow from the schedule matrix updates the detail card', async ({ page }) => {
         await page.goto(`/admin-dashboards.php?tab=actions&${FIXTURE_QS}`);
-        await page.locator('.gha-matrix-row', { hasText: 'Nightly Tests & Security Scan' }).click();
+        // Click the row's name label, not the row itself — for a daily cron, every day-cell in
+        // the row carries data-cell-kind="run" (opens a detail dialog, see actions.php's
+        // [data-cell-kind] click handler), leaving no empty space for a click to reach the <a>'s
+        // own navigation via the row's geometric center.
+        await page.locator('.gha-matrix-row', { hasText: 'Nightly Tests & Security Scan' }).locator('.gha-matrix-row-name').click();
         await expect(page).toHaveURL(/workflow=nightly-tests/);
         await expect(page.locator('.gha-detail-title h2')).toHaveText('Nightly Tests & Security Scan');
     });
