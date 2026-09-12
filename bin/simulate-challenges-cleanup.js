@@ -60,7 +60,7 @@ function httpGet(url, cookieStr) {
     return new Promise((resolve, reject) => {
         const parsed = new URL(url);
         const mod = parsed.protocol === 'https:' ? https : http;
-        const req = mod.request({ hostname: parsed.hostname, port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80), path: parsed.pathname + parsed.search, method: 'GET', headers: { 'User-Agent': 'F1Betting-Sim/1.0', ...(cookieStr ? { Cookie: cookieStr } : {}) } }, (res) => {
+        const req = mod.request({ hostname: parsed.hostname, port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80), path: parsed.pathname + parsed.search, method: 'GET', headers: { 'User-Agent': 'formula-1.dk-Sim/1.0', ...(cookieStr ? { Cookie: cookieStr } : {}) } }, (res) => {
             let body = ''; res.on('data', (c) => (body += c)); res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body }));
         });
         req.on('error', reject); req.setTimeout(20000, () => { req.destroy(); reject(new Error('timeout')); }); req.end();
@@ -70,7 +70,7 @@ function httpPostRaw(url, bodyStr, cookieStr) {
     return new Promise((resolve, reject) => {
         const parsed = new URL(url);
         const mod = parsed.protocol === 'https:' ? https : http;
-        const req = mod.request({ hostname: parsed.hostname, port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80), path: parsed.pathname, method: 'POST', headers: { 'User-Agent': 'F1Betting-Sim/1.0', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(bodyStr), ...(cookieStr ? { Cookie: cookieStr } : {}) } }, (res) => {
+        const req = mod.request({ hostname: parsed.hostname, port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80), path: parsed.pathname, method: 'POST', headers: { 'User-Agent': 'formula-1.dk-Sim/1.0', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(bodyStr), ...(cookieStr ? { Cookie: cookieStr } : {}) } }, (res) => {
             let d = ''; res.on('data', (c) => (d += c)); res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: d }));
         });
         req.on('error', reject); req.setTimeout(20000, () => { req.destroy(); reject(new Error('timeout')); }); req.write(bodyStr); req.end();

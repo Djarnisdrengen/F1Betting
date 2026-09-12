@@ -78,7 +78,7 @@ Reports are saved to `build-deploy/security-reports/` as `.md` and `.json` (two 
 You only need **one local folder** — the GitHub repo:
 
 ```
-~/Documents/Websites/github/F1Betting/
+~/github/formula-1.dk/
 ```
 
 Do all development here. No need for a separate live copy locally.

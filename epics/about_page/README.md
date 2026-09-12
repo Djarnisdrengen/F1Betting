@@ -4,7 +4,7 @@
 A new "About" / "Om klubben" page for the F1 betting site: club story (founded 1992 by Klaus Türk in Frøslev, first website 1996), stats-in-numbers, and contact info. Bilingual (DA default / EN toggle), dark-theme default, matches the existing site chrome (header, bottom nav).
 
 ## About the Design Files
-The bundled file (`About.dc.html`) is a **design reference built in HTML**, not production code to copy in as-is. It's a prototype showing intended layout, copy, and behavior. Recreate it in the site's real stack — plain PHP + vanilla JS/CSS per the existing `F1Betting` codebase (`Djarnisdrengen/F1Betting` on GitHub), following the patterns already in `public/includes/header.php`, `public/*.php`, and `public/assets/css/style.css`. Do not ship the DC file itself.
+The bundled file (`About.dc.html`) is a **design reference built in HTML**, not production code to copy in as-is. It's a prototype showing intended layout, copy, and behavior. Recreate it in the site's real stack — plain PHP + vanilla JS/CSS per the existing `formula-1.dk` codebase (`Djarnisdrengen/formula-1.dk` on GitHub), following the patterns already in `public/includes/header.php`, `public/*.php`, and `public/assets/css/style.css`. Do not ship the DC file itself.
 
 ## Fidelity
 **High-fidelity.** Colors, type, spacing and component classes are pulled directly from the live design system (`colors_and_type.css`, `hifi/style.css`) — recreate pixel-for-pixel using the site's existing CSS classes/variables (`.hf-*`, `--f1-red`, `--bg-*`, etc. → map to whatever the equivalent live classes are in `style.css`).

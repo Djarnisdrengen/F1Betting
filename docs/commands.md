@@ -22,7 +22,7 @@ All terminal commands for the F1 Betting project.
 
 | Command | What it does |
 |---|---|
-| `git clone https://github.com/<org>/F1Betting.git` | Clone the repository |
+| `git clone https://github.com/<org>/formula-1.dk.git` | Clone the repository |
 | `npm install` | Install Node.js dependencies |
 | `cp config.example.php config.test.php` | Create test environment config |
 | `cp config.example.php config.live.php` | Create live environment config |

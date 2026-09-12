@@ -54,7 +54,7 @@ define('RESEND_API_KEY',  're_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
 define('CRON_SECRET', 'change-me');
 
 // ── GITHUB ACTIONS DASHBOARD (Dashboards → GitHub Actions / PaddockKB) ──
-// Optional. A GitHub PAT for Djarnisdrengen/F1Betting. Without it the dashboard falls back to
+// Optional. A GitHub PAT for Djarnisdrengen/formula-1.dk. Without it the dashboard falls back to
 // unauthenticated GitHub API calls (60 requests/hour, shared across the whole hosting IP) —
 // fine for occasional use, but a token is recommended for reliability.
 // Scope: fine-grained "Actions" repo permission — read-only is enough for the GitHub Actions

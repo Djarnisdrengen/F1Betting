@@ -296,7 +296,7 @@ while still in progress.
 **`GITHUB_TOKEN` (optional but recommended):** see `config.example.php`. Without it the
 dashboard falls back to unauthenticated GitHub API calls — 60 requests/hour, shared with
 whatever else is on the same Simply.com hosting IP. A fine-grained PAT with read-only
-`Actions` permission (or a classic PAT with `repo` scope) on `Djarnisdrengen/F1Betting` removes
+`Actions` permission (or a classic PAT with `repo` scope) on `Djarnisdrengen/formula-1.dk` removes
 that ceiling (5000/hr, authenticated).
 
 **E2E test fixture mode:** gated the same way `admin.php`'s own E2E test-mode is

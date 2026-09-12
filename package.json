@@ -1,4 +1,6 @@
 {
+  "name": "formula-1.dk",
+  "version": "1.0.0",
   "scripts": {
     "deploy:test": "node build-deploy/deploy.js test",
     "deploy:live": "node build-deploy/deploy.js live",

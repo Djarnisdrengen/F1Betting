@@ -31,7 +31,7 @@ function httpGet(url, cookieStr) {
     return new Promise((resolve, reject) => {
         const parsed = new URL(url);
         const mod = parsed.protocol === 'https:' ? https : http;
-        const req = mod.request({ hostname: parsed.hostname, port: parsed.port || 443, path: parsed.pathname + parsed.search, method: 'GET', headers: { 'User-Agent': 'F1Betting-Sim/1.0', ...(cookieStr ? { Cookie: cookieStr } : {}) } }, (res) => {
+        const req = mod.request({ hostname: parsed.hostname, port: parsed.port || 443, path: parsed.pathname + parsed.search, method: 'GET', headers: { 'User-Agent': 'formula-1.dk-Sim/1.0', ...(cookieStr ? { Cookie: cookieStr } : {}) } }, (res) => {
             let body = ''; res.on('data', (c) => (body += c)); res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body }));
         });
         req.on('error', reject); req.setTimeout(20000, () => { req.destroy(); reject(new Error('timeout')); }); req.end();
@@ -42,7 +42,7 @@ function httpPost(url, fields, cookieStr) {
         const parsed = new URL(url);
         const mod = parsed.protocol === 'https:' ? https : http;
         const body = Object.entries(fields).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
-        const req = mod.request({ hostname: parsed.hostname, port: parsed.port || 443, path: parsed.pathname, method: 'POST', headers: { 'User-Agent': 'F1Betting-Sim/1.0', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body), ...(cookieStr ? { Cookie: cookieStr } : {}) } }, (res) => {
+        const req = mod.request({ hostname: parsed.hostname, port: parsed.port || 443, path: parsed.pathname, method: 'POST', headers: { 'User-Agent': 'formula-1.dk-Sim/1.0', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body), ...(cookieStr ? { Cookie: cookieStr } : {}) } }, (res) => {
             let data = ''; res.on('data', (c) => (data += c)); res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: data }));
         });
         req.on('error', reject); req.setTimeout(20000, () => { req.destroy(); reject(new Error('timeout')); }); req.write(body); req.end();

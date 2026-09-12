@@ -25,7 +25,7 @@
 ## Repository Layout
 
 ```
-F1Betting/
+formula-1.dk/
 ├── config.example.php          Template — copy to config.test.php + config.live.php
 ├── config.shared.php           Shared bootstrap included by both config files
 ├── config.test.php             Test-env config (gitignored, local + server)

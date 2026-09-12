@@ -79,7 +79,7 @@ function httpGet(url, cookieStr) {
             port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
             path: parsed.pathname + parsed.search,
             method: 'GET',
-            headers: { 'User-Agent': 'F1Betting-Sim/1.0', ...(cookieStr ? { Cookie: cookieStr } : {}) },
+            headers: { 'User-Agent': 'formula-1.dk-Sim/1.0', ...(cookieStr ? { Cookie: cookieStr } : {}) },
         }, (res) => {
             let body = '';
             res.on('data', (c) => (body += c));
@@ -101,7 +101,7 @@ function httpPost(url, fields, cookieStr) {
             path: parsed.pathname,
             method: 'POST',
             headers: {
-                'User-Agent': 'F1Betting-Sim/1.0',
+                'User-Agent': 'formula-1.dk-Sim/1.0',
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Content-Length': Buffer.byteLength(body),
                 ...(cookieStr ? { Cookie: cookieStr } : {}),

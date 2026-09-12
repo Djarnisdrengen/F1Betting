@@ -1263,7 +1263,7 @@ function printReport() {
     const R = '\x1b[0m', G = '\x1b[32m', RED = '\x1b[31m', Y = '\x1b[33m', C = '\x1b[36m', B = '\x1b[1m', D = '\x1b[2m';
 
     console.log(`\n${B}═══════════════════════════════════════════════════════════${R}`);
-    console.log(`${B}  F1Betting Security Report${R}`);
+    console.log(`${B}  formula-1.dk Security Report${R}`);
     console.log(`${B}  Env: ${env.toUpperCase()}   Target: ${BASE_URL}${R}`);
     console.log(`${B}  ${new Date().toISOString().slice(0, 19).replace('T', ' ')} UTC${R}`);
     console.log(`${B}═══════════════════════════════════════════════════════════${R}\n`);
@@ -1313,7 +1313,7 @@ function generateMarkdown() {
     };
 
     const ts = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    let md = `# F1Betting Security Report\n\n`;
+    let md = `# formula-1.dk Security Report\n\n`;
     md += `| | |\n|---|---|\n`;
     md += `| **Environment** | ${env.toUpperCase()} |\n`;
     md += `| **Target** | ${BASE_URL} |\n`;

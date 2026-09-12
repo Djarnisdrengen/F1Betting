@@ -1,5 +1,5 @@
 const KB_RAW_URL = process.env.KB_RAW_URL ||
-  'https://raw.githubusercontent.com/Djarnisdrengen/F1Betting/main/paddock-rumors/data/knowledge-base.json';
+  'https://raw.githubusercontent.com/Djarnisdrengen/formula-1.dk/main/paddock-rumors/data/knowledge-base.json';
 
 export default async function handler(req, res) {
   try {

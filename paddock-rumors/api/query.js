@@ -16,7 +16,7 @@ const TOP_N             = 6;
 // KB is fetched from GitHub raw at runtime so it stays current with each cron
 // commit — no Vercel redeploy needed. Override with KB_RAW_URL if the repo moves.
 const KB_RAW_URL = process.env.KB_RAW_URL ||
-  'https://raw.githubusercontent.com/Djarnisdrengen/F1Betting/main/paddock-rumors/data/knowledge-base.json';
+  'https://raw.githubusercontent.com/Djarnisdrengen/formula-1.dk/main/paddock-rumors/data/knowledge-base.json';
 const KB_TTL_MS = 5 * 60 * 1000;   // 5-minute cache across warm invocations
 
 let _kb = null;

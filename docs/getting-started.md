@@ -39,8 +39,8 @@ If you only want to edit and deploy (no local PHP server), you only need Node an
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/<org>/F1Betting.git
-cd F1Betting
+git clone https://github.com/<org>/formula-1.dk.git
+cd formula-1.dk
 npm install
 ```
 

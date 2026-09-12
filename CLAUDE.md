@@ -6,7 +6,7 @@ This file is injected into Claude Code conversations. Keep it **small** — deta
 
 ## ⚠️ Project identity — read first
 
-**This repo is F1Betting / Paddock Picks** — `~/github/F1Betting`, GitHub `Djarnisdrengen/F1Betting`,
+**This repo is F1Betting / Paddock Picks** — `~/github/formula-1.dk`, GitHub `Djarnisdrengen/formula-1.dk`,
 domains **formula-1.dk** (live) and **hpovlsen.dk** (test).
 
 It has a **sibling project that is NOT this one**: Robinsonklubben (`~/github/robinsonklubben.dk`,
