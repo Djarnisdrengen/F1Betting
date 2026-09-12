@@ -236,7 +236,7 @@ require_once __DIR__ . '/config.shared.php';
 - Log file paths (relative to repo root)
 - F1 API base URL and timeout
 - Sets PHP ini: timezone, error display, session hardening (secure, httponly, samesite=Lax, strict mode)
-- Starts the session
+- Registers the DB-backed session handler (`public/includes/session-handler.php`, `sessions` table) and starts the session — see gotcha "DB-backed sessions" in `docs/gotchas.md`
 - Sets security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
 - `require_once` functions.php
 
